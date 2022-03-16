@@ -26,7 +26,7 @@ namespace ninaAPI.WebService
         {
             try
             {
-                switch (resource)
+                switch (resource.ToLower())
                 {
                     case "camera":
                         return EquipmentMediator.GetCamera(action);
