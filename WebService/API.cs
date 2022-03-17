@@ -11,7 +11,9 @@
 
 using EmbedIO;
 using EmbedIO.WebApi;
+using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
+using ninaAPI.Properties;
 using System;
 using System.Threading;
 
@@ -35,11 +37,12 @@ namespace ninaAPI.WebService
             {
                 serverThread = new Thread(APITask);
                 serverThread.Name = "API Thread";
+                serverThread.SetApartmentState(ApartmentState.STA);
                 serverThread.Start();
             }
             catch (Exception ex)
             {
-                NINA.Core.Utility.Logger.Error($"failed to start web server: {ex}");
+                Logger.Error($"failed to start web server: {ex}");
             }
         }
 
@@ -67,30 +70,30 @@ namespace ninaAPI.WebService
             }
             catch (Exception ex)
             {
-                NINA.Core.Utility.Logger.Error($"failed to stop API: {ex}");
+                Logger.Error($"failed to stop API: {ex}");
             }
         }
 
         private void APITask()
         {
-            string localUrl = $"http://localhost:1111";
-            NINA.Core.Utility.Logger.Info($"starting web server, listening at {localUrl}");
+            string localUrl = $"http://localhost:{Settings.Default.Port}";
+            Logger.Info($"starting web server, listening at {localUrl}");
 
             try
             {
                 using (WebServer webServer = CreateServer())
                 {
                     apiToken = new CancellationTokenSource();
-                    Notification.ShowSuccess($"API started");
+                    Notification.ShowSuccess($"API started, listening at:\n {localUrl}");
                     webServer.RunAsync(apiToken.Token).Wait();
                 }
             }
             catch (Exception ex)
             {
-                NINA.Core.Utility.Logger.Error($"failed to start web server: {ex}");
+                Logger.Error($"failed to start web server: {ex}");
                 Notification.ShowError($"Failed to start web server, see NINA log for details");
 
-                NINA.Core.Utility.Logger.Debug("aborting web server thread");
+                Logger.Debug("aborting web server thread");
                 serverThread.Abort();
             }
         }

@@ -29,7 +29,6 @@ namespace ninaAPI
         public IDomeMediator Dome;
         public ISwitchMediator Switch;
         public ISafetyMonitorMediator SafetyMonitor;
-        public IWeatherDataMediator Weather;
         #endregion
 
         #region Image

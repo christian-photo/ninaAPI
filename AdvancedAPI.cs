@@ -41,7 +41,6 @@ namespace ninaAPI
                            IDomeMediator dome,
                            ISwitchMediator switches,
                            ISafetyMonitorMediator safety,
-                           IWeatherDataMediator weather,
                            IImagingMediator imaging,
                            IImageHistoryVM history,
                            IProfileService profile)
@@ -58,13 +57,11 @@ namespace ninaAPI
                 Dome = dome,
                 Switch = switches,
                 SafetyMonitor = safety,
-                Weather = weather,
                 Imaging = imaging,
                 ImageHistory = history,
                 Profile = profile,
                 Sequence = new SequenceMediator()
             };
-
 
 
             if (Settings.Default.UpdateSettings)
@@ -74,6 +71,11 @@ namespace ninaAPI
                 CoreUtil.SaveSettings(Settings.Default);
             }
             Server = new API();
+            RestartAPI = new RelayCommand(o =>
+            {
+                Server.Stop();
+                Server = new API();
+            });
         }
 
         public override Task Teardown()
@@ -81,5 +83,17 @@ namespace ninaAPI
             Server.Stop();
             return base.Teardown();
         }
+
+        public string Port
+        {
+            get { return Settings.Default.Port; }
+            set
+            {
+                Settings.Default.Port = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public RelayCommand RestartAPI { get; set; }
     }
 }
