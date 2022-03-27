@@ -13,72 +13,228 @@ using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
+using ninaAPI.Properties;
 using ninaAPI.WebService.GET;
+using ninaAPI.WebService.SET;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace ninaAPI.WebService
 {
     public class Controller : WebApiController
     {
+        private readonly Hashtable FAILED_TABLE = new Hashtable() { { "Success", false } };
+
+        [Route(HttpVerbs.Get, "/")]
+        public string Index()
+        {
+            return "ninaAPI: https://github.com/rennmaus-coder/ninaAPI/wiki";
+        }
 
         #region GET
-        [Route(HttpVerbs.Any, "/get/history/{id}")]
-        public List<Hashtable> GetHistory(string id)
+
+        [Route(HttpVerbs.Get, "/get/{?apiKey}/history/count")]
+        public Hashtable GetHistoryCount(string apiKey)
         {
+            if (!CheckKey(apiKey)) return FAILED_TABLE;
+
+            Logger.Info($"API call: api/get/history/count");
+            try
+            {
+                return EquipmentMediator.GetImageCount();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+            return FAILED_TABLE;
+        }
+
+        [Route(HttpVerbs.Get, "/get/{?apiKey}/history/{id}")]
+        public List<Hashtable> GetHistory(string apiKey, string id)
+        {
+            if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE };
+            
             Logger.Info($"API call: api/get/history/{id}");
-            return EquipmentMediator.GetImageHistory(id);
+            try
+            {
+                return EquipmentMediator.GetImageHistory(id);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+            return new List<Hashtable>() { FAILED_TABLE };
         }
 
-        [Route(HttpVerbs.Any, "/get/profile/{id}")]
-        public List<Hashtable> GetProfile(string id)
+        [Route(HttpVerbs.Get, "/get/{?apiKey}/profile/{id}")]
+        public List<Hashtable> GetProfile(string apiKey, string id)
         {
+            if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE };
+            
             Logger.Info($"API call: api/get/profile/{id}");
-            return EquipmentMediator.GetProfile(id);
+            try
+            {
+                return EquipmentMediator.GetProfile(id);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+            return new List<Hashtable>() { FAILED_TABLE };
         }
 
-
-        [Route(HttpVerbs.Any, "/get/{resource}/{action}")]
-        public Hashtable GetInformation(string resource, string action)
+        [Route(HttpVerbs.Get, "/get/{?apiKey}/sequence/count")]
+        public Hashtable GetSequenceCount(string apiKey)
         {
+            if (!CheckKey(apiKey)) return FAILED_TABLE;
+            
+            Logger.Info($"API call: api/get/sequence/count");
+            try
+            {
+                return EquipmentMediator.GetSequenceCount();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+            return FAILED_TABLE;
+        }
+
+        [Route(HttpVerbs.Get, "/get/{?apiKey}/sequence/{action}")]
+        public List<Hashtable> GetSequence(string apiKey, string action)
+        {
+            if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE };
+            
+            Logger.Info($"API call: api/get/sequence/{action}");
+            try
+            {
+                return EquipmentMediator.GetSequence(action.ToLower());
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+            return new List<Hashtable>() { FAILED_TABLE };
+        }
+
+        [Route(HttpVerbs.Get, "/get/{?apiKey}/{resource}/{action}")]
+        public Hashtable GetInformation(string apiKey, string resource, string action)
+        {
+            if (!CheckKey(apiKey)) return FAILED_TABLE;
+            
             Logger.Info($"API call: api/get/{resource}/{action}");
             try
             {
                 switch (resource.ToLower())
                 {
                     case "camera":
-                        return EquipmentMediator.GetCamera(action);
+                        return EquipmentMediator.GetCamera(action.ToLower());
+
                     case "telescope":
-                        return EquipmentMediator.GetTelescope(action);
+                        return EquipmentMediator.GetTelescope(action.ToLower());
+
                     case "focuser":
-                        return EquipmentMediator.GetFocuser(action);
+                        return EquipmentMediator.GetFocuser(action.ToLower());
+
                     case "filterwheel":
-                        return EquipmentMediator.GetFilterWheel(action);
+                        return EquipmentMediator.GetFilterWheel(action.ToLower());
+
                     case "guider":
-                        return EquipmentMediator.GetGuider(action);
+                        return EquipmentMediator.GetGuider(action.ToLower());
+
                     case "dome":
-                        return EquipmentMediator.GetDome(action);
+                        return EquipmentMediator.GetDome(action.ToLower());
+
                     case "rotator":
-                        return EquipmentMediator.GetRotator(action);
+                        return EquipmentMediator.GetRotator(action.ToLower());
+
                     case "safetymonitor":
-                        return EquipmentMediator.GetSafetyMonitor(action);
+                        return EquipmentMediator.GetSafetyMonitor(action.ToLower());
+
                     case "flatdevice":
-                        return EquipmentMediator.GetFlatDevice(action);
+                        return EquipmentMediator.GetFlatDevice(action.ToLower());
+
                     case "switch":
-                        return EquipmentMediator.GetSwitch(action);
-                    
+                        return EquipmentMediator.GetSwitch(action.ToLower());
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Logger.Error(ex);
             }
-            return new Hashtable();
+            return FAILED_TABLE;
         }
+
         #endregion
 
         #region SET
 
+        [Route(HttpVerbs.Get, "/set/{?apiKey}/{resource}/{action}")]
+        public async Task<Hashtable> SetEquipment(string apiKey, string resource, string action)
+        {
+            if (!CheckKey(apiKey)) return FAILED_TABLE;
+            
+            Logger.Info($"API call: api/set/{resource}/{action}");
+            try
+            {
+                switch (resource.ToLower())
+                {
+                    case "camera":
+                        return await EquipmentController.Camera(action.ToLower());
+
+                    case "telescope":
+                        return await EquipmentController.Telescope(action.ToLower());
+
+                    case "focuser":
+                        return await EquipmentController.Focuser(action.ToLower());
+
+                    case "rotator":
+                        return await EquipmentController.Rotator(action.ToLower());
+
+                    case "filterwheel":
+                        return await EquipmentController.FilterWheel(action.ToLower());
+
+                    case "dome":
+                        return await EquipmentController.Dome(action.ToLower());
+
+                    case "switch":
+                        return await EquipmentController.Switch(action.ToLower());
+
+                    case "guider":
+                        return await EquipmentController.Guider(action.ToLower());
+
+                    case "flatdevice":
+                        return await EquipmentController.FlatDevice(action.ToLower());
+
+                    case "safteymonitor":
+                        return await EquipmentController.SafteyMonitor(action.ToLower());
+
+                    case "sequence":
+                        return await EquipmentController.Sequence(action.ToLower());
+
+                    case "application":
+                        return await EquipmentController.Application(action.ToLower());
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+            return FAILED_TABLE;
+        }
+
         #endregion
+        
+        public bool CheckKey(string key)
+        {
+            using (SHA256 sha = SHA256.Create())
+            {
+                return Utility.VerifyHash(sha, key, Settings.Default.ApiKey);
+            }
+        }
     }
 }

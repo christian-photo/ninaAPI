@@ -12,8 +12,11 @@
 
     <DataTemplate x:Key="Advanced API_Options">
         <StackPanel Orientation="Vertical">
+
             <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0,0,5,0" Text="API Port: " />
+                <TextBlock Margin="0,5,5,0" Text="API Enabled: " />
+                <CheckBox IsChecked="{Binding APIEnabled}" />
+                <TextBlock Margin="10,0,5,0" Text="API Port: " />
                 <TextBox Width="100" Text="{Binding Port}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
@@ -22,6 +25,77 @@
                     Margin="0,15,0,0"
                     Command="{Binding RestartAPI}"
                     Content="Restart API" />
+            </StackPanel>
+
+            <Separator
+                Width="20"
+                Height="10"
+                Background="Transparent" />
+
+            <StackPanel Margin="0,10,0,0" Orientation="Vertical">
+                <TextBlock Margin="0,5,0,5" Text="Network adresses: " />
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Width="100"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Text="Localhost" />
+                    <TextBlock Margin="0,5,0,5" VerticalAlignment="Center">
+                        <Hyperlink NavigateUri="{Binding LocalAdress}" RequestNavigate="Hyperlink_RequestNavigate">
+                            <TextBlock VerticalAlignment="Center" Text="{Binding LocalAdress}" />
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Width="100"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Text="IP Adress" />
+                    <TextBlock Margin="0,5,0,5" VerticalAlignment="Center">
+                        <Hyperlink NavigateUri="{Binding LocalNetworkAdress}" RequestNavigate="Hyperlink_RequestNavigate">
+                            <TextBlock VerticalAlignment="Center" Text="{Binding LocalNetworkAdress}" />
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Width="100"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Text="This Host" />
+                    <TextBlock Margin="0,5,0,5" VerticalAlignment="Center">
+                        <Hyperlink NavigateUri="{Binding HostAdress}" RequestNavigate="Hyperlink_RequestNavigate">
+                            <TextBlock VerticalAlignment="Center" Text="{Binding HostAdress}" />
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+
+            <Separator
+                Width="20"
+                Height="10"
+                Background="Transparent" />
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="0,5,0,5" Text="Use Api Key and SSL encryption" />
+                <CheckBox Margin="5,0,0,0" IsChecked="{Binding Secure}" />
+            </StackPanel>
+
+            <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                <TextBlock
+                    Width="100"
+                    Margin="0,5,0,5"
+                    Text="Api Key" />
+                <TextBox
+                    Width="150"
+                    Margin="5"
+                    Text="{Binding ApiKey, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                <Button
+                    Width="180"
+                    Margin="5"
+                    Command="{Binding GenerateApiKey}"
+                    Content="Generate new Api Key" />
             </StackPanel>
         </StackPanel>
     </DataTemplate>

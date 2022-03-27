@@ -15,6 +15,7 @@ using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
 using ninaAPI.Properties;
 using System;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 
 namespace ninaAPI.WebService
@@ -22,17 +23,40 @@ namespace ninaAPI.WebService
     public class API
     {
         public WebServer ActiveServer;
-        private Thread serverThread;
         private CancellationTokenSource apiToken;
-
+        public readonly int Port;
+        private Thread serverThread;
         public API()
         {
+            Port = Settings.Default.Port;
             Start();
+        }
+
+        public WebServer CreateServer()
+        {
+            if (Settings.Default.Secure)
+            {
+                // X509Certificate2 certificate = new X509Certificate2();
+                ActiveServer = new WebServer(o => o
+                   .WithUrlPrefix($"https://*:{Port}")
+                   .WithMode(HttpListenerMode.EmbedIO)
+                   // .WithCertificate(certificate)
+                   // .WithAutoRegisterCertificate()
+                   );
+                ActiveServer.WithWebApi($"/api/{Settings.Default.ApiKey}", m => m.WithController<Controller>());
+                return ActiveServer;
+            }
+            ActiveServer = new WebServer(o => o
+               .WithUrlPrefix($"http://*:{Port}")
+               .WithMode(HttpListenerMode.EmbedIO)
+               );
+            
+            ActiveServer.WithWebApi($"/api", m => m.WithController<Controller>());
+            return ActiveServer;
         }
 
         public void Start()
         {
-
             try
             {
                 serverThread = new Thread(APITask);
@@ -76,15 +100,15 @@ namespace ninaAPI.WebService
 
         private void APITask()
         {
-            string localUrl = $"http://localhost:{Settings.Default.Port}";
-            Logger.Info($"starting web server, listening at {localUrl}");
+            string ipAdress = Utility.GetLocalNames()["IPADRESS"];
+            Logger.Info($"starting web server, listening at {ipAdress}:{Port}");
 
             try
             {
                 using (WebServer webServer = CreateServer())
                 {
                     apiToken = new CancellationTokenSource();
-                    Notification.ShowSuccess($"API started, listening at:\n {localUrl}");
+                    Notification.ShowSuccess($"API started, listening at:\n {ipAdress}:{Port}");
                     webServer.RunAsync(apiToken.Token).Wait();
                 }
             }
@@ -96,16 +120,6 @@ namespace ninaAPI.WebService
                 Logger.Debug("aborting web server thread");
                 serverThread.Abort();
             }
-        }
-
-        public WebServer CreateServer()
-        {
-            ActiveServer = new WebServer(o => o
-                               .WithUrlPrefix("http://localhost:1111")
-                               .WithMode(HttpListenerMode.EmbedIO)
-                               );
-            ActiveServer.WithWebApi("/api", m => m.WithController<Controller>());
-            return ActiveServer;
         }
     }
 }

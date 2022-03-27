@@ -11,7 +11,8 @@
 
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
-using NINA.Sequencer.Mediator;
+using NINA.Sequencer.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.ViewModel;
 
 namespace ninaAPI
@@ -38,7 +39,9 @@ namespace ninaAPI
 
         #region Application
         public IProfileService Profile;
-        public SequenceMediator Sequence; // Not usable right now
+        public ISequenceMediator Sequence;
+        public IApplicationStatusMediator StatusMediator;
+        public IApplicationMediator Application;
         #endregion
     }
 }

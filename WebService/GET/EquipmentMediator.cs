@@ -10,18 +10,24 @@
 #endregion "copyright"
 
 using Accord.Statistics.Visualizations;
+using NINA.Astrometry;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile;
 using NINA.Profile.Interfaces;
+using NINA.Sequencer.Container;
+using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using NINA.WPF.Base.Model;
+using OxyPlot;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Input;
+using System.Windows.Media;
 
 namespace ninaAPI.WebService.GET
 {
@@ -322,11 +328,6 @@ namespace ninaAPI.WebService.GET
                     }
                     return result;
                 }
-                else if (id.Equals("count"))
-                {
-                    result.Add(new Hashtable() { { "Count", imaging.ImageHistory.Count() } });
-                    return result;
-                }
 
                 point = imaging.ImageHistory[int.Parse(id)];
                 result.Add(GetAllProperties(point));
@@ -368,7 +369,60 @@ namespace ninaAPI.WebService.GET
             return new List<Hashtable>();
         }
 
-        private static Hashtable GetAllProperties<T>(T instance)
+        public static List<Hashtable> GetSequence(string property)
+        {
+            ISequenceMediator Sequence = AdvancedAPI.Controls.Sequence;
+            List<Hashtable> result = new List<Hashtable>();
+            try
+            {
+                if (!Sequence.Initialized)
+                {
+                    result.Add(new Hashtable() { { "Initialized", "false" } });
+                    return result;
+                }
+                if (property.Equals("all"))
+                {
+                    IList<IDeepSkyObjectContainer> AllTargets = Sequence.GetAllTargetsInAdvancedSequence();
+                    AllTargets.Concat(Sequence.GetAllTargetsInSimpleSequence());
+                    foreach (IDeepSkyObjectContainer Target in AllTargets)
+                    {
+                        
+                        result.Add(GetAllProperties(Target.Parent));
+                    }
+                    return result;
+                }
+                IList<IDeepSkyObjectContainer> targets = Sequence.GetAllTargetsInAdvancedSequence();
+                targets.Concat(Sequence.GetAllTargetsInSimpleSequence());
+                result.Add(GetAllProperties(targets[int.Parse(property)]));
+                return result;
+            } catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+
+            
+            return new List<Hashtable>();
+        }
+
+        public static Hashtable GetSequenceCount()
+        {
+            ISequenceMediator Sequence = AdvancedAPI.Controls.Sequence;
+            Hashtable result = new Hashtable();
+            IList<IDeepSkyObjectContainer> AllTargets = Sequence.GetAllTargetsInAdvancedSequence();
+            AllTargets.Concat(Sequence.GetAllTargetsInSimpleSequence());
+            result.Add("Count", AllTargets.Count);
+            return result;
+        }
+
+        public static Hashtable GetImageCount()
+        {
+            IImageHistoryVM imaging = AdvancedAPI.Controls.ImageHistory;
+            Hashtable result = new Hashtable();
+            result.Add("Count", imaging.ImageHistory.Count());
+            return result;
+        }
+
+        private static Hashtable GetAllProperties(object instance)
         {
             Hashtable result = new Hashtable();
             List<object> visited = new List<object>();
@@ -376,7 +430,6 @@ namespace ninaAPI.WebService.GET
             {
                 foreach (PropertyInfo info in instance.GetType().GetProperties().Where(p => p.GetIndexParameters().Length == 0))
                 {
-
                     var obj = info.GetValue(instance);
                     if (obj is null)
                     {
@@ -386,7 +439,13 @@ namespace ninaAPI.WebService.GET
                     {
                         continue;
                     }
+                    else if (obj.GetType() == typeof(List<DataPoint>))
+                    {
+                        continue;
+                    }
                     visited.Add(obj);
+
+                    if (result.ContainsKey(info.Name)) continue;
 
                     if (obj is DateTime)
                     {
@@ -396,6 +455,38 @@ namespace ninaAPI.WebService.GET
                     else if (obj is string)
                     {
                         result.Add(info.Name, obj.ToString());
+                        continue;
+                    }
+                    else if (obj.GetType().IsEnum)
+                    {
+                        result.Add(info.Name, obj.ToString());
+                        continue;
+                    }
+                    else if (obj.GetType().IsArray)
+                    {
+                        Logger.Debug($"{info.Name} is Array");
+                        List<Hashtable> tables = new List<Hashtable>();
+
+                        foreach (object item in obj as Object[])
+                        {
+                            tables.Add(GetAllProperties(item));
+                        }
+                        result.Add(info.Name, tables);
+                        continue;
+                    }
+                    else if (obj is IList && obj.GetType().IsGenericType)
+                    {
+                        Logger.Debug($"{info.Name} is List");
+                        List<Hashtable> tables = new List<Hashtable>();
+                        foreach (object item in obj as IList)
+                        {
+                            tables.Add(GetAllProperties(item));
+                        }
+                        result.Add(info.Name, tables);
+                        continue;
+                    }
+                    else if (obj is ICustomDateTime)
+                    {
                         continue;
                     }
                     else if (obj is Histogram)
@@ -410,10 +501,31 @@ namespace ninaAPI.WebService.GET
                     {
                         continue;
                     }
+                    else if (obj is NighttimeData)
+                    {
+                        continue;
+                    }
+                    else if (obj is ICommand)
+                    {
+                        continue;
+                    }
+                    else if (obj is RelayCommand)
+                    {
+                        continue;
+                    }
+                    else if (obj is Coordinates)
+                    {
+                        continue;
+                    }
+                    else if (obj is GeometryGroup)
+                    {
+                        continue;
+                    }
+                    else if (obj is ISequenceContainer) continue;
 
                     if (!info.PropertyType.IsPrimitive)
                     {
-                        Logger.Info($"{info.Name} is primitive");
+                        Logger.Debug($"{info.Name} is primitive ({info.PropertyType.Name})");
                         Hashtable props = GetAllProperties(obj);
                         result.Add(info.Name, props);
                         continue;

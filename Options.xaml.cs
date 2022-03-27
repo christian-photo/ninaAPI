@@ -9,8 +9,11 @@
 
 #endregion "copyright"
 
+using NINA.Core.Utility;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Windows;
+using System.Windows.Navigation;
 
 namespace ninaAPI 
 {
@@ -21,6 +24,13 @@ namespace ninaAPI
         public Options() 
         {
             InitializeComponent();
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Logger.Info(e.Uri.AbsoluteUri);
+            _ = Process.Start(new ProcessStartInfo(e.Uri.OriginalString));
+            e.Handled = true;
         }
     }
 }

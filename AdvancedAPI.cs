@@ -12,23 +12,35 @@
 using NINA.Core.Utility;
 using NINA.Plugin;
 using NINA.Plugin.Interfaces;
-using ninaAPI.Properties;
-using ninaAPI.WebService;
-using System.ComponentModel.Composition;
-using EmbedIO;
-using System.Threading.Tasks;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using NINA.Profile.Interfaces;
-using NINA.Sequencer.Mediator;
+using NINA.Sequencer.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces.Mediator;
+using ninaAPI.Properties;
+using ninaAPI.WebService;
+using System.ComponentModel.Composition;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
+using System.ComponentModel;
+using EmbedIO;
+using System.Security.Cryptography;
+using System;
+using System.Text;
 
 namespace ninaAPI
 {
     [Export(typeof(IPluginManifest))]
-    public class AdvancedAPI : PluginBase
+    public class AdvancedAPI : PluginBase, INotifyPropertyChanged
     {
         public static NINAControls Controls;
         public API Server;
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         [ImportingConstructor]
         public AdvancedAPI(ICameraMediator camera,
@@ -43,8 +55,16 @@ namespace ninaAPI
                            ISafetyMonitorMediator safety,
                            IImagingMediator imaging,
                            IImageHistoryVM history,
-                           IProfileService profile)
+                           IProfileService profile,
+                           ISequenceMediator sequence,
+                           IApplicationStatusMediator statusMediator,
+                           IApplicationMediator application)
         {
+            if (string.IsNullOrEmpty(Settings.Default.ApiKey))
+            {
+                ApiKey = GenerateRandomKey(15);
+            }
+            
             Controls = new NINAControls()
             {
                 Camera = camera,
@@ -60,9 +80,10 @@ namespace ninaAPI
                 Imaging = imaging,
                 ImageHistory = history,
                 Profile = profile,
-                Sequence = new SequenceMediator()
+                Sequence = sequence,
+                StatusMediator = statusMediator,
+                Application = application
             };
-
 
             if (Settings.Default.UpdateSettings)
             {
@@ -70,23 +91,53 @@ namespace ninaAPI
                 Settings.Default.UpdateSettings = false;
                 CoreUtil.SaveSettings(Settings.Default);
             }
-            Server = new API();
+            if (APIEnabled)
+            {
+                Server = new API();
+            }
+            
             RestartAPI = new RelayCommand(o =>
             {
-                Server.Stop();
-                Server = new API();
+                int oldPort = Server.Port;
+                if (Server != null)
+                {
+                    Server.Stop();
+                    Server = null;
+                }
+                if (APIEnabled)
+                {
+                    if (oldPort != Port)
+                    {
+                        SetHostNames();
+                    }
+                    Server = new API();
+                }
+            });
+
+            GenerateApiKey = new RelayCommand(o =>
+            {
+                ApiKey = GenerateRandomKey(15);
+            });
+
+            SetApiKeyCommand = new RelayCommand(o =>
+            {
+                SetApiKey(ApiKey);
             });
         }
 
         public override Task Teardown()
         {
-            Server.Stop();
+            if (Server != null)
+            {
+                Server.Stop();
+                Server = null;
+            }
             return base.Teardown();
         }
 
-        public string Port
+        public int Port
         {
-            get { return Settings.Default.Port; }
+            get => Settings.Default.Port;
             set
             {
                 Settings.Default.Port = value;
@@ -94,6 +145,106 @@ namespace ninaAPI
             }
         }
 
+        public bool APIEnabled
+        {
+            get => Settings.Default.APIEnabled;
+            set
+            {
+                Settings.Default.APIEnabled = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public string LocalAdress
+        {
+            get => Settings.Default.LocalAdress;
+            set
+            {
+                Settings.Default.LocalAdress = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalAdress)));
+            }
+        }
+
+        public string LocalNetworkAdress
+        {
+            get => Settings.Default.LocalNetworkAdress;
+            set
+            {
+                Settings.Default.LocalNetworkAdress = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalNetworkAdress)));
+            }
+        }
+
+        public string HostAdress
+        {
+            get => Settings.Default.HostAdress;
+            set
+            {
+                Settings.Default.HostAdress = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HostAdress)));
+            }
+        }
+
+        private string _apiKey;
+        public string ApiKey
+        {
+            get => _apiKey;
+            set
+            {
+                _apiKey = value;
+            }
+        }
+        
+        public bool Secure
+        {
+            get => Settings.Default.Secure;
+            set
+            {
+                Settings.Default.Secure = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Secure)));
+            }
+        }
+
         public RelayCommand RestartAPI { get; set; }
+        public RelayCommand GenerateApiKey { get; set; }
+        public RelayCommand SetApiKeyCommand { get; set; }
+
+        public string GenerateRandomKey(int length)
+        {
+            using (RNGCryptoServiceProvider cryptRNG = new RNGCryptoServiceProvider())
+            {
+                byte[] tokenBuffer = new byte[length];
+                cryptRNG.GetBytes(tokenBuffer);
+                return Convert.ToBase64String(tokenBuffer);
+            }
+        }
+        
+        private void SetHostNames()
+        {
+            Dictionary<string, string> dict = Utility.GetLocalNames();
+            if (Secure)
+            {
+                LocalAdress = $"https://{dict["LOCALHOST"]}:{Port}/api";
+                LocalNetworkAdress = $"https://{dict["IPADRESS"]}:{Port}/api";
+                HostAdress = $"https://{dict["HOSTNAME"]}:{Port}/api";
+            }
+
+            
+            LocalAdress = $"http://{dict["LOCALHOST"]}:{Port}/api";
+            LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{Port}/api";
+            HostAdress = $"http://{dict["HOSTNAME"]}:{Port}/api";
+        }
+
+        public void SetApiKey(string key)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                Settings.Default.ApiKey = Utility.GetHash(sha256, key);
+            }
+        }
     }
 }

@@ -310,6 +310,7 @@
       <HintPath>packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\System.Windows.Interactivity.dll</HintPath>
     </Reference>
@@ -358,9 +359,11 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Utility.cs" />
     <Compile Include="WebService\API.cs" />
     <Compile Include="WebService\Controller.cs" />
     <Compile Include="WebService\GET\EquipmentMediator.cs" />
+    <Compile Include="WebService\SET\EquipmentController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
