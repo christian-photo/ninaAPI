@@ -36,14 +36,11 @@ namespace ninaAPI.WebService
         {
             if (Settings.Default.Secure)
             {
-                // X509Certificate2 certificate = new X509Certificate2();
                 ActiveServer = new WebServer(o => o
                    .WithUrlPrefix($"https://*:{Port}")
                    .WithMode(HttpListenerMode.EmbedIO)
-                   // .WithCertificate(certificate)
-                   // .WithAutoRegisterCertificate()
                    );
-                ActiveServer.WithWebApi($"/api/{Settings.Default.ApiKey}", m => m.WithController<Controller>());
+                ActiveServer.WithWebApi($"/api", m => m.WithController<Controller>());
                 return ActiveServer;
             }
             ActiveServer = new WebServer(o => o

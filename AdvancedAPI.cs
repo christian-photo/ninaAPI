@@ -94,11 +94,12 @@ namespace ninaAPI
             if (APIEnabled)
             {
                 Server = new API();
+
+                SetHostNames();
             }
             
             RestartAPI = new RelayCommand(o =>
             {
-                int oldPort = Server.Port;
                 if (Server != null)
                 {
                     Server.Stop();
@@ -106,17 +107,14 @@ namespace ninaAPI
                 }
                 if (APIEnabled)
                 {
-                    if (oldPort != Port)
-                    {
-                        SetHostNames();
-                    }
+                    SetHostNames();
                     Server = new API();
                 }
             });
 
-            GenerateApiKey = new RelayCommand(o =>
+            GenerateApiKeyCommand = new RelayCommand(o =>
             {
-                ApiKey = GenerateRandomKey(15);
+                ApiKey = GenerateRandomKey(12);
             });
 
             SetApiKeyCommand = new RelayCommand(o =>
@@ -195,6 +193,7 @@ namespace ninaAPI
             set
             {
                 _apiKey = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ApiKey)));
             }
         }
         
@@ -209,8 +208,19 @@ namespace ninaAPI
             }
         }
 
+        public bool UseKey 
+        {
+            get => Settings.Default.UseKey;
+            set
+            {
+                Settings.Default.UseKey = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseKey)));
+            }
+        }
+
         public RelayCommand RestartAPI { get; set; }
-        public RelayCommand GenerateApiKey { get; set; }
+        public RelayCommand GenerateApiKeyCommand { get; set; }
         public RelayCommand SetApiKeyCommand { get; set; }
 
         public string GenerateRandomKey(int length)
@@ -231,6 +241,7 @@ namespace ninaAPI
                 LocalAdress = $"https://{dict["LOCALHOST"]}:{Port}/api";
                 LocalNetworkAdress = $"https://{dict["IPADRESS"]}:{Port}/api";
                 HostAdress = $"https://{dict["HOSTNAME"]}:{Port}/api";
+                return;
             }
 
             

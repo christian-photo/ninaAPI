@@ -36,10 +36,15 @@ namespace ninaAPI.WebService
 
         #region GET
 
-        [Route(HttpVerbs.Get, "/get/{?apiKey}/history/count")]
-        public Hashtable GetHistoryCount(string apiKey)
+        [Route(HttpVerbs.Get, "/get/history/count")]
+        public Hashtable GetHistoryCount()
         {
-            if (!CheckKey(apiKey)) return FAILED_TABLE;
+            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            {
+                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                if (!CheckKey(apiKey)) return FAILED_TABLE;
+            }
+            else if (Settings.Default.UseKey) return FAILED_TABLE;
 
             Logger.Info($"API call: api/get/history/count");
             try
@@ -53,11 +58,16 @@ namespace ninaAPI.WebService
             return FAILED_TABLE;
         }
 
-        [Route(HttpVerbs.Get, "/get/{?apiKey}/history/{id}")]
-        public List<Hashtable> GetHistory(string apiKey, string id)
+        [Route(HttpVerbs.Get, "/get/history/{id}")]
+        public List<Hashtable> GetHistory(string id)
         {
-            if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE };
-            
+            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            {
+                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE};
+            }
+            else if (Settings.Default.UseKey) return new List<Hashtable>() { FAILED_TABLE};
+
             Logger.Info($"API call: api/get/history/{id}");
             try
             {
@@ -70,11 +80,16 @@ namespace ninaAPI.WebService
             return new List<Hashtable>() { FAILED_TABLE };
         }
 
-        [Route(HttpVerbs.Get, "/get/{?apiKey}/profile/{id}")]
-        public List<Hashtable> GetProfile(string apiKey, string id)
+        [Route(HttpVerbs.Get, "/get/profile/{id}")]
+        public List<Hashtable> GetProfile(string id)
         {
-            if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE };
-            
+            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            {
+                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE };
+            }
+            else if (Settings.Default.UseKey) return new List<Hashtable>() { FAILED_TABLE };
+
             Logger.Info($"API call: api/get/profile/{id}");
             try
             {
@@ -87,11 +102,16 @@ namespace ninaAPI.WebService
             return new List<Hashtable>() { FAILED_TABLE };
         }
 
-        [Route(HttpVerbs.Get, "/get/{?apiKey}/sequence/count")]
-        public Hashtable GetSequenceCount(string apiKey)
+        [Route(HttpVerbs.Get, "/get/sequence/count")]
+        public Hashtable GetSequenceCount()
         {
-            if (!CheckKey(apiKey)) return FAILED_TABLE;
-            
+            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            {
+                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                if (!CheckKey(apiKey)) return FAILED_TABLE;
+            }
+            else if (Settings.Default.UseKey) return FAILED_TABLE;
+
             Logger.Info($"API call: api/get/sequence/count");
             try
             {
@@ -104,10 +124,15 @@ namespace ninaAPI.WebService
             return FAILED_TABLE;
         }
 
-        [Route(HttpVerbs.Get, "/get/{?apiKey}/sequence/{action}")]
-        public List<Hashtable> GetSequence(string apiKey, string action)
+        [Route(HttpVerbs.Get, "/get/sequence/{action}")]
+        public List<Hashtable> GetSequence(string action)
         {
-            if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE };
+            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            {
+                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE };
+            }
+            else if (Settings.Default.UseKey) return new List<Hashtable>() { FAILED_TABLE };
             
             Logger.Info($"API call: api/get/sequence/{action}");
             try
@@ -121,10 +146,15 @@ namespace ninaAPI.WebService
             return new List<Hashtable>() { FAILED_TABLE };
         }
 
-        [Route(HttpVerbs.Get, "/get/{?apiKey}/{resource}/{action}")]
-        public Hashtable GetInformation(string apiKey, string resource, string action)
+        [Route(HttpVerbs.Get, "/get/{resource}/{action}")]
+        public Hashtable GetInformation(string resource, string action)
         {
-            if (!CheckKey(apiKey)) return FAILED_TABLE;
+            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            {
+                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                if (!CheckKey(apiKey)) return FAILED_TABLE;
+            }
+            else if (Settings.Default.UseKey) return FAILED_TABLE;
             
             Logger.Info($"API call: api/get/{resource}/{action}");
             try
@@ -173,11 +203,16 @@ namespace ninaAPI.WebService
 
         #region SET
 
-        [Route(HttpVerbs.Get, "/set/{?apiKey}/{resource}/{action}")]
-        public async Task<Hashtable> SetEquipment(string apiKey, string resource, string action)
+        [Route(HttpVerbs.Get, "/set/{resource}/{action}")]
+        public async Task<Hashtable> SetEquipment(string resource, string action)
         {
-            if (!CheckKey(apiKey)) return FAILED_TABLE;
-            
+            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            {
+                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                if (!CheckKey(apiKey)) return FAILED_TABLE;
+            }
+            else if (Settings.Default.UseKey) return FAILED_TABLE;
+
             Logger.Info($"API call: api/set/{resource}/{action}");
             try
             {

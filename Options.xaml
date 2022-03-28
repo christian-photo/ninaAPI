@@ -14,9 +14,17 @@
         <StackPanel Orientation="Vertical">
 
             <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0,5,5,0" Text="API Enabled: " />
+                <TextBlock
+                    Width="100"
+                    Margin="0,0,5,0"
+                    Text="API Enabled " />
                 <CheckBox IsChecked="{Binding APIEnabled}" />
-                <TextBlock Margin="10,0,5,0" Text="API Port: " />
+            </StackPanel>
+            <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                <TextBlock
+                    Width="100"
+                    Margin="0,0,5,0"
+                    Text="API Port " />
                 <TextBox Width="100" Text="{Binding Port}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
@@ -24,7 +32,8 @@
                     Width="100"
                     Margin="0,15,0,0"
                     Command="{Binding RestartAPI}"
-                    Content="Restart API" />
+                    Content="Restart API"
+                    ToolTip="Stops the API (and if enabled) starts it again. Useful if you created an API key or changed the port" />
             </StackPanel>
 
             <Separator
@@ -77,9 +86,26 @@
                 Height="10"
                 Background="Transparent" />
 
+            <TextBlock
+                Margin="0,20,0,15"
+                FontSize="22"
+                FontWeight="Bold"
+                Text="Security" />
+
             <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0,5,0,5" Text="Use Api Key and SSL encryption" />
+                <TextBlock
+                    Width="100"
+                    Margin="0,5,0,5"
+                    Text="Is SSL" />
                 <CheckBox Margin="5,0,0,0" IsChecked="{Binding Secure}" />
+            </StackPanel>
+
+            <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                <TextBlock
+                    Width="100"
+                    Margin="0,5,0,5"
+                    Text="Use Api key" />
+                <CheckBox Margin="5,0,0,0" IsChecked="{Binding UseKey}" />
             </StackPanel>
 
             <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
@@ -90,12 +116,19 @@
                 <TextBox
                     Width="150"
                     Margin="5"
-                    Text="{Binding ApiKey, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    Text="{Binding ApiKey}" />
                 <Button
                     Width="180"
                     Margin="5"
-                    Command="{Binding GenerateApiKey}"
-                    Content="Generate new Api Key" />
+                    Command="{Binding GenerateApiKeyCommand}"
+                    Content="Generate new Api Key"
+                    ToolTip="Generates a 12-digit secure key" />
+                <Button
+                    Width="180"
+                    Margin="5"
+                    Command="{Binding SetApiKeyCommand}"
+                    Content="Set Api Key"
+                    ToolTip="This button sets the entered key as the API key. Remember this key, the plugin doesn't store it! If you forget the key, you can just create a new one" />
             </StackPanel>
         </StackPanel>
     </DataTemplate>
