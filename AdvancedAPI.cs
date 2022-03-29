@@ -121,6 +121,15 @@ namespace ninaAPI
             {
                 SetApiKey(ApiKey);
             });
+
+            if (Secure)
+            {
+                SecureVisibility = Visibility.Visible;
+            }
+            else
+            {
+                SecureVisibility = Visibility.Collapsed;
+            }
         }
 
         public override Task Teardown()
@@ -196,7 +205,18 @@ namespace ninaAPI
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ApiKey)));
             }
         }
-        
+
+        private Visibility _secureVisibility;
+        public Visibility SecureVisibility
+        {
+            get => _secureVisibility;
+            set
+            {
+                _secureVisibility = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SecureVisibility)));
+            }
+        }
+
         public bool Secure
         {
             get => Settings.Default.Secure;
@@ -205,17 +225,36 @@ namespace ninaAPI
                 Settings.Default.Secure = value;
                 CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Secure)));
+                if (Secure)
+                {
+                    SecureVisibility = Visibility.Visible;
+                }
+                else
+                {
+                    SecureVisibility = Visibility.Collapsed;
+                }
             }
         }
 
-        public bool UseKey 
+        public string CertificatePath 
         {
-            get => Settings.Default.UseKey;
+            get => Settings.Default.CertificatePath;
             set
             {
-                Settings.Default.UseKey = value;
+                Settings.Default.CertificatePath = value;
                 CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseKey)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CertificatePath)));
+            }
+        }
+
+        public string CertificatePassword
+        {
+            get => Settings.Default.CertificatePassword;
+            set
+            {
+                Settings.Default.CertificatePassword = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CertificatePassword)));
             }
         }
 

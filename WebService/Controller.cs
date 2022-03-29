@@ -39,12 +39,12 @@ namespace ninaAPI.WebService
         [Route(HttpVerbs.Get, "/get/history/count")]
         public Hashtable GetHistoryCount()
         {
-            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
-                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                string apiKey = HttpContext.Request.Headers["apikey"];
                 if (!CheckKey(apiKey)) return FAILED_TABLE;
             }
-            else if (Settings.Default.UseKey) return FAILED_TABLE;
+            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null) return FAILED_TABLE;
 
             Logger.Info($"API call: api/get/history/count");
             try
@@ -61,12 +61,12 @@ namespace ninaAPI.WebService
         [Route(HttpVerbs.Get, "/get/history/{id}")]
         public List<Hashtable> GetHistory(string id)
         {
-            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
-                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                string apiKey = HttpContext.Request.Headers["apikey"];
                 if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE};
             }
-            else if (Settings.Default.UseKey) return new List<Hashtable>() { FAILED_TABLE};
+            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null) return new List<Hashtable>() { FAILED_TABLE};
 
             Logger.Info($"API call: api/get/history/{id}");
             try
@@ -83,12 +83,12 @@ namespace ninaAPI.WebService
         [Route(HttpVerbs.Get, "/get/profile/{id}")]
         public List<Hashtable> GetProfile(string id)
         {
-            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
-                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                string apiKey = HttpContext.Request.Headers["apikey"];
                 if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE };
             }
-            else if (Settings.Default.UseKey) return new List<Hashtable>() { FAILED_TABLE };
+            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null) return new List<Hashtable>() { FAILED_TABLE };
 
             Logger.Info($"API call: api/get/profile/{id}");
             try
@@ -105,12 +105,12 @@ namespace ninaAPI.WebService
         [Route(HttpVerbs.Get, "/get/sequence/count")]
         public Hashtable GetSequenceCount()
         {
-            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
-                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                string apiKey = HttpContext.Request.Headers["apikey"];
                 if (!CheckKey(apiKey)) return FAILED_TABLE;
             }
-            else if (Settings.Default.UseKey) return FAILED_TABLE;
+            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null) return FAILED_TABLE;
 
             Logger.Info($"API call: api/get/sequence/count");
             try
@@ -127,12 +127,12 @@ namespace ninaAPI.WebService
         [Route(HttpVerbs.Get, "/get/sequence/{action}")]
         public List<Hashtable> GetSequence(string action)
         {
-            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
-                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                string apiKey = HttpContext.Request.Headers["apikey"];
                 if (!CheckKey(apiKey)) return new List<Hashtable>() { FAILED_TABLE };
             }
-            else if (Settings.Default.UseKey) return new List<Hashtable>() { FAILED_TABLE };
+            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null) return new List<Hashtable>() { FAILED_TABLE };
             
             Logger.Info($"API call: api/get/sequence/{action}");
             try
@@ -149,12 +149,12 @@ namespace ninaAPI.WebService
         [Route(HttpVerbs.Get, "/get/{resource}/{action}")]
         public Hashtable GetInformation(string resource, string action)
         {
-            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
-                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                string apiKey = HttpContext.Request.Headers["apikey"];
                 if (!CheckKey(apiKey)) return FAILED_TABLE;
             }
-            else if (Settings.Default.UseKey) return FAILED_TABLE;
+            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null) return FAILED_TABLE;
             
             Logger.Info($"API call: api/get/{resource}/{action}");
             try
@@ -206,12 +206,12 @@ namespace ninaAPI.WebService
         [Route(HttpVerbs.Get, "/set/{resource}/{action}")]
         public async Task<Hashtable> SetEquipment(string resource, string action)
         {
-            if (Settings.Default.UseKey && HttpContext.GetRequestQueryData()["apikey"] != null)
+            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
-                string apiKey = HttpContext.GetRequestQueryData()["apikey"];
+                string apiKey = HttpContext.Request.Headers["apikey"];
                 if (!CheckKey(apiKey)) return FAILED_TABLE;
             }
-            else if (Settings.Default.UseKey) return FAILED_TABLE;
+            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null) return FAILED_TABLE;
 
             Logger.Info($"API call: api/set/{resource}/{action}");
             try

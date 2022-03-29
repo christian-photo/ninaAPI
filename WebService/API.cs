@@ -36,9 +36,12 @@ namespace ninaAPI.WebService
         {
             if (Settings.Default.Secure)
             {
+                new WebServerOptions().WithAutoLoadCertificate();
                 ActiveServer = new WebServer(o => o
                    .WithUrlPrefix($"https://*:{Port}")
                    .WithMode(HttpListenerMode.EmbedIO)
+                   .WithAutoLoadCertificate()
+                   .WithCertificate(new X509Certificate2(Settings.Default.CertificatePath, Settings.Default.CertificatePassword))
                    );
                 ActiveServer.WithWebApi($"/api", m => m.WithController<Controller>());
                 return ActiveServer;
@@ -54,6 +57,12 @@ namespace ninaAPI.WebService
 
         public void Start()
         {
+            if (Settings.Default.Secure && (string.IsNullOrEmpty(Settings.Default.ApiKey) || string.IsNullOrEmpty(Settings.Default.CertificatePath)))
+            {
+                Logger.Error("Secure API is enabled but no certificate or key is set. Please set the certificate and key in the settings.");
+                Notification.ShowError("Secure API is enabled but no certificate or key is set. Please set the certificate and key in the settings.");
+                return;
+            }
             try
             {
                 serverThread = new Thread(APITask);
