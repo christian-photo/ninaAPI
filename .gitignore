@@ -1,0 +1,9 @@
+**/packages
+**/bin
+**/.vs
+**/manifests
+**/node_modules
+**/obj
+manifest.schema.json
+CreateManifest.ps1
+gather.js
