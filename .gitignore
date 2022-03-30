@@ -7,3 +7,4 @@
 manifest.schema.json
 CreateManifest.ps1
 gather.js
+push.bat
