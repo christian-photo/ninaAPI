@@ -10,7 +10,10 @@
 #endregion "copyright"
 
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.Image.Interfaces;
 using NINA.Sequencer.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces.ViewModel;
+using NINA.WPF.Base.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,6 +23,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Media.Imaging;
 
 namespace ninaAPI.WebService.SET
 {
@@ -414,13 +418,8 @@ namespace ninaAPI.WebService.SET
                                          bmpScreenCapture.Size,
                                          CopyPixelOperation.SourceCopy);
                     }
-                    Bitmap map = new Bitmap(bmpScreenCapture);
-                    using (MemoryStream memory = new MemoryStream())
-                    {
-                        
-                        map.Save(memory, ImageFormat.Jpeg);
-                        result["Image"] = Convert.ToBase64String(memory.ToArray());
-                    }
+                    
+                    result["Image"] = Utility.BitmapToBase64(bmpScreenCapture);
                 }
                 result["Success"] = true;
                 return result;

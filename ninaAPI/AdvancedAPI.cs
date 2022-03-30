@@ -30,6 +30,7 @@ using EmbedIO;
 using System.Security.Cryptography;
 using System;
 using System.Text;
+using NINA.Image.Interfaces;
 
 namespace ninaAPI
 {
@@ -58,7 +59,8 @@ namespace ninaAPI
                            IProfileService profile,
                            ISequenceMediator sequence,
                            IApplicationStatusMediator statusMediator,
-                           IApplicationMediator application)
+                           IApplicationMediator application,
+                           IImageDataFactory imageDataFactory)
         {
             if (string.IsNullOrEmpty(Settings.Default.ApiKey))
             {
@@ -82,7 +84,8 @@ namespace ninaAPI
                 Profile = profile,
                 Sequence = sequence,
                 StatusMediator = statusMediator,
-                Application = application
+                Application = application,
+                ImageDataFactory = imageDataFactory
             };
 
             if (Settings.Default.UpdateSettings)

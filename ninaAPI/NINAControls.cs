@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.Image.Interfaces;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
@@ -35,6 +36,7 @@ namespace ninaAPI
         #region Image
         public IImagingMediator Imaging;
         public IImageHistoryVM ImageHistory;
+        public IImageDataFactory ImageDataFactory;
         #endregion
 
         #region Application

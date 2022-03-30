@@ -13,6 +13,7 @@ using Accord.Statistics.Visualizations;
 using NINA.Astrometry;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.Image.Interfaces;
 using NINA.Profile;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.Container;
@@ -26,6 +27,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -369,7 +371,7 @@ namespace ninaAPI.WebService.GET
             return new List<Hashtable>();
         }
 
-        public static List<Hashtable> GetSequence(string property)
+        public static async Task<List<Hashtable>> GetSequence(string property)
         {
             ISequenceMediator Sequence = AdvancedAPI.Controls.Sequence;
             List<Hashtable> result = new List<Hashtable>();
@@ -389,6 +391,22 @@ namespace ninaAPI.WebService.GET
                         
                         result.Add(GetAllProperties(Target.Parent));
                     }
+                    return result;
+                }
+                else if (property.Equals("image"))
+                {
+                    IImageHistoryVM hist = AdvancedAPI.Controls.ImageHistory;
+                    ImageHistoryPoint p = hist.ImageHistory[hist.ImageHistory.Count - 1];
+                    IImageData imageData = await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.LocalPath, 16, false, NINA.Core.Enum.RawConverterEnum.FREEIMAGE);
+                    IRenderedImage renderedImage = imageData.RenderImage();
+
+                    renderedImage = await renderedImage.Stretch(0.15, -2.8, true);
+
+                    Hashtable res = new Hashtable();
+
+                    res["Image"] = Utility.BitmapToBase64(Utility.BitmapFromSource(renderedImage.Image));
+                    res["Success"] = true;
+                    result.Add(res);
                     return result;
                 }
                 IList<IDeepSkyObjectContainer> targets = Sequence.GetAllTargetsInAdvancedSequence();

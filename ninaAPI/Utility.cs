@@ -16,12 +16,16 @@ using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Windows.Media.Imaging;
 
 namespace ninaAPI
 {
@@ -143,6 +147,31 @@ namespace ninaAPI
             {
                 store.Close();
             }
+        }
+
+        public static string BitmapToBase64(Bitmap bmp)
+        {
+            Bitmap map = new Bitmap(bmp);
+            using (MemoryStream memory = new MemoryStream())
+            {
+
+                map.Save(memory, ImageFormat.Jpeg);
+                return Convert.ToBase64String(memory.ToArray());
+            }
+        }
+
+        public static Bitmap BitmapFromSource(BitmapSource bitmapsource)
+        {
+            Bitmap bitmap;
+            using (MemoryStream outStream = new MemoryStream())
+            {
+                BitmapEncoder enc = new BmpBitmapEncoder();
+
+                enc.Frames.Add(BitmapFrame.Create(bitmapsource));
+                enc.Save(outStream);
+                bitmap = new Bitmap(outStream);
+            }
+            return bitmap;
         }
     }
 }

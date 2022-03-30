@@ -125,7 +125,7 @@ namespace ninaAPI.WebService
         }
 
         [Route(HttpVerbs.Get, "/get/sequence/{action}")]
-        public List<Hashtable> GetSequence(string action)
+        public async Task<List<Hashtable>> GetSequence(string action)
         {
             if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
@@ -137,7 +137,7 @@ namespace ninaAPI.WebService
             Logger.Info($"API call: api/get/sequence/{action}");
             try
             {
-                return EquipmentMediator.GetSequence(action.ToLower());
+                return await EquipmentMediator.GetSequence(action.ToLower());
             }
             catch (Exception ex)
             {
