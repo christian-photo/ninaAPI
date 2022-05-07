@@ -259,7 +259,7 @@ namespace ninaAPI.WebService.GET
                 {
                     return Utility.CreateErrorTable("Sequence is empty");
                 }
-                response.Response = (SequenceRootContainer)targets[0].Parent.Parent;
+                response.Response = GetAllProperties((SequenceRootContainer)targets[0].Parent.Parent);
                 return response;
             }
             catch (Exception ex)
@@ -277,7 +277,7 @@ namespace ninaAPI.WebService.GET
             return new HttpResponse() { Response = temp };
         }
 
-        /* private static Hashtable GetAllProperties<T>(T instance)
+        private static Hashtable GetAllProperties<T>(T instance)
         {
             Hashtable result = new Hashtable();
             List<object> visited = new List<object>();
@@ -319,7 +319,6 @@ namespace ninaAPI.WebService.GET
                     }
                     else if (obj.GetType().IsArray)
                     {
-                        Logger.Debug($"{info.Name} is Array");
                         List<Hashtable> tables = new List<Hashtable>();
 
                         foreach (object item in obj as Object[])
@@ -331,7 +330,6 @@ namespace ninaAPI.WebService.GET
                     }
                     else if (obj is IList)
                     {
-                        Logger.Debug($"{info.Name} is List");
                         List<Hashtable> tables = new List<Hashtable>();
                         foreach (object item in obj as IList)
                         {
@@ -381,7 +379,6 @@ namespace ninaAPI.WebService.GET
 
                     if (!info.PropertyType.IsPrimitive)
                     {
-                        Logger.Debug($"{info.Name} ({info.PropertyType.FullName}) is primitive ({info.PropertyType.Name})");
                         Hashtable props = GetAllProperties(obj);
                         result.Add(info.Name, props);
                         continue;
@@ -394,6 +391,6 @@ namespace ninaAPI.WebService.GET
             }
 
             return result;
-        } */
+        }
     }
 }

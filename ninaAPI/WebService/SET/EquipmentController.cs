@@ -9,29 +9,17 @@
 
 #endregion "copyright"
 
-using NINA.Core.Model.Equipment;
-using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
-using NINA.Image.ImageAnalysis;
-using NINA.Image.Interfaces;
 using NINA.Profile;
 using NINA.Sequencer.Interfaces.Mediator;
-using NINA.WPF.Base.Interfaces.ViewModel;
-using NINA.WPF.Base.Model;
-using NINA.WPF.Base.ViewModel.AutoFocus;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Media.Imaging;
 
 namespace ninaAPI.WebService.SET
 {
@@ -43,7 +31,6 @@ namespace ninaAPI.WebService.SET
         private static CancellationTokenSource AFToken;
         private static CancellationTokenSource DomeToken;
 
-        #region "Old Stuff"
         public static async Task<HttpResponse> Camera(string property, string value)
         {
             HttpResponse response = new HttpResponse();
@@ -150,6 +137,7 @@ namespace ninaAPI.WebService.SET
                 {
                     AFToken.Cancel();
                 }
+                AFToken = new CancellationTokenSource();
                 AdvancedAPI.Controls.AutoFocusFactory.Create().StartAutoFocus(AdvancedAPI.Controls.FilterWheel.GetInfo().SelectedFilter, AFToken.Token, AdvancedAPI.Controls.StatusMediator.GetStatus());
                 response.Response = "AutoFocus in progress";
                 return response;
@@ -452,15 +440,19 @@ namespace ninaAPI.WebService.SET
                     case "options":
                         AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.OPTIONS);
                         return response;
+                    default:
+                        return Utility.CreateErrorTable("Invalid parameter");
                 }
             }
             return response;
         }
-        #endregion
 
         public static HttpResponse ChangeProfileValue(string path, string value)
         {
             HttpResponse response = new HttpResponse();
+            if (string.IsNullOrEmpty(value))
+                return Utility.CreateErrorTable("Invalid parameter");
+            
             string[] pathSplit = path.Split('-'); // CameraSettings, PixelSize
             object position = AdvancedAPI.Controls.Profile.ActiveProfile;
             if (pathSplit.Length == 0)
