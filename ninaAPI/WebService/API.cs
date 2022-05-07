@@ -26,6 +26,8 @@ namespace ninaAPI.WebService
         private CancellationTokenSource apiToken;
         public readonly int Port;
         private Thread serverThread;
+
+        public SynchronizationContext SyncContext { get; private set; }
         public API()
         {
             Port = Settings.Default.Port;
@@ -65,6 +67,7 @@ namespace ninaAPI.WebService
             }
             try
             {
+                SyncContext = SynchronizationContext.Current;
                 serverThread = new Thread(APITask);
                 serverThread.Name = "API Thread";
                 serverThread.SetApartmentState(ApartmentState.STA);
@@ -104,6 +107,7 @@ namespace ninaAPI.WebService
             }
         }
 
+        [STAThread]
         private void APITask()
         {
             string ipAdress = Utility.GetLocalNames()["IPADRESS"];

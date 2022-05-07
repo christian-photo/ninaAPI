@@ -9,13 +9,20 @@
 
 #endregion "copyright"
 
+using EmbedIO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using NINA.Core.Model;
 using NINA.Core.Utility;
+using NINA.Sequencer;
 using NINA.Sequencer.Container;
 using NINA.Sequencer.Interfaces.Mediator;
+using NINA.Sequencer.SequenceItem;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -25,7 +32,6 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Windows.Media.Imaging;
 
 namespace ninaAPI
 {
@@ -48,7 +54,7 @@ namespace ninaAPI
         {
             return "[" + string.Join(", ", list) + "]";
         }
-        
+
         public static string MakeString(this Dictionary<string, string>.ValueCollection coll)
         {
             return coll.ToArray().MakeString();
@@ -76,7 +82,7 @@ namespace ninaAPI
             return names;
         }
 
-        public static string GetIPv4Address()
+        private static string GetIPv4Address()
         {
             IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
 
@@ -123,55 +129,118 @@ namespace ninaAPI
             return comparer.Compare(hashOfInput, hash) == 0;
         }
 
-        public static X509Certificate2 GetCertificateFromStore(string certName)
-        {
-
-            // Get the certificate store for the current user.
-            X509Store store = new X509Store(StoreLocation.CurrentUser);
-            try
-            {
-                store.Open(OpenFlags.ReadOnly);
-
-                // Place all certificates in an X509Certificate2Collection object.
-                X509Certificate2Collection certCollection = store.Certificates;
-                // If using a certificate with a trusted root you do not need to FindByTimeValid, instead:
-                // currentCerts.Find(X509FindType.FindBySubjectDistinguishedName, certName, true);
-                X509Certificate2Collection currentCerts = certCollection.Find(X509FindType.FindByTimeValid, DateTime.Now, false);
-                X509Certificate2Collection signingCert = currentCerts.Find(X509FindType.FindBySubjectDistinguishedName, certName, false);
-                if (signingCert.Count == 0)
-                    return null;
-                // Return the first certificate in the collection, has the right name and is current.
-                return signingCert[0];
-            }
-            finally
-            {
-                store.Close();
-            }
-        }
-
         public static string BitmapToBase64(Bitmap bmp)
         {
             Bitmap map = new Bitmap(bmp);
             using (MemoryStream memory = new MemoryStream())
             {
 
-                map.Save(memory, ImageFormat.Jpeg);
+                map.Save(memory, ImageFormat.Png);
                 return Convert.ToBase64String(memory.ToArray());
             }
         }
 
-        public static Bitmap BitmapFromSource(BitmapSource bitmapsource)
+        public static HttpResponse CreateErrorTable(string message)
         {
-            Bitmap bitmap;
-            using (MemoryStream outStream = new MemoryStream())
-            {
-                BitmapEncoder enc = new BmpBitmapEncoder();
-
-                enc.Frames.Add(BitmapFrame.Create(bitmapsource));
-                enc.Save(outStream);
-                bitmap = new Bitmap(outStream);
-            }
-            return bitmap;
+            return new HttpResponse() { Error = message, Success = false };
         }
+
+        public static void WriteToResponse(this IHttpContext context, string json)
+        {
+            context.Response.ContentType = MimeType.Json;
+            using (var writer = new StreamWriter(context.Response.OutputStream))
+            {
+                writer.Write(json);
+            }
+        }
+        
+        public static void WriteToResponse(this IHttpContext context, object json, JsonSerializerSettings settings = null)
+        {
+            context.Response.ContentType = MimeType.Json;
+            if (settings == null)
+            {
+                settings = new JsonSerializerSettings();
+            }
+            string text = JsonConvert.SerializeObject(json, settings);
+            using (var writer = new StreamWriter(context.Response.OutputStream))
+            {
+                writer.Write(text);
+            }
+        }
+
+        public static Hashtable GetAllProperties(this object obj)
+        {
+            Hashtable table = new Hashtable();
+            foreach (var prop in obj.GetType().GetProperties())
+            {
+                table.Add(prop.Name, prop.GetValue(obj));
+            }
+            return table;
+        }
+
+        public static object CastString(this string str, Type type)
+        {
+            if (type == typeof(int))
+            {
+                return int.Parse(str);
+            }
+            if (type == typeof(double))
+            {
+                return double.Parse(str);
+            }
+            if (type == typeof(bool))
+            {
+                return bool.Parse(str);
+            }
+            if (type == typeof(long))
+            {
+                return long.Parse(str);
+            }
+            if (type == typeof(short))
+            {
+                return short.Parse(str);
+            }
+            return str;
+        }
+    }
+
+    public class HttpResponse
+    {
+        public object Response { get; set; } = string.Empty;
+        public string Error { get; set; } = string.Empty;
+        public bool Success { get; set; } = true;
+    }
+
+    public class DynamicContractResolver : DefaultContractResolver
+    {
+
+        private Type _typeToIgnore;
+        public DynamicContractResolver(Type typeToIgnore)
+        {
+            _typeToIgnore = typeToIgnore;
+        }
+
+        protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+        {
+            IList<JsonProperty> properties = base.CreateProperties(type, memberSerialization);
+
+            properties = properties.Where(p => p.PropertyType != _typeToIgnore).ToList();
+
+            return properties;
+        }
+    }
+
+    public enum EquipmentType
+    {
+        Camera,
+        Telescope,
+        FilterWheel,
+        Focuser,
+        Dome,
+        Rotator,
+        Guider,
+        FlatDevice,
+        Switch,
+        SafteyMonitor
     }
 }

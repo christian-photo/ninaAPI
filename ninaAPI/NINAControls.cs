@@ -13,6 +13,7 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.Image.Interfaces;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.ViewModel;
 
@@ -31,6 +32,7 @@ namespace ninaAPI
         public IDomeMediator Dome;
         public ISwitchMediator Switch;
         public ISafetyMonitorMediator SafetyMonitor;
+        public IAutoFocusVMFactory AutoFocusFactory;
         #endregion
 
         #region Image

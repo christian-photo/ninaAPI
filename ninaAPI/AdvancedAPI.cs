@@ -31,6 +31,10 @@ using System.Security.Cryptography;
 using System;
 using System.Text;
 using NINA.Image.Interfaces;
+using NINA.Core.Utility.Notification;
+using NINA.Equipment.Interfaces;
+using NINA.Equipment.Equipment.MyCamera;
+using NINA.WPF.Base.Interfaces;
 
 namespace ninaAPI
 {
@@ -38,7 +42,7 @@ namespace ninaAPI
     public class AdvancedAPI : PluginBase, INotifyPropertyChanged
     {
         public static NINAControls Controls;
-        public API Server;
+        public static API Server;
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -60,7 +64,8 @@ namespace ninaAPI
                            ISequenceMediator sequence,
                            IApplicationStatusMediator statusMediator,
                            IApplicationMediator application,
-                           IImageDataFactory imageDataFactory)
+                           IImageDataFactory imageDataFactory,
+                           IAutoFocusVMFactory AFFactory)
         {
             if (string.IsNullOrEmpty(Settings.Default.ApiKey))
             {
@@ -85,7 +90,8 @@ namespace ninaAPI
                 Sequence = sequence,
                 StatusMediator = statusMediator,
                 Application = application,
-                ImageDataFactory = imageDataFactory
+                ImageDataFactory = imageDataFactory,
+                AutoFocusFactory = AFFactory
             };
 
             if (Settings.Default.UpdateSettings)
