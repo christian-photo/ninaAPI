@@ -206,9 +206,13 @@ namespace ninaAPI
 
     public class HttpResponse
     {
+        public static string TypeAPI = "API";
+        public static string TypeSocket = "Socket";
+        
         public object Response { get; set; } = string.Empty;
         public string Error { get; set; } = string.Empty;
         public bool Success { get; set; } = true;
+        public string Type { get; set; } = TypeAPI;
     }
 
     public class DynamicContractResolver : DefaultContractResolver

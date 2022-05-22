@@ -23,6 +23,8 @@ namespace ninaAPI.WebService
     public class API
     {
         public WebServer ActiveServer;
+        public NINALogMessageProcessor LogProcessor;
+        public NINALogWatcher LogWatcher;
         private CancellationTokenSource apiToken;
         public readonly int Port;
         private Thread serverThread;
@@ -31,6 +33,7 @@ namespace ninaAPI.WebService
         public API()
         {
             Port = Settings.Default.Port;
+            LogProcessor = new NINALogMessageProcessor();
             Start();
         }
 
@@ -38,7 +41,6 @@ namespace ninaAPI.WebService
         {
             if (Settings.Default.Secure)
             {
-                new WebServerOptions().WithAutoLoadCertificate();
                 ActiveServer = new WebServer(o => o
                    .WithUrlPrefix($"https://*:{Port}")
                    .WithMode(HttpListenerMode.EmbedIO)
@@ -46,6 +48,7 @@ namespace ninaAPI.WebService
                    .WithCertificate(new X509Certificate2(Settings.Default.CertificatePath, Settings.Default.CertificatePassword))
                    );
                 ActiveServer.WithWebApi($"/api", m => m.WithController<Controller>());
+                ActiveServer.WithModule(new WebSocket("/socket"));
                 return ActiveServer;
             }
             ActiveServer = new WebServer(o => o
@@ -54,6 +57,7 @@ namespace ninaAPI.WebService
                );
             
             ActiveServer.WithWebApi($"/api", m => m.WithController<Controller>());
+            ActiveServer.WithModule(new WebSocket("/socket"));
             return ActiveServer;
         }
 
@@ -72,6 +76,9 @@ namespace ninaAPI.WebService
                 serverThread.Name = "API Thread";
                 serverThread.SetApartmentState(ApartmentState.STA);
                 serverThread.Start();
+
+                LogWatcher = new NINALogWatcher(LogProcessor);
+                LogWatcher.Start();
             }
             catch (Exception ex)
             {
@@ -83,6 +90,7 @@ namespace ninaAPI.WebService
         {
             try
             {
+                LogWatcher?.Stop();
                 if (ActiveServer != null)
                 {
                     if (ActiveServer.State != WebServerState.Stopped)

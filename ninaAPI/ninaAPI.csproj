@@ -15,6 +15,7 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
+    <LangVersion>8.0</LangVersion>
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -359,11 +360,15 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Utility.cs" />
+    <Compile Include="Utility\NINALogEvent.cs" />
+    <Compile Include="Utility\NINALogMessageProcessor.cs" />
+    <Compile Include="Utility\NINALogWatcher.cs" />
+    <Compile Include="Utility\Utility.cs" />
     <Compile Include="WebService\API.cs" />
     <Compile Include="WebService\Controller.cs" />
     <Compile Include="WebService\GET\EquipmentMediator.cs" />
     <Compile Include="WebService\SET\EquipmentController.cs" />
+    <Compile Include="WebService\WebSocket.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
