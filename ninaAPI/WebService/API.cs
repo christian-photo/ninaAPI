@@ -29,7 +29,7 @@ namespace ninaAPI.WebService
         public readonly int Port;
         private Thread serverThread;
 
-        public SynchronizationContext SyncContext { get; private set; }
+        public SynchronizationContext SyncContext { get; private set; } = SynchronizationContext.Current;
         public API()
         {
             Port = Settings.Default.Port;
@@ -71,7 +71,6 @@ namespace ninaAPI.WebService
             }
             try
             {
-                SyncContext = SynchronizationContext.Current;
                 serverThread = new Thread(APITask);
                 serverThread.Name = "API Thread";
                 serverThread.SetApartmentState(ApartmentState.STA);

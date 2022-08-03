@@ -42,7 +42,7 @@ namespace ninaAPI.WebService
 
         #region GET
 
-        [Route(HttpVerbs.Get, "/get/history")]
+        [Route(HttpVerbs.Get, "/history")]
         public void GetHistoryCount([QueryField] string property, [QueryField] string parameter)
         {
             if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
@@ -68,7 +68,7 @@ namespace ninaAPI.WebService
                 return;
             }
 
-            Logger.Info($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
                 switch (property)
@@ -91,7 +91,7 @@ namespace ninaAPI.WebService
             }
         }
 
-        [Route(HttpVerbs.Get, "/get/profile")]
+        [Route(HttpVerbs.Get, "/profile")]
         public void GetProfile([QueryField] string property)
         {
             if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
@@ -117,7 +117,7 @@ namespace ninaAPI.WebService
                 return;
             }
 
-            Logger.Info($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
                 HttpContext.WriteToResponse(EquipmentMediator.GetProfile(property));
@@ -131,7 +131,7 @@ namespace ninaAPI.WebService
             }
         }
 
-        [Route(HttpVerbs.Get, "/get/sequence")]
+        [Route(HttpVerbs.Get, "/sequence")]
         public void GetSequence([QueryField] string property, [QueryField] string parameter)
         {
             if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
@@ -157,13 +157,13 @@ namespace ninaAPI.WebService
                 return;
             }
 
-            Logger.Info($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
                 switch (property)
                 {
                     case "list":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetSequence(), new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+                        HttpContext.WriteToResponse(EquipmentMediator.GetSequence());
                         return;
                     default:
                         HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_PROPERTY));
@@ -177,7 +177,7 @@ namespace ninaAPI.WebService
             }
         }
 
-        [Route(HttpVerbs.Get, "/get/equipment")]
+        [Route(HttpVerbs.Get, "/equipment")]
         public void GetInformation([QueryField] string property, [QueryField] string parameter)
         {
             if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
@@ -203,7 +203,7 @@ namespace ninaAPI.WebService
                 return;
             }
 
-            Logger.Info($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
                 switch (property)
@@ -268,9 +268,10 @@ namespace ninaAPI.WebService
 
         #region SET
 
-        [Route(HttpVerbs.Get, "/set/equipment")]
-        public async Task SetEquipment([QueryField] string property, [QueryField] string parameter, [QueryField] string value)
+        [Route(HttpVerbs.Post, "/equipment")]
+        public async Task SetEquipment()
         {
+            POSTData data = await HttpContext.GetRequestDataAsync<POSTData>();
             if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
                 string apiKey = HttpContext.Request.Headers["apikey"];
@@ -287,64 +288,64 @@ namespace ninaAPI.WebService
                 HttpContext.WriteToResponse(Utility.CreateErrorTable(MISSING_API_KEY));
                 return;
             }
-            else if (string.IsNullOrEmpty(property))
+            else if (string.IsNullOrEmpty(data.Device))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
                 HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
                 return;
             }
 
-            Logger.Info($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
-                switch (property)
+                switch (data.Device)
                 {
                     case "camera":
-                        HttpContext.WriteToResponse(await EquipmentController.Camera(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.Camera(data));
                         return;
 
                     case "telescope":
-                        HttpContext.WriteToResponse(await EquipmentController.Telescope(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.Telescope(data));
                         return;
 
                     case "focuser":
-                        HttpContext.WriteToResponse(await EquipmentController.Focuser(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.Focuser(data));
                         return;
 
                     case "rotator":
-                        HttpContext.WriteToResponse(await EquipmentController.Rotator(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.Rotator(data));
                         return;
 
                     case "filterwheel":
-                        HttpContext.WriteToResponse(await EquipmentController.FilterWheel(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.FilterWheel(data));
                         return;
 
                     case "dome":
-                        HttpContext.WriteToResponse(await EquipmentController.Dome(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.Dome(data));
                         return;
 
                     case "switch":
-                        HttpContext.WriteToResponse(await EquipmentController.Switch(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.Switch(data));
                         return;
 
                     case "guider":
-                        HttpContext.WriteToResponse(await EquipmentController.Guider(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.Guider(data));
                         return;
 
                     case "flatdevice":
-                        HttpContext.WriteToResponse(await EquipmentController.FlatDevice(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.FlatDevice(data));
                         return;
 
                     case "safteymonitor":
-                        HttpContext.WriteToResponse(await EquipmentController.SafteyMonitor(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.SafteyMonitor(data));
                         return;
 
                     case "sequence":
-                        HttpContext.WriteToResponse(await EquipmentController.Sequence(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.Sequence(data));
                         return;
 
                     case "application":
-                        HttpContext.WriteToResponse(await EquipmentController.Application(parameter, value));
+                        HttpContext.WriteToResponse(await EquipmentController.Application(data));
                         return;
                 }
             }
@@ -355,9 +356,10 @@ namespace ninaAPI.WebService
             }
         }
 
-        [Route(HttpVerbs.Get, "/set/profile")]
-        public void SetProfile([QueryField] string property, [QueryField] string parameter, [QueryField] string value)
+        [Route(HttpVerbs.Post, "/profile")]
+        public async Task SetProfile()
         {
+            POSTData data = await HttpContext.GetRequestDataAsync<POSTData>();
             if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
                 string apiKey = HttpContext.Request.Headers["apikey"];
@@ -374,23 +376,24 @@ namespace ninaAPI.WebService
                 HttpContext.WriteToResponse(Utility.CreateErrorTable(MISSING_API_KEY));
                 return;
             }
-            else if (string.IsNullOrEmpty(property))
+            else if (string.IsNullOrEmpty(data.Device))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
                 HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
                 return;
             }
 
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
 
-                switch (property)
+                switch (data.Device)
                 {
                     case "switch":
-                        HttpContext.WriteToResponse(EquipmentController.SwitchProfile(parameter));
+                        HttpContext.WriteToResponse(EquipmentController.SwitchProfile(data));
                         return;
                     case "change-value":
-                        HttpContext.WriteToResponse(EquipmentController.ChangeProfileValue(parameter, value));
+                        HttpContext.WriteToResponse(EquipmentController.ChangeProfileValue(data));
                         return;
                     default:
                         HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_PROPERTY));

@@ -30,7 +30,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace ninaAPI
@@ -178,6 +177,15 @@ namespace ninaAPI
             return table;
         }
 
+        public static T ThisOrDefault<T>(this T obj, T defaultValue)
+        {
+            if (obj == null)
+            {
+                return defaultValue;
+            }
+            return obj;
+        }
+
         public static object CastString(this string str, Type type)
         {
             if (type == typeof(int))
@@ -215,25 +223,6 @@ namespace ninaAPI
         public string Type { get; set; } = TypeAPI;
     }
 
-    public class DynamicContractResolver : DefaultContractResolver
-    {
-
-        private Type _typeToIgnore;
-        public DynamicContractResolver(Type typeToIgnore)
-        {
-            _typeToIgnore = typeToIgnore;
-        }
-
-        protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
-        {
-            IList<JsonProperty> properties = base.CreateProperties(type, memberSerialization);
-
-            properties = properties.Where(p => p.PropertyType != _typeToIgnore).ToList();
-
-            return properties;
-        }
-    }
-
     public enum EquipmentType
     {
         Camera,
@@ -246,5 +235,24 @@ namespace ninaAPI
         FlatDevice,
         Switch,
         SafteyMonitor
+    }
+
+    public class IgnorePropertiesResolver : DefaultContractResolver
+    {
+        private readonly HashSet<string> ignoreProps;
+        public IgnorePropertiesResolver(IEnumerable<string> propNamesToIgnore)
+        {
+            ignoreProps = new HashSet<string>(propNamesToIgnore);
+        }
+
+        protected override JsonProperty CreateProperty(System.Reflection.MemberInfo member, MemberSerialization memberSerialization)
+        {
+            JsonProperty property = base.CreateProperty(member, memberSerialization);
+            if (this.ignoreProps.Contains(property.PropertyName))
+            {
+                property.ShouldSerialize = _ => false;
+            }
+            return property;
+        }
     }
 }

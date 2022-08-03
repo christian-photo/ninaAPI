@@ -12,7 +12,9 @@
 using Accord.Statistics.Visualizations;
 using Newtonsoft.Json;
 using NINA.Astrometry;
+using NINA.Core.Enum;
 using NINA.Core.Utility;
+using NINA.Core.Utility.Notification;
 using NINA.Equipment.Equipment;
 using NINA.Equipment.Equipment.MyTelescope;
 using NINA.Equipment.Interfaces.Mediator;
@@ -227,14 +229,22 @@ namespace ninaAPI.WebService.GET
             try
             {
                 IImageHistoryVM hist = AdvancedAPI.Controls.ImageHistory;
+                if (hist.ImageHistory.Count <= 0)
+                {
+                    response.Response = "No Images Available";
+                    return response;
+                }
                 IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
                 ImageHistoryPoint p = hist.ImageHistory[hist.ImageHistory.Count - 1];
-                IImageData imageData = await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.LocalPath, 16, false, NINA.Core.Enum.RawConverterEnum.FREEIMAGE);
+                IImageData imageData = await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.LocalPath, 16, true, RawConverterEnum.FREEIMAGE);
                 IRenderedImage renderedImage = imageData.RenderImage();
 
+                if (!AdvancedAPI.Controls.Camera.GetInfo().SensorType.Equals(SensorType.Monochrome))
+                    renderedImage = renderedImage.Debayer(false, false, AdvancedAPI.Controls.Camera.GetInfo().SensorType.ThisOrDefault(SensorType.Color));
                 renderedImage = await renderedImage.Stretch(profile.ImageSettings.AutoStretchFactor, profile.ImageSettings.BlackClipping, profile.ImageSettings.UnlinkedStretch);
 
-                response.Response = Utility.BitmapToBase64(ImageUtility.BitmapFromSource(renderedImage.Image));
+                var bmp = ImageUtility.Convert16BppTo8Bpp(renderedImage.Image);
+                response.Response = Utility.BitmapToBase64(bmp);
                 return response;
             }
             catch (Exception ex)
@@ -259,7 +269,11 @@ namespace ninaAPI.WebService.GET
                 {
                     return Utility.CreateErrorTable("Sequence is empty");
                 }
-                response.Response = GetAllProperties((SequenceRootContainer)targets[0].Parent.Parent);
+                response.Response = JsonConvert.DeserializeObject(
+                    JsonConvert.SerializeObject(
+                        (SequenceRootContainer)targets[0].Parent.Parent,
+                        typeof(SequenceRootContainer),
+                        new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore, ContractResolver = new IgnorePropertiesResolver(new[] { "Parent" }) }));
                 return response;
             }
             catch (Exception ex)

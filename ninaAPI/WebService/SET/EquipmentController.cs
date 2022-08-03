@@ -9,10 +9,12 @@
 
 #endregion "copyright"
 
+using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile;
 using NINA.Sequencer.Interfaces.Mediator;
+using NINA.WPF.Base.Mediator;
 using System;
 using System.Drawing;
 using System.Linq;
@@ -31,12 +33,12 @@ namespace ninaAPI.WebService.SET
         private static CancellationTokenSource AFToken;
         private static CancellationTokenSource DomeToken;
 
-        public static async Task<HttpResponse> Camera(string property, string value)
+        public static async Task<HttpResponse> Camera(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ICameraMediator cam = AdvancedAPI.Controls.Camera;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!cam.GetInfo().Connected)
                 {
@@ -45,7 +47,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (cam.GetInfo().Connected)
                 {
@@ -53,19 +55,19 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("abort-exposure"))
+            if (data.Action.Equals("abort-exposure"))
             {
                 cam.AbortExposure();
             }
             return response;
         }
 
-        public static async Task<HttpResponse> Telescope(string property, string value)
+        public static async Task<HttpResponse> Telescope(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ITelescopeMediator telescope = AdvancedAPI.Controls.Telescope;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!telescope.GetInfo().Connected)
                 {
@@ -74,7 +76,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (telescope.GetInfo().Connected)
                 {
@@ -82,7 +84,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("park"))
+            if (data.Action.Equals("park"))
             {
                 if (telescope.GetInfo().Slewing)
                 {
@@ -94,7 +96,7 @@ namespace ninaAPI.WebService.SET
                 response.Response = "Park in progress";
                 return response;
             }
-            if (property.Equals("unpark"))
+            if (data.Action.Equals("unpark"))
             {
                 if (!telescope.GetInfo().AtPark)
                 {
@@ -109,12 +111,12 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static async Task<HttpResponse> Focuser(string property, string value)
+        public static async Task<HttpResponse> Focuser(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!focuser.GetInfo().Connected)
                 {
@@ -123,7 +125,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (focuser.GetInfo().Connected)
                 {
@@ -131,7 +133,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("auto-focus"))
+            if (data.Action.Equals("auto-focus"))
             {
                 if (AFToken != null)
                 {
@@ -145,12 +147,12 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static async Task<HttpResponse> Rotator(string property, string value)
+        public static async Task<HttpResponse> Rotator(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IRotatorMediator rotator = AdvancedAPI.Controls.Rotator;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!rotator.GetInfo().Connected)
                 {
@@ -159,7 +161,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (rotator.GetInfo().Connected)
                 {
@@ -170,12 +172,12 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static async Task<HttpResponse> FilterWheel(string property, string value)
+        public static async Task<HttpResponse> FilterWheel(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!filterwheel.GetInfo().Connected)
                 {
@@ -184,7 +186,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (filterwheel.GetInfo().Connected)
                 {
@@ -195,12 +197,12 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static async Task<HttpResponse> Dome(string property, string value)
+        public static async Task<HttpResponse> Dome(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IDomeMediator dome = AdvancedAPI.Controls.Dome;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!dome.GetInfo().Connected)
                 {
@@ -209,7 +211,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (dome.GetInfo().Connected)
                 {
@@ -217,7 +219,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("open"))
+            if (data.Action.Equals("open"))
             {
                 if (dome.GetInfo().ShutterStatus == ShutterState.ShutterOpen || dome.GetInfo().ShutterStatus == ShutterState.ShutterOpening)
                 {
@@ -229,7 +231,7 @@ namespace ninaAPI.WebService.SET
                 dome.OpenShutter(DomeToken.Token);
                 return response;
             }
-            if (property.Equals("close"))
+            if (data.Action.Equals("close"))
             {
                 if (dome.GetInfo().ShutterStatus == ShutterState.ShutterClosed || dome.GetInfo().ShutterStatus == ShutterState.ShutterClosing)
                 {
@@ -241,7 +243,7 @@ namespace ninaAPI.WebService.SET
                 dome.CloseShutter(DomeToken.Token);
                 return response;
             }
-            if (property.Equals("stop"))
+            if (data.Action.Equals("stop"))
             {
                 DomeToken?.Cancel();
                 return response;
@@ -249,12 +251,12 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static async Task<HttpResponse> Switch(string property, string value)
+        public static async Task<HttpResponse> Switch(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ISwitchMediator switches = AdvancedAPI.Controls.Switch;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!switches.GetInfo().Connected)
                 {
@@ -263,7 +265,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (switches.GetInfo().Connected)
                 {
@@ -274,12 +276,12 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static async Task<HttpResponse> Guider(string property, string value)
+        public static async Task<HttpResponse> Guider(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IGuiderMediator guider = AdvancedAPI.Controls.Guider;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!guider.GetInfo().Connected)
                 {
@@ -288,7 +290,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (guider.GetInfo().Connected)
                 {
@@ -296,7 +298,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("start"))
+            if (data.Action.Equals("start"))
             {
                 if (guider.GetInfo().Connected)
                 {
@@ -307,7 +309,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return Utility.CreateErrorTable("Guider not connected");
             }
-            if (property.Equals("stop"))
+            if (data.Action.Equals("stop"))
             {
                 if (guider.GetInfo().Connected)
                 {
@@ -319,12 +321,12 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static async Task<HttpResponse> FlatDevice(string property, string value)
+        public static async Task<HttpResponse> FlatDevice(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IFlatDeviceMediator flat = AdvancedAPI.Controls.FlatDevice;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!flat.GetInfo().Connected)
                 {
@@ -333,7 +335,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (flat.GetInfo().Connected)
                 {
@@ -344,12 +346,12 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static async Task<HttpResponse> SafteyMonitor(string property, string value)
+        public static async Task<HttpResponse> SafteyMonitor(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ISafetyMonitorMediator safety = AdvancedAPI.Controls.SafetyMonitor;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!safety.GetInfo().Connected)
                 {
@@ -358,7 +360,7 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (safety.GetInfo().Connected)
                 {
@@ -369,21 +371,19 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static async Task<HttpResponse> Sequence(string action, string value)
+        public static async Task<HttpResponse> Sequence(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
 
-            action = action.ToLower();
-
-            if (action.Equals("start"))
+            if (data.Action.Equals("start"))
             {
                 SequenceToken = new CancellationTokenSource();
                 sequence.GetAllTargets()[0].Parent.Parent.Run(AdvancedAPI.Controls.StatusMediator.GetStatus(), SequenceToken.Token);
                 response.Response = "Sequence in progress";
                 return response;
             }
-            else if (action.Equals("stop"))
+            else if (data.Action.Equals("stop"))
             {
                 SequenceToken?.Cancel();
                 return response;
@@ -391,13 +391,11 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static async Task<HttpResponse> Application(string action, string value)
+        public static async Task<HttpResponse> Application(POSTData data)
         {
             HttpResponse response = new HttpResponse();
 
-            action = action.ToLower();
-
-            if (action.Equals("screenshot")) // Captures a screenshot and returns it base64 encoded
+            if (data.Action.Equals("screenshot")) // Captures a screenshot and returns it base64 encoded
             {
                 using (Bitmap bmpScreenCapture = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
                                             Screen.PrimaryScreen.Bounds.Height))
@@ -415,9 +413,9 @@ namespace ninaAPI.WebService.SET
                 }
                 return response;
             }
-            if (action.Equals("switch"))
+            if (data.Action.Equals("switch"))
             {
-                switch (value)
+                switch (data.Parameter[0])
                 {
                     case "equipment":
                         AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.EQUIPMENT);
@@ -447,17 +445,17 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static HttpResponse ChangeProfileValue(string path, string value)
+        public static HttpResponse ChangeProfileValue(POSTData data)
         {
             HttpResponse response = new HttpResponse();
-            if (string.IsNullOrEmpty(value))
-                return Utility.CreateErrorTable("Invalid parameter");
+            if (string.IsNullOrEmpty(data.Action))
+                return Utility.CreateErrorTable("Invalid Path");
             
-            string[] pathSplit = path.Split('-'); // CameraSettings, PixelSize
+            string[] pathSplit = (data.Action).Split('-'); // CameraSettings, PixelSize
             object position = AdvancedAPI.Controls.Profile.ActiveProfile;
             if (pathSplit.Length == 0)
             {
-                position.GetType().GetProperty(path).SetValue(position, value);
+                position.GetType().GetProperty((string)data.Parameter[0]).SetValue(position, data.Parameter[0]);
                 return response;
             }
             for (int i = 0; i <= pathSplit.Length - 2; i++)
@@ -465,16 +463,16 @@ namespace ninaAPI.WebService.SET
                 position = position.GetType().GetProperty(pathSplit[i]).GetValue(position);
             }
             PropertyInfo prop = position.GetType().GetProperty(pathSplit[pathSplit.Length - 1]);
-            prop.SetValue(position, value.CastString(prop.PropertyType));
+            prop.SetValue(position, ((string)data.Parameter[0]).CastString(prop.PropertyType));
             return response;
         }
 
-        public static HttpResponse SwitchProfile(string id)
+        public static HttpResponse SwitchProfile(POSTData data)
         {
             HttpResponse response = new HttpResponse();
-            Guid guid = Guid.Parse(id);
+            Guid guid = Guid.Parse(data.Action);
             ProfileMeta profile = AdvancedAPI.Controls.Profile.Profiles.Where(x => x.Id == guid).FirstOrDefault();
-            AdvancedAPI.Server.SyncContext.Send(x => AdvancedAPI.Controls.Profile.SelectProfile(profile), null);
+            AdvancedAPI.Controls.Profile.SelectProfile(profile);
             return response;
         }
     }
