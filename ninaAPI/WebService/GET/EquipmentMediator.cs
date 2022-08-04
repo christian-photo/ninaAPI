@@ -30,6 +30,7 @@ using OxyPlot;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -223,7 +224,7 @@ namespace ninaAPI.WebService.GET
             }
         }
 
-        public static async Task<HttpResponse> GetLatestImage()
+        public static async Task<HttpResponse> GetLatestImage(bool fullSize)
         {
             HttpResponse response = new HttpResponse();
             try
@@ -239,11 +240,19 @@ namespace ninaAPI.WebService.GET
                 IImageData imageData = await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.LocalPath, 16, true, RawConverterEnum.FREEIMAGE);
                 IRenderedImage renderedImage = imageData.RenderImage();
 
-                if (!AdvancedAPI.Controls.Camera.GetInfo().SensorType.Equals(SensorType.Monochrome))
-                    renderedImage = renderedImage.Debayer(false, false, AdvancedAPI.Controls.Camera.GetInfo().SensorType.ThisOrDefault(SensorType.Color));
                 renderedImage = await renderedImage.Stretch(profile.ImageSettings.AutoStretchFactor, profile.ImageSettings.BlackClipping, profile.ImageSettings.UnlinkedStretch);
 
                 var bmp = ImageUtility.Convert16BppTo8Bpp(renderedImage.Image);
+                if (!fullSize)
+                {
+                    Bitmap result = new Bitmap((int)(bmp.Width / 1.5), (int)(bmp.Height / 1.5));
+                    using (Graphics g = Graphics.FromImage(result))
+                    {
+                        g.DrawImage(bmp, 0, 0, (int)(bmp.Width / 1.5), (int)(bmp.Height / 1.5));
+                    }
+                    response.Response = Utility.BitmapToBase64(result);
+                    return response;
+                }
                 response.Response = Utility.BitmapToBase64(bmp);
                 return response;
             }

@@ -249,7 +249,7 @@ namespace ninaAPI.WebService
                         return;
 
                     case "image":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetLatestImage());
+                        HttpContext.WriteToResponse(EquipmentMediator.GetLatestImage(parameter == "full"));
                         return;
 
                     default:
