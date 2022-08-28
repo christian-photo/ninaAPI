@@ -49,7 +49,7 @@ namespace ninaAPI.WebService
         private async void DomeChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "DOME-CHANGED", Type = HttpResponse.TypeSocket });
         private async void FWChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "FILTERHWEEL-CHANGED", Type = HttpResponse.TypeSocket });
         private async void SwitchChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "SWITCH-CHANGED", Type = HttpResponse.TypeSocket });
-        private async void SafetyChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "SAFTEY-CHANGED", Type = HttpResponse.TypeSocket });
+        private async void SafetyChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "SAFETY-CHANGED", Type = HttpResponse.TypeSocket });
         private async void GuiderChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "GUIDER-CHANGED", Type = HttpResponse.TypeSocket });
         private async void FlatChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "FLAT-CHANGED", Type = HttpResponse.TypeSocket });
 
