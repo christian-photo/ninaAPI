@@ -12,6 +12,7 @@
 using EmbedIO.WebSockets;
 using Newtonsoft.Json;
 using NINA.Core.Utility;
+using NINA.WPF.Base.Interfaces.Mediator;
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,9 +33,12 @@ namespace ninaAPI.WebService
             AdvancedAPI.Controls.SafetyMonitor.GetInfo().PropertyChanged += SafetyChanged;
             AdvancedAPI.Controls.Guider.GetInfo().PropertyChanged += GuiderChanged;
             AdvancedAPI.Controls.FlatDevice.GetInfo().PropertyChanged += FlatChanged;
+            AdvancedAPI.Controls.ImageSaveMediator.ImageSaved += ImageSaved;
 
             AdvancedAPI.Server.LogProcessor.NINALogEventSaved += LogProcessor_NINALogEventSaved;
         }
+
+        private async void ImageSaved(object sender, ImageSavedEventArgs e) => await Send(new HttpResponse() { Response = "IMAGE-NEW", Type = HttpResponse.TypeSocket });
 
         private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e) => await Send(new HttpResponse() { Response = e.type, Type = HttpResponse.TypeSocket });
 

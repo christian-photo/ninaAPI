@@ -224,7 +224,7 @@ namespace ninaAPI.WebService.GET
             }
         }
 
-        public static async Task<HttpResponse> GetLatestImage(bool fullSize)
+        public static async Task<HttpResponse> GetLatestImage(double reduction)
         {
             HttpResponse response = new HttpResponse();
             try
@@ -243,17 +243,12 @@ namespace ninaAPI.WebService.GET
                 renderedImage = await renderedImage.Stretch(profile.ImageSettings.AutoStretchFactor, profile.ImageSettings.BlackClipping, profile.ImageSettings.UnlinkedStretch);
 
                 var bmp = ImageUtility.Convert16BppTo8Bpp(renderedImage.Image);
-                if (!fullSize)
+                Bitmap result = new Bitmap((int)(bmp.Width / reduction), (int)(bmp.Height / reduction));
+                using (Graphics g = Graphics.FromImage(result))
                 {
-                    Bitmap result = new Bitmap((int)(bmp.Width / 1.5), (int)(bmp.Height / 1.5));
-                    using (Graphics g = Graphics.FromImage(result))
-                    {
-                        g.DrawImage(bmp, 0, 0, (int)(bmp.Width / 1.5), (int)(bmp.Height / 1.5));
-                    }
-                    response.Response = Utility.BitmapToBase64(result);
-                    return response;
+                    g.DrawImage(bmp, 0, 0, (int)(bmp.Width / reduction), (int)(bmp.Height / reduction));
                 }
-                response.Response = Utility.BitmapToBase64(bmp);
+                response.Response = Utility.BitmapToBase64(result);
                 return response;
             }
             catch (Exception ex)

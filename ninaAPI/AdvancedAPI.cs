@@ -65,7 +65,8 @@ namespace ninaAPI
                            IApplicationStatusMediator statusMediator,
                            IApplicationMediator application,
                            IImageDataFactory imageDataFactory,
-                           IAutoFocusVMFactory AFFactory)
+                           IAutoFocusVMFactory AFFactory,
+                           IImageSaveMediator saveMediator)
         {
             if (string.IsNullOrEmpty(Settings.Default.ApiKey))
             {
@@ -91,7 +92,8 @@ namespace ninaAPI
                 StatusMediator = statusMediator,
                 Application = application,
                 ImageDataFactory = imageDataFactory,
-                AutoFocusFactory = AFFactory
+                AutoFocusFactory = AFFactory,
+                ImageSaveMediator = saveMediator
             };
 
             if (Settings.Default.UpdateSettings)

@@ -39,6 +39,7 @@ namespace ninaAPI
         public IImagingMediator Imaging;
         public IImageHistoryVM ImageHistory;
         public IImageDataFactory ImageDataFactory;
+        public IImageSaveMediator ImageSaveMediator;
         #endregion
 
         #region Application
