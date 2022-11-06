@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright ©  2022")]
 
 // The minimum Version of N.I.N.A. that this plugin is compatible with
-[assembly: AssemblyMetadata("MinimumApplicationVersion", "2.0.0.2036")]
+[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.0.0.1001")]
 
 // The license your plugin code is using
 [assembly: AssemblyMetadata("License", "MPL-2.0")]
@@ -39,9 +39,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("LongDescription", @"This plugin adds an advanced API to N.I.N.A.  
 If you have question/issues/feedback, you can create an issue [here](https://github.com/rennmaus-coder/ninaAPI/issues), take a look at the
 [documentation](https://github.com/rennmaus-coder/ninaAPI/wiki) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)    
-**Huge thanks to szymon and notzeeg (discord) for all the help and support you gave me to make the API Secure!**  
+**Huge thanks to szymon and notzeeg (discord) for their help to create a secure api**  
 
-There is an issue, that if you close N.I.N.A. within the alt+tab mode, N.I.N.A. will 'crash' but this is only a cosmetic issue and everything will work normally afterwards.
+There is an issue, that if you close N.I.N.A. within the alt+tab mode, N.I.N.A. will 'crash' but don't worry, everything will work normally afterwards.
 
 ---
 
