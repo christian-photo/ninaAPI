@@ -63,4 +63,7 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if not exist &quot;%25localappdata%25\NINA\Plugins&quot; (&#xD;&#xA;echo &quot;Creating $(PlatformName) Plugins folder&quot;&#xD;&#xA;mkdir  &quot;%25localappdata%25\NINA\Plugins&quot;&#xD;&#xA;)&#xD;&#xA;if not exist &quot;%25localappdata%25\NINA\Plugin\$(TargetName)&quot; (&#xD;&#xA;echo &quot;Creating $(PlatformName) Plugins $(TargetName) folder&quot;&#xD;&#xA;mkdir  &quot;%25localappdata%25\NINA\Plugins\$(TargetName)&quot;&#xD;&#xA;)&#xD;&#xA;echo &quot;Copying $(PlatformName) $(TargetFileName)&quot;&#xD;&#xA;xcopy &quot;$(TargetPath)&quot; &quot;%25localappdata%25\NINA\Plugins\$(TargetName)&quot; /h/i/c/k/e/r/y" />
+  </Target>
 </Project>

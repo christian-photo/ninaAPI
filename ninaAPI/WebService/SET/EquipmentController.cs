@@ -9,12 +9,10 @@
 
 #endregion "copyright"
 
-using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile;
 using NINA.Sequencer.Interfaces.Mediator;
-using NINA.WPF.Base.Mediator;
 using System;
 using System.Drawing;
 using System.Linq;

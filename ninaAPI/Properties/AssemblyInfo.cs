@@ -39,14 +39,12 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("LongDescription", @"This plugin adds an advanced API to N.I.N.A.  
 If you have question/issues/feedback, you can create an issue [here](https://github.com/rennmaus-coder/ninaAPI/issues), take a look at the
 [documentation](https://github.com/rennmaus-coder/ninaAPI/wiki) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)    
-**Huge thanks to szymon and notzeeg (discord) for their help to create a secure api**  
-
-There is an issue, that if you close N.I.N.A. within the alt+tab mode, N.I.N.A. will 'crash' but don't worry, everything will work normally afterwards.
+**Thanks to szymon and notzeeg (discord) for their help!**  
 
 ---
 
 ## **Exposing the API with SSL**
-If you want to expose the API over the internet, you should defenitely use SSL and the API key. You can use [this](https://github.com/rennmaus-coder/ninaAPI/blob/main/Create%20pfx.ps1) link to download a powershell
+If you want to expose the API over the internet, you should use SSL and an API key. You can use [this](https://github.com/rennmaus-coder/ninaAPI/blob/main/Create%20pfx.ps1) link to download a powershell
 script to generate a self-signed SSL certificate. After you successfully generated the certificate, you have to specify the path to the certificate and the password. Then you must create an API key. You can either
 generate one using the 'Generate API Key' button or you can use your own key. You have to send the key over the request header to the API { apikey = <your_key> }.")]
 
