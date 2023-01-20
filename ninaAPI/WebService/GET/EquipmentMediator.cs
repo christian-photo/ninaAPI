@@ -14,9 +14,6 @@ using Newtonsoft.Json;
 using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
-using NINA.Core.Utility.Notification;
-using NINA.Equipment.Equipment;
-using NINA.Equipment.Equipment.MyTelescope;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Image.ImageAnalysis;
 using NINA.Image.Interfaces;
@@ -30,7 +27,6 @@ using OxyPlot;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -224,7 +220,7 @@ namespace ninaAPI.WebService.GET
             }
         }
 
-        public static async Task<HttpResponse> GetLatestImage(double reduction)
+        public static async Task<HttpResponse> GetLatestImage(int jpgQuality)
         {
             HttpResponse response = new HttpResponse();
             try
@@ -243,12 +239,7 @@ namespace ninaAPI.WebService.GET
                 renderedImage = await renderedImage.Stretch(profile.ImageSettings.AutoStretchFactor, profile.ImageSettings.BlackClipping, profile.ImageSettings.UnlinkedStretch);
 
                 var bmp = ImageUtility.Convert16BppTo8Bpp(renderedImage.Image);
-                Bitmap result = new Bitmap((int)(bmp.Width / reduction), (int)(bmp.Height / reduction));
-                using (Graphics g = Graphics.FromImage(result))
-                {
-                    g.DrawImage(bmp, 0, 0, (int)(bmp.Width / reduction), (int)(bmp.Height / reduction));
-                }
-                response.Response = Utility.BitmapToBase64(result);
+                response.Response = jpgQuality == -1 ? Utility.BitmapToBase64(bmp) : Utility.BitmapToBase64(bmp, jpgQuality);
                 return response;
             }
             catch (Exception ex)

@@ -12,14 +12,12 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
-using Newtonsoft.Json;
 using NINA.Core.Utility;
 using ninaAPI.Properties;
 using ninaAPI.WebService.GET;
 using ninaAPI.WebService.SET;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -178,7 +176,7 @@ namespace ninaAPI.WebService
         }
 
         [Route(HttpVerbs.Get, "/equipment")]
-        public void GetInformation([QueryField] string property, [QueryField] string parameter)
+        public async Task GetInformation([QueryField] string property, [QueryField] string parameter)
         {
             if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
@@ -249,7 +247,7 @@ namespace ninaAPI.WebService
                         return;
 
                     case "image":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetLatestImage(double.Parse(parameter)));
+                        HttpContext.WriteToResponse(await EquipmentMediator.GetLatestImage(int.Parse(parameter)));
                         return;
 
                     default:

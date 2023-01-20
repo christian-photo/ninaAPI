@@ -133,8 +133,17 @@ namespace ninaAPI
             Bitmap map = new Bitmap(bmp);
             using (MemoryStream memory = new MemoryStream())
             {
-
                 map.Save(memory, ImageFormat.Png);
+                return Convert.ToBase64String(memory.ToArray());
+            }
+        }
+
+        public static string BitmapToBase64(Bitmap bmp, int jpgQuality)
+        {
+            Bitmap map = new Bitmap(bmp);
+            using (MemoryStream memory = new MemoryStream())
+            {
+                map.Save(memory, GetEncoder(ImageFormat.Jpeg), GetCompression(jpgQuality)); // backup compressed copy of image
                 return Convert.ToBase64String(memory.ToArray());
             }
         }
@@ -209,6 +218,34 @@ namespace ninaAPI
                 return short.Parse(str);
             }
             return str;
+        }
+
+        /// <summary>
+        /// 1 = Lowest Quality
+        /// 25 = Low Quality
+        /// 50 = Medium Quality
+        /// 75 = High Quality
+        /// 100 = Highest Quality
+        /// </summary>
+        /// <returns></returns>
+        public static EncoderParameters GetCompression(int quality)
+        {
+            var encoderParameters = new EncoderParameters(1);
+            encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
+            return encoderParameters;
+        }
+
+        public static ImageCodecInfo GetEncoder(ImageFormat format)
+        {
+            var codecs = ImageCodecInfo.GetImageDecoders();
+            foreach (var codec in codecs)
+            {
+                if (codec.FormatID == format.Guid)
+                {
+                    return codec;
+                }
+            }
+            return null;
         }
     }
 

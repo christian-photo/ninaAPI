@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]
 // [MANDATORY] A short description of your plugin
-[assembly: AssemblyDescription("Extend the N.I.N.A. API!")]
+[assembly: AssemblyDescription("An experimental API for N.I.N.A.")]
 
 // Your name
 [assembly: AssemblyCompany("Christian Palm")]
@@ -43,9 +43,8 @@ If you have question/issues/feedback, you can create an issue [here](https://git
 
 ---
 
-## **Exposing the API with SSL**
-If you want to expose the API over the internet, you should use SSL and an API key. You can use [this](https://github.com/rennmaus-coder/ninaAPI/blob/main/Create%20pfx.ps1) link to download a powershell
-script to generate a self-signed SSL certificate. After you successfully generated the certificate, you have to specify the path to the certificate and the password. Then you must create an API key. You can either
+## **Exposing the API with SSL (experimental)**
+If you want to expose the API over the internet, you should use SSL and an API key. After you successfully generated the certificate, you have to specify the path to the certificate and the password. Then you must create an API key. You can either
 generate one using the 'Generate API Key' button or you can use your own key. You have to send the key over the request header to the API { apikey = <your_key> }.")]
 
 
