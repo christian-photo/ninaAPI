@@ -9,21 +9,17 @@
 
 #endregion "copyright"
 
+using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
-using NINA.Image.Interfaces;
+using NINA.Profile;
 using NINA.Sequencer.Interfaces.Mediator;
-using NINA.WPF.Base.Interfaces.ViewModel;
-using NINA.WPF.Base.Model;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Media.Imaging;
 
 namespace ninaAPI.WebService.SET
 {
@@ -32,380 +28,372 @@ namespace ninaAPI.WebService.SET
         private static CancellationTokenSource SequenceToken;
         private static CancellationTokenSource SlewToken;
         private static CancellationTokenSource GuideToken;
+        private static CancellationTokenSource AFToken;
+        private static CancellationTokenSource DomeToken;
 
-
-        public static async Task<Hashtable> Camera(string property)
+        public static async Task<HttpResponse> Camera(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result.Add("Success", false);
+            HttpResponse response = new HttpResponse();
             ICameraMediator cam = AdvancedAPI.Controls.Camera;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!cam.GetInfo().Connected)
                 {
                     await cam.Rescan();
-                    result["Success"] = await cam.Connect();
-                    return result;
+                    await cam.Connect();
                 }
-                result["Success"] = true;
+                return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (cam.GetInfo().Connected)
                 {
                     await cam.Disconnect();
-                    result["Success"] = !cam.GetInfo().Connected;
-                    return result;
                 }
-                result["Success"] = true;
+                return response;
             }
-            if (property.Equals("abortexposure")) 
+            if (data.Action.Equals("abort-exposure"))
             {
                 cam.AbortExposure();
-                result["Success"] = true;
-                return result;
             }
-            return result;
+            return response;
         }
 
-        public static async Task<Hashtable> Telescope(string property)
+        public static async Task<HttpResponse> Telescope(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result.Add("Success", false);
+            HttpResponse response = new HttpResponse();
             ITelescopeMediator telescope = AdvancedAPI.Controls.Telescope;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!telescope.GetInfo().Connected)
                 {
                     await telescope.Rescan();
-                    result["Success"] = await telescope.Connect();
-                    return result;
+                    await telescope.Connect();
                 }
+                return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (telescope.GetInfo().Connected)
                 {
                     await telescope.Disconnect();
-                    result["Success"] = !telescope.GetInfo().Connected;
-                    return result;
                 }
+                return response;
             }
-            if (property.Equals("park"))
+            if (data.Action.Equals("park"))
             {
                 if (telescope.GetInfo().Slewing)
                 {
-                    result["ErrorMessage"] = "Telescope is slewing";
-                    return result;
+                    telescope.StopSlew();
                 }
                 SlewToken?.Cancel();
                 SlewToken = new CancellationTokenSource();
                 telescope.ParkTelescope(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewToken.Token);
-                result["Success"] = true;
-                return result;
+                response.Response = "Park in progress";
+                return response;
             }
-            if (property.Equals("unpark"))
+            if (data.Action.Equals("unpark"))
             {
                 if (!telescope.GetInfo().AtPark)
                 {
-                    result["Success"] = true;
-                    return result;
+                    return response;
                 }
                 SlewToken?.Cancel();
                 SlewToken = new CancellationTokenSource();
                 telescope.UnparkTelescope(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewToken.Token);
-                result["Success"] = true;
-                return result;
+                response.Response = "Unpark in progress";
+                return response;
             }
-            return result;
+            return response;
         }
 
-        public static async Task<Hashtable> Focuser(string property)
+        public static async Task<HttpResponse> Focuser(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result.Add("Success", false);
+            HttpResponse response = new HttpResponse();
             IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!focuser.GetInfo().Connected)
                 {
                     await focuser.Rescan();
-                    result["Success"] = await focuser.Connect();
-                    return result;
+                    await focuser.Connect();
                 }
-                result["Success"] = true;
+                return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (focuser.GetInfo().Connected)
                 {
                     await focuser.Disconnect();
-                    result["Success"] = !focuser.GetInfo().Connected;
-                    return result;
                 }
-                result["Success"] = true;
+                return response;
             }
-            return result;
+            if (data.Action.Equals("auto-focus"))
+            {
+                if (AFToken != null)
+                {
+                    AFToken.Cancel();
+                }
+                AFToken = new CancellationTokenSource();
+                AdvancedAPI.Controls.AutoFocusFactory.Create().StartAutoFocus(AdvancedAPI.Controls.FilterWheel.GetInfo().SelectedFilter, AFToken.Token, AdvancedAPI.Controls.StatusMediator.GetStatus());
+                response.Response = "AutoFocus in progress";
+                return response;
+            }
+            return response;
         }
 
-        public static async Task<Hashtable> Rotator(string property)
+        public static async Task<HttpResponse> Rotator(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result.Add("Success", false);
+            HttpResponse response = new HttpResponse();
             IRotatorMediator rotator = AdvancedAPI.Controls.Rotator;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!rotator.GetInfo().Connected)
                 {
                     await rotator.Rescan();
-                    result["Success"] = await rotator.Connect();
-                    return result;
+                    await rotator.Connect();
                 }
-                result["Success"] = true;
+                return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (rotator.GetInfo().Connected)
                 {
                     await rotator.Disconnect();
-                    result["Success"] = !rotator.GetInfo().Connected;
-                    return result;
                 }
-                result["Success"] = true;
+                return response;
             }
-            return result;
+            return response;
         }
 
-        public static async Task<Hashtable> FilterWheel(string property)
+        public static async Task<HttpResponse> FilterWheel(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result.Add("Success", false);
+            HttpResponse response = new HttpResponse();
             IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!filterwheel.GetInfo().Connected)
                 {
                     await filterwheel.Rescan();
-                    result["Success"] = await filterwheel.Connect();
-                    return result;
+                    await filterwheel.Connect();
                 }
-                result["Success"] = true;
+                return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (filterwheel.GetInfo().Connected)
                 {
                     await filterwheel.Disconnect();
-                    result["Success"] = !filterwheel.GetInfo().Connected;
-                    return result;
                 }
-                result["Success"] = true;
+                return response;
             }
-            return result;
+            return response;
         }
 
-        public static async Task<Hashtable> Dome(string property)
+        public static async Task<HttpResponse> Dome(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result.Add("Success", false);
+            HttpResponse response = new HttpResponse();
             IDomeMediator dome = AdvancedAPI.Controls.Dome;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!dome.GetInfo().Connected)
                 {
                     await dome.Rescan();
-                    result["Success"] = await dome.Connect();
-                    return result;
+                    await dome.Connect();
                 }
-                result["Success"] = true;
+                return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (dome.GetInfo().Connected)
                 {
                     await dome.Disconnect();
-                    result["Success"] = !dome.GetInfo().Connected;
-                    return result;
                 }
-                result["Success"] = true;
+                return response;
             }
-            return result;
+            if (data.Action.Equals("open"))
+            {
+                if (dome.GetInfo().ShutterStatus == ShutterState.ShutterOpen || dome.GetInfo().ShutterStatus == ShutterState.ShutterOpening)
+                {
+                    response.Response = "Shutter already open";
+                    return response;
+                }
+                DomeToken?.Cancel();
+                DomeToken = new CancellationTokenSource();
+                dome.OpenShutter(DomeToken.Token);
+                return response;
+            }
+            if (data.Action.Equals("close"))
+            {
+                if (dome.GetInfo().ShutterStatus == ShutterState.ShutterClosed || dome.GetInfo().ShutterStatus == ShutterState.ShutterClosing)
+                {
+                    response.Response = "Shutter already closed";
+                    return response;
+                }
+                DomeToken?.Cancel();
+                DomeToken = new CancellationTokenSource();
+                dome.CloseShutter(DomeToken.Token);
+                return response;
+            }
+            if (data.Action.Equals("stop"))
+            {
+                DomeToken?.Cancel();
+                return response;
+            }
+            return response;
         }
 
-        public static async Task<Hashtable> Switch(string property)
+        public static async Task<HttpResponse> Switch(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result.Add("Success", false);
+            HttpResponse response = new HttpResponse();
             ISwitchMediator switches = AdvancedAPI.Controls.Switch;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!switches.GetInfo().Connected)
                 {
                     await switches.Rescan();
-                    result["Success"] = await switches.Connect();
-                    return result;
+                    await switches.Connect();
                 }
-                result["Success"] = true;
+                return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (switches.GetInfo().Connected)
                 {
                     await switches.Disconnect();
-                    result["Success"] = !switches.GetInfo().Connected;
-                    return result;
                 }
-                result["Success"] = true;
+                return response;
             }
-            return result;
+            return response;
         }
 
-        public static async Task<Hashtable> Guider(string property)
+        public static async Task<HttpResponse> Guider(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result.Add("Success", false);
+            HttpResponse response = new HttpResponse();
             IGuiderMediator guider = AdvancedAPI.Controls.Guider;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!guider.GetInfo().Connected)
                 {
                     await guider.Rescan();
-                    result["Success"] = await guider.Connect();
-                    return result;
+                    await guider.Connect();
                 }
-                result["Success"] = true;
+                return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (guider.GetInfo().Connected)
                 {
                     await guider.Disconnect();
-                    result["Success"] = !guider.GetInfo().Connected;
-                    return result;
                 }
-                result["Success"] = true;
+                return response;
             }
-            if (property.Equals("start")) 
+            if (data.Action.Equals("start"))
             {
                 if (guider.GetInfo().Connected)
                 {
                     GuideToken?.Cancel();
                     GuideToken = new CancellationTokenSource();
-                    result["Success"] = await guider.StartGuiding(false, AdvancedAPI.Controls.StatusMediator.GetStatus(), GuideToken.Token);
-                    return result;
+                    await guider.StartGuiding(false, AdvancedAPI.Controls.StatusMediator.GetStatus(), GuideToken.Token);
+                    return response;
                 }
-                result["ErrorMessage"] = "Guider is not connected";
-                return result;
+                return Utility.CreateErrorTable("Guider not connected");
             }
-            if (property.Equals("stop"))
+            if (data.Action.Equals("stop"))
             {
                 if (guider.GetInfo().Connected)
                 {
-                    result["Success"] = await guider.StopGuiding(GuideToken.Token);
-                    return result;
+                    await guider.StopGuiding(GuideToken.Token);
+                    return response;
                 }
-                result["ErrorMessage"] = "Guider is not connected";
-                return result;
+                return Utility.CreateErrorTable("Guider not connected");
             }
-            return result;
+            return response;
         }
 
-        public static async Task<Hashtable> FlatDevice(string property)
+        public static async Task<HttpResponse> FlatDevice(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result.Add("Success", false);
+            HttpResponse response = new HttpResponse();
             IFlatDeviceMediator flat = AdvancedAPI.Controls.FlatDevice;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!flat.GetInfo().Connected)
                 {
                     await flat.Rescan();
-                    result["Success"] = await flat.Connect();
-                    return result;
+                    await flat.Connect();
                 }
-                result["Success"] = true;
+                return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (flat.GetInfo().Connected)
                 {
                     await flat.Disconnect();
-                    result["Success"] = !flat.GetInfo().Connected;
-                    return result;
                 }
-                result["Success"] = true;
+                return response;
             }
-            return result;
+            return response;
         }
 
-        public static async Task<Hashtable> SafteyMonitor(string property)
+        public static async Task<HttpResponse> SafteyMonitor(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result.Add("Success", false);
+            HttpResponse response = new HttpResponse();
             ISafetyMonitorMediator safety = AdvancedAPI.Controls.SafetyMonitor;
 
-            if (property.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!safety.GetInfo().Connected)
                 {
                     await safety.Rescan();
-                    result["Success"] = await safety.Connect();
-                    return result;
+                    await safety.Connect();
                 }
+                return response;
             }
-            if (property.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (safety.GetInfo().Connected)
                 {
                     await safety.Disconnect();
-                    result["Success"] = !safety.GetInfo().Connected;
-                    return result;
                 }
+                return response;
             }
-            return result;
+            return response;
         }
 
-        public static async Task<Hashtable> Sequence(string action)
+        public static async Task<HttpResponse> Sequence(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result.Add("Success", false);
+            HttpResponse response = new HttpResponse();
             ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
 
-            action = action.ToLower();
-
-            if (action.Equals("start"))
+            if (data.Action.Equals("start"))
             {
                 SequenceToken = new CancellationTokenSource();
                 sequence.GetAllTargets()[0].Parent.Parent.Run(AdvancedAPI.Controls.StatusMediator.GetStatus(), SequenceToken.Token);
-                result["Success"] = true;
-                return result;
+                response.Response = "Sequence in progress";
+                return response;
             }
-            else if (action.Equals("stop"))
+            else if (data.Action.Equals("stop"))
             {
                 SequenceToken?.Cancel();
-                result["Success"] = true;
-                return result;
+                return response;
             }
-            return result;
+            return response;
         }
 
-        public static async Task<Hashtable> Application(string action)
+        public static async Task<HttpResponse> Application(POSTData data)
         {
-            Hashtable result = new Hashtable();
-            result["Success"] = false;
+            HttpResponse response = new HttpResponse();
 
-            action = action.ToLower();
-                        
-            if (action.Equals("screenshot")) // Captures a screenshot and returns it base64 encoded
+            if (data.Action.Equals("screenshot")) // Captures a screenshot and returns it base64 encoded
             {
                 using (Bitmap bmpScreenCapture = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
                                             Screen.PrimaryScreen.Bounds.Height))
@@ -418,44 +406,72 @@ namespace ninaAPI.WebService.SET
                                          bmpScreenCapture.Size,
                                          CopyPixelOperation.SourceCopy);
                     }
-                    
-                    result["Image"] = Utility.BitmapToBase64(bmpScreenCapture);
+
+                    response.Response = Utility.BitmapToBase64(bmpScreenCapture);
                 }
-                result["Success"] = true;
-                return result;
+                return response;
             }
-            switch (action)
+            if (data.Action.Equals("switch"))
             {
-                case "switch-equipment":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.EQUIPMENT);
-                    result["Success"] = true;
-                    return result;
-                case "switch-skyatlas":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.SKYATLAS);
-                    result["Success"] = true;
-                    return result;
-                case "switch-framing":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.FRAMINGASSISTANT);
-                    result["Success"] = true;
-                    return result;
-                case "switch-flatwizard":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.FLATWIZARD);
-                    result["Success"] = true;
-                    return result;
-                case "switch-sequencer":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.SEQUENCE);
-                    result["Success"] = true;
-                    return result;
-                case "switch-imaging":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.IMAGING);
-                    result["Success"] = true;
-                    return result;
-                case "switch-options":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.OPTIONS);
-                    result["Success"] = true;
-                    return result;
+                switch (data.Parameter[0])
+                {
+                    case "equipment":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.EQUIPMENT);
+                        return response;
+                    case "skyatlas":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.SKYATLAS);
+                        return response;
+                    case "framing":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.FRAMINGASSISTANT);
+                        return response;
+                    case "flatwizard":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.FLATWIZARD);
+                        return response;
+                    case "sequencer":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.SEQUENCE);
+                        return response;
+                    case "imaging":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.IMAGING);
+                        return response;
+                    case "options":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.OPTIONS);
+                        return response;
+                    default:
+                        return Utility.CreateErrorTable("Invalid parameter");
+                }
             }
-            return result;
+            return response;
+        }
+
+        public static HttpResponse ChangeProfileValue(POSTData data)
+        {
+            HttpResponse response = new HttpResponse();
+            if (string.IsNullOrEmpty(data.Action))
+                return Utility.CreateErrorTable("Invalid Path");
+            
+            string[] pathSplit = (data.Action).Split('-'); // CameraSettings, PixelSize
+            object position = AdvancedAPI.Controls.Profile.ActiveProfile;
+            if (pathSplit.Length == 0)
+            {
+                position.GetType().GetProperty((string)data.Parameter[0]).SetValue(position, data.Parameter[0]);
+                return response;
+            }
+            for (int i = 0; i <= pathSplit.Length - 2; i++)
+            {
+                position = position.GetType().GetProperty(pathSplit[i]).GetValue(position);
+            }
+            PropertyInfo prop = position.GetType().GetProperty(pathSplit[pathSplit.Length - 1]);
+            prop.SetValue(position, ((string)data.Parameter[0]).CastString(prop.PropertyType));
+            return response;
+        }
+
+        public static HttpResponse SwitchProfile(POSTData data)
+        {
+            HttpResponse response = new HttpResponse();
+            Guid guid = Guid.Parse(data.Action);
+            ProfileMeta profile = AdvancedAPI.Controls.Profile.Profiles.Where(x => x.Id == guid).FirstOrDefault();
+            AdvancedAPI.Controls.Profile.SelectProfile(profile);
+            return response;
         }
     }
 }
