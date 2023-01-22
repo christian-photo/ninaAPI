@@ -186,15 +186,6 @@ namespace ninaAPI
             return table;
         }
 
-        public static T ThisOrDefault<T>(this T obj, T defaultValue)
-        {
-            if (obj == null)
-            {
-                return defaultValue;
-            }
-            return obj;
-        }
-
         public static object CastString(this string str, Type type)
         {
             if (type == typeof(int))
