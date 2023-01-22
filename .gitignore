@@ -8,3 +8,5 @@ manifest.schema.json
 CreateManifest.ps1
 gather.js
 push.bat
+/ninaAPI/manifest.json
+/ninaAPI/ninaAPI.zip
