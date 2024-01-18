@@ -344,7 +344,7 @@ namespace ninaAPI.WebService.SET
             return response;
         }
 
-        public static async Task<HttpResponse> SafteyMonitor(POSTData data)
+        public static async Task<HttpResponse> SafetyMonitor(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ISafetyMonitorMediator safety = AdvancedAPI.Controls.SafetyMonitor;

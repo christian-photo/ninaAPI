@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ninaAPI
+namespace ninaAPI // copied from https://github.com/tcpalmer/nina.plugin.web/blob/main/NINA.Plugin.Web/NINA.Plugin.Web/LogEvent/NINALogWatcher.cs
 {
     public class NINALogWatcher
     {

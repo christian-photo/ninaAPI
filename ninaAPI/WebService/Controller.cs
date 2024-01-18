@@ -334,8 +334,8 @@ namespace ninaAPI.WebService
                         HttpContext.WriteToResponse(await EquipmentController.FlatDevice(data));
                         return;
 
-                    case "safteymonitor":
-                        HttpContext.WriteToResponse(await EquipmentController.SafteyMonitor(data));
+                    case "safetymonitor":
+                        HttpContext.WriteToResponse(await EquipmentController.SafetyMonitor(data));
                         return;
 
                     case "sequence":
