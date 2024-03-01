@@ -92,6 +92,12 @@ namespace ninaAPI.WebService.GET
                     ITelescopeMediator telescope = AdvancedAPI.Controls.Telescope;
                     response.Response = telescope.GetInfo().GetAllProperties();
                     return response;
+
+                case EquipmentType.Weather:
+                    IWeatherDataMediator weather = AdvancedAPI.Controls.Weather;
+                    response.Response = weather.GetInfo().GetAllProperties();
+                    return response;
+
                 default:
                     response.Response = "";
                     response.Error = "Invalid device type";

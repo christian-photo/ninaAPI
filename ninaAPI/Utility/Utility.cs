@@ -262,7 +262,8 @@ namespace ninaAPI
         Guider,
         FlatDevice,
         Switch,
-        SafteyMonitor
+        SafteyMonitor,
+        Weather
     }
 
     public class IgnorePropertiesResolver : DefaultContractResolver

@@ -33,6 +33,7 @@ namespace ninaAPI
         public ISwitchMediator Switch;
         public ISafetyMonitorMediator SafetyMonitor;
         public IAutoFocusVMFactory AutoFocusFactory;
+        public IWeatherDataMediator Weather;
         #endregion
 
         #region Image

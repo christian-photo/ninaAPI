@@ -250,6 +250,10 @@ namespace ninaAPI.WebService
                         HttpContext.WriteToResponse(await EquipmentMediator.GetLatestImage(int.Parse(parameter)));
                         return;
 
+                    case "weather":
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Weather, parameter));
+                        return;
+
                     default:
                         HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_PROPERTY));
                         return;
