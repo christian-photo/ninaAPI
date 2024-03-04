@@ -33,6 +33,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
 namespace ninaAPI.WebService.GET
 {
@@ -226,7 +227,7 @@ namespace ninaAPI.WebService.GET
             }
         }
 
-        public static async Task<HttpResponse> GetLatestImage(int jpgQuality)
+        public static async Task<HttpResponse> GetImage(int jpgQuality, int index)
         {
             HttpResponse response = new HttpResponse();
             try
@@ -238,7 +239,11 @@ namespace ninaAPI.WebService.GET
                     return response;
                 }
                 IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
-                ImageHistoryPoint p = hist.ImageHistory[hist.ImageHistory.Count - 1];
+                ImageHistoryPoint p;
+                if (index < 0)
+                    p = hist.ImageHistory[^1];
+                else
+                    p = hist.ImageHistory[index];
                 IImageData imageData = await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.LocalPath, 16, true, RawConverterEnum.FREEIMAGE);
                 IRenderedImage renderedImage = imageData.RenderImage();
 

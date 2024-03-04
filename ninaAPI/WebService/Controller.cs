@@ -176,7 +176,7 @@ namespace ninaAPI.WebService
         }
 
         [Route(HttpVerbs.Get, "/equipment")]
-        public async Task GetInformation([QueryField] string property, [QueryField] string parameter)
+        public async Task GetInformation([QueryField] string property, [QueryField] string parameter, [QueryField] string index)
         {
             if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
@@ -247,7 +247,7 @@ namespace ninaAPI.WebService
                         return;
 
                     case "image":
-                        HttpContext.WriteToResponse(await EquipmentMediator.GetLatestImage(int.Parse(parameter)));
+                        HttpContext.WriteToResponse(await EquipmentMediator.GetImage(int.Parse(parameter), int.Parse(index)));
                         return;
 
                     case "weather":
