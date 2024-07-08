@@ -35,10 +35,17 @@ namespace ninaAPI.WebService
         [Route(HttpVerbs.Get, "/")]
         public string Index()
         {
-            return "ninaAPI: https://github.com/rennmaus-coder/ninaAPI/wiki";
+            return $"ninaAPI: https://github.com/rennmaus-coder/ninaAPI/wiki";
         }
 
         #region GET
+
+        [Route(HttpVerbs.Get, "/version")]
+        public void GetVersion()
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpContext.WriteToResponse(new HttpResponse() { Response = "1.0.1.2" });
+        }
 
         [Route(HttpVerbs.Get, "/history")]
         public void GetHistoryCount([QueryField] string property, [QueryField] string parameter)
