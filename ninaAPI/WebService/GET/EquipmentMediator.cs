@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 using Accord.Statistics.Visualizations;
+using ASCOM.Com;
 using Newtonsoft.Json;
 using NINA.Astrometry;
 using NINA.Core.Enum;
@@ -27,12 +28,14 @@ using OxyPlot;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
 namespace ninaAPI.WebService.GET
@@ -235,7 +238,7 @@ namespace ninaAPI.WebService.GET
                 IImageHistoryVM hist = AdvancedAPI.Controls.ImageHistory;
                 if (hist.ImageHistory.Count <= 0)
                 {
-                    response.Response = "No Images Available";
+                    response.Response = "No Images available";
                     return response;
                 }
                 IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
@@ -249,8 +252,69 @@ namespace ninaAPI.WebService.GET
 
                 renderedImage = await renderedImage.Stretch(profile.ImageSettings.AutoStretchFactor, profile.ImageSettings.BlackClipping, profile.ImageSettings.UnlinkedStretch);
 
-                var bmp = ImageUtility.Convert16BppTo8Bpp(renderedImage.Image);
-                response.Response = jpgQuality == -1 ? Utility.BitmapToBase64(bmp) : Utility.BitmapToBase64(bmp, jpgQuality);
+                if (jpgQuality < 0)
+                {
+                    PngBitmapEncoder encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(renderedImage.Image));
+
+                    response.Response = Utility.EncoderToBase64(encoder);
+                }
+                else
+                {
+                    JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+                    encoder.QualityLevel = jpgQuality;
+                    encoder.Frames.Add(BitmapFrame.Create(renderedImage.Image));
+
+                    response.Response = Utility.EncoderToBase64(encoder);
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                return Utility.CreateErrorTable(ex.Message);
+            }
+        }
+
+        public static async Task<HttpResponse> GetThumbnail(int quality, int index)
+        {
+            HttpResponse response = new HttpResponse();
+            try
+            {
+                IImageHistoryVM hist = AdvancedAPI.Controls.ImageHistory;
+                IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+                if (hist.ImageHistory.Count <= 0)
+                {
+                    response.Response = "No images available";
+                }
+                ImageHistoryPoint p;
+                if (index < 0)
+                    p = hist.ImageHistory[^1];
+                else
+                    p = hist.ImageHistory[index];
+                IImageData imageData = await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.LocalPath, 16, false, RawConverterEnum.FREEIMAGE);
+                IRenderedImage renderedImage = imageData.RenderImage();
+
+                renderedImage = await renderedImage.Stretch(profile.ImageSettings.AutoStretchFactor, profile.ImageSettings.BlackClipping, profile.ImageSettings.UnlinkedStretch);
+                double scaling = 640.0d / renderedImage.Image.Width;
+
+                var bitmap = new TransformedBitmap(renderedImage.Image, new ScaleTransform(scaling, scaling));
+
+                if (quality < 0)
+                {
+                    PngBitmapEncoder encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(bitmap));
+
+                    response.Response = Utility.EncoderToBase64(encoder);
+                }
+                else
+                {
+                    JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+                    encoder.QualityLevel = quality;
+                    encoder.Frames.Add(BitmapFrame.Create(bitmap));
+
+                    response.Response = Utility.EncoderToBase64(encoder);
+                }
                 return response;
             }
             catch (Exception ex)

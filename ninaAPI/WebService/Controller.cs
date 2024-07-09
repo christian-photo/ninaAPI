@@ -257,6 +257,10 @@ namespace ninaAPI.WebService
                         HttpContext.WriteToResponse(await EquipmentMediator.GetImage(int.Parse(parameter), int.Parse(index)));
                         return;
 
+                    case "thumbnail":
+                        HttpContext.WriteToResponse(await EquipmentMediator.GetThumbnail(int.Parse(parameter), int.Parse(index)));
+                        return;
+
                     case "weather":
                         HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Weather, parameter));
                         return;

@@ -31,6 +31,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
+using System.Windows.Media.Imaging;
+using System.Windows;
 
 namespace ninaAPI
 {
@@ -140,10 +142,28 @@ namespace ninaAPI
 
         public static string BitmapToBase64(Bitmap bmp, int jpgQuality)
         {
-            Bitmap map = new Bitmap(bmp);
+            //Bitmap map = new Bitmap(bmp.Width, bmp.Height);
             using (MemoryStream memory = new MemoryStream())
             {
-                map.Save(memory, GetEncoder(ImageFormat.Jpeg), GetCompression(jpgQuality)); // backup compressed copy of image
+                bmp.Save(memory, GetEncoder(ImageFormat.Jpeg), GetCompression(jpgQuality)); // backup compressed copy of image
+                return Convert.ToBase64String(memory.ToArray());
+            }
+        }
+
+        public static string EncoderToBase64(JpegBitmapEncoder encoder)
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                encoder.Save(memory);
+                return Convert.ToBase64String(memory.ToArray());
+            }
+        }
+
+        public static string EncoderToBase64(PngBitmapEncoder encoder)
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                encoder.Save(memory);
                 return Convert.ToBase64String(memory.ToArray());
             }
         }
