@@ -45,12 +45,12 @@ namespace ninaAPI.WebService
             HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
             e.Image = null;
             e.Statistics.Histogram.Clear();
-            e.MetaData = null;
 
             response.Response = new Dictionary<string, object>()
             {
                 { "Event", "IMAGE-SAVE" },
-                { "Image", e }
+                { "Image", e },
+                { "Index", AdvancedAPI.Controls.ImageHistory.ImageHistory.Count - 1 }
             };
 
             await Send(response);
