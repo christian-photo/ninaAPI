@@ -42,6 +42,9 @@ namespace ninaAPI.WebService
 
         private async void ImageSaved(object sender, ImageSavedEventArgs e) 
         {
+            if (!e.MetaData.Image.ImageType.Equals("LIGHT"))
+                return;
+
             HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
             e.Image = null;
             e.Statistics.Histogram.Clear();
@@ -49,8 +52,23 @@ namespace ninaAPI.WebService
             response.Response = new Dictionary<string, object>()
             {
                 { "Event", "IMAGE-SAVE" },
-                { "Image", e },
-                { "Index", AdvancedAPI.Controls.ImageHistory.ImageHistory.Count - 1 }
+                { "ExposureTime", e.Duration },
+                { "Index", e.MetaData.Image.Id - 1 },
+                { "Filter", e.Filter },
+                { "RmsText", e.MetaData.Image.RecordedRMS.TotalText },
+                { "Temperature", e.MetaData.Camera.Temperature },
+                { "CameraName", e.MetaData.Camera.Name },
+                { "Gain", e.MetaData.Camera.Gain },
+                { "Offset", e.MetaData.Camera.Offset },
+                { "TelescopeName", e.MetaData.Telescope.Name },
+                { "FocalLength", e.MetaData.Telescope.FocalLength },
+                { "RotatorMechanical", e.MetaData.Rotator.MechanicalPosition },
+                { "RotatorPosition", e.MetaData.Rotator.Position },
+                { "StDev", e.Statistics.StDev },
+                { "Mean", e.Statistics.Mean },
+                { "Median", e.Statistics.Median },
+                { "Stars", e.StarDetectionAnalysis.DetectedStars },
+                { "HFR", e.StarDetectionAnalysis.HFR }
             };
 
             await Send(response);
