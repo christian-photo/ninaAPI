@@ -10,9 +10,11 @@
 #endregion "copyright"
 
 using EmbedIO.WebSockets;
+using Namotion.Reflection;
 using Newtonsoft.Json;
 using NINA.Core.Utility;
 using NINA.WPF.Base.Interfaces.Mediator;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,20 +40,172 @@ namespace ninaAPI.WebService
             AdvancedAPI.Server.LogProcessor.NINALogEventSaved += LogProcessor_NINALogEventSaved;
         }
 
-        private async void ImageSaved(object sender, ImageSavedEventArgs e) => await Send(new HttpResponse() { Response = "IMAGE-NEW", Type = HttpResponse.TypeSocket });
+        private async void ImageSaved(object sender, ImageSavedEventArgs e) 
+        {
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            e.Image = null;
+            e.Statistics.Histogram.Clear();
+            e.MetaData = null;
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "IMAGE-SAVE" },
+                { "Image", e }
+            };
+
+            await Send(response);
+        }
 
         private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e) => await Send(new HttpResponse() { Response = e.type, Type = HttpResponse.TypeSocket });
 
-        private async void CameraChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "CAMERA-CHANGED", Type = HttpResponse.TypeSocket });
-        private async void TelescopeChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "TELESCOPE-CHANGED", Type = HttpResponse.TypeSocket });
-        private async void FocuserChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "FOCUSER-CHANGED", Type = HttpResponse.TypeSocket });
-        private async void RotatorChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "ROTATOR-CHANGED", Type = HttpResponse.TypeSocket });
-        private async void DomeChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "DOME-CHANGED", Type = HttpResponse.TypeSocket });
-        private async void FWChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "FILTERHWEEL-CHANGED", Type = HttpResponse.TypeSocket });
-        private async void SwitchChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "SWITCH-CHANGED", Type = HttpResponse.TypeSocket });
-        private async void SafetyChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "SAFETY-CHANGED", Type = HttpResponse.TypeSocket });
-        private async void GuiderChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "GUIDER-CHANGED", Type = HttpResponse.TypeSocket });
-        private async void FlatChanged(object sender, PropertyChangedEventArgs e) => await Send(new HttpResponse() { Response = "FLAT-CHANGED", Type = HttpResponse.TypeSocket });
+        private async void CameraChanged(object sender, PropertyChangedEventArgs e)
+        {
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            object value = AdvancedAPI.Controls.Camera.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "CAMERA-CHANGED" },
+                { "PropertyName", e.PropertyName },
+                { "Value", value }
+            };
+
+            await Send(response);
+        }
+
+        private int telescopeCounter = 0;
+
+        private async void TelescopeChanged(object sender, PropertyChangedEventArgs e)
+        {
+            telescopeCounter++;
+            if (telescopeCounter % 2 == 0) // less newtork traffic because of constant coordinate updating
+            {
+                return;
+            }
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            object value = AdvancedAPI.Controls.Telescope.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "TELESCOPE-CHANGED" },
+                { "PropertyName", e.PropertyName },
+                { "Value", value }
+            };
+
+            await Send(response);
+        }
+        private async void FocuserChanged(object sender, PropertyChangedEventArgs e)
+        {
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            object value = AdvancedAPI.Controls.Focuser.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "FOCUSER-CHANGED" },
+                { "PropertyName", e.PropertyName },
+                { "Value", value }
+            };
+
+            await Send(response);
+        }
+        private async void RotatorChanged(object sender, PropertyChangedEventArgs e)
+        {
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            object value = AdvancedAPI.Controls.Rotator.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "ROTATOR-CHANGED" },
+                { "PropertyName", e.PropertyName },
+                { "Value", value }
+            };
+
+            await Send(response);
+        }
+        private async void DomeChanged(object sender, PropertyChangedEventArgs e)
+        {
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            object value = AdvancedAPI.Controls.Dome.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "DOME-CHANGED" },
+                { "PropertyName", e.PropertyName },
+                { "Value", value }
+            };
+
+            await Send(response);
+        }
+        private async void FWChanged(object sender, PropertyChangedEventArgs e)
+        {
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            object value = AdvancedAPI.Controls.FilterWheel.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "FILTERWHEEL-CHANGED" },
+                { "PropertyName", e.PropertyName },
+                { "Value", value }
+            };
+
+            await Send(response);
+        }
+        private async void SwitchChanged(object sender, PropertyChangedEventArgs e)
+        {
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            object value = AdvancedAPI.Controls.Switch.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "SWITCH-CHANGED" },
+                { "PropertyName", e.PropertyName },
+                { "Value", value }
+            };
+
+            await Send(response);
+        }
+        private async void SafetyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            object value = AdvancedAPI.Controls.SafetyMonitor.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "SAFETY-CHANGED" },
+                { "PropertyName", e.PropertyName },
+                { "Value", value }
+            };
+
+            await Send(response);
+        }
+        private async void GuiderChanged(object sender, PropertyChangedEventArgs e)
+        {
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            object value = AdvancedAPI.Controls.Guider.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "GUIDER-CHANGED" },
+                { "PropertyName", e.PropertyName },
+                { "Value", value }
+            };
+
+            await Send(response);
+        }
+        private async void FlatChanged(object sender, PropertyChangedEventArgs e)
+        {
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            object value = AdvancedAPI.Controls.FlatDevice.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "FLAT-CHANGED" },
+                { "PropertyName", e.PropertyName },
+                { "Value", value }
+            };
+
+            await Send(response);
+        }
 
         protected override Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult rxResult)
         {
@@ -61,7 +215,7 @@ namespace ninaAPI.WebService
 
         protected override Task OnClientConnectedAsync(IWebSocketContext context)
         {
-            Logger.Debug("WebSocket connected " + context.RemoteEndPoint.ToString());
+            Logger.Info("WebSocket connected " + context.RemoteEndPoint.ToString());
             return Task.CompletedTask;
         }
 
