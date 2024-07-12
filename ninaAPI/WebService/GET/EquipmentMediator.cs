@@ -110,6 +110,19 @@ namespace ninaAPI.WebService.GET
             }
         }
 
+        public static HttpResponse GetSocketImageHistory(int id)
+        {
+            if (id < 0)
+            {
+                return WebSocket.Images[WebSocket.Images.Count - 1];
+            }
+            if (id >= WebSocket.Images.Count)
+            {
+                Utility.CreateErrorTable("Index out of range");
+            }
+            return WebSocket.Images[id];
+        }
+
         public static HttpResponse GetImageHistory(int id)
         {
             List<Hashtable> result = new List<Hashtable>();

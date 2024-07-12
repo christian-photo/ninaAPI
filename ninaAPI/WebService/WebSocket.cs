@@ -40,6 +40,8 @@ namespace ninaAPI.WebService
             AdvancedAPI.Server.LogProcessor.NINALogEventSaved += LogProcessor_NINALogEventSaved;
         }
 
+        public static List<HttpResponse> Images = new List<HttpResponse>();
+
         private async void ImageSaved(object sender, ImageSavedEventArgs e) 
         {
             if (!e.MetaData.Image.ImageType.Equals("LIGHT"))
@@ -62,14 +64,14 @@ namespace ninaAPI.WebService
                 { "Offset", e.MetaData.Camera.Offset },
                 { "TelescopeName", e.MetaData.Telescope.Name },
                 { "FocalLength", e.MetaData.Telescope.FocalLength },
-                { "RotatorMechanical", e.MetaData.Rotator.MechanicalPosition },
-                { "RotatorPosition", e.MetaData.Rotator.Position },
                 { "StDev", e.Statistics.StDev },
                 { "Mean", e.Statistics.Mean },
                 { "Median", e.Statistics.Median },
                 { "Stars", e.StarDetectionAnalysis.DetectedStars },
                 { "HFR", e.StarDetectionAnalysis.HFR }
             };
+
+            Images.Add(response);
 
             await Send(response);
         }
