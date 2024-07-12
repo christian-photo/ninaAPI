@@ -99,7 +99,14 @@ namespace ninaAPI.WebService
             await Send(response);
         }
 
-        private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e) => await Send(new HttpResponse() { Response = e.type, Type = HttpResponse.TypeSocket });
+        private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e)
+        {
+            await Send(new HttpResponse() 
+            { 
+                Response = new Hashtable() { { "Event", e.type } }, 
+                Type = HttpResponse.TypeSocket 
+            });
+        }
 
 
         private async Task CameraConnection(object arg1, EventArgs arg2)
