@@ -112,9 +112,15 @@ namespace ninaAPI.WebService.GET
 
         public static HttpResponse GetSocketImageHistory(int id)
         {
+            List<object> result = new List<object>();
             if (id < 0)
             {
-                return WebSocket.Images[WebSocket.Images.Count - 1];
+                foreach (HttpResponse response in WebSocket.Images)
+                {
+                    result.Add(response.Response);
+                }
+
+                return new HttpResponse() { Response = result };
             }
             if (id >= WebSocket.Images.Count)
             {
