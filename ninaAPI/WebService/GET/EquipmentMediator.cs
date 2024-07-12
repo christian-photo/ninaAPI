@@ -123,6 +123,13 @@ namespace ninaAPI.WebService.GET
             return WebSocket.Images[id];
         }
 
+        public static HttpResponse GetSocketImageCount()
+        {
+            HttpResponse response = new HttpResponse();
+            response.Response = WebSocket.Images.Count;
+            return response;
+        }
+
         public static HttpResponse GetImageHistory(int id)
         {
             List<Hashtable> result = new List<Hashtable>();
