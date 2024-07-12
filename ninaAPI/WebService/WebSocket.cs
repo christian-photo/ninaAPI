@@ -14,6 +14,7 @@ using Namotion.Reflection;
 using Newtonsoft.Json;
 using NINA.Core.Utility;
 using NINA.WPF.Base.Interfaces.Mediator;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
@@ -62,6 +63,7 @@ namespace ninaAPI.WebService
                 { "CameraName", e.MetaData.Camera.Name },
                 { "Gain", e.MetaData.Camera.Gain },
                 { "Offset", e.MetaData.Camera.Offset },
+                { "Date", DateTime.Now },
                 { "TelescopeName", e.MetaData.Telescope.Name },
                 { "FocalLength", e.MetaData.Telescope.FocalLength },
                 { "StDev", e.Statistics.StDev },
