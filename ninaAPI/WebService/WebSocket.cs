@@ -245,7 +245,7 @@ namespace ninaAPI.WebService
 
         protected override Task OnClientConnectedAsync(IWebSocketContext context)
         {
-            Logger.Info("WebSocket connected " + context.RemoteEndPoint.ToString());
+            Logger.Debug("WebSocket connected " + context.RemoteEndPoint.ToString());
             return Task.CompletedTask;
         }
 
