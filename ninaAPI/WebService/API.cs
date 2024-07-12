@@ -102,7 +102,7 @@ namespace ninaAPI.WebService
 
                 if (serverThread != null && serverThread.IsAlive)
                 {
-                    serverThread.Abort();
+                    apiToken.Cancel();
                     serverThread = null;
                 }
 
@@ -135,7 +135,6 @@ namespace ninaAPI.WebService
                 Notification.ShowError($"Failed to start web server, see NINA log for details");
 
                 Logger.Debug("aborting web server thread");
-                serverThread.Abort();
             }
         }
     }

@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using NINA.Core.Utility;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
@@ -26,16 +27,36 @@ namespace ninaAPI.WebService
     {
         public WebSocket(string urlPath) : base(urlPath, true)
         {
-            AdvancedAPI.Controls.Camera.GetInfo().PropertyChanged += CameraChanged;
-            AdvancedAPI.Controls.Telescope.GetInfo().PropertyChanged += TelescopeChanged;
-            AdvancedAPI.Controls.Focuser.GetInfo().PropertyChanged += FocuserChanged;
-            AdvancedAPI.Controls.Rotator.GetInfo().PropertyChanged += RotatorChanged;
-            AdvancedAPI.Controls.Dome.GetInfo().PropertyChanged += DomeChanged;
-            AdvancedAPI.Controls.FilterWheel.GetInfo().PropertyChanged += FWChanged;
-            AdvancedAPI.Controls.Switch.GetInfo().PropertyChanged += SwitchChanged;
-            AdvancedAPI.Controls.SafetyMonitor.GetInfo().PropertyChanged += SafetyChanged;
-            AdvancedAPI.Controls.Guider.GetInfo().PropertyChanged += GuiderChanged;
-            AdvancedAPI.Controls.FlatDevice.GetInfo().PropertyChanged += FlatChanged;
+            AdvancedAPI.Controls.Camera.Connected += CameraConnection;
+            AdvancedAPI.Controls.Camera.Disconnected += CameraConnection;
+
+            AdvancedAPI.Controls.Telescope.Connected += TelescopeConnection;
+            AdvancedAPI.Controls.Telescope.Disconnected += TelescopeConnection;
+
+            AdvancedAPI.Controls.Focuser.Connected += FocuserConnection;
+            AdvancedAPI.Controls.Focuser.Disconnected += FocuserConnection;
+
+            AdvancedAPI.Controls.Rotator.Connected += RotatorConnection;
+            AdvancedAPI.Controls.Rotator.Disconnected += RotatorConnection;
+
+            AdvancedAPI.Controls.Dome.Connected += DomeConnection;
+            AdvancedAPI.Controls.Dome.Disconnected += DomeConnection;
+
+            AdvancedAPI.Controls.FilterWheel.Connected += FocuserConnection;
+            AdvancedAPI.Controls.FilterWheel.Disconnected += FocuserConnection;
+
+            AdvancedAPI.Controls.Switch.Connected += SwitchConnection;
+            AdvancedAPI.Controls.Switch.Disconnected += SwitchConnection;
+
+            AdvancedAPI.Controls.SafetyMonitor.Connected += SafetyConnection;
+            AdvancedAPI.Controls.SafetyMonitor.Disconnected += SafetyConnection;
+
+            AdvancedAPI.Controls.Guider.Connected += GuiderConnection;
+            AdvancedAPI.Controls.Guider.Disconnected += GuiderConnection;
+
+            AdvancedAPI.Controls.FlatDevice.Connected += FlatConnection;
+            AdvancedAPI.Controls.FlatDevice.Disconnected += FlatConnection;
+
             AdvancedAPI.Controls.ImageSaveMediator.ImageSaved += ImageSaved;
 
             AdvancedAPI.Server.LogProcessor.NINALogEventSaved += LogProcessor_NINALogEventSaved;
@@ -80,150 +101,130 @@ namespace ninaAPI.WebService
 
         private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e) => await Send(new HttpResponse() { Response = e.type, Type = HttpResponse.TypeSocket });
 
-        private async void CameraChanged(object sender, PropertyChangedEventArgs e)
-        {
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            object value = AdvancedAPI.Controls.Camera.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
 
-            response.Response = new Dictionary<string, object>()
+        private async Task CameraConnection(object arg1, EventArgs arg2)
+        {
+            HttpResponse response = new HttpResponse();
+
+            response.Response = new Hashtable()
             {
-                { "Event", "CAMERA-CHANGED" },
-                { "PropertyName", e.PropertyName },
-                { "Value", value }
+                { "Event", "CAMERA-CONNECTION" },
+                { "Connected", AdvancedAPI.Controls.Camera.GetInfo().Connected }
             };
 
             await Send(response);
         }
 
-        private int telescopeCounter = 0;
 
-        private async void TelescopeChanged(object sender, PropertyChangedEventArgs e)
+        private async Task TelescopeConnection(object arg1, EventArgs arg2)
         {
-            telescopeCounter++;
-            if (telescopeCounter % 2 == 0) // less newtork traffic because of constant coordinate updating
-            {
-                return;
-            }
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            object value = AdvancedAPI.Controls.Telescope.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+            HttpResponse response = new HttpResponse();
 
-            response.Response = new Dictionary<string, object>()
+            response.Response = new Hashtable()
             {
-                { "Event", "TELESCOPE-CHANGED" },
-                { "PropertyName", e.PropertyName },
-                { "Value", value }
+                { "Event", "TELESCOPE-CONNECTION" },
+                { "Connected", AdvancedAPI.Controls.Telescope.GetInfo().Connected }
             };
 
             await Send(response);
         }
-        private async void FocuserChanged(object sender, PropertyChangedEventArgs e)
+        private async Task FocuserConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            object value = AdvancedAPI.Controls.Focuser.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+            HttpResponse response = new HttpResponse();
 
-            response.Response = new Dictionary<string, object>()
+            response.Response = new Hashtable()
             {
-                { "Event", "FOCUSER-CHANGED" },
-                { "PropertyName", e.PropertyName },
-                { "Value", value }
+                { "Event", "FOCUSER-CONNECTION" },
+                { "Connected", AdvancedAPI.Controls.Focuser.GetInfo().Connected }
             };
 
             await Send(response);
         }
-        private async void RotatorChanged(object sender, PropertyChangedEventArgs e)
-        {
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            object value = AdvancedAPI.Controls.Rotator.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
 
-            response.Response = new Dictionary<string, object>()
+        private async Task RotatorConnection(object arg1, EventArgs arg2)
+        {
+            HttpResponse response = new HttpResponse();
+
+            response.Response = new Hashtable()
             {
-                { "Event", "ROTATOR-CHANGED" },
-                { "PropertyName", e.PropertyName },
-                { "Value", value }
+                { "Event", "ROTATOR-CONNECTION" },
+                { "Connected", AdvancedAPI.Controls.Rotator.GetInfo().Connected }
             };
 
             await Send(response);
         }
-        private async void DomeChanged(object sender, PropertyChangedEventArgs e)
-        {
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            object value = AdvancedAPI.Controls.Dome.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
 
-            response.Response = new Dictionary<string, object>()
+        private async Task DomeConnection(object arg1, EventArgs arg2)
+        {
+            HttpResponse response = new HttpResponse();
+
+            response.Response = new Hashtable()
             {
-                { "Event", "DOME-CHANGED" },
-                { "PropertyName", e.PropertyName },
-                { "Value", value }
+                { "Event", "DOME-CONNECTION" },
+                { "Connected", AdvancedAPI.Controls.Dome.GetInfo().Connected }
             };
 
             await Send(response);
         }
-        private async void FWChanged(object sender, PropertyChangedEventArgs e)
-        {
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            object value = AdvancedAPI.Controls.FilterWheel.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
 
-            response.Response = new Dictionary<string, object>()
+        private async Task FWConnection(object arg1, EventArgs arg2)
+        {
+            HttpResponse response = new HttpResponse();
+
+            response.Response = new Hashtable()
             {
-                { "Event", "FILTERWHEEL-CHANGED" },
-                { "PropertyName", e.PropertyName },
-                { "Value", value }
+                { "Event", "FILTERWHEEL-CONNECTION" },
+                { "Connected", AdvancedAPI.Controls.FilterWheel.GetInfo().Connected }
             };
 
             await Send(response);
         }
-        private async void SwitchChanged(object sender, PropertyChangedEventArgs e)
-        {
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            object value = AdvancedAPI.Controls.Switch.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
 
-            response.Response = new Dictionary<string, object>()
+        private async Task SwitchConnection(object arg1, EventArgs arg2)
+        {
+            HttpResponse response = new HttpResponse();
+
+            response.Response = new Hashtable()
             {
-                { "Event", "SWITCH-CHANGED" },
-                { "PropertyName", e.PropertyName },
-                { "Value", value }
+                { "Event", "SWITCH-CONNECTION" },
+                { "Connected", AdvancedAPI.Controls.Switch.GetInfo().Connected }
             };
 
             await Send(response);
         }
-        private async void SafetyChanged(object sender, PropertyChangedEventArgs e)
+        private async Task SafetyConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            object value = AdvancedAPI.Controls.SafetyMonitor.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+            HttpResponse response = new HttpResponse();
 
-            response.Response = new Dictionary<string, object>()
+            response.Response = new Hashtable()
             {
-                { "Event", "SAFETY-CHANGED" },
-                { "PropertyName", e.PropertyName },
-                { "Value", value }
+                { "Event", "SAFETY-CONNECTION" },
+                { "Connected", AdvancedAPI.Controls.SafetyMonitor.GetInfo().Connected }
             };
 
             await Send(response);
         }
-        private async void GuiderChanged(object sender, PropertyChangedEventArgs e)
+        private async Task GuiderConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            object value = AdvancedAPI.Controls.Guider.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
+            HttpResponse response = new HttpResponse();
 
-            response.Response = new Dictionary<string, object>()
+            response.Response = new Hashtable()
             {
-                { "Event", "GUIDER-CHANGED" },
-                { "PropertyName", e.PropertyName },
-                { "Value", value }
+                { "Event", "GUIDER-CONNECTION" },
+                { "Connected", AdvancedAPI.Controls.Guider.GetInfo().Connected }
             };
 
             await Send(response);
         }
-        private async void FlatChanged(object sender, PropertyChangedEventArgs e)
-        {
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            object value = AdvancedAPI.Controls.FlatDevice.GetInfo().TryGetPropertyValue<object>(e.PropertyName);
 
-            response.Response = new Dictionary<string, object>()
+        private async Task FlatConnection(object arg1, EventArgs arg2)
+        {
+            HttpResponse response = new HttpResponse();
+
+            response.Response = new Hashtable()
             {
-                { "Event", "FLAT-CHANGED" },
-                { "PropertyName", e.PropertyName },
-                { "Value", value }
+                { "Event", "FLAT-CONNECTION" },
+                { "Connected", AdvancedAPI.Controls.FlatDevice.GetInfo().Connected }
             };
 
             await Send(response);

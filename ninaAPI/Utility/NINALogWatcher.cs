@@ -1,34 +1,39 @@
 ﻿using NINA.Core.Utility;
+using ninaAPI;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 
-namespace ninaAPI // copied from https://github.com/tcpalmer/nina.plugin.web/blob/main/NINA.Plugin.Web/NINA.Plugin.Web/LogEvent/NINALogWatcher.cs
+namespace ninaAPI
 {
+
     public class NINALogWatcher
     {
-        private Thread watcherThread;
-        private string LogFile;
-        private bool stopped;
         private NINALogMessageProcessor processor;
+        private string logDirectory;
+        private string activeLogFile;
+        private Thread watcherThread = null;
+        private bool stopped = false;
+        private AutoResetEvent autoReset = null;
 
         public NINALogWatcher(NINALogMessageProcessor processor)
         {
             this.processor = processor;
+            this.logDirectory = LogUtils.GetLogDirectory();
+            this.activeLogFile = getActiveLogFile(logDirectory);
         }
-        
+
         public void Start()
         {
-            LogFile = GetActiveLogFile();
-            if (LogFile != null)
+            Stop();
+
+            if (activeLogFile != null)
             {
-                watcherThread = new Thread(Watch);
-                watcherThread.Start();
+                Logger.Info($"web viewer: watching log file: {activeLogFile}");
+                stopped = false;
+                Watch(logDirectory, activeLogFile);
             }
         }
 
@@ -36,69 +41,82 @@ namespace ninaAPI // copied from https://github.com/tcpalmer/nina.plugin.web/blo
         {
             if (watcherThread != null)
             {
+                Logger.Debug("web viewer: stopping log watcher");
                 stopped = true;
-                watcherThread.Abort();
                 watcherThread = null;
             }
         }
 
-        private void Watch()
+        private void Watch(string logDirectory, string activeLogFile)
         {
-            FileSystemWatcher watcher = null;
-            try
-            {
-                AutoResetEvent autoReset = new AutoResetEvent(false);
-                watcher = new FileSystemWatcher(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NINA", "Logs"));
-                watcher.Filter = LogFile;
-                watcher.EnableRaisingEvents = true;
-                watcher.Changed += (sender, e) =>
+            watcherThread = new Thread(() => {
+                FileSystemWatcher fsWatcher = null;
+                try
                 {
-                    autoReset.Set();
-                };
+                    autoReset = new AutoResetEvent(false);
+                    fsWatcher = new FileSystemWatcher(logDirectory);
+                    fsWatcher.Filter = activeLogFile;
+                    fsWatcher.EnableRaisingEvents = true;
+                    fsWatcher.Changed += (s, e) => autoReset.Set();
 
-                FileStream fs = new FileStream(LogFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                using (StreamReader sr = new StreamReader(fs)) 
-                {
-                    List<string> lines = new List<string>();
-                    while (!stopped)
+                    FileStream fs = new FileStream(activeLogFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    using (StreamReader sr = new StreamReader(fs))
                     {
-                        string line = sr.ReadLine();
+                        List<string> lines = new List<string>();
+                        while (!stopped)
+                        {
+                            string line = sr.ReadLine();
 
-                        if (line != null)
-                        {
-                            lines.Add(line);
-                        }
-                        else
-                        {
-                            if (lines.Count > 0)
+                            if (line != null)
                             {
-                                processor.processLogMessages(lines);
-                                lines.Clear();
+                                lines.Add(line);
                             }
+                            else
+                            {
+                                if (lines.Count > 0)
+                                {
+                                    processor.processLogMessages(lines);
+                                    lines.Clear();
+                                }
 
-                            autoReset.WaitOne(2000);
+                                autoReset.WaitOne(2000);
+                            }
                         }
-                    }
 
-                    autoReset.Close();
+                        autoReset.Close();
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-            }
+                catch (Exception e)
+                {
+                    if (e is ThreadAbortException)
+                    {
+                        if (fsWatcher != null)
+                        {
+                            fsWatcher.EnableRaisingEvents = false;
+                            fsWatcher.Dispose();
+                        }
+
+                        Logger.Debug("web view log watcher has been stopped/aborted");
+                    }
+                    else
+                    {
+                        Logger.Warning($"failed to process log messages for web viewer: {e.Message} {e.StackTrace}");
+                    }
+                }
+            });
+
+            watcherThread.Name = "WSHV log watcher thread";
+            watcherThread.Start();
         }
 
-        private string GetActiveLogFile()
+        private string getActiveLogFile(string logDirectory)
         {
+
             try
             {
-                string logDirectory = Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "Logs");
-                string version = CoreUtil.Version;
-                int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
-                Regex re = new Regex(@"^\d{8}-\d{6}-" + $"{version}.{processId}.log$", RegexOptions.Compiled);
-
+                Regex re = new Regex(LogUtils.GetLogFileRE(), RegexOptions.Compiled);
                 List<string> fileList = new List<string>(Directory.GetFiles(logDirectory));
+
                 foreach (string file in fileList)
                 {
                     if (re.IsMatch(Path.GetFileName(file)))
@@ -107,14 +125,38 @@ namespace ninaAPI // copied from https://github.com/tcpalmer/nina.plugin.web/blo
                     }
                 }
 
-                Logger.Warning($"failed to find active NINA log file in {logDirectory}, cannot process log events for ninaAPI");
+                Logger.Warning($"failed to find active NINA log file in {logDirectory}, cannot process log events for web viewer");
                 return null;
             }
             catch (Exception e)
             {
-                Logger.Warning($"failed to find active NINA log file, cannot process log events for ninaAPI: {e.Message} {e.StackTrace}");
+                Logger.Warning($"failed to find active NINA log file in {logDirectory}, cannot process log events for web viewer: {e.Message} {e.StackTrace}");
                 return null;
             }
+        }
+    }
+
+    public class LogUtils
+    {
+
+        public static string GetLogDirectory()
+        {
+            return Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "Logs");
+        }
+
+        public static string GetLogFileRE()
+        {
+            // NINA log files match yyyyMMdd-HHmmss-VERSION.PID-yyyyMM.log - see NINA.Core.Utility.Logger.
+            // Note that daily log file rolling was added in Sept 2023 - that added the '-yyyyMMdd' to the end.
+            // It was then switched to monthly rolling in Oct 2023 so now '-yyyyMM' but RE will match either.
+
+            string version = CoreUtil.Version;
+            int processId = Environment.ProcessId;
+            return @"^\d{8}-\d{6}-" + $"{version}.{processId}" + @"-\d{6,8}.log$";
+        }
+
+        private LogUtils()
+        {
         }
     }
 }
