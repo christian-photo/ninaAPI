@@ -502,5 +502,16 @@ namespace ninaAPI.WebService.GET
 
             return result;
         }
+
+        public static HttpResponse GetSocketEventHistory()
+        {
+            List<object> result = new List<object>();
+            foreach (HttpResponse response in WebSocket.Events)
+            {
+                result.Add(response.Response);
+            }
+
+            return new HttpResponse() { Response = result };
+        }
     }
 }

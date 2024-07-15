@@ -119,42 +119,6 @@ namespace ninaAPI
             re = new Regex("^ASTAP - Plate solve failed.", options);
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_ERROR_PLATESOLVE, false, null));
 
-            // Connection: Camera
-            re = new Regex("^(Successfully connected Camera)|(Disconnected Camera)", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_CAMERA_CONNECTION_CHANGED, false, null));
-
-            // Connection: Telescope
-            re = new Regex("^(Successfully connected Telescope)|(Disconnected Telescope)", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_TELESCOPE_CONNECTION_CHANGED, false, null));
-
-            // Connection: Focuser
-            re = new Regex("^(Successfully connected Focuser)|(Disconnected Focuser)", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_FOCUSER_CONNECTION_CHANGED, false, null));
-
-            // Connection: Filterwheel
-            re = new Regex("^(Successfully connected Filter Wheel)|(Disconnected Filter Wheel)", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_FILTER_CONNECTION_CHANGED, false, null));
-
-            // Connection: Rotator
-            re = new Regex("^(Successfully connected Rotator)|(Disconnected Rotator)", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_ROTATOR_CONNECTION_CHANGED, false, null));
-
-            // Connection: Switch
-            re = new Regex("^(Successfully connected Switch)|(Disconnected Switch)", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_SWITCH_CONNECTION_CHANGED, false, null));
-
-            // Connection: Weather
-            re = new Regex("^(Successfully connected Weather)|(Disconnected Weather)", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_WEATHER_CONNECTION_CHANGED, false, null));
-
-            // Connection: Dome
-            re = new Regex("^(Successfully connected Dome)|(Disconnected Dome)", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_DOME_CONNECTION_CHANGED, false, null));
-
-            // Connection: Safteymonitor
-            re = new Regex("^(Successfully connected Safety Monitor)|(Disconnected Safety Monitor)", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_SAFETY_CONNECTION_CHANGED, false, null));
-
             return _matchers;
         }
 

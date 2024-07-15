@@ -136,6 +136,9 @@ namespace ninaAPI.WebService
                     case "list":
                         HttpContext.WriteToResponse(EquipmentMediator.GetSocketImageHistory(int.Parse(parameter)));
                         return;
+                    case "events":
+                        HttpContext.WriteToResponse(EquipmentMediator.GetSocketEventHistory());
+                        return;
                     default:
                         HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_PROPERTY));
                         return;
