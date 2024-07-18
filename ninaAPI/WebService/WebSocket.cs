@@ -123,7 +123,6 @@ namespace ninaAPI.WebService
             response.Response = new Hashtable()
             {
                 { "Event", "CAMERA-CONNECTION" },
-                { "Connected", AdvancedAPI.Controls.Camera.GetInfo().Connected },
                 { "Time", DateTime.Now },
             };
             Events.Add(response);
@@ -138,7 +137,6 @@ namespace ninaAPI.WebService
             response.Response = new Hashtable()
             {
                 { "Event", "TELESCOPE-CONNECTION" },
-                { "Connected", AdvancedAPI.Controls.Telescope.GetInfo().Connected },
                 { "Time", DateTime.Now },
             };
             Events.Add(response);
@@ -151,7 +149,6 @@ namespace ninaAPI.WebService
             response.Response = new Hashtable()
             {
                 { "Event", "FOCUSER-CONNECTION" },
-                { "Connected", AdvancedAPI.Controls.Focuser.GetInfo().Connected },
                 { "Time", DateTime.Now },
             };
             Events.Add(response);
@@ -165,7 +162,6 @@ namespace ninaAPI.WebService
             response.Response = new Hashtable()
             {
                 { "Event", "ROTATOR-CONNECTION" },
-                { "Connected", AdvancedAPI.Controls.Rotator.GetInfo().Connected },
                 { "Time", DateTime.Now },
             };
             Events.Add(response);
@@ -179,7 +175,6 @@ namespace ninaAPI.WebService
             response.Response = new Hashtable()
             {
                 { "Event", "DOME-CONNECTION" },
-                { "Connected", AdvancedAPI.Controls.Dome.GetInfo().Connected },
                 { "Time", DateTime.Now },
             };
             Events.Add(response);
@@ -193,7 +188,6 @@ namespace ninaAPI.WebService
             response.Response = new Hashtable()
             {
                 { "Event", "FILTERWHEEL-CONNECTION" },
-                { "Connected", AdvancedAPI.Controls.FilterWheel.GetInfo().Connected },
                 { "Time", DateTime.Now },
             };
             Events.Add(response);
@@ -207,7 +201,6 @@ namespace ninaAPI.WebService
             response.Response = new Hashtable()
             {
                 { "Event", "SWITCH-CONNECTION" },
-                { "Connected", AdvancedAPI.Controls.Switch.GetInfo().Connected },
                 { "Time", DateTime.Now },
             };
             Events.Add(response);
@@ -220,7 +213,6 @@ namespace ninaAPI.WebService
             response.Response = new Hashtable()
             {
                 { "Event", "SAFETY-CONNECTION" },
-                { "Connected", AdvancedAPI.Controls.SafetyMonitor.GetInfo().Connected },
                 { "Time", DateTime.Now },
             };
             Events.Add(response);
@@ -233,7 +225,6 @@ namespace ninaAPI.WebService
             response.Response = new Hashtable()
             {
                 { "Event", "GUIDER-CONNECTION" },
-                { "Connected", AdvancedAPI.Controls.Guider.GetInfo().Connected },
                 { "Time", DateTime.Now },
             };
             Events.Add(response);
@@ -247,7 +238,6 @@ namespace ninaAPI.WebService
             response.Response = new Hashtable()
             {
                 { "Event", "FLAT-CONNECTION" },
-                { "Connected", AdvancedAPI.Controls.FlatDevice.GetInfo().Connected },
                 { "Time", DateTime.Now },
             }; 
             Events.Add(response);
