@@ -42,8 +42,8 @@ namespace ninaAPI.WebService
             AdvancedAPI.Controls.Dome.Connected += DomeConnection;
             AdvancedAPI.Controls.Dome.Disconnected += DomeConnection;
 
-            AdvancedAPI.Controls.FilterWheel.Connected += FocuserConnection;
-            AdvancedAPI.Controls.FilterWheel.Disconnected += FocuserConnection;
+            AdvancedAPI.Controls.FilterWheel.Connected += FWConnection;
+            AdvancedAPI.Controls.FilterWheel.Disconnected += FWConnection;
 
             AdvancedAPI.Controls.Switch.Connected += SwitchConnection;
             AdvancedAPI.Controls.Switch.Disconnected += SwitchConnection;
