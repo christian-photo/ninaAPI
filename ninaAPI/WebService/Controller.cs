@@ -363,6 +363,12 @@ namespace ninaAPI.WebService
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(data.Device) || string.IsNullOrWhiteSpace(data.Action))
+            {
+                HttpContext.WriteToResponse(Utility.CreateErrorTable("POST Header not valid"));
+                return;
+            }
+
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
@@ -414,6 +420,10 @@ namespace ninaAPI.WebService
 
                     case "application":
                         HttpContext.WriteToResponse(await EquipmentController.Application(data));
+                        return;
+
+                    default:
+                        HttpContext.WriteToResponse(Utility.CreateErrorTable("Device not found"));
                         return;
                 }
             }
