@@ -34,7 +34,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/")]
         public string Index()
         {
-            return $"ninaAPI: https://github.com/rennmaus-coder/ninaAPI/wiki";
+            return $"ninaAPI: https://github.com/rennmaus-coder/ninaAPI/wiki/V2";
         }
 
         #region GET
