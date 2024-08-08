@@ -176,6 +176,26 @@ namespace ninaAPI
             }
         }
 
+        public bool UseV1
+        {
+            get => Settings.Default.StartV1;
+            set
+            {
+                Settings.Default.StartV1 = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public bool UseV2
+        {
+            get => Settings.Default.StartV2;
+            set
+            {
+                Settings.Default.StartV2 = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
         public string LocalAdress
         {
             get => Settings.Default.LocalAdress;

@@ -98,28 +98,6 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        [Route(HttpVerbs.Get, "/profile")]
-        public void GetProfile([QueryField] bool active = true)
-        {
-            if (!CheckSecurity())
-            {
-                return;
-            }
-
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
-            try
-            {
-                HttpContext.WriteToResponse(EquipmentMediatorV2.GetProfile(active));
-                return;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
-                return;
-            }
-        }
-
         [Route(HttpVerbs.Get, "/sequence")]
         public void GetSequence()
         {
@@ -162,6 +140,82 @@ namespace ninaAPI.WebService.V2
                 else
                 {
                     HttpContext.WriteToResponse(await EquipmentMediatorV2.GetImage(quality, index, Size.Empty));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
+
+        [Route(HttpVerbs.Get, "/profile")]
+        public void SetProfile([QueryField] string action = "", [QueryField] string profileid = "", [QueryField] string settingpath = "", [QueryField] object newValue = null, [QueryField] bool active = true)
+        {
+            if (!CheckSecurity())
+            {
+                return;
+            }
+
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            try
+            {
+                switch (action)
+                {
+                    case "switch":
+                        HttpContext.WriteToResponse(EquipmentControllerV2.SwitchProfile(profileid));
+                        return;
+                    case "change-value":
+                        HttpContext.WriteToResponse(EquipmentControllerV2.ChangeProfileValue(settingpath, newValue));
+                        return;
+                    case "show":
+                        HttpContext.WriteToResponse(EquipmentMediatorV2.GetProfile(active));
+                        return;
+                    default:
+                        HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION));
+                        return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
+
+        [Route(HttpVerbs.Get, "/application")]
+        public void Application([QueryField] string action = "", [QueryField] bool resize = false, [QueryField] int quality = -1, [QueryField] string size = "640x480", [QueryField] string tab = "")
+        {
+            if (!CheckSecurity())
+            {
+                return;
+            }
+
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            try
+            {
+
+                switch (action)
+                {
+                    case "switch-tab":
+                        HttpContext.WriteToResponse(EquipmentControllerV2.Application(tab));
+                        return;
+                    case "screenshot":
+                        if (resize)
+                        {
+                            string[] s = size.Split('x');
+                            int width = int.Parse(s[0]);
+                            int height = int.Parse(s[1]);
+                            HttpContext.WriteToResponse(EquipmentMediatorV2.Screenshot(quality, new Size(width, height)));
+                        }
+                        else
+                        {
+                            HttpContext.WriteToResponse(EquipmentMediatorV2.Screenshot(quality, Size.Empty));
+                        }
+                        return;
+                    default:
+                        HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION));
+                        return;
                 }
             }
             catch (Exception ex)
@@ -304,80 +358,6 @@ namespace ninaAPI.WebService.V2
 
                     default:
                         HttpContext.WriteToResponse(Utility.CreateErrorTable(new Error("Unknown Device", 400)));
-                        return;
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
-            }
-        }
-
-        [Route(HttpVerbs.Post, "/profile")]
-        public void SetProfile([QueryField] string action = "", [QueryField] string profileid = "", [QueryField] string settingpath = "", [QueryField] object newValue = null)
-        {
-            if (!CheckSecurity())
-            {
-                return;
-            }
-
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
-            try
-            {
-
-                switch (action)
-                {
-                    case "switch":
-                        HttpContext.WriteToResponse(EquipmentControllerV2.SwitchProfile(profileid));
-                        return;
-                    case "change-value":
-                        HttpContext.WriteToResponse(EquipmentControllerV2.ChangeProfileValue(settingpath, newValue));
-                        return;
-                    default:
-                        HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION));
-                        return;
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
-            }
-        }
-
-        [Route(HttpVerbs.Post, "/application")]
-        public void Application([QueryField] string action = "", [QueryField] bool resize = false, [QueryField] int quality = -1, [QueryField] string size = "640x480", [QueryField] string tab = "")
-        {
-            if (!CheckSecurity())
-            {
-                return;
-            }
-
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
-            try
-            {
-
-                switch (action)
-                {
-                    case "switch-tab":
-                        HttpContext.WriteToResponse(EquipmentControllerV2.Application(tab));
-                        return;
-                    case "screenshot":
-                        if (resize)
-                        {
-                            string[] s = size.Split('x');
-                            int width = int.Parse(s[0]);
-                            int height = int.Parse(s[1]);
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.Screenshot(quality, new Size(width, height)));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.Screenshot(quality, Size.Empty));
-                        }
-                        return;
-                    default:
-                        HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION));
                         return;
                 }
             }
