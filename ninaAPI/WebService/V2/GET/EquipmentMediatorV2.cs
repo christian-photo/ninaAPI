@@ -279,7 +279,7 @@ namespace ninaAPI.WebService.V2.GET
 
             if (size != Size.Empty) // Resize the image if requested
             {
-                double scaling = size.Width / screenshot.Width;
+                double scaling = (double)size.Width / screenshot.Width;
 
                 source = new TransformedBitmap(source, new ScaleTransform(scaling, scaling));
             }
