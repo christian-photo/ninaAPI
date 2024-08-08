@@ -10,22 +10,20 @@
 #endregion "copyright"
 
 using EmbedIO.WebSockets;
-using Namotion.Reflection;
 using Newtonsoft.Json;
 using NINA.Core.Utility;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ninaAPI.WebService
+namespace ninaAPI.WebService.V2
 {
-    public class WebSocket : WebSocketModule
+    public class WebSocketV2 : WebSocketModule
     {
-        public WebSocket(string urlPath) : base(urlPath, true)
+        public WebSocketV2(string urlPath) : base(urlPath, true)
         {
             AdvancedAPI.Controls.Camera.Connected += CameraConnection;
             AdvancedAPI.Controls.Camera.Disconnected += CameraConnection;
@@ -77,22 +75,25 @@ namespace ninaAPI.WebService
             response.Response = new Dictionary<string, object>()
             {
                 { "Event", "IMAGE-SAVE" },
-                { "ExposureTime", e.Duration },
-                { "Index", e.MetaData.Image.Id - 1 },
-                { "Filter", e.Filter },
-                { "RmsText", e.MetaData.Image.RecordedRMS.TotalText },
-                { "Temperature", e.MetaData.Camera.Temperature },
-                { "CameraName", e.MetaData.Camera.Name },
-                { "Gain", e.MetaData.Camera.Gain },
-                { "Offset", e.MetaData.Camera.Offset },
-                { "Date", DateTime.Now },
-                { "TelescopeName", e.MetaData.Telescope.Name },
-                { "FocalLength", e.MetaData.Telescope.FocalLength },
-                { "StDev", e.Statistics.StDev },
-                { "Mean", e.Statistics.Mean },
-                { "Median", e.Statistics.Median },
-                { "Stars", e.StarDetectionAnalysis.DetectedStars },
-                { "HFR", e.StarDetectionAnalysis.HFR }
+                { "ImageStatistics", new Dictionary<string, object>() { 
+                    { "ExposureTime", e.Duration },
+                    { "Index", e.MetaData.Image.Id - 1 },
+                    { "Filter", e.Filter },
+                    { "RmsText", e.MetaData.Image.RecordedRMS.TotalText },
+                    { "Temperature", e.MetaData.Camera.Temperature },
+                    { "CameraName", e.MetaData.Camera.Name },
+                    { "Gain", e.MetaData.Camera.Gain },
+                    { "Offset", e.MetaData.Camera.Offset },
+                    { "Date", DateTime.Now },
+                    { "TelescopeName", e.MetaData.Telescope.Name },
+                    { "FocalLength", e.MetaData.Telescope.FocalLength },
+                    { "StDev", e.Statistics.StDev },
+                    { "Mean", e.Statistics.Mean },
+                    { "Median", e.Statistics.Median },
+                    { "Stars", e.StarDetectionAnalysis.DetectedStars },
+                    { "HFR", e.StarDetectionAnalysis.HFR }
+                    }
+                }
             };
 
             Images.Add(response);

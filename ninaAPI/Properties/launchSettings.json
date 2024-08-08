@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ninaAPI": {
+      "commandName": "Project"
+    },
+    "Debug NINA": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\N.I.N.A. - Nighttime Imaging 'N' Astronomy\\NINA.exe"
+    }
+  }
+}

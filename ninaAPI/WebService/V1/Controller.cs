@@ -14,14 +14,14 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using ninaAPI.Properties;
-using ninaAPI.WebService.GET;
-using ninaAPI.WebService.SET;
+using ninaAPI.WebService.V1.GET;
+using ninaAPI.WebService.V1.SET;
 using System;
 using System.Collections;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
-namespace ninaAPI.WebService
+namespace ninaAPI.WebService.V1
 {
     public class Controller : WebApiController
     {
@@ -269,43 +269,43 @@ namespace ninaAPI.WebService
                 switch (property)
                 {
                     case "camera":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Camera, parameter));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Camera));
                         return;
 
                     case "telescope":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Telescope, parameter));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Telescope));
                         return;
 
                     case "focuser":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Focuser, parameter));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Focuser));
                         return;
 
                     case "filterwheel":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.FilterWheel, parameter));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.FilterWheel));
                         return;
 
                     case "guider":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Guider, parameter));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Guider));
                         return;
 
                     case "dome":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Dome, parameter));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Dome));
                         return;
 
                     case "rotator":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Rotator, parameter));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Rotator));
                         return;
 
                     case "safetymonitor":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.SafteyMonitor, parameter));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.SafetyMonitor));
                         return;
 
                     case "flatdevice":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.FlatDevice, parameter));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.FlatDevice));
                         return;
 
                     case "switch":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Switch, parameter));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Switch));
                         return;
 
                     case "image":
@@ -317,7 +317,7 @@ namespace ninaAPI.WebService
                         return;
 
                     case "weather":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Weather, parameter));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Weather));
                         return;
 
                     default:

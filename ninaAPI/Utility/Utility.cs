@@ -33,6 +33,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Media.Imaging;
 using System.Windows;
+using ninaAPI.WebService;
 
 namespace ninaAPI
 {
@@ -77,8 +78,6 @@ namespace ninaAPI
             {
                 names.Add("IPADRESS", ipv4);
             }
-
-            Logger.Debug("Local names: " + names.Values.MakeString());
 
             return names;
         }
@@ -168,9 +167,14 @@ namespace ninaAPI
             }
         }
 
-        public static HttpResponse CreateErrorTable(string message)
+        public static HttpResponse CreateErrorTable(string message, int code = 500)
         {
-            return new HttpResponse() { Error = message, Success = false };
+            return new HttpResponse() { Error = message, Success = false , StatusCode = code };
+        }
+
+        public static HttpResponse CreateErrorTable(Error error)
+        {
+            return new HttpResponse() { Error = error.message, Success = false , StatusCode = error.code };
         }
 
         public static void WriteToResponse(this IHttpContext context, string json)
@@ -267,6 +271,7 @@ namespace ninaAPI
         
         public object Response { get; set; } = string.Empty;
         public string Error { get; set; } = string.Empty;
+        public int StatusCode { get; set; } = 200;
         public bool Success { get; set; } = true;
         public string Type { get; set; } = TypeAPI;
     }
@@ -282,7 +287,7 @@ namespace ninaAPI
         Guider,
         FlatDevice,
         Switch,
-        SafteyMonitor,
+        SafetyMonitor,
         Weather
     }
 

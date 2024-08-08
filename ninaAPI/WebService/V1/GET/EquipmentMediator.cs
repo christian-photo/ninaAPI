@@ -24,6 +24,7 @@ using NINA.Sequencer.Container;
 using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using NINA.WPF.Base.Model;
+using ninaAPI.WebService.V1;
 using OxyPlot;
 using System;
 using System.Collections;
@@ -36,13 +37,12 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
-namespace ninaAPI.WebService.GET
+namespace ninaAPI.WebService.V1.GET
 {
     public class EquipmentMediator
     {
-        public static HttpResponse GetDeviceInfo(EquipmentType deviceType, string parameter)
+        public static HttpResponse GetDeviceInfo(EquipmentType deviceType)
         {
             HttpResponse response = new HttpResponse();
             switch (deviceType)
@@ -51,7 +51,7 @@ namespace ninaAPI.WebService.GET
                     ICameraMediator cam = AdvancedAPI.Controls.Camera;
                     response.Response = cam.GetInfo().GetAllProperties();
                     return response;
-                    
+
                 case EquipmentType.Focuser:
                     IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
                     response.Response = focuser.GetInfo().GetAllProperties();
@@ -87,7 +87,7 @@ namespace ninaAPI.WebService.GET
                     response.Response = rotator.GetInfo().GetAllProperties();
                     return response;
 
-                case EquipmentType.SafteyMonitor:
+                case EquipmentType.SafetyMonitor:
                     ISafetyMonitorMediator safety = AdvancedAPI.Controls.SafetyMonitor;
                     response.Response = safety.GetInfo().GetAllProperties();
                     return response;
@@ -247,9 +247,9 @@ namespace ninaAPI.WebService.GET
                     return new HttpResponse() { Response = profileService.ActiveProfile };
                 }
                 return Utility.CreateErrorTable("Unknown parameter");
-                
-            } 
-            catch(Exception ex)
+
+            }
+            catch (Exception ex)
             {
                 Logger.Error(ex);
                 return Utility.CreateErrorTable(ex.Message);
@@ -431,7 +431,7 @@ namespace ninaAPI.WebService.GET
                     {
                         List<Hashtable> tables = new List<Hashtable>();
 
-                        foreach (object item in obj as Object[])
+                        foreach (object item in obj as object[])
                         {
                             tables.Add(GetAllProperties(item));
                         }
@@ -495,7 +495,8 @@ namespace ninaAPI.WebService.GET
                     }
                     result.Add(info.Name, obj.ToString());
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Logger.Error(ex);
             }

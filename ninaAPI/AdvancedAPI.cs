@@ -107,6 +107,7 @@ namespace ninaAPI
             if (APIEnabled)
             {
                 Server = new API();
+                Server.Start();
 
                 SetHostNames();
             }
