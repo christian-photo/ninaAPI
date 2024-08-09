@@ -230,7 +230,7 @@ namespace ninaAPI.WebService.V2
         #region Equipment
 
         [Route(HttpVerbs.Get, "/equipment/{device}/{action}")]
-        public async Task EquipmentHandler(string device, string action)
+        public async Task EquipmentHandler(string device, string action, [QueryField] float position)
         {
             if (!CheckSecurity())
             {
@@ -315,7 +315,7 @@ namespace ninaAPI.WebService.V2
                         }
                         else
                         {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.Rotator(action));
+                            HttpContext.WriteToResponse(await EquipmentControllerV2.Rotator(action, position));
                         }
                         return;
 

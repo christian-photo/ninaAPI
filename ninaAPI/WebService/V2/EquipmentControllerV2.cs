@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using NINA.Core.Model.Equipment;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile;
@@ -28,6 +29,7 @@ namespace ninaAPI.WebService.V2
         private static CancellationTokenSource GuideToken;
         private static CancellationTokenSource AFToken;
         private static CancellationTokenSource DomeToken;
+        private static CancellationTokenSource RotatorToken;
 
         public static async Task<HttpResponse> Camera(string action)
         {
@@ -189,12 +191,11 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        public static async Task<HttpResponse> Rotator(string action)
+        public static async Task<HttpResponse> Rotator(string action, float position)
         {
             HttpResponse response = new HttpResponse();
             IRotatorMediator rotator = AdvancedAPI.Controls.Rotator;
 
-            // TODO: Implement Rotator Move
 
             if (action.Equals("connect"))
             {
@@ -213,6 +214,30 @@ namespace ninaAPI.WebService.V2
                     await rotator.Disconnect();
                 }
                 response.Response = "Rotator disconnected";
+                return response;
+            }
+            else if (action.Equals("move"))
+            {
+                if (!rotator.GetInfo().Connected)
+                {
+                    return Utility.CreateErrorTable(new Error("Rotator not connected", 409));
+                }
+                RotatorToken?.Cancel();
+                RotatorToken = new CancellationTokenSource();
+                rotator.Move(position, RotatorToken.Token);
+                response.Response = "Rotator move started";
+                return response;
+            }
+            else if (action.Equals("move-mechanical"))
+            {
+                if (!rotator.GetInfo().Connected)
+                {
+                    return Utility.CreateErrorTable(new Error("Rotator not connected", 409));
+                }
+                RotatorToken?.Cancel();
+                RotatorToken = new CancellationTokenSource();
+                rotator.MoveMechanical(position, RotatorToken.Token);
+                response.Response = "Rotator move started";
                 return response;
             }
             else
