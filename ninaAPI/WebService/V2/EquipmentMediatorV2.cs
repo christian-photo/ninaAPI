@@ -9,12 +9,12 @@
 
 #endregion "copyright"
 
+using Accord.Math.Distances;
 using Newtonsoft.Json;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Image.ImageAnalysis;
-using NINA.Image.ImageData;
 using NINA.Image.Interfaces;
 using NINA.Profile;
 using NINA.Profile.Interfaces;
@@ -26,13 +26,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace ninaAPI.WebService.V2.GET
+namespace ninaAPI.WebService.V2
 {
     public class EquipmentMediatorV2
     {
@@ -45,7 +44,7 @@ namespace ninaAPI.WebService.V2.GET
                     ICameraMediator cam = AdvancedAPI.Controls.Camera;
                     response.Response = cam.GetInfo().GetAllProperties();
                     return response;
-                    
+
                 case EquipmentType.Focuser:
                     IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
                     response.Response = focuser.GetInfo().GetAllProperties();
@@ -114,7 +113,7 @@ namespace ninaAPI.WebService.V2.GET
                     result.Add(((Dictionary<string, object>)response.Response)["ImageStatistics"]);
                 }
             }
-            else if (index > 0 && index < WebSocketV2.Images.Count)
+            else if (index >= 0 && index < WebSocketV2.Images.Count)
             {
                 result.Add(((Dictionary<string, object>)WebSocketV2.Images[index].Response)["ImageStatistics"]);
             }
@@ -160,8 +159,8 @@ namespace ninaAPI.WebService.V2.GET
                 {
                     return new HttpResponse() { Response = profileService.ActiveProfile };
                 }
-                
-            } 
+
+            }
             catch (Exception ex)
             {
                 Logger.Error(ex);
@@ -234,13 +233,9 @@ namespace ninaAPI.WebService.V2.GET
                 IList<IDeepSkyObjectContainer> targets = Sequence.GetAllTargets();
                 if (targets.Count == 0)
                 {
-                    return Utility.CreateErrorTable(new Error("Sequence is empty", 409));
+                    return Utility.CreateErrorTable(new Error("No DSO Container found", 409));
                 }
-                response.Response = JsonConvert.DeserializeObject(
-                    JsonConvert.SerializeObject(
-                        (SequenceRootContainer)targets[0].Parent.Parent,
-                        typeof(SequenceRootContainer),
-                        new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore, ContractResolver = new IgnorePropertiesResolver(["Parent"]) }));
+                response.Response = getSequenceRecursivley(targets[0].Parent.Parent);
                 return response;
             }
             catch (Exception ex)
@@ -299,8 +294,37 @@ namespace ninaAPI.WebService.V2.GET
 
                 response.Response = Utility.EncoderToBase64(encoder);
             }
-            
+
             return response;
+        }
+
+        private static List<Hashtable> getSequenceRecursivley(ISequenceContainer sequence)
+        {
+            List<Hashtable> result = new List<Hashtable>();
+            foreach (var item in sequence.Items)
+            {
+                if (item is ISequenceContainer container)
+                {
+                    result.Add(new Hashtable() 
+                    { 
+                        { "Name", item.Name + "_Container" } ,
+                        { "Status", item.Status.ToString() },
+                        { "Description", item.Description },
+                        { "Items", getSequenceRecursivley(container) }
+                    });
+                }
+                else
+                {
+                    result.Add(new Hashtable()
+                    {
+                        { "Name", item.Name },
+                        { "Status", item.Status.ToString() },
+                        { "Description", item.Description }
+                    });
+                }
+            }
+
+            return result;
         }
     }
 }

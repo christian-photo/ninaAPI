@@ -14,14 +14,16 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile;
 using NINA.Sequencer.Interfaces.Mediator;
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
-namespace ninaAPI.WebService.V2.SET
+namespace ninaAPI.WebService.V1
 {
-    public class EquipmentControllerV2
+    public class EquipmentController
     {
         private static CancellationTokenSource SequenceToken;
         private static CancellationTokenSource SlewToken;
@@ -29,68 +31,58 @@ namespace ninaAPI.WebService.V2.SET
         private static CancellationTokenSource AFToken;
         private static CancellationTokenSource DomeToken;
 
-        public static async Task<HttpResponse> Camera(string action)
+        public static async Task<HttpResponse> Camera(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ICameraMediator cam = AdvancedAPI.Controls.Camera;
 
-            if (action.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!cam.GetInfo().Connected)
                 {
                     await cam.Rescan();
                     await cam.Connect();
                 }
-                response.Response = "Camera connected";
                 return response;
             }
-            if (action.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (cam.GetInfo().Connected)
                 {
                     await cam.Disconnect();
                 }
-                response.Response = "Camera disconnected";
                 return response;
             }
-            if (action.Equals("abort-exposure"))
+            if (data.Action.Equals("abort-exposure"))
             {
                 cam.AbortExposure();
-                response.Response = "Exposure aborted";
-                return response;
             }
-            else
-            {
-                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
-                return response;
-            }
+            return response;
         }
 
-        public static async Task<HttpResponse> Telescope(string action)
+        public static async Task<HttpResponse> Telescope(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ITelescopeMediator telescope = AdvancedAPI.Controls.Telescope;
 
-            if (action.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!telescope.GetInfo().Connected)
                 {
                     await telescope.Rescan();
                     await telescope.Connect();
                 }
-                response.Response = "Telescope connected";
                 return response;
             }
-            else if (action.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (telescope.GetInfo().Connected)
                 {
                     await telescope.Disconnect();
                 }
-                response.Response = "Telescope disconnected";
                 return response;
             }
-            else if (action.Equals("park"))
+            if (data.Action.Equals("park"))
             {
                 if (telescope.GetInfo().Slewing)
                 {
@@ -99,10 +91,10 @@ namespace ninaAPI.WebService.V2.SET
                 SlewToken?.Cancel();
                 SlewToken = new CancellationTokenSource();
                 telescope.ParkTelescope(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewToken.Token);
-                response.Response = "Parking";
+                response.Response = "Park in progress";
                 return response;
             }
-            else if (action.Equals("unpark"))
+            if (data.Action.Equals("unpark"))
             {
                 if (!telescope.GetInfo().AtPark)
                 {
@@ -111,40 +103,35 @@ namespace ninaAPI.WebService.V2.SET
                 SlewToken?.Cancel();
                 SlewToken = new CancellationTokenSource();
                 telescope.UnparkTelescope(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewToken.Token);
-                response.Response = "Unparking";
-                return response;
-            }            else
-            {
-                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
+                response.Response = "Unpark in progress";
                 return response;
             }
+            return response;
         }
 
-        public static async Task<HttpResponse> Focuser(string action)
+        public static async Task<HttpResponse> Focuser(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
 
-            if (action.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!focuser.GetInfo().Connected)
                 {
                     await focuser.Rescan();
                     await focuser.Connect();
                 }
-                response.Response = "Focuser connected";
                 return response;
             }
-            else if (action.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (focuser.GetInfo().Connected)
                 {
                     await focuser.Disconnect();
                 }
-                response.Response = "Focuser disconnected";
                 return response;
             }
-            else if (action.Equals("auto-focus"))
+            if (data.Action.Equals("auto-focus"))
             {
                 if (AFToken != null)
                 {
@@ -152,103 +139,85 @@ namespace ninaAPI.WebService.V2.SET
                 }
                 AFToken = new CancellationTokenSource();
                 AdvancedAPI.Controls.AutoFocusFactory.Create().StartAutoFocus(AdvancedAPI.Controls.FilterWheel.GetInfo().SelectedFilter, AFToken.Token, AdvancedAPI.Controls.StatusMediator.GetStatus());
-                response.Response = "AutoFocus started";
+                response.Response = "AutoFocus in progress";
                 return response;
             }
-            else
-            {
-                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
-                return response;
-            }
+            return response;
         }
 
-        public static async Task<HttpResponse> Rotator(string action)
+        public static async Task<HttpResponse> Rotator(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IRotatorMediator rotator = AdvancedAPI.Controls.Rotator;
 
-            if (action.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!rotator.GetInfo().Connected)
                 {
                     await rotator.Rescan();
                     await rotator.Connect();
                 }
-                response.Response = "Rotator connected";
                 return response;
             }
-            else if (action.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (rotator.GetInfo().Connected)
                 {
                     await rotator.Disconnect();
                 }
-                response.Response = "Rotator disconnected";
                 return response;
             }
-            else
-            {
-                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
-                return response;
-            }
+            return response;
         }
 
-        public static async Task<HttpResponse> FilterWheel(string action)
+        public static async Task<HttpResponse> FilterWheel(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
 
-            if (action.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!filterwheel.GetInfo().Connected)
                 {
                     await filterwheel.Rescan();
                     await filterwheel.Connect();
                 }
-                response.Response = "Filterwheel connected";
                 return response;
             }
-            else if (action.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (filterwheel.GetInfo().Connected)
                 {
                     await filterwheel.Disconnect();
                 }
-                response.Response = "Filterwheel disconnected";
                 return response;
             }
-            else
-            {
-                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
-                return response;
-            }
+            return response;
         }
 
-        public static async Task<HttpResponse> Dome(string action)
+        public static async Task<HttpResponse> Dome(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IDomeMediator dome = AdvancedAPI.Controls.Dome;
 
-            if (action.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!dome.GetInfo().Connected)
                 {
                     await dome.Rescan();
                     await dome.Connect();
                 }
-                response.Response = "Dome connected";
                 return response;
             }
-            else if (action.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (dome.GetInfo().Connected)
                 {
                     await dome.Disconnect();
                 }
-                response.Response = "Dome disconnected";
                 return response;
             }
-            else if (action.Equals("open"))
+            if (data.Action.Equals("open"))
             {
                 if (dome.GetInfo().ShutterStatus == ShutterState.ShutterOpen || dome.GetInfo().ShutterStatus == ShutterState.ShutterOpening)
                 {
@@ -258,10 +227,9 @@ namespace ninaAPI.WebService.V2.SET
                 DomeToken?.Cancel();
                 DomeToken = new CancellationTokenSource();
                 dome.OpenShutter(DomeToken.Token);
-                response.Response = "Shutter opening";
                 return response;
             }
-            else if (action.Equals("close"))
+            if (data.Action.Equals("close"))
             {
                 if (dome.GetInfo().ShutterStatus == ShutterState.ShutterClosed || dome.GetInfo().ShutterStatus == ShutterState.ShutterClosing)
                 {
@@ -271,260 +239,237 @@ namespace ninaAPI.WebService.V2.SET
                 DomeToken?.Cancel();
                 DomeToken = new CancellationTokenSource();
                 dome.CloseShutter(DomeToken.Token);
-                response.Response = "Shutter closing";
                 return response;
             }
-            else if (action.Equals("stop")) // Can only stop movement that was started by the api
+            if (data.Action.Equals("stop"))
             {
                 DomeToken?.Cancel();
-                response.Response = "Movement stopped";
                 return response;
             }
-            else
-            {
-                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
-                return response;
-            }
+            return response;
         }
 
-        public static async Task<HttpResponse> Switch(string action)
+        public static async Task<HttpResponse> Switch(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ISwitchMediator switches = AdvancedAPI.Controls.Switch;
 
-            if (action.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!switches.GetInfo().Connected)
                 {
                     await switches.Rescan();
                     await switches.Connect();
                 }
-                response.Response = "Switch connected";
                 return response;
             }
-            else if (action.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (switches.GetInfo().Connected)
                 {
                     await switches.Disconnect();
                 }
-                response.Response = "Switch disconnected";
                 return response;
             }
-            else
-            {
-                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
-                return response;
-            }
+            return response;
         }
 
-        public static async Task<HttpResponse> Guider(string action)
+        public static async Task<HttpResponse> Guider(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IGuiderMediator guider = AdvancedAPI.Controls.Guider;
 
-            if (action.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!guider.GetInfo().Connected)
                 {
                     await guider.Rescan();
                     await guider.Connect();
                 }
-                response.Response = "Guider connected";
                 return response;
             }
-            else if (action.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (guider.GetInfo().Connected)
                 {
                     await guider.Disconnect();
                 }
-                response.Response = "Guider disconnected";
                 return response;
             }
-            else if (action.Equals("start"))
+            if (data.Action.Equals("start"))
             {
                 if (guider.GetInfo().Connected)
                 {
                     GuideToken?.Cancel();
                     GuideToken = new CancellationTokenSource();
                     await guider.StartGuiding(false, AdvancedAPI.Controls.StatusMediator.GetStatus(), GuideToken.Token);
-                    response.Response = "Guiding started";
                     return response;
                 }
-                return Utility.CreateErrorTable(new Error("Guider not connected", 409));
+                return Utility.CreateErrorTable("Guider not connected");
             }
-            else if (action.Equals("stop"))
+            if (data.Action.Equals("stop"))
             {
                 if (guider.GetInfo().Connected)
                 {
                     await guider.StopGuiding(GuideToken.Token);
-                    response.Response = "Guiding stopped";
                     return response;
                 }
-                return Utility.CreateErrorTable(new Error("Guider not connected", 409));
+                return Utility.CreateErrorTable("Guider not connected");
             }
-            else
-            {
-                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
-                return response;
-            }
+            return response;
         }
 
-        public static async Task<HttpResponse> FlatDevice(string action)
+        public static async Task<HttpResponse> FlatDevice(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             IFlatDeviceMediator flat = AdvancedAPI.Controls.FlatDevice;
 
-            if (action.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!flat.GetInfo().Connected)
                 {
                     await flat.Rescan();
                     await flat.Connect();
                 }
-                response.Response = "FlatDevice connected";
                 return response;
             }
-            else if (action.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (flat.GetInfo().Connected)
                 {
                     await flat.Disconnect();
                 }
-                response.Response = "FlatDevice disconnected";
                 return response;
             }
-            else
-            {
-                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
-                return response;
-            }
+            return response;
         }
 
-        public static async Task<HttpResponse> SafetyMonitor(string action)
+        public static async Task<HttpResponse> SafetyMonitor(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ISafetyMonitorMediator safety = AdvancedAPI.Controls.SafetyMonitor;
 
-            if (action.Equals("connect"))
+            if (data.Action.Equals("connect"))
             {
                 if (!safety.GetInfo().Connected)
                 {
                     await safety.Rescan();
                     await safety.Connect();
                 }
-                response.Response = "Safetymonitor connected";
                 return response;
             }
-            else if (action.Equals("disconnect"))
+            if (data.Action.Equals("disconnect"))
             {
                 if (safety.GetInfo().Connected)
                 {
                     await safety.Disconnect();
                 }
-                response.Response = "Safetymonitor disconnected";
                 return response;
             }
-            else
-            {
-                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
-                return response;
-            }
+            return response;
         }
 
-        public static async Task<HttpResponse> Sequence(string action)
+        public static async Task<HttpResponse> Sequence(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
 
-            if (action.Equals("start"))
+            if (data.Action.Equals("start"))
             {
                 SequenceToken = new CancellationTokenSource();
                 sequence.GetAllTargets()[0].Parent.Parent.Run(AdvancedAPI.Controls.StatusMediator.GetStatus(), SequenceToken.Token);
-                response.Response = "Sequence started";
+                response.Response = "Sequence in progress";
                 return response;
             }
-            else if (action.Equals("stop")) // Can only stop the sequence if it was started by the api
+            else if (data.Action.Equals("stop"))
             {
                 SequenceToken?.Cancel();
-                response.Response = "Sequence stopped";
                 return response;
             }
-            else
-            {
-                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
-                return response;
-            }
+            return response;
         }
 
-        public static async Task<HttpResponse> Application(string applicationTab)
+        public static async Task<HttpResponse> Application(POSTData data)
         {
             HttpResponse response = new HttpResponse();
 
-            response.Response = "Switched tab";
-            switch (applicationTab)
+            if (data.Action.Equals("screenshot")) // Captures a screenshot and returns it base64 encoded
             {
-                case "equipment":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.EQUIPMENT);
-                    return response;
-                case "skyatlas":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.SKYATLAS);
-                    return response;
-                case "framing":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.FRAMINGASSISTANT);
-                    return response;
-                case "flatwizard":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.FLATWIZARD);
-                    return response;
-                case "sequencer":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.SEQUENCE);
-                    return response;
-                case "imaging":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.IMAGING);
-                    return response;
-                case "options":
-                    AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.OPTIONS);
-                    return response;
-                default:
-                    return Utility.CreateErrorTable(new Error("Invalid ApplicationTab", 400));
+                using (Bitmap bmpScreenCapture = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
+                                            Screen.PrimaryScreen.Bounds.Height))
+                {
+                    using (Graphics g = Graphics.FromImage(bmpScreenCapture))
+                    {
+                        g.CopyFromScreen(Screen.PrimaryScreen.Bounds.X,
+                                         Screen.PrimaryScreen.Bounds.Y,
+                                         0, 0,
+                                         bmpScreenCapture.Size,
+                                         CopyPixelOperation.SourceCopy);
+                    }
+
+                    response.Response = Utility.BitmapToBase64(bmpScreenCapture);
+                }
+                return response;
             }
+            if (data.Action.Equals("switch"))
+            {
+                switch (data.Parameter[0])
+                {
+                    case "equipment":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.EQUIPMENT);
+                        return response;
+                    case "skyatlas":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.SKYATLAS);
+                        return response;
+                    case "framing":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.FRAMINGASSISTANT);
+                        return response;
+                    case "flatwizard":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.FLATWIZARD);
+                        return response;
+                    case "sequencer":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.SEQUENCE);
+                        return response;
+                    case "imaging":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.IMAGING);
+                        return response;
+                    case "options":
+                        AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.OPTIONS);
+                        return response;
+                    default:
+                        return Utility.CreateErrorTable("Invalid parameter");
+                }
+            }
+            return response;
         }
 
-        public static HttpResponse ChangeProfileValue(string settingPath, object newValue)
+        public static HttpResponse ChangeProfileValue(POSTData data)
         {
             HttpResponse response = new HttpResponse();
-            if (string.IsNullOrEmpty(settingPath))
-            {
-                return Utility.CreateErrorTable(new Error("Invalid Path", 400));
-            }
-            if (newValue is null)
-            {
-                return Utility.CreateErrorTable(new Error("new value can't be null", 400));
-            }
+            if (string.IsNullOrEmpty(data.Action))
+                return Utility.CreateErrorTable("Invalid Path");
 
-            string[] pathSplit = settingPath.Split('-'); // e.g. 'CameraSettings-PixelSize' -> CameraSettings, PixelSize
+            string[] pathSplit = data.Action.Split('-'); // CameraSettings, PixelSize
             object position = AdvancedAPI.Controls.Profile.ActiveProfile;
-
-            if (pathSplit.Length == 1)
+            if (pathSplit.Length == 0)
             {
-                position.GetType().GetProperty(settingPath).SetValue(position, newValue);
+                position.GetType().GetProperty((string)data.Parameter[0]).SetValue(position, data.Parameter[0]);
                 return response;
             }
             for (int i = 0; i <= pathSplit.Length - 2; i++)
             {
                 position = position.GetType().GetProperty(pathSplit[i]).GetValue(position);
             }
-            PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
-            prop.SetValue(position, ((string)newValue).CastString(prop.PropertyType));
+            PropertyInfo prop = position.GetType().GetProperty(pathSplit[pathSplit.Length - 1]);
+            prop.SetValue(position, ((string)data.Parameter[0]).CastString(prop.PropertyType));
             response.Response = "Updated setting";
             return response;
         }
 
-        public static HttpResponse SwitchProfile(string profileID)
+        public static HttpResponse SwitchProfile(POSTData data)
         {
             HttpResponse response = new HttpResponse();
-            Guid guid = Guid.Parse(profileID);
+            Guid guid = Guid.Parse(data.Action);
             ProfileMeta profile = AdvancedAPI.Controls.Profile.Profiles.Where(x => x.Id == guid).FirstOrDefault();
             AdvancedAPI.Controls.Profile.SelectProfile(profile);
             response.Response = "Successfully switched profile";

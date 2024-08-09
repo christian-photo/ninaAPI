@@ -14,8 +14,6 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using ninaAPI.Properties;
-using ninaAPI.WebService.V2.GET;
-using ninaAPI.WebService.V2.SET;
 using System;
 using System.Drawing;
 using System.Security.Cryptography;
@@ -25,11 +23,6 @@ namespace ninaAPI.WebService.V2
 {
     public class ControllerV2 : WebApiController
     {
-        private const string MISSING_API_KEY = "API Key is missing in the header";
-        private const string INVALID_API_KEY = "API Key is not valid";
-        private const string PROPERTY_NOT_SEND = "Property was not send";
-        private const string INVALID_PROPERTY = "Property is not valid";
-        private const string UNKNOWN_ERROR = "Unknown error";
 
         [Route(HttpVerbs.Get, "/")]
         public string Index()
@@ -99,7 +92,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/sequence")]
-        public void GetSequence()
+        public void GetSequence([QueryField] string action, [QueryField] bool skipValidation)
         {
             if (!CheckSecurity())
             {
@@ -109,7 +102,14 @@ namespace ninaAPI.WebService.V2
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
-                HttpContext.WriteToResponse(EquipmentMediatorV2.GetSequence());
+                if (string.IsNullOrEmpty(action))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetSequence());
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(EquipmentControllerV2.Sequence(action, skipValidation));
+                }
             }
             catch (Exception ex)
             {
@@ -243,7 +243,7 @@ namespace ninaAPI.WebService.V2
                 switch (device)
                 {
                     case "camera":
-                        if (!string.IsNullOrEmpty(action))
+                        if (string.IsNullOrEmpty(action))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Camera));
                         }
@@ -254,7 +254,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "telescope":
-                        if (!string.IsNullOrEmpty(action))
+                        if (string.IsNullOrEmpty(action))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Telescope));
                         }
@@ -265,7 +265,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "focuser":
-                        if (!string.IsNullOrEmpty(action))
+                        if (string.IsNullOrEmpty(action))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Focuser));
                         }
@@ -276,7 +276,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "filterwheel":
-                        if (!string.IsNullOrEmpty(action))
+                        if (string.IsNullOrEmpty(action))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.FilterWheel));
                         }
@@ -287,7 +287,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "guider":
-                        if (!string.IsNullOrEmpty(action))
+                        if (string.IsNullOrEmpty(action))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Guider));
                         }
@@ -298,7 +298,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "dome":
-                        if (!string.IsNullOrEmpty(action))
+                        if (string.IsNullOrEmpty(action))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Dome));
                         }
@@ -309,7 +309,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "rotator":
-                        if (!string.IsNullOrEmpty(action))
+                        if (string.IsNullOrEmpty(action))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Rotator));
                         }
@@ -320,7 +320,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "safetymonitor":
-                        if (!string.IsNullOrEmpty(action))
+                        if (string.IsNullOrEmpty(action))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.SafetyMonitor));
                         }
@@ -331,7 +331,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "flatdevice":
-                        if (!string.IsNullOrEmpty(action))
+                        if (string.IsNullOrEmpty(action))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.FlatDevice));
                         }
@@ -342,7 +342,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "switch":
-                        if (!string.IsNullOrEmpty(action))
+                        if (string.IsNullOrEmpty(action))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Switch));
                         }
@@ -353,7 +353,14 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "weather":
-                        HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Weather)); // weather can't be controlled unfortunately :(
+                        if (string.IsNullOrEmpty(action))
+                        {
+                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Weather));
+                        }
+                        else
+                        {
+                            HttpContext.WriteToResponse(await EquipmentControllerV2.Weather(action));
+                        }
                         return;
 
                     default:
@@ -370,7 +377,7 @@ namespace ninaAPI.WebService.V2
 
         #endregion
 
-        public bool CheckKey(string key)
+        private static bool checkKey(string key)
         {
             using (SHA256 sha = SHA256.Create())
             {
@@ -378,21 +385,21 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        public bool CheckSecurity()
+        private bool CheckSecurity()
         {
             if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
             {
                 string apiKey = HttpContext.Request.Headers["apikey"];
-                if (!CheckKey(apiKey))
+                if (!checkKey(apiKey))
                 {
-                    Logger.Error(INVALID_API_KEY);
+                    Logger.Error(CommonErrors.INVALID_API_KEY.message);
                     Utility.CreateErrorTable(CommonErrors.INVALID_API_KEY);
                     return false;
                 }
             }
             else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null)
             {
-                Logger.Error(MISSING_API_KEY);
+                Logger.Error(CommonErrors.MISSING_API_KEY.message);
                 Utility.CreateErrorTable(CommonErrors.MISSING_API_KEY);
                 return false;
             }

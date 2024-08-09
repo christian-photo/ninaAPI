@@ -15,7 +15,6 @@ using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using ninaAPI.Properties;
 using ninaAPI.WebService.V1.GET;
-using ninaAPI.WebService.V1.SET;
 using System;
 using System.Collections;
 using System.Security.Cryptography;

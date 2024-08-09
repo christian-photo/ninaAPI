@@ -72,7 +72,7 @@ namespace ninaAPI
             RegexOptions options = RegexOptions.Compiled | RegexOptions.IgnoreCase;
 
             // Advanced sequence start
-            Regex re = new Regex("^Advanced Sequence started$", options);
+            Regex re = new Regex("^Advanced Sequence starting$", options);
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_ADV_SEQ_START, false, null));
 
             // Advanced sequence finished
