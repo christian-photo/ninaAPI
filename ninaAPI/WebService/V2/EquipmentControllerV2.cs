@@ -14,6 +14,7 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile;
 using NINA.Sequencer.Interfaces.Mediator;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -563,7 +564,7 @@ namespace ninaAPI.WebService.V2
                     AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.OPTIONS);
                     return response;
                 default:
-                    return Utility.CreateErrorTable(new Error("Invalid ApplicationTab", 400));
+                    return Utility.CreateErrorTable(new Error("Invalid application tab", 400));
             }
         }
 
@@ -572,15 +573,17 @@ namespace ninaAPI.WebService.V2
             HttpResponse response = new HttpResponse();
             if (string.IsNullOrEmpty(settingPath))
             {
-                return Utility.CreateErrorTable(new Error("Invalid Path", 400));
+                return Utility.CreateErrorTable(new Error("Invalid path", 400));
             }
             if (newValue is null)
             {
-                return Utility.CreateErrorTable(new Error("new value can't be null", 400));
+                return Utility.CreateErrorTable(new Error("New value can't be null", 400));
             }
 
             string[] pathSplit = settingPath.Split('-'); // e.g. 'CameraSettings-PixelSize' -> CameraSettings, PixelSize
             object position = AdvancedAPI.Controls.Profile.ActiveProfile;
+
+            response.Response = "Updated setting";
 
             if (pathSplit.Length == 1)
             {
@@ -593,7 +596,6 @@ namespace ninaAPI.WebService.V2
             }
             PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
             prop.SetValue(position, ((string)newValue).CastString(prop.PropertyType));
-            response.Response = "Updated setting";
             return response;
         }
 
@@ -601,9 +603,17 @@ namespace ninaAPI.WebService.V2
         {
             HttpResponse response = new HttpResponse();
             Guid guid = Guid.Parse(profileID);
-            ProfileMeta profile = AdvancedAPI.Controls.Profile.Profiles.Where(x => x.Id == guid).FirstOrDefault();
-            AdvancedAPI.Controls.Profile.SelectProfile(profile);
-            response.Response = "Successfully switched profile";
+            IEnumerable<ProfileMeta> x = AdvancedAPI.Controls.Profile.Profiles.Where(x => x.Id == guid);
+            if (x.Any())
+            {
+                ProfileMeta profile = x.First();
+                AdvancedAPI.Controls.Profile.SelectProfile(profile);
+                response.Response = "Successfully switched profile";
+            }
+            else
+            {
+                response = Utility.CreateErrorTable(new Error("No profile with specified id found!", 400));
+            }
             return response;
         }
     }

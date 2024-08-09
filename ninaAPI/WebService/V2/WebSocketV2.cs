@@ -69,8 +69,6 @@ namespace ninaAPI.WebService.V2
                 return;
 
             HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            e.Image = null;
-            e.Statistics.Histogram.Clear();
 
             response.Response = new Dictionary<string, object>()
             {
@@ -96,7 +94,10 @@ namespace ninaAPI.WebService.V2
                 }
             };
 
+            HttpResponse imageEvent = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", "IMAGE-SAVE" }, { "Time", DateTime.Now } } };
+
             Images.Add(response);
+            Events.Add(imageEvent);
 
             await Send(response);
         }
@@ -120,6 +121,7 @@ namespace ninaAPI.WebService.V2
         private async Task CameraConnection(object arg1, EventArgs arg2)
         {
             HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
 
             response.Response = new Hashtable()
             {
@@ -134,6 +136,7 @@ namespace ninaAPI.WebService.V2
         private async Task TelescopeConnection(object arg1, EventArgs arg2)
         {
             HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
 
             response.Response = new Hashtable()
             {
@@ -146,6 +149,7 @@ namespace ninaAPI.WebService.V2
         private async Task FocuserConnection(object arg1, EventArgs arg2)
         {
             HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
 
             response.Response = new Hashtable()
             {
@@ -159,6 +163,7 @@ namespace ninaAPI.WebService.V2
         private async Task RotatorConnection(object arg1, EventArgs arg2)
         {
             HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
 
             response.Response = new Hashtable()
             {
@@ -172,6 +177,7 @@ namespace ninaAPI.WebService.V2
         private async Task DomeConnection(object arg1, EventArgs arg2)
         {
             HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
 
             response.Response = new Hashtable()
             {
@@ -185,6 +191,7 @@ namespace ninaAPI.WebService.V2
         private async Task FWConnection(object arg1, EventArgs arg2)
         {
             HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
 
             response.Response = new Hashtable()
             {
@@ -198,6 +205,7 @@ namespace ninaAPI.WebService.V2
         private async Task SwitchConnection(object arg1, EventArgs arg2)
         {
             HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
 
             response.Response = new Hashtable()
             {
@@ -210,6 +218,7 @@ namespace ninaAPI.WebService.V2
         private async Task SafetyConnection(object arg1, EventArgs arg2)
         {
             HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
 
             response.Response = new Hashtable()
             {
@@ -222,6 +231,7 @@ namespace ninaAPI.WebService.V2
         private async Task GuiderConnection(object arg1, EventArgs arg2)
         {
             HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
 
             response.Response = new Hashtable()
             {
@@ -235,6 +245,7 @@ namespace ninaAPI.WebService.V2
         private async Task FlatConnection(object arg1, EventArgs arg2)
         {
             HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
 
             response.Response = new Hashtable()
             {

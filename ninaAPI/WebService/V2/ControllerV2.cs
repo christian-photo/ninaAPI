@@ -71,7 +71,7 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        [Route(HttpVerbs.Get, "/socket-history")]
+        [Route(HttpVerbs.Get, "/event-history")]
         public void GetSocketHistoryCount()
         {
             if (!CheckSecurity())
@@ -91,8 +91,8 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        [Route(HttpVerbs.Get, "/sequence")]
-        public void GetSequence([QueryField] string action, [QueryField] bool skipValidation)
+        [Route(HttpVerbs.Get, "/sequence/{action}")]
+        public void GetSequence(string action, [QueryField] bool skipValidation)
         {
             if (!CheckSecurity())
             {
@@ -102,7 +102,7 @@ namespace ninaAPI.WebService.V2
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
-                if (string.IsNullOrEmpty(action))
+                if (action.Equals("json"))
                 {
                     HttpContext.WriteToResponse(EquipmentMediatorV2.GetSequence());
                 }
@@ -149,8 +149,8 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        [Route(HttpVerbs.Get, "/profile")]
-        public void SetProfile([QueryField] string action = "", [QueryField] string profileid = "", [QueryField] string settingpath = "", [QueryField] object newValue = null, [QueryField] bool active = true)
+        [Route(HttpVerbs.Get, "/profile/{action}")]
+        public void SetProfile(string action, [QueryField] string profileid = "", [QueryField] string settingpath = "", [QueryField] object newValue = null, [QueryField] bool active = true)
         {
             if (!CheckSecurity())
             {
@@ -183,8 +183,8 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        [Route(HttpVerbs.Get, "/application")]
-        public void Application([QueryField] string action = "", [QueryField] bool resize = false, [QueryField] int quality = -1, [QueryField] string size = "640x480", [QueryField] string tab = "")
+        [Route(HttpVerbs.Get, "/application/{action}")]
+        public void Application(string action, [QueryField] bool resize = false, [QueryField] int quality = -1, [QueryField] string size = "640x480", [QueryField] string tab = "")
         {
             if (!CheckSecurity())
             {
@@ -229,8 +229,8 @@ namespace ninaAPI.WebService.V2
 
         #region Equipment
 
-        [Route(HttpVerbs.Get, "/equipment/{device}")]
-        public async Task EquipmentHandler(string device, [QueryField] string action = "")
+        [Route(HttpVerbs.Get, "/equipment/{device}/{action}")]
+        public async Task EquipmentHandler(string device, string action)
         {
             if (!CheckSecurity())
             {
@@ -243,7 +243,7 @@ namespace ninaAPI.WebService.V2
                 switch (device)
                 {
                     case "camera":
-                        if (string.IsNullOrEmpty(action))
+                        if (action.Equals("info"))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Camera));
                         }
@@ -254,7 +254,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "telescope":
-                        if (string.IsNullOrEmpty(action))
+                        if (action.Equals("info"))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Telescope));
                         }
@@ -265,7 +265,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "focuser":
-                        if (string.IsNullOrEmpty(action))
+                        if (action.Equals("info"))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Focuser));
                         }
@@ -276,7 +276,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "filterwheel":
-                        if (string.IsNullOrEmpty(action))
+                        if (action.Equals("info"))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.FilterWheel));
                         }
@@ -287,8 +287,8 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "guider":
-                        if (string.IsNullOrEmpty(action))
-                        {
+                        if (action.Equals("info"))
+                        {   
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Guider));
                         }
                         else
@@ -298,7 +298,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "dome":
-                        if (string.IsNullOrEmpty(action))
+                        if (action.Equals("info"))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Dome));
                         }
@@ -309,7 +309,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "rotator":
-                        if (string.IsNullOrEmpty(action))
+                        if (action.Equals("info"))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Rotator));
                         }
@@ -320,7 +320,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "safetymonitor":
-                        if (string.IsNullOrEmpty(action))
+                        if (action.Equals("info"))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.SafetyMonitor));
                         }
@@ -331,7 +331,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "flatdevice":
-                        if (string.IsNullOrEmpty(action))
+                        if (action.Equals("info"))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.FlatDevice));
                         }
@@ -342,7 +342,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "switch":
-                        if (string.IsNullOrEmpty(action))
+                        if (action.Equals("info"))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Switch));
                         }
@@ -353,7 +353,7 @@ namespace ninaAPI.WebService.V2
                         return;
 
                     case "weather":
-                        if (string.IsNullOrEmpty(action))
+                        if (action.Equals("info"))
                         {
                             HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Weather));
                         }

@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 
 // [MANDATORY] The assembly versioning
 //Should be incremented for each new release build of a plugin
-[assembly: AssemblyVersion("1.0.1.2")]
-[assembly: AssemblyFileVersion("1.0.1.2")]
+[assembly: AssemblyVersion("2.0.0.0")]
+[assembly: AssemblyFileVersion("2.0.0.0")]
 
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]
@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright ©  2024")]
 
 // The minimum Version of N.I.N.A. that this plugin is compatible with
-[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.0.0.3001")]
+[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.1.0.9001")]
 
 // The license your plugin code is using
 [assembly: AssemblyMetadata("License", "MPL-2.0")]
@@ -36,7 +36,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("Tags", "API,Web")]
 
 //[Optional] An in-depth description of your plugin
-[assembly: AssemblyMetadata("LongDescription", @"This plugin adds an advanced API to N.I.N.A.  
+[assembly: AssemblyMetadata("LongDescription", @"This plugin adds an API to N.I.N.A.  
 If you have question/issues/feedback, you can create an issue [here](https://github.com/rennmaus-coder/ninaAPI/issues), take a look at the
 [documentation](https://github.com/rennmaus-coder/ninaAPI/wiki) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)    
 **Thanks to szymon and notzeeg (discord) for their help!**  
