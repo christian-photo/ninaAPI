@@ -1,7 +1,7 @@
 ﻿#region "copyright"
 
 /*
-    Copyright © 2022 Christian Palm (christian@palm-family.de)
+    Copyright © 2024 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -13,16 +13,12 @@ using EmbedIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NINA.Core.Model;
-using NINA.Core.Utility;
-using NINA.Sequencer;
 using NINA.Sequencer.Container;
 using NINA.Sequencer.Interfaces.Mediator;
-using NINA.Sequencer.SequenceItem;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -32,7 +28,6 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Media.Imaging;
-using System.Windows;
 using ninaAPI.WebService;
 
 namespace ninaAPI

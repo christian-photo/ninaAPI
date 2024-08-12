@@ -1,7 +1,7 @@
 ﻿#region "copyright"
 
 /*
-    Copyright © 2022 Christian Palm (christian@palm-family.de)
+    Copyright © 2024 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -23,17 +23,10 @@ using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Sockets;
 using System.ComponentModel;
-using EmbedIO;
 using System.Security.Cryptography;
 using System;
-using System.Text;
 using NINA.Image.Interfaces;
-using NINA.Core.Utility.Notification;
-using NINA.Equipment.Interfaces;
-using NINA.Equipment.Equipment.MyCamera;
 using NINA.WPF.Base.Interfaces;
 
 namespace ninaAPI

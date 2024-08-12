@@ -1,7 +1,7 @@
 ﻿#region "copyright"
 
 /*
-    Copyright © 2022 Christian Palm (christian@palm-family.de)
+    Copyright © 2024 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -55,6 +55,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.FlatDevice.Connected += FlatConnection;
             AdvancedAPI.Controls.FlatDevice.Disconnected += FlatConnection;
 
+            AdvancedAPI.Controls.Weather.Connected += WeatherConnection;
+            AdvancedAPI.Controls.Weather.Disconnected += WeatherConnection;
+
             AdvancedAPI.Controls.ImageSaveMediator.ImageSaved += ImageSaved;
 
             AdvancedAPI.Server.LogProcessor.NINALogEventSaved += LogProcessor_NINALogEventSaved;
@@ -104,155 +107,145 @@ namespace ninaAPI.WebService.V2
 
         private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e)
         {
-            HttpResponse response = new HttpResponse()
-            {
-                Response = new Hashtable() 
-                { 
-                    { "Event", e.type },
-                    { "Time", DateTime.Now }, 
-                },
-                Type = HttpResponse.TypeSocket
-            };
-            Events.Add(response);
-            await Send(response);
+            await SendAndAddEvent(e.type, e.time);
         }
 
 
+        private bool[] firstConnect = [true, true, true, true, true, true, true, true, true, true, true]; // on the first connect, the connection event is recieved twice, using bool to work around that
         private async Task CameraConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
-
-            response.Response = new Hashtable()
+            if (firstConnect[0])
             {
-                { "Event", "CAMERA-CONNECTION" },
-                { "Time", DateTime.Now },
-            };
-            Events.Add(response);
-            await Send(response);
+                firstConnect[0] = false;
+                return;
+            }
+            await SendAndAddEvent("CAMERA-CONNECTION");
         }
 
 
         private async Task TelescopeConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
-
-            response.Response = new Hashtable()
+            if (firstConnect[1])
             {
-                { "Event", "TELESCOPE-CONNECTION" },
-                { "Time", DateTime.Now },
-            };
-            Events.Add(response);
-            await Send(response);
+                firstConnect[1] = false;
+                return;
+            }
+            await SendAndAddEvent("TELESCOPE-CONNECTION");
         }
         private async Task FocuserConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
-
-            response.Response = new Hashtable()
+            if (firstConnect[2])
             {
-                { "Event", "FOCUSER-CONNECTION" },
-                { "Time", DateTime.Now },
-            };
-            Events.Add(response);
-            await Send(response);
+                firstConnect[2] = false;
+                return;
+            }
+            await SendAndAddEvent("FOCUSER-CONNECTION");
         }
 
         private async Task RotatorConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
-
-            response.Response = new Hashtable()
+            if (firstConnect[3])
             {
-                { "Event", "ROTATOR-CONNECTION" },
-                { "Time", DateTime.Now },
-            };
-            Events.Add(response);
-            await Send(response);
+                firstConnect[3] = false;
+                return;
+            }
+            await SendAndAddEvent("ROTATOR-CONNECTION");
         }
 
         private async Task DomeConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
-
-            response.Response = new Hashtable()
+            if (firstConnect[4])
             {
-                { "Event", "DOME-CONNECTION" },
-                { "Time", DateTime.Now },
-            };
-            Events.Add(response);
-            await Send(response);
+                firstConnect[4] = false;
+                return;
+            }
+            await SendAndAddEvent("DOME-CONNECTION");
         }
 
         private async Task FWConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
-
-            response.Response = new Hashtable()
+            if (firstConnect[5])
             {
-                { "Event", "FILTERWHEEL-CONNECTION" },
-                { "Time", DateTime.Now },
-            };
-            Events.Add(response);
-            await Send(response);
+                firstConnect[5] = false;
+                return;
+            }
+            await SendAndAddEvent("FILTERWHEEL-CONNECTION");
         }
 
         private async Task SwitchConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
-
-            response.Response = new Hashtable()
+            if (firstConnect[6])
             {
-                { "Event", "SWITCH-CONNECTION" },
-                { "Time", DateTime.Now },
-            };
-            Events.Add(response);
-            await Send(response);
+                firstConnect[6] = false;
+                return;
+            }
+            await SendAndAddEvent("SWITCH-CONNECTION");
         }
         private async Task SafetyConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
-
-            response.Response = new Hashtable()
+            if (firstConnect[7])
             {
-                { "Event", "SAFETY-CONNECTION" },
-                { "Time", DateTime.Now },
-            };
-            Events.Add(response);
-            await Send(response);
+                firstConnect[7] = false;
+                return;
+            }
+            await SendAndAddEvent("SAFETY-CONNECTION");
         }
         private async Task GuiderConnection(object arg1, EventArgs arg2)
         {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
-
-            response.Response = new Hashtable()
+            if (firstConnect[8])
             {
-                { "Event", "GUIDER-CONNECTION" },
-                { "Time", DateTime.Now },
-            };
-            Events.Add(response);
-            await Send(response);
+                firstConnect[8] = false;
+                return;
+            }
+            await SendAndAddEvent("GUIDER-CONNECTION");
         }
 
         private async Task FlatConnection(object arg1, EventArgs arg2)
         {
+            if (firstConnect[9])
+            {
+                firstConnect[9] = false;
+                return;
+            }
+            await SendAndAddEvent("FLAT-CONNECTION");
+        }
+
+        private async Task WeatherConnection(object arg1, EventArgs arg2)
+        {
+            if (firstConnect[10])
+            {
+                firstConnect[10] = false;
+                return;
+            }
+            await SendAndAddEvent("WEATHER-CONNECTION");
+        }
+
+        public async Task SendAndAddEvent(string eventName)
+        {
             HttpResponse response = new HttpResponse();
             response.Type = HttpResponse.TypeSocket;
 
             response.Response = new Hashtable()
             {
-                { "Event", "FLAT-CONNECTION" },
-                { "Time", DateTime.Now },
-            }; 
-            Events.Add(response);
+                { "Event", eventName },
+            };
+            HttpResponse Event = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", eventName }, { "Time", DateTime.Now } } };
+            Events.Add(Event);
+
+            await Send(response);
+        }
+
+        public async Task SendAndAddEvent(string eventName, DateTime time)
+        {
+            HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
+
+            response.Response = new Hashtable()
+            {
+                { "Event", eventName },
+            };
+            HttpResponse Event = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", eventName }, { "Time", time } } };
+            Events.Add(Event);
 
             await Send(response);
         }

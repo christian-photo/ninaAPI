@@ -6,18 +6,18 @@ namespace ninaAPI
 {
     public class NINALogEvent
     {
-        public const string NINA_PARK = "NINA-PARK";
-        public const string NINA_UNPARK = "NINA-UNPARK";
-        public const string NINA_DOME_SHUTTER_OPENED = "NINA-DOME-SHUTTER-OPENED";
-        public const string NINA_DOME_SHUTTER_CLOSED = "NINA-DOME-SHUTTER-CLOSED";
-        public const string NINA_DOME_STOPPED = "NINA-DOME-STOPPED";
-        public const string NINA_ADV_SEQ_START = "NINA-ADV-SEQ-START";
-        public const string NINA_ADV_SEQ_STOP = "NINA-ADV-SEQ-STOP";
-        public const string NINA_CENTER = "NINA-CENTER";
-        public const string NINA_SLEW = "NINA-SLEW";
-        public const string NINA_MF = "NINA-MF";
-        public const string NINA_ERROR_AF = "NINA-ERROR-AF";
-        public const string NINA_ERROR_PLATESOLVE = "NINA-ERROR-PLATESOLVE";
+        public const string NINA_PARK = "TELESCOPE-PARK";
+        public const string NINA_UNPARK = "TELESCOPE-UNPARK";
+        public const string NINA_DOME_SHUTTER_OPENED = "DOME-SHUTTER-OPENED";
+        public const string NINA_DOME_SHUTTER_CLOSED = "DOME-SHUTTER-CLOSED";
+        public const string NINA_DOME_STOPPED = "DOME-STOPPED";
+        public const string NINA_ADV_SEQ_START = "ADV-SEQ-START";
+        public const string NINA_ADV_SEQ_STOP = "ADV-SEQ-STOP";
+        public const string NINA_CENTER = "TELESCOPE-CENTER";
+        // public const string NINA_SLEW = "NINA-SLEW";
+        public const string NINA_MF = "TELESCOPE-MF";
+        public const string NINA_ERROR_AF = "ERROR-AF";
+        public const string NINA_ERROR_PLATESOLVE = "ERROR-PLATESOLVE";
 
         public string id { get; set; }
         public string type { get; set; }
