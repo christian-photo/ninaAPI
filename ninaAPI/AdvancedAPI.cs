@@ -9,7 +9,6 @@
 
 #endregion "copyright"
 
-using NINA.Core.Utility;
 using NINA.Plugin;
 using NINA.Plugin.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
@@ -21,13 +20,11 @@ using ninaAPI.Properties;
 using ninaAPI.WebService;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Security.Cryptography;
-using System;
 using NINA.Image.Interfaces;
 using NINA.WPF.Base.Interfaces;
+using CommunityToolkit.Mvvm.Input;
 
 namespace ninaAPI
 {
@@ -62,10 +59,6 @@ namespace ninaAPI
                            IImageSaveMediator saveMediator,
                            IWeatherDataMediator weather)
         {
-            if (string.IsNullOrEmpty(Settings.Default.ApiKey))
-            {
-                ApiKey = GenerateRandomKey(15);
-            }
             
             Controls = new NINAControls()
             {
@@ -95,7 +88,7 @@ namespace ninaAPI
             {
                 Settings.Default.Upgrade();
                 Settings.Default.UpdateSettings = false;
-                CoreUtil.SaveSettings(Settings.Default);
+                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
             }
             if (APIEnabled)
             {
@@ -105,7 +98,7 @@ namespace ninaAPI
                 SetHostNames();
             }
             
-            RestartAPI = new RelayCommand(o =>
+            RestartAPI = new RelayCommand(() =>
             {
                 if (Server != null)
                 {
@@ -118,25 +111,6 @@ namespace ninaAPI
                     Server = new API();
                 }
             });
-
-            GenerateApiKeyCommand = new RelayCommand(o =>
-            {
-                ApiKey = GenerateRandomKey(12);
-            });
-
-            SetApiKeyCommand = new RelayCommand(o =>
-            {
-                SetApiKey(ApiKey);
-            });
-
-            if (Secure)
-            {
-                SecureVisibility = Visibility.Visible;
-            }
-            else
-            {
-                SecureVisibility = Visibility.Collapsed;
-            }
         }
 
         public override Task Teardown()
@@ -155,7 +129,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.Port = value;
-                CoreUtil.SaveSettings(Settings.Default);
+                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
             }
         }
 
@@ -165,7 +139,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.APIEnabled = value;
-                CoreUtil.SaveSettings(Settings.Default);
+                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
             }
         }
 
@@ -175,7 +149,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.StartV1 = value;
-                CoreUtil.SaveSettings(Settings.Default);
+                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
             }
         }
 
@@ -185,7 +159,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.StartV2 = value;
-                CoreUtil.SaveSettings(Settings.Default);
+                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
             }
         }
 
@@ -195,7 +169,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.LocalAdress = value;
-                CoreUtil.SaveSettings(Settings.Default);
+                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalAdress)));
             }
         }
@@ -206,7 +180,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.LocalNetworkAdress = value;
-                CoreUtil.SaveSettings(Settings.Default);
+                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalNetworkAdress)));
             }
         }
@@ -217,111 +191,20 @@ namespace ninaAPI
             set
             {
                 Settings.Default.HostAdress = value;
-                CoreUtil.SaveSettings(Settings.Default);
+                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HostAdress)));
             }
         }
 
-        private string _apiKey;
-        public string ApiKey
-        {
-            get => _apiKey;
-            set
-            {
-                _apiKey = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ApiKey)));
-            }
-        }
-
-        private Visibility _secureVisibility;
-        public Visibility SecureVisibility
-        {
-            get => _secureVisibility;
-            set
-            {
-                _secureVisibility = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SecureVisibility)));
-            }
-        }
-
-        public bool Secure
-        {
-            get => Settings.Default.Secure;
-            set
-            {
-                Settings.Default.Secure = value;
-                CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Secure)));
-                if (Secure)
-                {
-                    SecureVisibility = Visibility.Visible;
-                }
-                else
-                {
-                    SecureVisibility = Visibility.Collapsed;
-                }
-            }
-        }
-
-        public string CertificatePath 
-        {
-            get => Settings.Default.CertificatePath;
-            set
-            {
-                Settings.Default.CertificatePath = value;
-                CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CertificatePath)));
-            }
-        }
-
-        public string CertificatePassword
-        {
-            get => Settings.Default.CertificatePassword;
-            set
-            {
-                Settings.Default.CertificatePassword = value;
-                CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CertificatePassword)));
-            }
-        }
-
         public RelayCommand RestartAPI { get; set; }
-        public RelayCommand GenerateApiKeyCommand { get; set; }
-        public RelayCommand SetApiKeyCommand { get; set; }
-
-        public string GenerateRandomKey(int length)
-        {
-            using (RNGCryptoServiceProvider cryptRNG = new RNGCryptoServiceProvider())
-            {
-                byte[] tokenBuffer = new byte[length];
-                cryptRNG.GetBytes(tokenBuffer);
-                return Convert.ToBase64String(tokenBuffer);
-            }
-        }
         
         private void SetHostNames()
         {
             Dictionary<string, string> dict = Utility.GetLocalNames();
-            if (Secure)
-            {
-                LocalAdress = $"https://{dict["LOCALHOST"]}:{Port}/api";
-                LocalNetworkAdress = $"https://{dict["IPADRESS"]}:{Port}/api";
-                HostAdress = $"https://{dict["HOSTNAME"]}:{Port}/api";
-                return;
-            }
-
             
             LocalAdress = $"http://{dict["LOCALHOST"]}:{Port}/api";
             LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{Port}/api";
             HostAdress = $"http://{dict["HOSTNAME"]}:{Port}/api";
-        }
-
-        public void SetApiKey(string key)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                Settings.Default.ApiKey = Utility.GetHash(sha256, key);
-            }
         }
     }
 }

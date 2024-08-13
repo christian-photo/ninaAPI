@@ -42,20 +42,9 @@ namespace ninaAPI.WebService
 
         public void CreateServer()
         {
-            if (Settings.Default.Secure)
-            {
-                Server = new WebServer(o => o
-                   .WithUrlPrefix($"https://*:{Port}")
-                   .WithMode(HttpListenerMode.EmbedIO)
-                   .WithAutoLoadCertificate()
-                   .WithCertificate(new X509Certificate2(Settings.Default.CertificatePath, Settings.Default.CertificatePassword)));
-            }
-            else
-            {
-                Server = new WebServer(o => o
-                   .WithUrlPrefix($"http://*:{Port}")
-                   .WithMode(HttpListenerMode.EmbedIO));
-            }
+            Server = new WebServer(o => o
+                .WithUrlPrefix($"http://*:{Port}")
+                .WithMode(HttpListenerMode.EmbedIO));
 
             if (Settings.Default.StartV1)
             {
@@ -72,12 +61,6 @@ namespace ninaAPI.WebService
 
         public void Start()
         {
-            if (Settings.Default.Secure && (string.IsNullOrEmpty(Settings.Default.ApiKey) || string.IsNullOrEmpty(Settings.Default.CertificatePath)))
-            {
-                Logger.Error("Secure API is enabled but no certificate or key is set. Please set the certificate and key in the settings.");
-                Notification.ShowError("Secure API is enabled but no certificate or key is set. Please set the certificate and key in the settings.");
-                return;
-            }
             try
             {
                 LogWatcher = new NINALogWatcher(LogProcessor);

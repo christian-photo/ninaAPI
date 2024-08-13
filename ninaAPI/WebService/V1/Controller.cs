@@ -49,23 +49,7 @@ namespace ninaAPI.WebService.V1
         [Route(HttpVerbs.Get, "/history")]
         public void GetHistoryCount([QueryField] string property, [QueryField] string parameter)
         {
-            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
-            {
-                string apiKey = HttpContext.Request.Headers["apikey"];
-                if (!CheckKey(apiKey))
-                {
-                    Logger.Error(INVALID_API_KEY);
-                    HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_API_KEY));
-                    return;
-                }
-            }
-            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null)
-            {
-                Logger.Error(MISSING_API_KEY);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(MISSING_API_KEY));
-                return;
-            }
-            else if (string.IsNullOrEmpty(property))
+            if (string.IsNullOrEmpty(property))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
                 HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
@@ -101,23 +85,7 @@ namespace ninaAPI.WebService.V1
         [Route(HttpVerbs.Get, "/socket-history")]
         public void GetSocketHistoryCount([QueryField] string property, [QueryField] string parameter)
         {
-            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
-            {
-                string apiKey = HttpContext.Request.Headers["apikey"];
-                if (!CheckKey(apiKey))
-                {
-                    Logger.Error(INVALID_API_KEY);
-                    HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_API_KEY));
-                    return;
-                }
-            }
-            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null)
-            {
-                Logger.Error(MISSING_API_KEY);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(MISSING_API_KEY));
-                return;
-            }
-            else if (string.IsNullOrEmpty(property))
+            if (string.IsNullOrEmpty(property))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
                 HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
@@ -153,23 +121,7 @@ namespace ninaAPI.WebService.V1
         [Route(HttpVerbs.Get, "/profile")]
         public void GetProfile([QueryField] string property)
         {
-            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
-            {
-                string apiKey = HttpContext.Request.Headers["apikey"];
-                if (!CheckKey(apiKey))
-                {
-                    Logger.Error(INVALID_API_KEY);
-                    HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_API_KEY));
-                    return;
-                }
-            }
-            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null)
-            {
-                Logger.Error(MISSING_API_KEY);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(MISSING_API_KEY));
-                return;
-            }
-            else if (string.IsNullOrEmpty(property))
+            if (string.IsNullOrEmpty(property))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
                 HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
@@ -193,23 +145,7 @@ namespace ninaAPI.WebService.V1
         [Route(HttpVerbs.Get, "/sequence")]
         public void GetSequence([QueryField] string property, [QueryField] string parameter)
         {
-            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
-            {
-                string apiKey = HttpContext.Request.Headers["apikey"];
-                if (!CheckKey(apiKey))
-                {
-                    Logger.Error(INVALID_API_KEY);
-                    HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_API_KEY));
-                    return;
-                }
-            }
-            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null)
-            {
-                Logger.Error(MISSING_API_KEY);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(MISSING_API_KEY));
-                return;
-            }
-            else if (string.IsNullOrEmpty(property))
+            if (string.IsNullOrEmpty(property))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
                 HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
@@ -239,23 +175,7 @@ namespace ninaAPI.WebService.V1
         [Route(HttpVerbs.Get, "/equipment")]
         public async Task GetInformation([QueryField] string property, [QueryField] string parameter, [QueryField] string index)
         {
-            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
-            {
-                string apiKey = HttpContext.Request.Headers["apikey"];
-                if (!CheckKey(apiKey))
-                {
-                    Logger.Error(INVALID_API_KEY);
-                    HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_API_KEY));
-                    return;
-                }
-            }
-            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null)
-            {
-                Logger.Error(MISSING_API_KEY);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(MISSING_API_KEY));
-                return;
-            }
-            else if (string.IsNullOrEmpty(property))
+            if (string.IsNullOrEmpty(property))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
                 HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
@@ -339,23 +259,7 @@ namespace ninaAPI.WebService.V1
         public async Task SetEquipment()
         {
             POSTData data = await HttpContext.GetRequestDataAsync<POSTData>();
-            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
-            {
-                string apiKey = HttpContext.Request.Headers["apikey"];
-                if (!CheckKey(apiKey))
-                {
-                    Logger.Error(INVALID_API_KEY);
-                    HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_API_KEY));
-                    return;
-                }
-            }
-            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null)
-            {
-                Logger.Error(MISSING_API_KEY);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(MISSING_API_KEY));
-                return;
-            }
-            else if (string.IsNullOrEmpty(data.Device))
+            if (string.IsNullOrEmpty(data.Device))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
                 HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
@@ -414,11 +318,11 @@ namespace ninaAPI.WebService.V1
                         return;
 
                     case "sequence":
-                        HttpContext.WriteToResponse(await EquipmentController.Sequence(data));
+                        HttpContext.WriteToResponse(EquipmentController.Sequence(data));
                         return;
 
                     case "application":
-                        HttpContext.WriteToResponse(await EquipmentController.Application(data));
+                        HttpContext.WriteToResponse(EquipmentController.Application(data));
                         return;
 
                     default:
@@ -437,23 +341,7 @@ namespace ninaAPI.WebService.V1
         public async Task SetProfile()
         {
             POSTData data = await HttpContext.GetRequestDataAsync<POSTData>();
-            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
-            {
-                string apiKey = HttpContext.Request.Headers["apikey"];
-                if (!CheckKey(apiKey))
-                {
-                    Logger.Error(INVALID_API_KEY);
-                    HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_API_KEY));
-                    return;
-                }
-            }
-            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null)
-            {
-                Logger.Error(MISSING_API_KEY);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(MISSING_API_KEY));
-                return;
-            }
-            else if (string.IsNullOrEmpty(data.Device))
+            if (string.IsNullOrEmpty(data.Device))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
                 HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
@@ -485,13 +373,5 @@ namespace ninaAPI.WebService.V1
         }
 
         #endregion
-
-        public bool CheckKey(string key)
-        {
-            using (SHA256 sha = SHA256.Create())
-            {
-                return Utility.VerifyHash(sha, key, Settings.Default.ApiKey);
-            }
-        }
     }
 }

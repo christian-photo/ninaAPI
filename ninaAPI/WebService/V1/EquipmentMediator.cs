@@ -476,6 +476,10 @@ namespace ninaAPI.WebService.V1.GET
                     {
                         continue;
                     }
+                    else if (obj is CommunityToolkit.Mvvm.Input.RelayCommand)
+                    {
+                        continue;
+                    }
                     else if (obj is Coordinates)
                     {
                         continue;

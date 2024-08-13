@@ -42,12 +42,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/image-history")]
         public void GetHistoryCount([QueryField] bool all = false, [QueryField] int index = 0, [QueryField] bool count = false)
         {
-
-            if (!CheckSecurity())
-            {
-                return;
-            }
-
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
@@ -74,11 +68,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/event-history")]
         public void GetSocketHistoryCount()
         {
-            if (!CheckSecurity())
-            {
-                return;
-            }
-
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
@@ -94,11 +83,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/{action}")]
         public void GetSequence(string action, [QueryField] bool skipValidation)
         {
-            if (!CheckSecurity())
-            {
-                return;
-            }
-
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
@@ -121,11 +105,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/image/{index}")]
         public async Task GetImage(int index, [QueryField] bool resize = false, [QueryField] int quality = -1, [QueryField] string size = "640x480")
         {
-            if (!CheckSecurity())
-            {
-                return;
-            }
-
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
 
             try
@@ -152,11 +131,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/profile/{action}")]
         public void SetProfile(string action, [QueryField] string profileid = "", [QueryField] string settingpath = "", [QueryField] object newValue = null, [QueryField] bool active = true)
         {
-            if (!CheckSecurity())
-            {
-                return;
-            }
-
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
@@ -186,11 +160,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/application/{action}")]
         public void Application(string action, [QueryField] bool resize = false, [QueryField] int quality = -1, [QueryField] string size = "640x480", [QueryField] string tab = "")
         {
-            if (!CheckSecurity())
-            {
-                return;
-            }
-
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
@@ -232,11 +201,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/{device}/{action}")]
         public async Task EquipmentHandler(string device, string action, [QueryField] float position)
         {
-            if (!CheckSecurity())
-            {
-                return;
-            }
-
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
@@ -376,34 +340,5 @@ namespace ninaAPI.WebService.V2
         }
 
         #endregion
-
-        private static bool checkKey(string key)
-        {
-            using (SHA256 sha = SHA256.Create())
-            {
-                return Utility.VerifyHash(sha, key, Settings.Default.ApiKey);
-            }
-        }
-
-        private bool CheckSecurity()
-        {
-            if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] != null)
-            {
-                string apiKey = HttpContext.Request.Headers["apikey"];
-                if (!checkKey(apiKey))
-                {
-                    Logger.Error(CommonErrors.INVALID_API_KEY.message);
-                    Utility.CreateErrorTable(CommonErrors.INVALID_API_KEY);
-                    return false;
-                }
-            }
-            else if (Settings.Default.Secure && HttpContext.Request.Headers["apikey"] is null)
-            {
-                Logger.Error(CommonErrors.MISSING_API_KEY.message);
-                Utility.CreateErrorTable(CommonErrors.MISSING_API_KEY);
-                return false;
-            }
-            return true;
-        }
     }
 }

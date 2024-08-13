@@ -39,13 +39,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("LongDescription", @"This plugin adds an API to N.I.N.A.  
 If you have question/issues/feedback, you can create an issue [here](https://github.com/rennmaus-coder/ninaAPI/issues), take a look at the
 [documentation](https://github.com/rennmaus-coder/ninaAPI/wiki) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)    
-**Thanks to szymon and notzeeg (discord) for their help!**  
-
----
-
-## **Exposing the API with SSL (experimental)**
-If you want to expose the API over the internet, you should use SSL and an API key. After you successfully generated the certificate, you have to specify the path to the certificate and the password. Then you must create an API key. You can either
-generate one using the 'Generate API Key' button or you can use your own key. You have to send the key over the request header to the API { apikey = <your_key> }.")]
+**Thanks to szymon and notzeeg (discord) for their help!**")]
 
 
 // Setting ComVisible to false makes the types in this assembly not visible

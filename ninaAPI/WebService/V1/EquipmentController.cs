@@ -369,7 +369,7 @@ namespace ninaAPI.WebService.V1
             return response;
         }
 
-        public static async Task<HttpResponse> Sequence(POSTData data)
+        public static HttpResponse Sequence(POSTData data)
         {
             HttpResponse response = new HttpResponse();
             ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
@@ -389,7 +389,7 @@ namespace ninaAPI.WebService.V1
             return response;
         }
 
-        public static async Task<HttpResponse> Application(POSTData data)
+        public static HttpResponse Application(POSTData data)
         {
             HttpResponse response = new HttpResponse();
 
