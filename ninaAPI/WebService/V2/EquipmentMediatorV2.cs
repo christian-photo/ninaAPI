@@ -24,6 +24,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Media;
@@ -323,6 +324,26 @@ namespace ninaAPI.WebService.V2
             }
 
             return result;
+        }
+
+        public static HttpResponse GetAvailableSequences()
+        {
+            HttpResponse response = new HttpResponse();
+            IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+            string sequenceFolder = profile.SequenceSettings.DefaultSequenceFolder;
+
+            List<string> sequences = new List<string>();
+            if (Directory.Exists(sequenceFolder))
+            {
+                foreach (string filename in  Directory.GetFiles(sequenceFolder))
+                {
+                    sequences.Add(Path.GetFileNameWithoutExtension(filename));
+                }
+            }
+
+            response.Response = sequences;
+
+            return response;
         }
     }
 }

@@ -40,7 +40,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/image-history")]
-        public void GetHistoryCount([QueryField] bool all = false, [QueryField] int index = 0, [QueryField] bool count = false)
+        public void GetHistoryCount([QueryField] bool all, [QueryField] int index, [QueryField] bool count)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
@@ -81,7 +81,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/sequence/{action}")]
-        public void GetSequence(string action, [QueryField] bool skipValidation)
+        public async Task GetSequence(string action, [QueryField] bool skipValidation, [QueryField] string sequencename)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
@@ -90,9 +90,13 @@ namespace ninaAPI.WebService.V2
                 {
                     HttpContext.WriteToResponse(EquipmentMediatorV2.GetSequence());
                 }
+                else if (action.Equals("list-available"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetAvailableSequences());
+                }
                 else
                 {
-                    HttpContext.WriteToResponse(EquipmentControllerV2.Sequence(action, skipValidation));
+                    HttpContext.WriteToResponse(EquipmentControllerV2.Sequence(action, skipValidation, sequencename, await HttpContext.GetRequestBodyAsStringAsync()));
                 }
             }
             catch (Exception ex)
@@ -103,9 +107,16 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/image/{index}")]
-        public async Task GetImage(int index, [QueryField] bool resize = false, [QueryField] int quality = -1, [QueryField] string size = "640x480")
+        public async Task GetImage(int index, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+
+            quality = Math.Clamp(quality, -1, 100);
+            if (quality == 0)
+                quality = -1; // quality should be set to -1 for png if omitted
+
+            if (resize && string.IsNullOrWhiteSpace(size)) // workaround as default parameters are not working
+                size = "640x480";
 
             try
             {
@@ -129,7 +140,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/profile/{action}")]
-        public void SetProfile(string action, [QueryField] string profileid = "", [QueryField] string settingpath = "", [QueryField] object newValue = null, [QueryField] bool active = true)
+        public void SetProfile(string action, [QueryField] string profileid, [QueryField] string settingpath, [QueryField] object newValue, [QueryField] bool active)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
@@ -158,9 +169,17 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/application/{action}")]
-        public void Application(string action, [QueryField] bool resize = false, [QueryField] int quality = -1, [QueryField] string size = "640x480", [QueryField] string tab = "")
+        public void Application(string action, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] string tab)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+
+            quality = Math.Clamp(quality, -1, 100);
+            if (quality == 0)
+                quality = -1; // quality should be set to -1 for png if omitted
+
+            if (resize && string.IsNullOrWhiteSpace(size))
+                size = "640x480";
+
             try
             {
 

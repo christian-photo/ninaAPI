@@ -9,12 +9,16 @@
 
 #endregion "copyright"
 
+using Newtonsoft.Json;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile;
+using NINA.Profile.Interfaces;
+using NINA.Sequencer.Container;
 using NINA.Sequencer.Interfaces.Mediator;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -531,7 +535,7 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        public static HttpResponse Sequence(string action, bool skipValidation)
+        public static HttpResponse Sequence(string action, bool skipValidation, string sequenceName = "", string sequenceJson = "")
         {
             HttpResponse response = new HttpResponse();
             ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
@@ -550,6 +554,20 @@ namespace ninaAPI.WebService.V2
             {
                 sequence.CancelAdvancedSequence();
                 response.Response = "Sequence stopped";
+                return response;
+            }
+            else if (action.Equals("load"))
+            {
+                if (!string.IsNullOrWhiteSpace(sequenceName))
+                {
+                    IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+                    string file = Path.Combine(profile.SequenceSettings.DefaultSequenceFolder, sequenceName + ".json");
+                    sequenceJson = File.ReadAllText(file);
+                }
+                ISequenceRootContainer container = JsonConvert.DeserializeObject<SequenceRootContainer>(sequenceJson); // Not working
+                sequence.SetAdvancedSequence(container);
+
+                response.Response = "Sequence updated";
                 return response;
             }
             else
