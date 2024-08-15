@@ -9,13 +9,18 @@
 
 #endregion "copyright"
 
+using ASCOM.Common.Interfaces;
+using CsvHelper.Configuration.Attributes;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
+using NINA.PlateSolving.Interfaces;
+using NINA.Profile.Interfaces;
 using ninaAPI.Properties;
 using System;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -217,138 +222,261 @@ namespace ninaAPI.WebService.V2
 
         #region Equipment
 
-        [Route(HttpVerbs.Get, "/equipment/{device}/{action}")]
-        public async Task EquipmentHandler(string device, string action, [QueryField] float position)
+        [Route(HttpVerbs.Get, "/equipment/camera/{action}")]
+        public async Task Camera(string action, [QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+
+            quality = Math.Clamp(quality, -1, 100);
+            if (quality == 0)
+                quality = -1; // quality should be set to -1 for png if omitted
+
+            if (resize && string.IsNullOrWhiteSpace(size))
+                size = "640x480";
+
+
+            try
+            {
+                if (action.Equals("info"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Camera));
+                }
+                else
+                {
+                    CaptureParameter captureParameter = new CaptureParameter();
+                    captureParameter.solve = solve;
+                    captureParameter.duration = duration;
+                    captureParameter.getResult = getResult;
+                    captureParameter.resize = resize;
+                    captureParameter.quality = quality;
+                    if (resize)
+                    {
+                        string[] s = size.Split('x');
+                        int width = int.Parse(s[0]);
+                        int height = int.Parse(s[1]);
+                        captureParameter.size =  new Size(width, height);
+                    }
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.Camera(action, captureParameter));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/{action}")]
+        public async Task Mount(string action)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
             {
-                switch (device)
+                if (action.Equals("info"))
                 {
-                    case "camera":
-                        if (action.Equals("info"))
-                        {
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Camera));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.Camera(action));
-                        }
-                        return;
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Mount));
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.Mount(action));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
 
-                    case "telescope":
-                        if (action.Equals("info"))
-                        {
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Telescope));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.Telescope(action));
-                        }
-                        return;
+        [Route(HttpVerbs.Get, "/equipment/focuser/{action}")]
+        public async Task Focuser(string action)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            try
+            {
+                if (action.Equals("info"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Focuser));
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.Focuser(action));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
 
-                    case "focuser":
-                        if (action.Equals("info"))
-                        {
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Focuser));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.Focuser(action));
-                        }
-                        return;
+        [Route(HttpVerbs.Get, "/equipment/filterwheel/{action}")]
+        public async Task Filterwheel(string action)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            try
+            {
+                if (action.Equals("info"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.FilterWheel));
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.FilterWheel(action));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
 
-                    case "filterwheel":
-                        if (action.Equals("info"))
-                        {
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.FilterWheel));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.FilterWheel(action));
-                        }
-                        return;
+        [Route(HttpVerbs.Get, "/equipment/guider/{action}")]
+        public async Task Guider(string action)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            try
+            {
+                if (action.Equals("info"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Guider));
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.Guider(action));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
 
-                    case "guider":
-                        if (action.Equals("info"))
-                        {   
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Guider));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.Guider(action));
-                        }
-                        return;
+        [Route(HttpVerbs.Get, "/equipment/dome/{action}")]
+        public async Task Dome(string action)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            try
+            {
+                if (action.Equals("info"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Dome));
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.Dome(action));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
 
-                    case "dome":
-                        if (action.Equals("info"))
-                        {
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Dome));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.Dome(action));
-                        }
-                        return;
+        [Route(HttpVerbs.Get, "/equipment/focuser/{action}")]
+        public async Task Focuser(string action, [QueryField] float position)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            try
+            {
+                if (action.Equals("info"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Rotator));
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.Rotator(action, position));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
 
-                    case "rotator":
-                        if (action.Equals("info"))
-                        {
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Rotator));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.Rotator(action, position));
-                        }
-                        return;
+        [Route(HttpVerbs.Get, "/equipment/safetymonitor/{action}")]
+        public async Task Safetymonitor(string action)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            try
+            {
+                if (action.Equals("info"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.SafetyMonitor));
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.SafetyMonitor(action));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
 
-                    case "safetymonitor":
-                        if (action.Equals("info"))
-                        {
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.SafetyMonitor));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.SafetyMonitor(action));
-                        }
-                        return;
+        [Route(HttpVerbs.Get, "/equipment/flatdevice/{action}")]
+        public async Task Flatdevice(string action)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            try
+            {
+                if (action.Equals("info"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.FlatDevice));
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.FlatDevice(action));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
 
-                    case "flatdevice":
-                        if (action.Equals("info"))
-                        {
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.FlatDevice));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.FlatDevice(action));
-                        }
-                        return;
+        [Route(HttpVerbs.Get, "/equipment/switch/{action}")]
+        public async Task Switch(string action)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            try
+            {
+                if (action.Equals("info"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Switch));
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.Switch(action));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
 
-                    case "switch":
-                        if (action.Equals("info"))
-                        {
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Switch));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.Switch(action));
-                        }
-                        return;
-
-                    case "weather":
-                        if (action.Equals("info"))
-                        {
-                            HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Weather));
-                        }
-                        else
-                        {
-                            HttpContext.WriteToResponse(await EquipmentControllerV2.Weather(action));
-                        }
-                        return;
-
-                    default:
-                        HttpContext.WriteToResponse(Utility.CreateErrorTable(new Error("Unknown Device", 400)));
-                        return;
+        [Route(HttpVerbs.Get, "/equipment/weather/{action}")]
+        public async Task Weather(string action)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            try
+            {
+                if (action.Equals("info"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.GetDeviceInfo(EquipmentType.Weather));
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.Weather(action));
                 }
             }
             catch (Exception ex)

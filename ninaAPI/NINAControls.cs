@@ -11,6 +11,7 @@
 
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Image.Interfaces;
+using NINA.PlateSolving.Interfaces;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces;
@@ -23,7 +24,7 @@ namespace ninaAPI
     {
         #region Equipment
         public ICameraMediator Camera;
-        public ITelescopeMediator Telescope;
+        public ITelescopeMediator Mount;
         public IFocuserMediator Focuser;
         public IFilterWheelMediator FilterWheel;
         public IGuiderMediator Guider;
@@ -41,6 +42,7 @@ namespace ninaAPI
         public IImageHistoryVM ImageHistory;
         public IImageDataFactory ImageDataFactory;
         public IImageSaveMediator ImageSaveMediator;
+        public IPlateSolverFactory PlateSolver;
         #endregion
 
         #region Application

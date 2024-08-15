@@ -92,8 +92,8 @@ namespace ninaAPI.WebService.V1.GET
                     response.Response = safety.GetInfo().GetAllProperties();
                     return response;
 
-                case EquipmentType.Telescope:
-                    ITelescopeMediator telescope = AdvancedAPI.Controls.Telescope;
+                case EquipmentType.Mount:
+                    ITelescopeMediator telescope = AdvancedAPI.Controls.Mount;
                     response.Response = telescope.GetInfo().GetAllProperties();
                     return response;
 

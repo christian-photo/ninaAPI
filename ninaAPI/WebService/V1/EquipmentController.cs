@@ -63,7 +63,7 @@ namespace ninaAPI.WebService.V1
         public static async Task<HttpResponse> Telescope(POSTData data)
         {
             HttpResponse response = new HttpResponse();
-            ITelescopeMediator telescope = AdvancedAPI.Controls.Telescope;
+            ITelescopeMediator telescope = AdvancedAPI.Controls.Mount;
 
             if (data.Action.Equals("connect"))
             {

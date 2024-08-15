@@ -192,7 +192,7 @@ namespace ninaAPI.WebService.V1
                         return;
 
                     case "telescope":
-                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Telescope));
+                        HttpContext.WriteToResponse(EquipmentMediator.GetDeviceInfo(EquipmentType.Mount));
                         return;
 
                     case "focuser":

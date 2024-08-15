@@ -28,8 +28,8 @@ namespace ninaAPI.WebService.V1
             AdvancedAPI.Controls.Camera.Connected += CameraConnection;
             AdvancedAPI.Controls.Camera.Disconnected += CameraConnection;
 
-            AdvancedAPI.Controls.Telescope.Connected += TelescopeConnection;
-            AdvancedAPI.Controls.Telescope.Disconnected += TelescopeConnection;
+            AdvancedAPI.Controls.Mount.Connected += TelescopeConnection;
+            AdvancedAPI.Controls.Mount.Disconnected += TelescopeConnection;
 
             AdvancedAPI.Controls.Focuser.Connected += FocuserConnection;
             AdvancedAPI.Controls.Focuser.Disconnected += FocuserConnection;

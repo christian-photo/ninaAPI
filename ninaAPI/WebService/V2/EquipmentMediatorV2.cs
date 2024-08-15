@@ -84,8 +84,8 @@ namespace ninaAPI.WebService.V2
                     response.Response = safety.GetInfo().GetAllProperties();
                     return response;
 
-                case EquipmentType.Telescope:
-                    ITelescopeMediator telescope = AdvancedAPI.Controls.Telescope;
+                case EquipmentType.Mount:
+                    ITelescopeMediator telescope = AdvancedAPI.Controls.Mount;
                     response.Response = telescope.GetInfo().GetAllProperties();
                     return response;
 
@@ -188,28 +188,7 @@ namespace ninaAPI.WebService.V2
                 renderedImage = await renderedImage.Stretch(profile.ImageSettings.AutoStretchFactor, profile.ImageSettings.BlackClipping, profile.ImageSettings.UnlinkedStretch);
                 var bitmap = renderedImage.Image;
 
-                if (size != Size.Empty) // Resize the image if requested
-                {
-                    double scaling = size.Width / renderedImage.Image.Width;
-
-                    bitmap = new TransformedBitmap(renderedImage.Image, new ScaleTransform(scaling, scaling));
-                }
-
-                if (quality < 0)
-                {
-                    PngBitmapEncoder encoder = new PngBitmapEncoder();
-                    encoder.Frames.Add(BitmapFrame.Create(renderedImage.Image));
-
-                    response.Response = Utility.EncoderToBase64(encoder);
-                }
-                else
-                {
-                    JpegBitmapEncoder encoder = new JpegBitmapEncoder();
-                    encoder.QualityLevel = quality;
-                    encoder.Frames.Add(BitmapFrame.Create(renderedImage.Image));
-
-                    response.Response = Utility.EncoderToBase64(encoder);
-                }
+                response.Response = ResizeAndConvertBitmap(bitmap, size, quality);
                 return response;
             }
             catch (Exception ex)
@@ -271,9 +250,18 @@ namespace ninaAPI.WebService.V2
 
             BitmapSource source = ImageUtility.ConvertBitmap(screenshot);
 
+            response.Response = ResizeAndConvertBitmap(source, size, quality);
+
+            return response;
+        }
+
+        public static string ResizeAndConvertBitmap(BitmapSource source, Size size, int quality)
+        {
+            string base64;
+
             if (size != Size.Empty) // Resize the image if requested
             {
-                double scaling = (double)size.Width / screenshot.Width;
+                double scaling = size.Width / source.Width;
 
                 source = new TransformedBitmap(source, new ScaleTransform(scaling, scaling));
             }
@@ -283,7 +271,7 @@ namespace ninaAPI.WebService.V2
                 PngBitmapEncoder encoder = new PngBitmapEncoder();
                 encoder.Frames.Add(BitmapFrame.Create(source));
 
-                response.Response = Utility.EncoderToBase64(encoder);
+                base64 = Utility.EncoderToBase64(encoder);
             }
             else
             {
@@ -291,10 +279,10 @@ namespace ninaAPI.WebService.V2
                 encoder.QualityLevel = quality;
                 encoder.Frames.Add(BitmapFrame.Create(source));
 
-                response.Response = Utility.EncoderToBase64(encoder);
+                base64 = Utility.EncoderToBase64(encoder);
             }
 
-            return response;
+            return base64;
         }
 
         private static List<Hashtable> getSequenceRecursivley(ISequenceContainer sequence)

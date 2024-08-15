@@ -10,22 +10,46 @@
 #endregion "copyright"
 
 using Newtonsoft.Json;
+using NINA.Astrometry;
+using NINA.Core.Model.Equipment;
+using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.Equipment.Model;
+using NINA.Image.ImageAnalysis;
+using NINA.Image.Interfaces;
+using NINA.PlateSolving;
+using NINA.PlateSolving.Interfaces;
 using NINA.Profile;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.Container;
 using NINA.Sequencer.Interfaces.Mediator;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace ninaAPI.WebService.V2
 {
+    public class CaptureParameter
+    {
+        public bool solve = false;
+        public bool getResult = false;
+        public bool resize = false;
+
+        public double duration = 0;
+
+        public int quality = 0;
+
+        public Size size = Size.Empty;
+    }
+
     public class EquipmentControllerV2
     {
         private static CancellationTokenSource SlewToken;
@@ -33,8 +57,13 @@ namespace ninaAPI.WebService.V2
         private static CancellationTokenSource AFToken;
         private static CancellationTokenSource DomeToken;
         private static CancellationTokenSource RotatorToken;
+        private static CancellationTokenSource CaptureToken;
 
-        public static async Task<HttpResponse> Camera(string action)
+        private static PlateSolveResult plateSolveResult;
+        private static IRenderedImage renderedImage;
+        private static Task CaptureTask;
+
+        public static async Task<HttpResponse> Camera(string action, CaptureParameter captureParameter)
         {
             HttpResponse response = new HttpResponse();
             ICameraMediator cam = AdvancedAPI.Controls.Camera;
@@ -49,7 +78,7 @@ namespace ninaAPI.WebService.V2
                 response.Response = "Camera connected";
                 return response;
             }
-            if (action.Equals("disconnect"))
+            else if (action.Equals("disconnect"))
             {
                 if (cam.GetInfo().Connected)
                 {
@@ -58,13 +87,13 @@ namespace ninaAPI.WebService.V2
                 response.Response = "Camera disconnected";
                 return response;
             }
-            if (action.Equals("abort-exposure"))
+            else if (action.Equals("abort-exposure"))
             {
                 if (!cam.GetInfo().Connected)
                 {
                     return Utility.CreateErrorTable(new Error("Camera not connected", 409));
                 }
-                if (cam.GetInfo().IsExposing)
+                else if (cam.GetInfo().IsExposing)
                 {
                     response.Response = "Exposure aborted";
                     cam.AbortExposure();
@@ -75,6 +104,97 @@ namespace ninaAPI.WebService.V2
                 }
                 return response;
             }
+            else if (action.Equals("capture"))
+            {
+                if (!cam.GetInfo().Connected)
+                {
+                    return Utility.CreateErrorTable(new Error("Camera not connected", 409));
+                }
+                else if (cam.GetInfo().IsExposing)
+                {
+                    return Utility.CreateErrorTable(new Error("Camera currently exposing", 409));
+                }
+
+                if (CaptureTask != null && !captureParameter.getResult)
+                {
+                    if (!CaptureTask.IsCompleted)
+                    {
+                        response.Response = "Capture already in progress";
+                    }
+                }
+                if (CaptureTask != null && captureParameter.getResult)
+                {
+                    if (CaptureTask.Status == TaskStatus.RanToCompletion)
+                    {
+                        Hashtable result = new Hashtable();
+                        result.Add("Image", EquipmentMediatorV2.ResizeAndConvertBitmap(renderedImage.Image, captureParameter.size, captureParameter.quality));
+                        if (plateSolveResult != null)
+                            result.Add("Platesolve", plateSolveResult);
+
+                        response.Response = result;
+                    }
+                    else
+                    {
+                        response.Response = CaptureTask.Status.ToString();
+                    }
+                }
+                else if (CaptureTask is null && captureParameter.getResult)
+                {
+                    response.Response = "No capture processed";
+                }
+                else
+                {
+                    CaptureToken?.Cancel();
+                    CaptureToken = new CancellationTokenSource();
+
+                    CaptureTask = Task.Run(async () =>
+                    {
+                        renderedImage = null;
+                        plateSolveResult = null;
+                        IPlateSolveSettings settings = AdvancedAPI.Controls.Profile.ActiveProfile.PlateSolveSettings;
+
+                        CaptureSequence sequence = new CaptureSequence(
+                            captureParameter.duration <= 0 ? settings.ExposureTime : captureParameter.duration,
+                            CaptureSequence.ImageTypes.SNAPSHOT,
+                            AdvancedAPI.Controls.FilterWheel.GetInfo().SelectedFilter,
+                            new BinningMode(cam.GetInfo().BinX, cam.GetInfo().BinY),
+                            1);
+
+                        PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: true);
+                        IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(sequence, CaptureToken.Token, AdvancedAPI.Controls.StatusMediator.GetStatus());
+                        AdvancedAPI.Controls.ImageHistory.Add(exposure.MetaData.Image.Id, "SNAPSHOT");
+                        renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(exposure, parameters, CaptureToken.Token);
+
+
+                        if (captureParameter.solve)
+                        {
+                            IPlateSolverFactory platesolver = AdvancedAPI.Controls.PlateSolver;
+                            Coordinates coordinates = AdvancedAPI.Controls.Mount.GetCurrentPosition();
+                            double focalLength = AdvancedAPI.Controls.Profile.ActiveProfile.TelescopeSettings.FocalLength;
+                            double pixelSize = cam.GetInfo().PixelSize;
+                            CaptureSolverParameter solverParameter = new CaptureSolverParameter()
+                            {
+                                Attempts = 1,
+                                Binning = settings.Binning,
+                                BlindFailoverEnabled = settings.BlindFailoverEnabled,
+                                Coordinates = coordinates,
+                                DownSampleFactor = settings.DownSampleFactor,
+                                FocalLength = focalLength,
+                                MaxObjects = settings.MaxObjects,
+                                Regions = settings.Regions,
+                                SearchRadius = settings.SearchRadius,
+                                PixelSize = cam.GetInfo().PixelSize
+                            };
+                            IImageSolver captureSolver = platesolver.GetImageSolver(platesolver.GetPlateSolver(settings), platesolver.GetBlindSolver(settings));
+                            plateSolveResult = await captureSolver.Solve(renderedImage.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), CaptureToken.Token);
+                        }
+                    }, CaptureToken.Token);
+
+                    response.Response = "Capture started";
+                }
+
+                return response;
+            }
             else
             {
                 response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
@@ -82,65 +202,65 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        public static async Task<HttpResponse> Telescope(string action)
+        public static async Task<HttpResponse> Mount(string action)
         {
             HttpResponse response = new HttpResponse();
-            ITelescopeMediator telescope = AdvancedAPI.Controls.Telescope;
+            ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
 
             if (action.Equals("connect"))
             {
-                if (!telescope.GetInfo().Connected)
+                if (!mount.GetInfo().Connected)
                 {
-                    await telescope.Rescan();
-                    await telescope.Connect();
+                    await mount.Rescan();
+                    await mount.Connect();
                 }
-                response.Response = "Telescope connected";
+                response.Response = "Mount connected";
                 return response;
             }
             else if (action.Equals("disconnect"))
             {
-                if (telescope.GetInfo().Connected)
+                if (mount.GetInfo().Connected)
                 {
-                    await telescope.Disconnect();
+                    await mount.Disconnect();
                 }
-                response.Response = "Telescope disconnected";
+                response.Response = "Mount disconnected";
                 return response;
             }
             else if (action.Equals("park"))
             {
-                if (!telescope.GetInfo().Connected)
+                if (!mount.GetInfo().Connected)
                 {
-                    return Utility.CreateErrorTable(new Error("Telescope not connected", 409));
+                    return Utility.CreateErrorTable(new Error("Mount not connected", 409));
                 }
-                if (telescope.GetInfo().AtPark)
+                if (mount.GetInfo().AtPark)
                 {
-                    response.Response = "Telescope already parked";
+                    response.Response = "Mount already parked";
                     return response;
                 }
-                if (telescope.GetInfo().Slewing)
+                if (mount.GetInfo().Slewing)
                 {
-                    telescope.StopSlew();
+                    mount.StopSlew();
                 }
                 SlewToken?.Cancel();
                 SlewToken = new CancellationTokenSource();
-                telescope.ParkTelescope(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewToken.Token);
+                mount.ParkTelescope(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewToken.Token);
                 response.Response = "Parking";
                 return response;
             }
             else if (action.Equals("unpark"))
             {
-                if (!telescope.GetInfo().Connected)
+                if (!mount.GetInfo().Connected)
                 {
-                    return Utility.CreateErrorTable(new Error("Telescope not connected", 409));
+                    return Utility.CreateErrorTable(new Error("Mount not connected", 409));
                 }
-                if (!telescope.GetInfo().AtPark)
+                if (!mount.GetInfo().AtPark)
                 {
-                    response.Response = "Telescope not parked";
+                    response.Response = "Mount not parked";
                     return response;
                 }
                 SlewToken?.Cancel();
                 SlewToken = new CancellationTokenSource();
-                telescope.UnparkTelescope(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewToken.Token);
+                mount.UnparkTelescope(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewToken.Token);
                 response.Response = "Unparking";
                 return response;
             }

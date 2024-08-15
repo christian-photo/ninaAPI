@@ -25,6 +25,7 @@ using System.ComponentModel;
 using NINA.Image.Interfaces;
 using NINA.WPF.Base.Interfaces;
 using CommunityToolkit.Mvvm.Input;
+using NINA.PlateSolving.Interfaces;
 
 namespace ninaAPI
 {
@@ -57,13 +58,14 @@ namespace ninaAPI
                            IImageDataFactory imageDataFactory,
                            IAutoFocusVMFactory AFFactory,
                            IImageSaveMediator saveMediator,
-                           IWeatherDataMediator weather)
+                           IWeatherDataMediator weather,
+                           IPlateSolverFactory platesolver)
         {
             
             Controls = new NINAControls()
             {
                 Camera = camera,
-                Telescope = telescope,
+                Mount = telescope,
                 Focuser = focuser,
                 FilterWheel = filterWheel,
                 Guider = guider,
@@ -81,7 +83,8 @@ namespace ninaAPI
                 ImageDataFactory = imageDataFactory,
                 AutoFocusFactory = AFFactory,
                 ImageSaveMediator = saveMediator,
-                Weather = weather
+                Weather = weather,
+                PlateSolver = platesolver
             };
 
             if (Settings.Default.UpdateSettings)

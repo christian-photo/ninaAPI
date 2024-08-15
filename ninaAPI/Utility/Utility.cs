@@ -274,7 +274,7 @@ namespace ninaAPI
     public enum EquipmentType
     {
         Camera,
-        Telescope,
+        Mount,
         FilterWheel,
         Focuser,
         Dome,
