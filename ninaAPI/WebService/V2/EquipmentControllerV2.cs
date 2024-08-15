@@ -140,7 +140,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else if (CaptureTask is null && captureParameter.getResult)
                 {
-                    response.Response = "No capture processed";
+                    response.Response = Utility.CreateErrorTable(new Error("No capture processed", 409));
                 }
                 else
                 {
@@ -162,7 +162,6 @@ namespace ninaAPI.WebService.V2
 
                         PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: true);
                         IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(sequence, CaptureToken.Token, AdvancedAPI.Controls.StatusMediator.GetStatus());
-                        AdvancedAPI.Controls.ImageHistory.Add(exposure.MetaData.Image.Id, "SNAPSHOT");
                         renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(exposure, parameters, CaptureToken.Token);
 
 
