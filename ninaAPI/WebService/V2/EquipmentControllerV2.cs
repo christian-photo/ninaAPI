@@ -58,6 +58,7 @@ namespace ninaAPI.WebService.V2
         private static CancellationTokenSource DomeToken;
         private static CancellationTokenSource RotatorToken;
         private static CancellationTokenSource CaptureToken;
+        private static CancellationTokenSource SwitchToken;
 
         private static PlateSolveResult plateSolveResult;
         private static IRenderedImage renderedImage;
@@ -477,7 +478,7 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        public static async Task<HttpResponse> Switch(string action)
+        public static async Task<HttpResponse> Switch(string action, short index, double value)
         {
             HttpResponse response = new HttpResponse();
             ISwitchMediator switches = AdvancedAPI.Controls.Switch;
@@ -499,6 +500,14 @@ namespace ninaAPI.WebService.V2
                     await switches.Disconnect();
                 }
                 response.Response = "Switch disconnected";
+                return response;
+            }
+            else if (action.Equals("set"))
+            {
+                SwitchToken?.Cancel();
+                SwitchToken = new CancellationTokenSource();
+                switches.SetSwitchValue(index, value, AdvancedAPI.Controls.StatusMediator.GetStatus(), SwitchToken.Token);
+                response.Response = "Switch value updated";
                 return response;
             }
             else

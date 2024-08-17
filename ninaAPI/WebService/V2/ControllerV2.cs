@@ -443,7 +443,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/switch/{action}")]
-        public async Task Switch(string action)
+        public async Task Switch(string action, [QueryField] short index, [QueryField] double value)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
@@ -454,7 +454,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    HttpContext.WriteToResponse(await EquipmentControllerV2.Switch(action));
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.Switch(action, index, value));
                 }
             }
             catch (Exception ex)
