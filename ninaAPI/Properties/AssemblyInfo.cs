@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("License", "MPL-2.0")]
 // The url to the license
 [assembly: AssemblyMetadata("LicenseURL", "https://www.mozilla.org/en-US/MPL/2.0/")]
-[assembly: AssemblyMetadata("Repository", "https://github.com/rennmaus-coder/ninaAPI")]
+[assembly: AssemblyMetadata("Repository", "https://github.com/christian-photo/ninaAPI")]
 
 
 // The following attributes are optional for the official manifest meta data
@@ -37,8 +37,8 @@ using System.Runtime.InteropServices;
 
 //[Optional] An in-depth description of your plugin
 [assembly: AssemblyMetadata("LongDescription", @"This plugin adds an API to N.I.N.A.  
-If you have question/issues/feedback, you can create an issue [here](https://github.com/rennmaus-coder/ninaAPI/issues), take a look at the
-[documentation](https://github.com/rennmaus-coder/ninaAPI/wiki) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)    
+If you have question/issues/feedback, you can create an issue [here](https://github.com/christian-photo/ninaAPI/issues), take a look at the
+[documentation](https://github.com/christian-photo/ninaAPI/wiki) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)    
 **Thanks to szymon and notzeeg (discord) for their help!**")]
 
 
