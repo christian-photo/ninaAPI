@@ -63,14 +63,12 @@ namespace ninaAPI.WebService.V1
         public static List<HttpResponse> Images = new List<HttpResponse>();
         public static List<HttpResponse> Events = new List<HttpResponse>();
 
-        private async void ImageSaved(object sender, ImageSavedEventArgs e)
+        private void ImageSaved(object sender, ImageSavedEventArgs e)
         {
             if (!e.MetaData.Image.ImageType.Equals("LIGHT"))
                 return;
 
             HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-            e.Image = null;
-            e.Statistics.Histogram.Clear();
 
             response.Response = new Dictionary<string, object>()
             {
@@ -95,7 +93,7 @@ namespace ninaAPI.WebService.V1
 
             Images.Add(response);
 
-            await Send(response);
+            Send(response);
         }
 
         private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e)

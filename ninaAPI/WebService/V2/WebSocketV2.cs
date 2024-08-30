@@ -66,7 +66,7 @@ namespace ninaAPI.WebService.V2
         public static List<HttpResponse> Images = new List<HttpResponse>();
         public static List<HttpResponse> Events = new List<HttpResponse>();
 
-        private async void ImageSaved(object sender, ImageSavedEventArgs e) 
+        private void ImageSaved(object sender, ImageSavedEventArgs e) 
         {
             if (!e.MetaData.Image.ImageType.Equals("LIGHT"))
                 return;
@@ -102,7 +102,7 @@ namespace ninaAPI.WebService.V2
             Images.Add(response);
             Events.Add(imageEvent);
 
-            await Send(response);
+            Send(response);
         }
 
         private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e)

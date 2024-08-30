@@ -112,6 +112,7 @@ namespace ninaAPI
                 {
                     SetHostNames();
                     Server = new API();
+                    Server.Start();
                 }
             });
         }
