@@ -49,57 +49,57 @@ namespace ninaAPI.WebService.V1.GET
             {
                 case EquipmentType.Camera:
                     ICameraMediator cam = AdvancedAPI.Controls.Camera;
-                    response.Response = cam.GetInfo().GetAllProperties();
+                    response.Response = cam.GetInfo();
                     return response;
 
                 case EquipmentType.Focuser:
                     IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
-                    response.Response = focuser.GetInfo().GetAllProperties();
+                    response.Response = focuser.GetInfo();
                     return response;
 
                 case EquipmentType.FlatDevice:
                     IFlatDeviceMediator flat = AdvancedAPI.Controls.FlatDevice;
-                    response.Response = flat.GetInfo().GetAllProperties();
+                    response.Response = flat.GetInfo();
                     return response;
 
                 case EquipmentType.Dome:
                     IDomeMediator dome = AdvancedAPI.Controls.Dome;
-                    response.Response = dome.GetInfo().GetAllProperties();
+                    response.Response = dome.GetInfo();
                     return response;
 
                 case EquipmentType.FilterWheel:
                     IFilterWheelMediator filter = AdvancedAPI.Controls.FilterWheel;
-                    response.Response = filter.GetInfo().GetAllProperties();
+                    response.Response = filter.GetInfo();
                     return response;
 
                 case EquipmentType.Switch:
                     ISwitchMediator switches = AdvancedAPI.Controls.Switch;
-                    response.Response = switches.GetInfo().GetAllProperties();
+                    response.Response = switches.GetInfo();
                     return response;
 
                 case EquipmentType.Guider:
                     IGuiderMediator guider = AdvancedAPI.Controls.Guider;
-                    response.Response = guider.GetInfo().GetAllProperties();
+                    response.Response = guider.GetInfo();
                     return response;
 
                 case EquipmentType.Rotator:
                     IRotatorMediator rotator = AdvancedAPI.Controls.Rotator;
-                    response.Response = rotator.GetInfo().GetAllProperties();
+                    response.Response = rotator.GetInfo();
                     return response;
 
                 case EquipmentType.SafetyMonitor:
                     ISafetyMonitorMediator safety = AdvancedAPI.Controls.SafetyMonitor;
-                    response.Response = safety.GetInfo().GetAllProperties();
+                    response.Response = safety.GetInfo();
                     return response;
 
                 case EquipmentType.Mount:
                     ITelescopeMediator telescope = AdvancedAPI.Controls.Mount;
-                    response.Response = telescope.GetInfo().GetAllProperties();
+                    response.Response = telescope.GetInfo();
                     return response;
 
                 case EquipmentType.Weather:
                     IWeatherDataMediator weather = AdvancedAPI.Controls.Weather;
-                    response.Response = weather.GetInfo().GetAllProperties();
+                    response.Response = weather.GetInfo();
                     return response;
 
                 default:

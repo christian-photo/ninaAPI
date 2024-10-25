@@ -184,10 +184,8 @@ namespace ninaAPI
         public static void WriteToResponse(this IHttpContext context, object json, JsonSerializerSettings settings = null)
         {
             context.Response.ContentType = MimeType.Json;
-            if (settings == null)
-            {
-                settings = new JsonSerializerSettings();
-            }
+            settings ??= new JsonSerializerSettings();
+            settings.NullValueHandling = NullValueHandling.Ignore;
             string text = JsonConvert.SerializeObject(json, settings);
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
