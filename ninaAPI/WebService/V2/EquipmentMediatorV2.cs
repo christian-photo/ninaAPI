@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
@@ -32,6 +33,28 @@ using System.Windows.Media.Imaging;
 
 namespace ninaAPI.WebService.V2
 {
+    public class FramingInfoContainer
+    {
+        public double BoundHeight;
+        public double BoundWidth;
+        public int CameraHeight;
+        public int CameraWidth;
+        public double CameraPixelSize;
+        public int DecDegrees;
+        public int DecMinutes;
+        public double DecSeconds;
+        public int RAHours;
+        public int RAMinutes;
+        public double RASeconds;
+        public DeepSkyObject DSO;
+        public double FieldOfView;
+        public double FocalLength;
+        public int HorizontalPanels;
+        public int VerticalPanels;
+        public FramingRectangle Rectangle;
+    }
+
+
     public class EquipmentMediatorV2
     {
         public static HttpResponse GetDeviceInfo(EquipmentType deviceType)
@@ -196,6 +219,43 @@ namespace ninaAPI.WebService.V2
                 Logger.Error(ex);
                 return Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
+        }
+
+        public static HttpResponse FramingInfo()
+        { 
+            IFramingAssistantVM framing = AdvancedAPI.Controls.FramingAssistant;
+            HttpResponse response = new HttpResponse();
+            try 
+            {
+                FramingInfoContainer info = new FramingInfoContainer()
+                {
+                    BoundHeight = framing.BoundHeight,
+                    BoundWidth = framing.BoundWidth,
+                    CameraHeight = framing.CameraHeight,
+                    CameraWidth = framing.CameraWidth,
+                    CameraPixelSize = framing.CameraPixelSize,
+                    DecDegrees = framing.DecDegrees,
+                    DecMinutes = framing.DecMinutes,
+                    DecSeconds = framing.DecSeconds,
+                    RAHours = framing.RAHours,
+                    RAMinutes = framing.RAMinutes,
+                    RASeconds = framing.RASeconds,
+                    DSO = framing.DSO,
+                    FieldOfView = framing.FieldOfView,
+                    FocalLength = framing.FocalLength,
+                    HorizontalPanels = framing.HorizontalPanels,
+                    VerticalPanels = framing.VerticalPanels,
+                    Rectangle = framing.Rectangle,
+                };
+                response.Response = info;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                return Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
         }
 
         public static HttpResponse GetSequence()

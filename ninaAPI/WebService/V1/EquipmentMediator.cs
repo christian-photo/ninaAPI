@@ -10,13 +10,11 @@
 #endregion "copyright"
 
 using Accord.Statistics.Visualizations;
-using ASCOM.Com;
 using Newtonsoft.Json;
 using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
-using NINA.Image.ImageAnalysis;
 using NINA.Image.Interfaces;
 using NINA.Profile;
 using NINA.Profile.Interfaces;
@@ -24,12 +22,10 @@ using NINA.Sequencer.Container;
 using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using NINA.WPF.Base.Model;
-using ninaAPI.WebService.V1;
 using OxyPlot;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;

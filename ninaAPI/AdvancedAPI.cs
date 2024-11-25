@@ -35,6 +35,8 @@ namespace ninaAPI
         public static NINAControls Controls;
         public static API Server;
 
+        public static string PluginId { get; private set; }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -59,7 +61,9 @@ namespace ninaAPI
                            IAutoFocusVMFactory AFFactory,
                            IImageSaveMediator saveMediator,
                            IWeatherDataMediator weather,
-                           IPlateSolverFactory platesolver)
+                           IPlateSolverFactory platesolver,
+                           IMessageBroker broker,
+                           IFramingAssistantVM framing)
         {
             
             Controls = new NINAControls()
@@ -84,7 +88,9 @@ namespace ninaAPI
                 AutoFocusFactory = AFFactory,
                 ImageSaveMediator = saveMediator,
                 Weather = weather,
-                PlateSolver = platesolver
+                PlateSolver = platesolver,
+                MessageBroker = broker,
+                FramingAssistant = framing,
             };
 
             if (Settings.Default.UpdateSettings)
@@ -115,6 +121,8 @@ namespace ninaAPI
                     Server.Start();
                 }
             });
+
+            PluginId = this.Identifier;
         }
 
         public override Task Teardown()

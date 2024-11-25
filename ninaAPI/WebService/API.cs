@@ -17,7 +17,6 @@ using ninaAPI.Properties;
 using ninaAPI.WebService.V1;
 using ninaAPI.WebService.V2;
 using System;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 
 namespace ninaAPI.WebService
@@ -56,6 +55,7 @@ namespace ninaAPI.WebService
             {
                 Server.WithWebApi($"/v2/api", m => m.WithController<ControllerV2>());
                 Server.WithModule(new WebSocketV2("/v2/socket"));
+                Server.WithModule(new TPPASocket("/v2/tppa"));
             }
         }
 

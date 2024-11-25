@@ -218,6 +218,30 @@ namespace ninaAPI.WebService.V2
             }
         }
 
+        [Route(HttpVerbs.Get, "/framing/{action}")]
+        public async Task Framing(string action, [QueryField] double RAangle, [QueryField] double DECangle, [QueryField] string slewoption, [QueryField] double rotation)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+
+            try
+            {
+
+                if (action.Equals("info"))
+                {
+                    HttpContext.WriteToResponse(EquipmentMediatorV2.FramingInfo());
+                }
+                else
+                {
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.FramingAssistant(action, slewoption, RAangle, DECangle, rotation));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                HttpContext.WriteToResponse(Utility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR));
+            }
+        }
+
         #endregion
 
         #region Equipment

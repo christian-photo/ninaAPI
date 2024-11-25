@@ -24,6 +24,7 @@ using NINA.Profile;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.Container;
 using NINA.Sequencer.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces.ViewModel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,7 +34,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
 namespace ninaAPI.WebService.V2
 {
@@ -661,6 +661,35 @@ namespace ninaAPI.WebService.V2
                 response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
                 return response;
             }
+        }
+
+        public async static Task<HttpResponse> FramingAssistant(string action, string slew_option, double ra, double dec, double rotation)
+        {
+            HttpResponse response = new HttpResponse();
+            IFramingAssistantVM framing = AdvancedAPI.Controls.FramingAssistant;
+            IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+
+            if (action.Equals("set-coordinates"))
+            {
+                await framing.SetCoordinates(new DeepSkyObject(string.Empty, new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), string.Empty, null));
+                response.Response = "Coordinates updated";
+            }
+            else if (action.Equals("slew"))
+            {
+                framing.SlewToCoordinatesCommand.Execute(slew_option); // SlewOption is either Center Rotate or empty
+                response.Response = $"Slew started";
+            }
+            else if (action.Equals("set-rotation"))
+            {
+                framing.Rectangle.TotalRotation = 360 - rotation;
+                response.Response = "Rotation updated";
+            }
+            else
+            {
+                response = Utility.CreateErrorTable(CommonErrors.UNKNOWN_ACTION);
+                return response;
+            }
+            return response;
         }
 
         public static HttpResponse Sequence(string action, bool skipValidation, string sequenceName = "", string sequenceJson = "")

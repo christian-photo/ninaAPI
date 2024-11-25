@@ -12,6 +12,7 @@
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Image.Interfaces;
 using NINA.PlateSolving.Interfaces;
+using NINA.Plugin.Interfaces;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces;
@@ -50,6 +51,8 @@ namespace ninaAPI
         public ISequenceMediator Sequence;
         public IApplicationStatusMediator StatusMediator;
         public IApplicationMediator Application;
+        public IMessageBroker MessageBroker;
+        public IFramingAssistantVM FramingAssistant;
         #endregion
     }
 }
