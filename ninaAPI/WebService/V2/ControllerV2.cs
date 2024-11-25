@@ -9,19 +9,12 @@
 
 #endregion "copyright"
 
-using ASCOM.Common.Interfaces;
-using CsvHelper.Configuration.Attributes;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
-using NINA.PlateSolving.Interfaces;
-using NINA.Profile.Interfaces;
-using ninaAPI.Properties;
 using System;
 using System.Drawing;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
@@ -41,7 +34,7 @@ namespace ninaAPI.WebService.V2
         public void GetVersion()
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
-            HttpContext.WriteToResponse(new HttpResponse() { Response = "1.0.0.0" });
+            HttpContext.WriteToResponse(new HttpResponse() { Response = "1.1.0.0" });
         }
 
         [Route(HttpVerbs.Get, "/image-history")]
