@@ -46,7 +46,6 @@ namespace ninaAPI.WebService.V2
         public int RAHours;
         public int RAMinutes;
         public double RASeconds;
-        public DeepSkyObject DSO;
         public double FieldOfView;
         public double FocalLength;
         public int HorizontalPanels;
@@ -240,7 +239,6 @@ namespace ninaAPI.WebService.V2
                     RAHours = framing.RAHours,
                     RAMinutes = framing.RAMinutes,
                     RASeconds = framing.RASeconds,
-                    DSO = framing.DSO,
                     FieldOfView = framing.FieldOfView,
                     FocalLength = framing.FocalLength,
                     HorizontalPanels = framing.HorizontalPanels,
