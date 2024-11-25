@@ -271,7 +271,7 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        public static async Task<HttpResponse> Focuser(string action)
+        public static async Task<HttpResponse> Focuser(string action, int position)
         {
             HttpResponse response = new HttpResponse();
             IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
@@ -293,6 +293,16 @@ namespace ninaAPI.WebService.V2
                     await focuser.Disconnect();
                 }
                 response.Response = "Focuser disconnected";
+                return response;
+            }
+            else if (action.Equals("move"))
+            {
+                if (!focuser.GetInfo().Connected)
+                {
+                    return Utility.CreateErrorTable(new Error("Focuser not connected", 409));
+                }
+                focuser.MoveFocuser(position, new CancellationTokenSource().Token);
+                response.Response = "Move started";
                 return response;
             }
             else if (action.Equals("auto-focus"))

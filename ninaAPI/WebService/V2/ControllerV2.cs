@@ -313,7 +313,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/focuser/{action}")]
-        public async Task Focuser(string action)
+        public async Task Focuser(string action, [QueryField] int position)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             try
@@ -324,7 +324,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    HttpContext.WriteToResponse(await EquipmentControllerV2.Focuser(action));
+                    HttpContext.WriteToResponse(await EquipmentControllerV2.Focuser(action, position));
                 }
             }
             catch (Exception ex)
