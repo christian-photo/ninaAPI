@@ -34,7 +34,7 @@ namespace ninaAPI.WebService.V2
         public void GetVersion()
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
-            HttpContext.WriteToResponse(new HttpResponse() { Response = "1.1.0.0" });
+            HttpContext.WriteToResponse(new HttpResponse() { Response = "2.0.0.0" });
         }
 
         [Route(HttpVerbs.Get, "/image-history")]
