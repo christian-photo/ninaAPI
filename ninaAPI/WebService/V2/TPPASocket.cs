@@ -80,9 +80,9 @@ namespace ninaAPI.WebService.V2
             if (message.Topic == "PolarAlignmentPlugin_PolarAlignment_AlignmentError" && message.Version == 1)
             {
                 dynamic content = message.Content;
-                double AzimuthError = content.AzimuthError;
-                double AltitudeError = content.AltitudeError;
-                double TotalError = content.TotalError;
+                double AzimuthError = content.azimuthError;
+                double AltitudeError = content.altitudeError;
+                double TotalError = content.totalError;
 
                 await Send(new HttpResponse()
                 {

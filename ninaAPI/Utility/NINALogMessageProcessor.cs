@@ -79,37 +79,13 @@ namespace ninaAPI
             re = new Regex("^Advanced Sequence finished$", options);
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_ADV_SEQ_STOP, false, null));
 
-            // Dome opened
-            re = new Regex("^Opened dome shutter\\. Shutter state after opening ShutterOpen$", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_DOME_SHUTTER_OPENED, false, null));
-
-            // Dome closed
-            re = new Regex("^Closed dome shutter\\. Shutter state after closing ShutterClosed$", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_DOME_SHUTTER_CLOSED, false, null));
-
             // Dome stopped
             re = new Regex("^Stopping all dome movement$", options);
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_DOME_STOPPED, false, null));
 
-            // Unpark scope
-            re = new Regex("^Telescope ordered to unpark$", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_UNPARK, false, null));
-
-            // Park scope
-            re = new Regex("^Telescope has been commanded to park$", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_PARK, false, null));
-
             // Center / Plate solve
             re = new Regex("^Starting Category: Telescope, Item: Center, (?<extra>.+)$", options);
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_CENTER, true, null));
-
-            // Slew - don't think we really need slews
-            //re = new Regex("^Slewing from (?<extra>.+)$", options);
-            //_matchers.Add(re, new EventMatcher(NINALogEvent.NINA_SLEW, true, EventMatcher.handleSlewEvent));
-
-            // Meridian flip
-            re = new Regex("^Meridian Flip - Initializing Meridian Flip.+", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_MF, false, null));
 
             // Error: Auto Focus
             re = new Regex("^Auto Focus Failed! (?<extra>.+)$", options);

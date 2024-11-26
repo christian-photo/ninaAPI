@@ -25,48 +25,64 @@ namespace ninaAPI.WebService.V2
     {
         public WebSocketV2(string urlPath) : base(urlPath, true)
         {
-            AdvancedAPI.Controls.Camera.Connected += CameraConnection;
-            AdvancedAPI.Controls.Camera.Disconnected += CameraConnection;
+            AdvancedAPI.Controls.Camera.Connected += async (_, _) => await SendAndAddEvent("CAMERA-CONNECTED");
+            AdvancedAPI.Controls.Camera.Disconnected += async (_, _) => await SendAndAddEvent("CAMERA-DISCONNECTED");
+            AdvancedAPI.Controls.Camera.DownloadTimeout += async (_, _) => await SendAndAddEvent("CAMERA-DOWNLOAD-TIMEOUT");
 
-            AdvancedAPI.Controls.Mount.Connected += TelescopeConnection;
-            AdvancedAPI.Controls.Mount.Disconnected += TelescopeConnection;
+            AdvancedAPI.Controls.Mount.Connected += async (_, _) => await SendAndAddEvent("MOUNT-CONNECTED");
+            AdvancedAPI.Controls.Mount.Disconnected += async (_, _) => await SendAndAddEvent("MOUNT-DISCONNECTED");
+            AdvancedAPI.Controls.Mount.BeforeMeridianFlip += async (_, _) => await SendAndAddEvent("MOUNT-BEFORE-FLIP");
+            AdvancedAPI.Controls.Mount.AfterMeridianFlip += async (_, _) => await SendAndAddEvent("MOUNT-AFTER-FLIP");
+            AdvancedAPI.Controls.Mount.Homed += async (_, _) => await SendAndAddEvent("MOUNT-HOMED");
+            AdvancedAPI.Controls.Mount.Parked += async (_, _) => await SendAndAddEvent("MOUNT-PARKED");
+            AdvancedAPI.Controls.Mount.Unparked += async (_, _) => await SendAndAddEvent("MOUNT-UNPARKED");
 
-            AdvancedAPI.Controls.Focuser.Connected += FocuserConnection;
-            AdvancedAPI.Controls.Focuser.Disconnected += FocuserConnection;
+            AdvancedAPI.Controls.Focuser.Connected += async (_, _) => await SendAndAddEvent("FOCUSER-CONNECTED");
+            AdvancedAPI.Controls.Focuser.Disconnected += async (_, _) => await SendAndAddEvent("FOCUSER-DISCONNECTED");
 
-            AdvancedAPI.Controls.Rotator.Connected += RotatorConnection;
-            AdvancedAPI.Controls.Rotator.Disconnected += RotatorConnection;
+            AdvancedAPI.Controls.Rotator.Connected += async (_, _) => await SendAndAddEvent("ROTATOR-CONNECTED");
+            AdvancedAPI.Controls.Rotator.Disconnected += async (_, _) => await SendAndAddEvent("ROTATOR-DISCONNECTED");
 
-            AdvancedAPI.Controls.Dome.Connected += DomeConnection;
-            AdvancedAPI.Controls.Dome.Disconnected += DomeConnection;
+            AdvancedAPI.Controls.Dome.Connected += async (_, _) => await SendAndAddEvent("DOME-CONNECTED");
+            AdvancedAPI.Controls.Dome.Disconnected += async (_, _) => await SendAndAddEvent("DOME-DISCONNECTED");
+            AdvancedAPI.Controls.Dome.Closed += async (_, _) => await SendAndAddEvent("DOME-SHUTTER-CLOSED");
+            AdvancedAPI.Controls.Dome.Opened += async (_, _) => await SendAndAddEvent("DOME-SHUTTER-OPENED");
+            AdvancedAPI.Controls.Dome.Homed += async (_, _) => await SendAndAddEvent("DOME-HOMED");
+            AdvancedAPI.Controls.Dome.Parked += async (_, _) => await SendAndAddEvent("DOME-PARKED");
 
-            AdvancedAPI.Controls.FilterWheel.Connected += FWConnection;
-            AdvancedAPI.Controls.FilterWheel.Disconnected += FWConnection;
+            AdvancedAPI.Controls.FilterWheel.Connected += async (_, _) => await SendAndAddEvent("FILTERWHEEL-CONNECTED");
+            AdvancedAPI.Controls.FilterWheel.Disconnected += async (_, _) => await SendAndAddEvent("FILTERWHEEL-DISCONNECTED");
+            AdvancedAPI.Controls.FilterWheel.FilterChanged += async (_, _) => await SendAndAddEvent("FILTERWHEEL-CHANGED");
 
-            AdvancedAPI.Controls.Switch.Connected += SwitchConnection;
-            AdvancedAPI.Controls.Switch.Disconnected += SwitchConnection;
+            AdvancedAPI.Controls.Switch.Connected += async (_, _) => await SendAndAddEvent("SWITCH-CONNECTED");
+            AdvancedAPI.Controls.Switch.Disconnected += async (_, _) => await SendAndAddEvent("SWITCH-DISCONNECTED");
 
-            AdvancedAPI.Controls.SafetyMonitor.Connected += SafetyConnection;
-            AdvancedAPI.Controls.SafetyMonitor.Disconnected += SafetyConnection;
+            AdvancedAPI.Controls.SafetyMonitor.Connected += async (_, _) => await SendAndAddEvent("SAFETY-CONNECTED");
+            AdvancedAPI.Controls.SafetyMonitor.Disconnected += async (_, _) => await SendAndAddEvent("SAFETY-DISCONNECTED");
+            AdvancedAPI.Controls.SafetyMonitor.IsSafeChanged += async (_, _) => await SendAndAddEvent("SAFETY-CHANGED");
 
-            AdvancedAPI.Controls.Guider.Connected += GuiderConnection;
-            AdvancedAPI.Controls.Guider.Disconnected += GuiderConnection;
+            AdvancedAPI.Controls.Guider.Connected += async (_, _) => await SendAndAddEvent("GUIDER-CONNECTED");
+            AdvancedAPI.Controls.Guider.Disconnected += async (_, _) => await SendAndAddEvent("GUIDER-DISCONNECTED");
+            AdvancedAPI.Controls.Guider.AfterDither += async (_, _) => await SendAndAddEvent("GUIDER-DITHER");
+            AdvancedAPI.Controls.Guider.GuidingStarted += async (_, _) => await SendAndAddEvent("GUIDER-START");
+            AdvancedAPI.Controls.Guider.GuidingStopped += async (_, _) => await SendAndAddEvent("GUIDER-STOP");
 
-            AdvancedAPI.Controls.FlatDevice.Connected += FlatConnection;
-            AdvancedAPI.Controls.FlatDevice.Disconnected += FlatConnection;
+            AdvancedAPI.Controls.FlatDevice.Connected += async (_, _) => await SendAndAddEvent("FLAT-CONNECTED");
+            AdvancedAPI.Controls.FlatDevice.Disconnected += async (_, _) => await SendAndAddEvent("FLAT-DISCONNECTED");
 
-            AdvancedAPI.Controls.Weather.Connected += WeatherConnection;
-            AdvancedAPI.Controls.Weather.Disconnected += WeatherConnection;
+            AdvancedAPI.Controls.Weather.Connected += async (_, _) => await SendAndAddEvent("WEATHER-CONNECTED");
+            AdvancedAPI.Controls.Weather.Disconnected += async (_, _) => await SendAndAddEvent("WEATHER-DISCONNECTED");
 
             AdvancedAPI.Controls.ImageSaveMediator.ImageSaved += ImageSaved;
 
             AdvancedAPI.Server.LogProcessor.NINALogEventSaved += LogProcessor_NINALogEventSaved;
         }
 
+
         public static List<HttpResponse> Images = new List<HttpResponse>();
         public static List<HttpResponse> Events = new List<HttpResponse>();
 
-        private void ImageSaved(object sender, ImageSavedEventArgs e) 
+        private void ImageSaved(object sender, ImageSavedEventArgs e)
         {
             if (!e.MetaData.Image.ImageType.Equals("LIGHT"))
                 return;
@@ -76,7 +92,7 @@ namespace ninaAPI.WebService.V2
             response.Response = new Dictionary<string, object>()
             {
                 { "Event", "IMAGE-SAVE" },
-                { "ImageStatistics", new Dictionary<string, object>() { 
+                { "ImageStatistics", new Dictionary<string, object>() {
                     { "ExposureTime", e.Duration },
                     { "Index", e.MetaData.Image.Id - 1 },
                     { "Filter", e.Filter },
@@ -105,120 +121,8 @@ namespace ninaAPI.WebService.V2
             Send(response);
         }
 
-        private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e)
-        {
-            await SendAndAddEvent(e.type, e.time);
-        }
+        private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e) => await SendAndAddEvent(e.type, e.time);
 
-
-        private bool[] firstConnect = [true, true, true, true, true, true, true, true, true, true, true]; // on the first connect, the connection event is recieved twice, using bool to work around that
-        private async Task CameraConnection(object arg1, EventArgs arg2)
-        {
-            if (firstConnect[0])
-            {
-                firstConnect[0] = false;
-                return;
-            }
-            await SendAndAddEvent("CAMERA-CONNECTION");
-        }
-
-
-        private async Task TelescopeConnection(object arg1, EventArgs arg2)
-        {
-            if (firstConnect[1])
-            {
-                firstConnect[1] = false;
-                return;
-            }
-            await SendAndAddEvent("TELESCOPE-CONNECTION");
-        }
-        private async Task FocuserConnection(object arg1, EventArgs arg2)
-        {
-            if (firstConnect[2])
-            {
-                firstConnect[2] = false;
-                return;
-            }
-            await SendAndAddEvent("FOCUSER-CONNECTION");
-        }
-
-        private async Task RotatorConnection(object arg1, EventArgs arg2)
-        {
-            if (firstConnect[3])
-            {
-                firstConnect[3] = false;
-                return;
-            }
-            await SendAndAddEvent("ROTATOR-CONNECTION");
-        }
-
-        private async Task DomeConnection(object arg1, EventArgs arg2)
-        {
-            if (firstConnect[4])
-            {
-                firstConnect[4] = false;
-                return;
-            }
-            await SendAndAddEvent("DOME-CONNECTION");
-        }
-
-        private async Task FWConnection(object arg1, EventArgs arg2)
-        {
-            if (firstConnect[5])
-            {
-                firstConnect[5] = false;
-                return;
-            }
-            await SendAndAddEvent("FILTERWHEEL-CONNECTION");
-        }
-
-        private async Task SwitchConnection(object arg1, EventArgs arg2)
-        {
-            if (firstConnect[6])
-            {
-                firstConnect[6] = false;
-                return;
-            }
-            await SendAndAddEvent("SWITCH-CONNECTION");
-        }
-        private async Task SafetyConnection(object arg1, EventArgs arg2)
-        {
-            if (firstConnect[7])
-            {
-                firstConnect[7] = false;
-                return;
-            }
-            await SendAndAddEvent("SAFETY-CONNECTION");
-        }
-        private async Task GuiderConnection(object arg1, EventArgs arg2)
-        {
-            if (firstConnect[8])
-            {
-                firstConnect[8] = false;
-                return;
-            }
-            await SendAndAddEvent("GUIDER-CONNECTION");
-        }
-
-        private async Task FlatConnection(object arg1, EventArgs arg2)
-        {
-            if (firstConnect[9])
-            {
-                firstConnect[9] = false;
-                return;
-            }
-            await SendAndAddEvent("FLAT-CONNECTION");
-        }
-
-        private async Task WeatherConnection(object arg1, EventArgs arg2)
-        {
-            if (firstConnect[10])
-            {
-                firstConnect[10] = false;
-                return;
-            }
-            await SendAndAddEvent("WEATHER-CONNECTION");
-        }
 
         public async Task SendAndAddEvent(string eventName)
         {
