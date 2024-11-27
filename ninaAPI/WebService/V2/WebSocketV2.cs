@@ -123,7 +123,6 @@ namespace ninaAPI.WebService.V2
 
         private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e) => await SendAndAddEvent(e.type, e.time);
 
-
         public async Task SendAndAddEvent(string eventName)
         {
             HttpResponse response = new HttpResponse();
