@@ -14,8 +14,8 @@
       "PageSize": 50
     },
     "AstrometrySettings": {
-      "Latitude": 49.461799621582,
-      "Longitude": 8.17236042022705,
+      "Latitude": 49.4,
+      "Longitude": 8.1,
       "Elevation": 110,
       "HorizonFilePath": ""
     },
