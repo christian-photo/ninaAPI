@@ -79,10 +79,11 @@ namespace ninaAPI.WebService.V2
         {
             if (message.Topic == "PolarAlignmentPlugin_PolarAlignment_AlignmentError" && message.Version == 1)
             {
-                dynamic content = message.Content;
-                double AzimuthError = content.azimuthError;
-                double AltitudeError = content.altitudeError;
-                double TotalError = content.totalError;
+                Type t = message.Content.GetType();
+                
+                double AzimuthError = (double)t.GetProperty("AzimuthError").GetValue(message.Content, null);
+                double AltitudeError = (double)t.GetProperty("AltitudeError").GetValue(message.Content, null);
+                double TotalError = (double)t.GetProperty("TotalError").GetValue(message.Content, null);
 
                 await Send(new HttpResponse()
                 {
