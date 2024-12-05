@@ -11,7 +11,9 @@
 
 using NINA.Astrometry;
 using NINA.Core.Enum;
+using NINA.Core.Interfaces;
 using NINA.Core.Utility;
+using NINA.Equipment.Equipment.MyGuider;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Image.ImageAnalysis;
 using NINA.Image.Interfaces;
@@ -53,9 +55,33 @@ namespace ninaAPI.WebService.V2
         public FramingRectangle Rectangle;
     }
 
+    public class GuideInfo : GuiderInfo
+    {
+        public GuideStep LastGuideStep { get; set; }
+    }
+
+    public class GuideStep
+    {
+        public double RADistanceRaw { get; set; }
+        public double DECDistanceRaw { get; set; }
+
+        public double RADuration { get; set; }
+        public double DECDuration { get; set; }
+    }
+
 
     public class EquipmentMediatorV2
     {
+        private static GuideStep lastGuideStep { get; set; }
+
+        public static void StartWatchers()
+        {
+            AdvancedAPI.Controls.Guider.GuideEvent += (object sender, IGuideStep e) =>
+            {
+                lastGuideStep = new GuideStep() { DECDistanceRaw = e.DECDistanceRaw, DECDuration = e.DECDuration, RADistanceRaw = e.RADistanceRaw, RADuration = e.RADuration };
+            };
+        }
+
         public static HttpResponse GetDeviceInfo(EquipmentType deviceType)
         {
             HttpResponse response = new HttpResponse();
@@ -93,7 +119,9 @@ namespace ninaAPI.WebService.V2
 
                 case EquipmentType.Guider:
                     IGuiderMediator guider = AdvancedAPI.Controls.Guider;
-                    response.Response = guider.GetInfo();
+                    GuideInfo info = (GuideInfo)guider.GetInfo();
+                    info.LastGuideStep = lastGuideStep;
+                    response.Response = info;
                     return response;
 
                 case EquipmentType.Rotator:
@@ -191,6 +219,7 @@ namespace ninaAPI.WebService.V2
 
         public static async Task<HttpResponse> GetImage(int quality, int index, Size size)
         {
+            // TODO: Make stretch factors url available
             HttpResponse response = new HttpResponse();
             try
             {
@@ -258,6 +287,7 @@ namespace ninaAPI.WebService.V2
 
         public static HttpResponse GetSequence()
         {
+            // TODO: Make returned sequence more descriptive, eg add specific fields for some instructions like af after time or loop unitl
             ISequenceMediator Sequence = AdvancedAPI.Controls.Sequence;
             HttpResponse response = new HttpResponse();
             try

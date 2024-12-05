@@ -66,6 +66,7 @@ namespace ninaAPI.WebService.V2
 
         public static async Task<HttpResponse> Camera(string action, CaptureParameter captureParameter)
         {
+            // TODO: Implement cooling
             HttpResponse response = new HttpResponse();
             ICameraMediator cam = AdvancedAPI.Controls.Camera;
 
@@ -161,6 +162,8 @@ namespace ninaAPI.WebService.V2
                             new BinningMode(cam.GetInfo().BinX, cam.GetInfo().BinY),
                             1);
 
+                        // TODO: Implement sequence.Gain
+
                         PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: true);
                         IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(sequence, CaptureToken.Token, AdvancedAPI.Controls.StatusMediator.GetStatus());
                         renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(exposure, parameters, CaptureToken.Token);
@@ -204,6 +207,8 @@ namespace ninaAPI.WebService.V2
 
         public static async Task<HttpResponse> Mount(string action)
         {
+            // TODO: Implement tracking modes
+            // TODO: Implement homing
             HttpResponse response = new HttpResponse();
             ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
 

@@ -65,7 +65,7 @@ namespace ninaAPI.WebService
             {
                 LogWatcher = new NINALogWatcher(LogProcessor);
                 LogWatcher.Start();
-
+                EquipmentMediatorV2.StartWatchers();
 
                 Logger.Debug("Creating Webserver");
                 CreateServer();

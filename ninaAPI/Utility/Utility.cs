@@ -174,6 +174,7 @@ namespace ninaAPI
 
         public static void WriteToResponse(this IHttpContext context, string json)
         {
+            context.Response.Headers.Add("Access-Control-Allow-Origin");
             context.Response.ContentType = MimeType.Json;
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
@@ -183,6 +184,7 @@ namespace ninaAPI
         
         public static void WriteToResponse(this IHttpContext context, object json, JsonSerializerSettings settings = null)
         {
+            context.Response.Headers.Add("Access-Control-Allow-Origin");
             context.Response.ContentType = MimeType.Json;
             settings ??= new JsonSerializerSettings();
             settings.NullValueHandling = NullValueHandling.Ignore;
