@@ -1,0 +1,17 @@
+## 3.0 (not yet released, work in progress)
+
+I **heavily** advise everyone still using to start using v2 or better v3 as v1 is now deprecated and will be removed with the next minor version!
+V2 and V3 will stay for a longer time now, I made some changes behind the scenes that will make it easier to add new features without breaking older versions
+
+### V2 Changes:
+- ⚠️ **Breaking** Connection events in the websocket are now seperated into connected and disconnected ⚠️
+- Added a new websocket for controlling TPPA, get the current error in realtime, start and stop a TPPA routine
+- Framing Assistant is now supported:
+  - Set the coordinates in the framing assistant
+  - Slew to coordiantes (optionally with center or rotate)
+  - Set desired rotation
+- Add focuser move
+- A lot more events in the websocket, see the documentation for a list of all events
+- GuiderInfo now includes the last guide step with raw distance
+
+### V3 Changes:
