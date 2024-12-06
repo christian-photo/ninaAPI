@@ -1,6 +1,6 @@
 ## 3.0 (not yet released, work in progress)
 
-I **heavily** advise everyone still using to start using v2 or better v3 as v1 is now deprecated and will be removed with the next minor version!
+I **heavily** advise everyone still using V1 to start using V2 or better V3 as V1 is now deprecated and will be removed with the next minor version!
 V2 and V3 will stay for a longer time now, I made some changes behind the scenes that will make it easier to add new features without breaking older versions
 
 ### V2 Changes:
