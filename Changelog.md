@@ -1,7 +1,7 @@
-## 3.0 (not yet released, work in progress)
+## 2.1 (not yet released, work in progress)
 
-I **heavily** advise everyone still using V1 to start using V2 or better V3 as V1 is now deprecated and will be removed with the next minor version!
-V2 and V3 will stay for a longer time now, I made some changes behind the scenes that will make it easier to add new features without breaking older versions
+I **heavily** advise everyone still using V1 to start using V2 as V1 is now deprecated and will be removed with the next minor version!
+V2 will probably stay for a longer time now, I made some changes behind the scenes that will make it easier to add new features without breaking older versions
 
 ### V2 Changes:
 - ⚠️ **Breaking** Connection events in the websocket are now seperated into connected and disconnected ⚠️
@@ -13,5 +13,3 @@ V2 and V3 will stay for a longer time now, I made some changes behind the scenes
 - Add focuser move
 - A lot more events in the websocket, see the documentation for a list of all events
 - GuiderInfo now includes the last guide step with raw distance
-
-### V3 Changes:
