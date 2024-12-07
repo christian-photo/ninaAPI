@@ -7,7 +7,7 @@ V2 will probably stay for a longer time now, I made some changes behind the scen
 
 ### V2 Changes:
 - ⚠️ **Breaking** Connection events in the websocket are now seperated into connected and disconnected ⚠️
-- Added a new websocket for controlling TPPA, get the current error in realtime, start and stop a TPPA routine
+- Added a new websocket for controlling TPPA and getting the current error in realtime
 - Framing Assistant is now supported:
   - Set the coordinates in the framing assistant
   - Slew to coordiantes (optionally with center or rotate)
