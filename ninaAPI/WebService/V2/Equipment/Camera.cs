@@ -166,7 +166,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/camera/warm")]
-        public void CameraWarm()
+        public void CameraWarm([QueryField] bool cancel)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
@@ -185,10 +185,18 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    CameraCoolToken?.Cancel();
-                    CameraCoolToken = new CancellationTokenSource();
-                    cam.WarmCamera(TimeSpan.Zero, AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCoolToken.Token);
-                    response.Response = "Warming started";
+                    if (cancel)
+                    {
+                        CameraCoolToken?.Cancel();
+                        response.Response = "Warming canceled";
+                    }
+                    else
+                    {
+                        CameraCoolToken?.Cancel();
+                        CameraCoolToken = new CancellationTokenSource();
+                        cam.WarmCamera(TimeSpan.Zero, AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCoolToken.Token);
+                        response.Response = "Warming started";
+                    }
                 }
             }
             catch (Exception ex)
