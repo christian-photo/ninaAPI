@@ -48,6 +48,8 @@ namespace ninaAPI.WebService.V2
         private static IRenderedImage renderedImage;
         private static Task CaptureTask;
 
+        private static CancellationTokenSource CameraCoolToken;
+
 
         [Route(HttpVerbs.Get, "/equipment/camera/info")]
         public void CameraInfo()
@@ -110,6 +112,84 @@ namespace ninaAPI.WebService.V2
                     await cam.Disconnect();
                 }
                 response.Response = "Camera disconnected";
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/camera/cool")]
+        public void CameraCool([QueryField] double temperature, [QueryField] bool cancel, [QueryField] double minutes)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ICameraMediator cam = AdvancedAPI.Controls.Camera;
+
+                if (!cam.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Camera not connected", 409));
+                }
+                else if (!cam.GetInfo().CanSetTemperature)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Camera has no temperature control", 409));
+                }
+                else
+                {
+                    if (cancel)
+                    {
+                        CameraCoolToken?.Cancel();
+                        response.Response = "Cooling canceled";
+                    }
+                    else
+                    {
+                        CameraCoolToken?.Cancel();
+                        CameraCoolToken = new CancellationTokenSource();
+                        cam.CoolCamera(temperature, TimeSpan.FromMinutes(minutes), AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCoolToken.Token);
+                        response.Response = "Cooling started";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/camera/warm")]
+        public void CameraWarm()
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ICameraMediator cam = AdvancedAPI.Controls.Camera;
+
+                if (!cam.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Camera not connected", 409));
+                }
+                else if (!cam.GetInfo().CanSetTemperature)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Camera has no temperature control", 409));
+                }
+                else
+                {
+                    CameraCoolToken?.Cancel();
+                    CameraCoolToken = new CancellationTokenSource();
+                    cam.WarmCamera(TimeSpan.Zero, AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCoolToken.Token);
+                    response.Response = "Warming started";
+                }
             }
             catch (Exception ex)
             {
