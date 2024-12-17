@@ -15,5 +15,6 @@ V2 will probably stay for a longer time now, I made some changes behind the scen
   - Set desired rotation
 - Add focuser move
 - Add telescope homing and tracking modes
+- Add camera cooling and warming
 - A lot more events in the websocket, see the documentation for a list of all events
 - GuiderInfo now includes the last guide step with raw distance
