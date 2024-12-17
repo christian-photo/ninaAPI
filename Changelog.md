@@ -7,11 +7,13 @@ V2 will probably stay for a longer time now, I made some changes behind the scen
 
 ### V2 Changes:
 - ⚠️ **Breaking** Connection events in the websocket are now seperated into connected and disconnected ⚠️
+- ⚠️ **Breaking** Changed the structure of a profile response ⚠️
 - Added a new websocket for controlling TPPA and getting the current error in realtime
 - Framing Assistant is now supported:
   - Set the coordinates in the framing assistant
   - Slew to coordiantes (optionally with center or rotate)
   - Set desired rotation
 - Add focuser move
+- Add telescope homing and tracking modes
 - A lot more events in the websocket, see the documentation for a list of all events
 - GuiderInfo now includes the last guide step with raw distance
