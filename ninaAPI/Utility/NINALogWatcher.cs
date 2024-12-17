@@ -1,5 +1,4 @@
 ﻿using NINA.Core.Utility;
-using ninaAPI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,7 +30,7 @@ namespace ninaAPI
 
             if (activeLogFile != null)
             {
-                Logger.Info($"web viewer: watching log file: {activeLogFile}");
+                Logger.Info($"watching log file: {activeLogFile}");
                 stopped = false;
                 Watch(logDirectory, activeLogFile);
             }
@@ -41,7 +40,7 @@ namespace ninaAPI
         {
             if (watcherThread != null)
             {
-                Logger.Debug("web viewer: stopping log watcher");
+                Logger.Debug("stopping log watcher");
                 stopped = true;
                 watcherThread = null;
             }
@@ -96,16 +95,16 @@ namespace ninaAPI
                             fsWatcher.Dispose();
                         }
 
-                        Logger.Debug("web view log watcher has been stopped/aborted");
+                        Logger.Debug("log watcher has been stopped/aborted");
                     }
                     else
                     {
-                        Logger.Warning($"failed to process log messages for web viewer: {e.Message} {e.StackTrace}");
+                        Logger.Warning($"failed to process log messages: {e.Message} {e.StackTrace}");
                     }
                 }
             });
 
-            watcherThread.Name = "WSHV log watcher thread";
+            watcherThread.Name = "Log watcher thread";
             watcherThread.Start();
         }
 
@@ -125,12 +124,12 @@ namespace ninaAPI
                     }
                 }
 
-                Logger.Warning($"failed to find active NINA log file in {logDirectory}, cannot process log events for web viewer");
+                Logger.Warning($"failed to find active NINA log file in {logDirectory}, cannot process log events");
                 return null;
             }
             catch (Exception e)
             {
-                Logger.Warning($"failed to find active NINA log file in {logDirectory}, cannot process log events for web viewer: {e.Message} {e.StackTrace}");
+                Logger.Warning($"failed to find active NINA log file in {logDirectory}, cannot process log events: {e.Message} {e.StackTrace}");
                 return null;
             }
         }

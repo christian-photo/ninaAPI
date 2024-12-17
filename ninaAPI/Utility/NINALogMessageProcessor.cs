@@ -144,23 +144,6 @@ namespace ninaAPI
                     return new NINALogEvent(eventMatcher.eventType, dateTime);
                 }
             }
-
-            // Currently unused since we're not handling slews as events
-            public static NINALogEvent handleSlewEvent(EventMatcher eventMatcher, string msg, DateTime dateTime, Match match)
-            {
-                // Need to scan back into previous events and see if there's a plate solve or MF w/in some constrained amount of time (like 3m)
-                // If there is, then return null - we don't want to record slews of plate solves/MFs.
-                // Looks like previousEvents.FindLastIndex() could do this w/out explicitly walking back
-
-                if (eventMatcher.hasExtra && match.Groups.Count > 0)
-                {
-                    return new NINALogEvent(eventMatcher.eventType, dateTime, match.Groups["extra"].Value);
-                }
-                else
-                {
-                    return new NINALogEvent(eventMatcher.eventType);
-                }
-            }
         }
     }
 }

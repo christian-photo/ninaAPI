@@ -10,14 +10,17 @@
 #endregion "copyright"
 
 using EmbedIO;
+using EmbedIO.Cors;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
 using ninaAPI.Properties;
+using ninaAPI.Utility;
 using ninaAPI.WebService.V1;
 using ninaAPI.WebService.V2;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ninaAPI.WebService
 {
@@ -45,15 +48,17 @@ namespace ninaAPI.WebService
                 .WithUrlPrefix($"http://*:{Port}")
                 .WithMode(HttpListenerMode.EmbedIO));
 
+            Server.WithModule(new CustomHeaderModule());
+
             if (Settings.Default.StartV1)
             {
-                Server.WithWebApi($"/api", m => m.WithController<Controller>());
+                Server.WithWebApi("/api", m => m.WithController<Controller>());
                 Server.WithModule(new WebSocket("/socket"));
             }
 
             if (Settings.Default.StartV2)
             {
-                Server.WithWebApi($"/v2/api", m => m.WithController<ControllerV2>());
+                Server.WithWebApi("/v2/api", m => m.WithController<ControllerV2>());
                 Server.WithModule(new WebSocketV2("/v2/socket"));
                 Server.WithModule(new TPPASocket("/v2/tppa"));
             }
@@ -65,7 +70,17 @@ namespace ninaAPI.WebService
             {
                 LogWatcher = new NINALogWatcher(LogProcessor);
                 LogWatcher.Start();
-                EquipmentMediatorV2.StartWatchers();
+                ControllerV2.StartCameraWatchers();
+                ControllerV2.StartDomeWatchers();
+                ControllerV2.StartFilterWheelWatchers();
+                ControllerV2.StartFlatDeviceWatchers();
+                ControllerV2.StartFocuserWatchers();
+                ControllerV2.StartGuiderWatchers();
+                ControllerV2.StartMountWatchers();
+                ControllerV2.StartRotatorWatchers();
+                ControllerV2.StartSafetyWatchers();
+                ControllerV2.StartSwitchWatchers();
+                ControllerV2.StartWeatherWatchers();
 
                 Logger.Debug("Creating Webserver");
                 CreateServer();
@@ -73,7 +88,7 @@ namespace ninaAPI.WebService
                 if (Server != null)
                 {
                     serverThread = new Thread(() => APITask(Server));
-                    serverThread.Name = "API Thread V1";
+                    serverThread.Name = "API Thread";
                     serverThread.SetApartmentState(ApartmentState.STA);
                     serverThread.Start();
                 }
@@ -104,14 +119,13 @@ namespace ninaAPI.WebService
         [STAThread]
         private void APITask(WebServer server)
         {
-            string ipAdress = Utility.GetLocalNames()["IPADRESS"];
+            string ipAdress = CoreUtility.GetLocalNames()["IPADRESS"];
             Logger.Info($"starting web server, listening at {ipAdress}:{Port}");
 
             try
             {
                 apiToken = new CancellationTokenSource();
                 server.RunAsync(apiToken.Token).Wait();
-                Notification.ShowSuccess($"API started, listening at:\n {ipAdress}:{Port}");
             }
             catch (Exception ex)
             {
@@ -121,5 +135,23 @@ namespace ninaAPI.WebService
                 Logger.Debug("aborting web server thread");
             }
         }
+    }
+
+    public class CustomHeaderModule : WebModuleBase
+    {
+        public CustomHeaderModule() : base("/")
+        {
+        }
+
+        protected override Task OnRequestAsync(IHttpContext context)
+        {
+            if (Settings.Default.UseAccessControlHeader)
+            {
+                context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            }
+            return Task.CompletedTask;
+        }
+
+        public override bool IsFinalHandler => false;
     }
 }

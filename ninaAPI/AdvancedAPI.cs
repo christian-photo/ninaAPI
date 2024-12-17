@@ -26,6 +26,7 @@ using NINA.Image.Interfaces;
 using NINA.WPF.Base.Interfaces;
 using CommunityToolkit.Mvvm.Input;
 using NINA.PlateSolving.Interfaces;
+using ninaAPI.Utility;
 
 namespace ninaAPI
 {
@@ -175,6 +176,16 @@ namespace ninaAPI
             }
         }
 
+        public bool UseAccessHeader
+        {
+            get => Settings.Default.UseAccessControlHeader;
+            set
+            {
+                Settings.Default.UseAccessControlHeader = value;
+                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
         public string LocalAdress
         {
             get => Settings.Default.LocalAdress;
@@ -212,7 +223,7 @@ namespace ninaAPI
         
         private void SetHostNames()
         {
-            Dictionary<string, string> dict = Utility.GetLocalNames();
+            Dictionary<string, string> dict = CoreUtility.GetLocalNames();
             
             LocalAdress = $"http://{dict["LOCALHOST"]}:{Port}/api";
             LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{Port}/api";

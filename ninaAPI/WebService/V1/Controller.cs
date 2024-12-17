@@ -13,7 +13,7 @@ using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
-using ninaAPI.Properties;
+using ninaAPI.Utility;
 using ninaAPI.WebService.V1.GET;
 using System;
 using System.Collections;
@@ -52,7 +52,7 @@ namespace ninaAPI.WebService.V1
             if (string.IsNullOrEmpty(property))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(PROPERTY_NOT_SEND));
                 return;
             }
 
@@ -71,14 +71,14 @@ namespace ninaAPI.WebService.V1
                         HttpContext.WriteToResponse(EquipmentMediator.GetSocketImageHistory(int.Parse(parameter)));
                         return;
                     default:
-                        HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_PROPERTY));
+                        HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(INVALID_PROPERTY));
                         return;
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(ex.Message));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(ex.Message));
             }
         }
 
@@ -88,7 +88,7 @@ namespace ninaAPI.WebService.V1
             if (string.IsNullOrEmpty(property))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(PROPERTY_NOT_SEND));
                 return;
             }
 
@@ -107,14 +107,14 @@ namespace ninaAPI.WebService.V1
                         HttpContext.WriteToResponse(EquipmentMediator.GetSocketEventHistory());
                         return;
                     default:
-                        HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_PROPERTY));
+                        HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(INVALID_PROPERTY));
                         return;
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(ex.Message));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(ex.Message));
             }
         }
 
@@ -124,7 +124,7 @@ namespace ninaAPI.WebService.V1
             if (string.IsNullOrEmpty(property))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(PROPERTY_NOT_SEND));
                 return;
             }
 
@@ -137,7 +137,7 @@ namespace ninaAPI.WebService.V1
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(ex.Message));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(ex.Message));
                 return;
             }
         }
@@ -148,7 +148,7 @@ namespace ninaAPI.WebService.V1
             if (string.IsNullOrEmpty(property))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(PROPERTY_NOT_SEND));
                 return;
             }
 
@@ -161,14 +161,14 @@ namespace ninaAPI.WebService.V1
                         HttpContext.WriteToResponse(EquipmentMediator.GetSequence());
                         return;
                     default:
-                        HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_PROPERTY));
+                        HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(INVALID_PROPERTY));
                         return;
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(ex.Message));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(ex.Message));
             }
         }
 
@@ -178,7 +178,7 @@ namespace ninaAPI.WebService.V1
             if (string.IsNullOrEmpty(property))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(PROPERTY_NOT_SEND));
                 return;
             }
 
@@ -240,14 +240,14 @@ namespace ninaAPI.WebService.V1
                         return;
 
                     default:
-                        HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_PROPERTY));
+                        HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(INVALID_PROPERTY));
                         return;
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(ex.Message));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(ex.Message));
             }
         }
 
@@ -262,13 +262,13 @@ namespace ninaAPI.WebService.V1
             if (string.IsNullOrEmpty(data.Device))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(PROPERTY_NOT_SEND));
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(data.Device) || string.IsNullOrWhiteSpace(data.Action))
             {
-                HttpContext.WriteToResponse(Utility.CreateErrorTable("POST Header not valid"));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable("POST Header not valid"));
                 return;
             }
 
@@ -326,14 +326,14 @@ namespace ninaAPI.WebService.V1
                         return;
 
                     default:
-                        HttpContext.WriteToResponse(Utility.CreateErrorTable("Device not found"));
+                        HttpContext.WriteToResponse(CoreUtility.CreateErrorTable("Device not found"));
                         return;
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(ex.Message));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(ex.Message));
             }
         }
 
@@ -344,7 +344,7 @@ namespace ninaAPI.WebService.V1
             if (string.IsNullOrEmpty(data.Device))
             {
                 Logger.Error(PROPERTY_NOT_SEND);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(PROPERTY_NOT_SEND));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(PROPERTY_NOT_SEND));
                 return;
             }
 
@@ -361,14 +361,14 @@ namespace ninaAPI.WebService.V1
                         HttpContext.WriteToResponse(EquipmentController.ChangeProfileValue(data));
                         return;
                     default:
-                        HttpContext.WriteToResponse(Utility.CreateErrorTable(INVALID_PROPERTY));
+                        HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(INVALID_PROPERTY));
                         return;
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                HttpContext.WriteToResponse(Utility.CreateErrorTable(ex.Message));
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(ex.Message));
             }
         }
 

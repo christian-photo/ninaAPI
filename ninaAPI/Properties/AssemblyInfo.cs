@@ -28,6 +28,7 @@ using System.Runtime.InteropServices;
 // The url to the license
 [assembly: AssemblyMetadata("LicenseURL", "https://www.mozilla.org/en-US/MPL/2.0/")]
 [assembly: AssemblyMetadata("Repository", "https://github.com/christian-photo/ninaAPI")]
+[assembly: AssemblyMetadata("ChangelogURL", "https://github.com/christian-photo/ninaAPI/blob/main/Changelog.md")]
 
 
 // The following attributes are optional for the official manifest meta data
@@ -36,7 +37,15 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("Tags", "API,Web")]
 
 //[Optional] An in-depth description of your plugin
-[assembly: AssemblyMetadata("LongDescription", @"This plugin adds an API to N.I.N.A.  
+[assembly: AssemblyMetadata("LongDescription", @"This plugin features an HTTP server, including an api and websockets!
+
+## Features:
+- Listen to events like connections, meridian flips and much more
+- TPPA integration (Requires TPPA to be installed and V2 of the api)
+- Supports basic control over the equipment and application in general
+- And much more!
+  
+---
 If you have question/issues/feedback, you can create an issue [here](https://github.com/christian-photo/ninaAPI/issues), take a look at the
 [documentation](https://github.com/christian-photo/ninaAPI/wiki) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)    
 **Thanks to szymon and notzeeg (discord) for their help!**")]

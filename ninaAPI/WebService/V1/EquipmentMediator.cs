@@ -22,6 +22,7 @@ using NINA.Sequencer.Container;
 using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using NINA.WPF.Base.Model;
+using ninaAPI.Utility;
 using OxyPlot;
 using System;
 using System.Collections;
@@ -120,7 +121,7 @@ namespace ninaAPI.WebService.V1.GET
             }
             if (id >= WebSocket.Images.Count)
             {
-                Utility.CreateErrorTable("Index out of range");
+                CoreUtility.CreateErrorTable("Index out of range");
             }
             return WebSocket.Images[id];
         }
@@ -210,7 +211,7 @@ namespace ninaAPI.WebService.V1.GET
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                return Utility.CreateErrorTable(ex.Message);
+                return CoreUtility.CreateErrorTable(ex.Message);
             }
         }
 
@@ -242,13 +243,13 @@ namespace ninaAPI.WebService.V1.GET
                 {
                     return new HttpResponse() { Response = profileService.ActiveProfile };
                 }
-                return Utility.CreateErrorTable("Unknown parameter");
+                return CoreUtility.CreateErrorTable("Unknown parameter");
 
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                return Utility.CreateErrorTable(ex.Message);
+                return CoreUtility.CreateErrorTable(ex.Message);
             }
         }
 
@@ -279,7 +280,7 @@ namespace ninaAPI.WebService.V1.GET
                     PngBitmapEncoder encoder = new PngBitmapEncoder();
                     encoder.Frames.Add(BitmapFrame.Create(renderedImage.Image));
 
-                    response.Response = Utility.EncoderToBase64(encoder);
+                    response.Response = CoreUtility.EncoderToBase64(encoder);
                 }
                 else
                 {
@@ -287,14 +288,14 @@ namespace ninaAPI.WebService.V1.GET
                     encoder.QualityLevel = jpgQuality;
                     encoder.Frames.Add(BitmapFrame.Create(renderedImage.Image));
 
-                    response.Response = Utility.EncoderToBase64(encoder);
+                    response.Response = CoreUtility.EncoderToBase64(encoder);
                 }
                 return response;
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                return Utility.CreateErrorTable(ex.Message);
+                return CoreUtility.CreateErrorTable(ex.Message);
             }
         }
 
@@ -327,7 +328,7 @@ namespace ninaAPI.WebService.V1.GET
                     PngBitmapEncoder encoder = new PngBitmapEncoder();
                     encoder.Frames.Add(BitmapFrame.Create(bitmap));
 
-                    response.Response = Utility.EncoderToBase64(encoder);
+                    response.Response = CoreUtility.EncoderToBase64(encoder);
                 }
                 else
                 {
@@ -335,14 +336,14 @@ namespace ninaAPI.WebService.V1.GET
                     encoder.QualityLevel = quality;
                     encoder.Frames.Add(BitmapFrame.Create(bitmap));
 
-                    response.Response = Utility.EncoderToBase64(encoder);
+                    response.Response = CoreUtility.EncoderToBase64(encoder);
                 }
                 return response;
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                return Utility.CreateErrorTable(ex.Message);
+                return CoreUtility.CreateErrorTable(ex.Message);
             }
         }
 
@@ -354,12 +355,12 @@ namespace ninaAPI.WebService.V1.GET
             {
                 if (!Sequence.Initialized)
                 {
-                    return Utility.CreateErrorTable("Sequence is not initialized");
+                    return CoreUtility.CreateErrorTable("Sequence is not initialized");
                 }
                 IList<IDeepSkyObjectContainer> targets = Sequence.GetAllTargets();
                 if (targets.Count == 0)
                 {
-                    return Utility.CreateErrorTable("Sequence is empty");
+                    return CoreUtility.CreateErrorTable("Sequence is empty");
                 }
                 response.Response = JsonConvert.DeserializeObject(
                     JsonConvert.SerializeObject(
@@ -371,7 +372,7 @@ namespace ninaAPI.WebService.V1.GET
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                return Utility.CreateErrorTable(ex.Message);
+                return CoreUtility.CreateErrorTable(ex.Message);
             }
         }
 

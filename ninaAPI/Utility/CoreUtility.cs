@@ -17,7 +17,6 @@ using NINA.Sequencer.Container;
 using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -25,14 +24,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography;
-using System.Text;
 using System.Windows.Media.Imaging;
 using ninaAPI.WebService;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace ninaAPI
+namespace ninaAPI.Utility
 {
-    public static class Utility
+    public static class CoreUtility
     {
         public static IList<IDeepSkyObjectContainer> GetAllTargets(this ISequenceMediator sequence)
         {
@@ -47,20 +46,12 @@ namespace ninaAPI
             return new Progress<ApplicationStatus>(p => Status = p);
         }
 
-        public static string MakeString(this IEnumerable<string> list)
+        private static readonly Lazy<Dictionary<string, string>> lazyNames = new Lazy<Dictionary<string, string>>(() =>
         {
-            return "[" + string.Join(", ", list) + "]";
-        }
-
-        public static string MakeString(this Dictionary<string, string>.ValueCollection coll)
-        {
-            return coll.ToArray().MakeString();
-        }
-
-        public static Dictionary<string, string> GetLocalNames()
-        {
-            Dictionary<string, string> names = new Dictionary<string, string>();
-            names.Add("LOCALHOST", "localhost");
+            var names = new Dictionary<string, string>()
+            {
+                { "LOCALHOST", "localhost" }
+            };
 
             string hostName = Dns.GetHostName();
             if (!string.IsNullOrEmpty(hostName))
@@ -75,6 +66,11 @@ namespace ninaAPI
             }
 
             return names;
+        });
+
+        public static Dictionary<string, string> GetLocalNames()
+        {
+            return lazyNames.Value;
         }
 
         private static string GetIPv4Address()
@@ -89,39 +85,6 @@ namespace ninaAPI
                 }
             }
             return null;
-        }
-
-        public static string GetHash(HashAlgorithm hashAlgorithm, string input)
-        {
-
-            // Convert the input string to a byte array and compute the hash.
-            byte[] data = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-            // Create a new Stringbuilder to collect the bytes
-            // and create a string.
-            var sBuilder = new StringBuilder();
-
-            // Loop through each byte of the hashed data
-            // and format each one as a hexadecimal string.
-            for (int i = 0; i < data.Length; i++)
-            {
-                sBuilder.Append(data[i].ToString("x2"));
-            }
-
-            // Return the hexadecimal string.
-            return sBuilder.ToString();
-        }
-
-        // Verify a hash against a string.
-        public static bool VerifyHash(HashAlgorithm hashAlgorithm, string input, string hash)
-        {
-            // Hash the input.
-            var hashOfInput = GetHash(hashAlgorithm, input);
-
-            // Create a StringComparer an compare the hashes.
-            StringComparer comparer = StringComparer.OrdinalIgnoreCase;
-
-            return comparer.Compare(hashOfInput, hash) == 0;
         }
 
         public static string BitmapToBase64(Bitmap bmp)
@@ -164,45 +127,31 @@ namespace ninaAPI
 
         public static HttpResponse CreateErrorTable(string message, int code = 500)
         {
-            return new HttpResponse() { Error = message, Success = false , StatusCode = code };
+            return CreateErrorTable(new Error(message, code));
         }
 
         public static HttpResponse CreateErrorTable(Error error)
         {
-            return new HttpResponse() { Error = error.message, Success = false , StatusCode = error.code };
+            return new HttpResponse() { Error = error.message, Success = false, StatusCode = error.code };
         }
 
-        public static void WriteToResponse(this IHttpContext context, string json)
+        private static JsonSerializerOptions options = new JsonSerializerOptions()
         {
-            context.Response.Headers.Add("Access-Control-Allow-Origin");
-            context.Response.ContentType = MimeType.Json;
-            using (var writer = new StreamWriter(context.Response.OutputStream))
-            {
-                writer.Write(json);
-            }
-        }
-        
-        public static void WriteToResponse(this IHttpContext context, object json, JsonSerializerSettings settings = null)
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+        };
+
+        public static void WriteToResponse(this IHttpContext context, object json)
         {
-            context.Response.Headers.Add("Access-Control-Allow-Origin");
             context.Response.ContentType = MimeType.Json;
-            settings ??= new JsonSerializerSettings();
-            settings.NullValueHandling = NullValueHandling.Ignore;
-            string text = JsonConvert.SerializeObject(json, settings);
+
+            string text = System.Text.Json.JsonSerializer.Serialize(json, options);
+
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
                 writer.Write(text);
             }
-        }
-
-        public static Hashtable GetAllProperties(this object obj)
-        {
-            Hashtable table = new Hashtable();
-            foreach (var prop in obj.GetType().GetProperties())
-            {
-                table.Add(prop.Name, prop.GetValue(obj));
-            }
-            return table;
         }
 
         public static object CastString(this string str, Type type)
@@ -241,7 +190,7 @@ namespace ninaAPI
         public static EncoderParameters GetCompression(int quality)
         {
             var encoderParameters = new EncoderParameters(1);
-            encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
+            encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, quality);
             return encoderParameters;
         }
 
@@ -263,7 +212,7 @@ namespace ninaAPI
     {
         public static string TypeAPI = "API";
         public static string TypeSocket = "Socket";
-        
+
         public object Response { get; set; } = string.Empty;
         public string Error { get; set; } = string.Empty;
         public int StatusCode { get; set; } = 200;
@@ -294,9 +243,9 @@ namespace ninaAPI
             ignoreProps = new HashSet<string>(propNamesToIgnore);
         }
 
-        protected override JsonProperty CreateProperty(System.Reflection.MemberInfo member, MemberSerialization memberSerialization)
+        protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(System.Reflection.MemberInfo member, MemberSerialization memberSerialization)
         {
-            JsonProperty property = base.CreateProperty(member, memberSerialization);
+            Newtonsoft.Json.Serialization.JsonProperty property = base.CreateProperty(member, memberSerialization);
             if (this.ignoreProps.Contains(property.PropertyName))
             {
                 property.ShouldSerialize = _ => false;

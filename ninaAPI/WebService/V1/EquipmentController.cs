@@ -13,6 +13,7 @@ using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile;
 using NINA.Sequencer.Interfaces.Mediator;
+using ninaAPI.Utility;
 using System;
 using System.Drawing;
 using System.Linq;
@@ -305,7 +306,7 @@ namespace ninaAPI.WebService.V1
                     await guider.StartGuiding(false, AdvancedAPI.Controls.StatusMediator.GetStatus(), GuideToken.Token);
                     return response;
                 }
-                return Utility.CreateErrorTable("Guider not connected");
+                return CoreUtility.CreateErrorTable("Guider not connected");
             }
             if (data.Action.Equals("stop"))
             {
@@ -314,7 +315,7 @@ namespace ninaAPI.WebService.V1
                     await guider.StopGuiding(GuideToken.Token);
                     return response;
                 }
-                return Utility.CreateErrorTable("Guider not connected");
+                return CoreUtility.CreateErrorTable("Guider not connected");
             }
             return response;
         }
@@ -407,7 +408,7 @@ namespace ninaAPI.WebService.V1
                                          CopyPixelOperation.SourceCopy);
                     }
 
-                    response.Response = Utility.BitmapToBase64(bmpScreenCapture);
+                    response.Response = CoreUtility.BitmapToBase64(bmpScreenCapture);
                 }
                 return response;
             }
@@ -437,7 +438,7 @@ namespace ninaAPI.WebService.V1
                         AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.OPTIONS);
                         return response;
                     default:
-                        return Utility.CreateErrorTable("Invalid parameter");
+                        return CoreUtility.CreateErrorTable("Invalid parameter");
                 }
             }
             return response;
@@ -447,7 +448,7 @@ namespace ninaAPI.WebService.V1
         {
             HttpResponse response = new HttpResponse();
             if (string.IsNullOrEmpty(data.Action))
-                return Utility.CreateErrorTable("Invalid Path");
+                return CoreUtility.CreateErrorTable("Invalid Path");
 
             string[] pathSplit = data.Action.Split('-'); // CameraSettings, PixelSize
             object position = AdvancedAPI.Controls.Profile.ActiveProfile;

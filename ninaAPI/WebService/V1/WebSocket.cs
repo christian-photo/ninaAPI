@@ -13,6 +13,7 @@ using EmbedIO.WebSockets;
 using Newtonsoft.Json;
 using NINA.Core.Utility;
 using NINA.WPF.Base.Interfaces.Mediator;
+using ninaAPI.Utility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
