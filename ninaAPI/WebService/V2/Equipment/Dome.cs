@@ -11,11 +11,8 @@
 
 using EmbedIO;
 using EmbedIO.Routing;
-using EmbedIO.WebApi;
-using NINA.Core.Interfaces;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyDome;
-using NINA.Equipment.Equipment.MyRotator;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;

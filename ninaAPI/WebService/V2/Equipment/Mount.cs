@@ -11,13 +11,12 @@
 
 using EmbedIO;
 using EmbedIO.Routing;
+using EmbedIO.WebApi;
 using NINA.Core.Utility;
+using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,8 +34,6 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Mount.Parked += async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-PARKED");
             AdvancedAPI.Controls.Mount.Unparked += async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-UNPARKED");
         }
-        // TODO: Implement tracking modes
-        // TODO: Implement homing
 
         [Route(HttpVerbs.Get, "/equipment/mount/info")]
         public void MountInfo()
@@ -99,6 +96,91 @@ namespace ninaAPI.WebService.V2
                     await mount.Disconnect();
                 }
                 response.Response = "Mount disconnected";
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/home")]
+        public void MountHome()
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
+                }
+                else if (mount.GetInfo().AtHome)
+                {
+                    response.Response = "Mount already homed";
+                }
+                else
+                {
+                    if (mount.GetInfo().Slewing)
+                    {
+                        mount.StopSlew();
+                    }
+                    mount.FindHome(AdvancedAPI.Controls.StatusMediator.GetStatus(), new CancellationTokenSource().Token);
+                    response.Response = "Homing";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/tracking")]
+        public void MountTrackingMode([QueryField] int mode)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
+                }
+                else if (mount.GetInfo().AtPark)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount parked", 409));
+                }
+                else
+                {
+                    // Siderial: 0
+                    // Lunar: 1
+                    // Solar: 2
+                    // King: 3
+                    // Stopped: 4 (but actually 5)
+                    if (mode == 4)
+                        mode++;
+
+                    if (mode > 0 && mode < 6)
+                    {
+                        response.Success = mount.SetTrackingMode((TrackingMode)mode);
+                    }
+                    else
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Invalid tracking mode", 400));
+                    }
+
+                }
             }
             catch (Exception ex)
             {
