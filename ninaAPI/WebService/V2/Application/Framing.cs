@@ -82,6 +82,7 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        // Framing Assistant View needs to have benn opened once before to be initialized
         [Route(HttpVerbs.Get, "/framing/set-coordinates")]
         public async Task FramingSetCoordinates([QueryField] double RAangle, [QueryField] double DECangle)
         {
