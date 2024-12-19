@@ -13,8 +13,9 @@ V2 will probably stay for a longer time now, I made some changes behind the scen
   - Set the coordinates in the framing assistant
   - Slew to coordiantes (optionally with center or rotate)
   - Set desired rotation
-- Add focuser move
+- Add focuser move, info contains AvailableFilters field, added filter changing using the names from AvailableFilters
 - Add telescope homing and tracking modes
-- Add camera cooling and warming
+- Add camera cooling, warming and dew heater control
+- Added a gain field to capture
 - A lot more events in the websocket, see the documentation for a list of all events
 - GuiderInfo now includes the last guide step with raw distance
