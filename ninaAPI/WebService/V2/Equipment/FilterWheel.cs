@@ -9,17 +9,46 @@
 
 #endregion "copyright"
 
+using Accord.Imaging.Filters;
 using EmbedIO;
 using EmbedIO.Routing;
+using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyFilterWheel;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
+    public class FWInfo
+    {
+        public FWInfo(FilterWheelInfo inf, string[] filters)
+        {
+            Connected = inf.Connected;
+            Name = inf.Name;
+            DisplayName = inf.DisplayName;
+            Description = inf.Description;
+            DriverInfo = inf.DriverInfo;
+            DriverVersion = inf.DriverVersion;
+            DeviceId = inf.DeviceId;
+            AvailableFilters = filters;
+        }
+
+        public bool Connected { get; set; }
+        public string Name { get; set; }
+        public string DisplayName { get; set; }
+        public string Description { get; set; }
+        public string DriverInfo { get; set; }
+        public string DriverVersion { get; set; }
+        public string DeviceId { get; set; }
+        public bool CanSetFilter { get; set; }
+
+        public string[] AvailableFilters { get; set; }
+    }
     public partial class ControllerV2
     {
         public static void StartFilterWheelWatchers()
@@ -38,9 +67,12 @@ namespace ninaAPI.WebService.V2
 
             try
             {
-                IFilterWheelMediator FilterWheel = AdvancedAPI.Controls.FilterWheel;
+                IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+                string[] filters = profile.FilterWheelSettings.FilterWheelFilters.Select(f => f.Name).ToArray();
 
-                FilterWheelInfo info = FilterWheel.GetInfo();
+                IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
+
+                FWInfo info = new FWInfo(filterwheel.GetInfo(), filters);
                 response.Response = info;
             }
             catch (Exception ex)
@@ -93,6 +125,44 @@ namespace ninaAPI.WebService.V2
                     await filterwheel.Disconnect();
                 }
                 response.Response = "Filterwheel disconnected";
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/filterwheel/change-filter")]
+        public void FilterWheelChangeFilter([QueryField] string filter)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
+
+                if (!filterwheel.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Filterwheel not connected", 409));
+                }
+                else
+                {
+                    IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+                    string[] filters = profile.FilterWheelSettings.FilterWheelFilters.Select(f => f.Name).ToArray();
+                    if (!filters.Contains(filter))
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Filter not available", 409));
+                    }
+                    else
+                    {
+                        filterwheel.ChangeFilter(profile.FilterWheelSettings.FilterWheelFilters.Where(x => x.Name == filter).First(), progress: AdvancedAPI.Controls.StatusMediator.GetStatus());
+                        response.Response = "Filter changed";
+                    }
+                }
             }
             catch (Exception ex)
             {
