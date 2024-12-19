@@ -17,6 +17,7 @@ using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
@@ -49,7 +50,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/focuser/connect")]
-        public async void FocuserConnect()
+        public async Task FocuserConnect()
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
@@ -74,7 +75,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/focuser/disconnect")]
-        public async void FocuserDisconnect()
+        public async Task FocuserDisconnect()
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
