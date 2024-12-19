@@ -241,6 +241,39 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        [Route(HttpVerbs.Get, "/equipment/camera/dew-heater")]
+        public void CameraDewHeater([QueryField] bool power)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ICameraMediator cam = AdvancedAPI.Controls.Camera;
+
+                if (!cam.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Camera not connected", 409));
+                }
+                else if (!cam.GetInfo().HasDewHeater)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Camera has no dew heater", 409));
+                }
+                else
+                {
+                    cam.SetDewHeater(power);
+                    response.Response = "Dew heater set";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/equipment/camera/capture")]
         public void CameraCapture([QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size)
         {
