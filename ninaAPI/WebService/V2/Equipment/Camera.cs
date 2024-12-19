@@ -275,7 +275,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/camera/capture")]
-        public void CameraCapture([QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size)
+        public void CameraCapture([QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] int gain)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
 
@@ -343,7 +343,10 @@ namespace ninaAPI.WebService.V2
                             new BinningMode(cam.GetInfo().BinX, cam.GetInfo().BinY),
                             1);
 
-                        // TODO: Implement sequence.Gain
+                        if (gain > 0)
+                        {
+                            sequence.Gain = gain;
+                        }
 
                         PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: true);
                         IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(sequence, CameraCaptureToken.Token, AdvancedAPI.Controls.StatusMediator.GetStatus());
