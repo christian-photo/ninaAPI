@@ -16,6 +16,8 @@ using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 using System;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -142,6 +144,42 @@ namespace ninaAPI.WebService.V2
                     AdvancedAPI.Controls.StatusMediator.GetStatus()
                 );
                 response.Response = "Autofocus started";
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/focuser/last-af")]
+        public void FocuserLastAF()
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                string af_folder = Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "AutoFocus");
+                if (Directory.Exists(af_folder))
+                {
+                    string[] files = Directory.GetFiles(af_folder);
+                    if (files.Length > 0)
+                    {
+                        string newest = files.OrderBy(File.GetCreationTime).Last();
+                        response.Response = File.ReadAllText(newest);
+                    }
+                    else
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("No AF available", 500));
+                    }
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("No AF available", 500));
+                }
             }
             catch (Exception ex)
             {
