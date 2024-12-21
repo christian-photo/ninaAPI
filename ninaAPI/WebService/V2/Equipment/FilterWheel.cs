@@ -26,7 +26,7 @@ namespace ninaAPI.WebService.V2
 {
     public class FWInfo
     {
-        public FWInfo(FilterWheelInfo inf, string[] filters)
+        public FWInfo(FilterWheelInfo inf, FInfo[] filters)
         {
             Connected = inf.Connected;
             Name = inf.Name;
@@ -47,8 +47,15 @@ namespace ninaAPI.WebService.V2
         public string DeviceId { get; set; }
         public bool CanSetFilter { get; set; }
 
-        public string[] AvailableFilters { get; set; }
+        public FInfo[] AvailableFilters { get; set; }
     }
+
+    public class FInfo
+    {
+        public string Name { get; set; }
+        public int Id { get; set; }
+    }
+
     public partial class ControllerV2
     {
         public static void StartFilterWheelWatchers()
@@ -68,7 +75,7 @@ namespace ninaAPI.WebService.V2
             try
             {
                 IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
-                string[] filters = profile.FilterWheelSettings.FilterWheelFilters.Select(f => f.Name).ToArray();
+                FInfo[] filters = profile.FilterWheelSettings.FilterWheelFilters.Select(f => new FInfo { Name = f.Name, Id = f.Position }).ToArray();
 
                 IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
 
@@ -136,7 +143,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/filterwheel/change-filter")]
-        public void FilterWheelChangeFilter([QueryField] string filter)
+        public void FilterWheelChangeFilter([QueryField] int filterId)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
@@ -152,14 +159,13 @@ namespace ninaAPI.WebService.V2
                 else
                 {
                     IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
-                    string[] filters = profile.FilterWheelSettings.FilterWheelFilters.Select(f => f.Name).ToArray();
-                    if (!filters.Contains(filter))
+                    if (filterId < 0 || filterId >= profile.FilterWheelSettings.FilterWheelFilters.Count)
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Filter not available", 409));
                     }
                     else
                     {
-                        filterwheel.ChangeFilter(profile.FilterWheelSettings.FilterWheelFilters.Where(x => x.Name == filter).First(), progress: AdvancedAPI.Controls.StatusMediator.GetStatus());
+                        filterwheel.ChangeFilter(profile.FilterWheelSettings.FilterWheelFilters[filterId], progress: AdvancedAPI.Controls.StatusMediator.GetStatus());
                         response.Response = "Filter changed";
                     }
                 }
@@ -174,7 +180,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/filterwheel/filter-info")]
-        public void FilterWheelFilterInfo([QueryField] string filter)
+        public void FilterWheelFilterInfo([QueryField] int filterId)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
@@ -190,14 +196,13 @@ namespace ninaAPI.WebService.V2
                 else
                 {
                     IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
-                    string[] filters = profile.FilterWheelSettings.FilterWheelFilters.Select(f => f.Name).ToArray();
-                    if (!filters.Contains(filter))
+                    if (filterId < 0 || filterId >= profile.FilterWheelSettings.FilterWheelFilters.Count)
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Filter not available", 409));
                     }
                     else
                     {
-                        response.Response = profile.FilterWheelSettings.FilterWheelFilters.Where(x => x.Name == filter).First();
+                        response.Response = profile.FilterWheelSettings.FilterWheelFilters[filterId];
                     }
                 }
             }

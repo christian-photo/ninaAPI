@@ -12,12 +12,15 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using Newtonsoft.Json;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.WPF.Base.Utility.AutoFocus;
 using ninaAPI.Utility;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,6 +28,8 @@ namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
+        private static CancellationTokenSource AutoFocusToken;
+
         public static void StartFocuserWatchers()
         {
             AdvancedAPI.Controls.Focuser.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("FOCUSER-CONNECTED");
@@ -125,8 +130,9 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        // Only works if it was started by the api
         [Route(HttpVerbs.Get, "/equipment/focuser/auto-focus")]
-        public void FocuserStartAF()
+        public void FocuserStartAF([QueryField] bool cancel)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
@@ -138,11 +144,22 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Focuser not connected", 409));
                 }
-                AdvancedAPI.Controls.AutoFocusFactory.Create().StartAutoFocus(
-                    AdvancedAPI.Controls.FilterWheel.GetInfo().SelectedFilter,
-                    new CancellationTokenSource().Token,
-                    AdvancedAPI.Controls.StatusMediator.GetStatus()
-                );
+                if (cancel)
+                {
+                    AutoFocusToken?.Cancel();
+                    response.Response = "Autofocus canceled";
+                }
+                else
+                {
+                    AutoFocusToken?.Cancel();
+                    AutoFocusToken = new CancellationTokenSource();
+
+                    AdvancedAPI.Controls.AutoFocusFactory.Create().StartAutoFocus(
+                        AdvancedAPI.Controls.FilterWheel.GetInfo().SelectedFilter,
+                        AutoFocusToken.Token,
+                        AdvancedAPI.Controls.StatusMediator.GetStatus()
+                    );
+                }
                 response.Response = "Autofocus started";
             }
             catch (Exception ex)
@@ -169,7 +186,7 @@ namespace ninaAPI.WebService.V2
                     if (files.Length > 0)
                     {
                         string newest = files.OrderBy(File.GetCreationTime).Last();
-                        response.Response = File.ReadAllText(newest);
+                        response.Response = JsonConvert.DeserializeObject<AutoFocusReport>(File.ReadAllText(newest));
                     }
                     else
                     {

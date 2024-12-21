@@ -1,0 +1,188 @@
+openapi: 3.0.0
+info:
+  title: Advanced API
+  description: This is the API documentation for the NINA plugin Advanced API.
+  version: 1.0.0
+servers:
+  - url: http://localhost:1888/v2/api
+    description: V2 api server
+paths:
+  /equipment/camera/info:
+    get:
+      summary: Gets camera info
+      description: This endpoint returns relevant information about the camera.
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/camera/connect:
+    get:
+      summary: Connects the camera
+      description: This endpoint connects the camera.
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/camera/disconnect:
+    get:
+      summary: Disconnects the camera
+      description: This endpoint disconnects the camera.
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/camera/cool:
+    get:
+      summary: Cools the camera
+      description: This endpoint cools the camera.
+      parameters:
+        - in: query
+          name: temperature
+          description: The temperature to cool the camera to.
+          required: true
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: cancel
+          description: Whether to cancel the cooling process.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: minutes
+          description: The minimum duration to cool the camera.
+          required: false
+          schema:
+            type: number
+            format: double
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Camera not connected / Camera has no temperature control
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/camera/warm:
+    get:
+      summary: Warms the camera
+      description: This endpoint warms the camera.
+      parameters:
+        - in: query
+          name: cancel
+          description: Whether to cancel the warming process.
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Camera not connected / Camera has no temperature control
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/camera/abort-exposure:
+    get:
+      summary: Aborts the current exposure
+      description: This endpoint aborts the current exposure.
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Camera not connected / Camera not exposing
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/camera/dew-heater:
+    get:
+      summary: Sets the dew heater
+      description: This endpoint sets the dew heater.
+      parameters:
+        - in: query
+          name: power
+          description: Whether to turn the dew heater on or off.
+          required: true
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Camera not connected / Camera has no dew heater
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/camera/capture:
+    get:
+      summary: Captures an image
+      description: This endpoint captures an image.
+      parameters:
+        - in: query
+          name: solve
+          description: Whether to solve the image.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: duration
+          description: The duration of the exposure.
+          required: false
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: gain
+          description: The gain of the image.
+          required: false
+          schema:
+            type: number
+            format: int32
+        - in: query
+          name: getResult
+          description: Whether to get the result.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: resize
+          description: Whether to resize the image.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: quality
+          description: The quality of the image.
+          required: false
+          schema:
+            type: number
+            format: int32
+        - in: query
+          name: size
+          description: The size of the image.
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Camera not connected / Camera currently exposing
+        "500":
+          description: Internal server error, Unknown error
+
+components:
+  schemas:
+    Example:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Hello, World!
