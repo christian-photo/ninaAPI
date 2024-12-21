@@ -172,5 +172,42 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/filterwheel/filter-info")]
+        public void FilterWheelFilterInfo([QueryField] string filter)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
+
+                if (!filterwheel.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Filterwheel not connected", 409));
+                }
+                else
+                {
+                    IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+                    string[] filters = profile.FilterWheelSettings.FilterWheelFilters.Select(f => f.Name).ToArray();
+                    if (!filters.Contains(filter))
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Filter not available", 409));
+                    }
+                    else
+                    {
+                        response.Response = profile.FilterWheelSettings.FilterWheelFilters.Where(x => x.Name == filter).First();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 }
