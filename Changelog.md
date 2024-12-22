@@ -14,6 +14,7 @@ V2 will probably stay for a longer time now, I made some changes behind the scen
   - Slew to coordiantes (optionally with center or rotate)
   - Set desired rotation
 - Add focuser move, info contains AvailableFilters field, added filter changing using the names from AvailableFilters, filter-info returns info about a given filter
+- Autofocus can be cancelled (only if it was started using the api)
 - Add telescope homing and tracking modes
 - Add camera cooling, warming and dew heater control
 - Added a gain field to capture
