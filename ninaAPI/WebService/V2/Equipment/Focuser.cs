@@ -159,8 +159,8 @@ namespace ninaAPI.WebService.V2
                         AutoFocusToken.Token,
                         AdvancedAPI.Controls.StatusMediator.GetStatus()
                     );
+                    response.Response = "Autofocus started";
                 }
-                response.Response = "Autofocus started";
             }
             catch (Exception ex)
             {
