@@ -8,6 +8,7 @@ V2 will probably stay for a longer time now, I made some changes behind the scen
 ### V2 Changes:
 - ⚠️ **Breaking** Connection events in the websocket are now seperated into connected and disconnected ⚠️
 - ⚠️ **Breaking** Changed the structure of a profile response ⚠️
+- ⚠️ **Breaking** Removed the description field from a sequence response, added more specific fields for each item ⚠️
 - Added a new websocket for controlling TPPA and getting the current error in realtime
 - Framing Assistant is now supported:
   - Set the coordinates in the framing assistant
@@ -21,4 +22,3 @@ V2 will probably stay for a longer time now, I made some changes behind the scen
 - A lot more events in the websocket, see the documentation for a list of all events
 - GuiderInfo now includes the last guide step with raw distance
 - The Sequence json is now more sophisticated with additional fields for most sequence items
-- 
