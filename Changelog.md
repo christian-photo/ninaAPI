@@ -22,3 +22,4 @@ V2 will probably stay for a longer time now, I made some changes behind the scen
 - A lot more events in the websocket, see the documentation for a list of all events
 - GuiderInfo now includes the last guide step with raw distance
 - The Sequence json is now more sophisticated with additional fields for most sequence items
+- When retrieving images, you can now specify `scale` (0.1 to 1) to scale the image down while preserving its aspect ratio
