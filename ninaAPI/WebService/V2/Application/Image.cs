@@ -30,7 +30,7 @@ namespace ninaAPI.WebService.V2
     public partial class ControllerV2
     {
         [Route(HttpVerbs.Get, "/image/{index}")]
-        public async Task GetImage(int index, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size)
+        public async Task GetImage(int index, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
@@ -70,7 +70,12 @@ namespace ninaAPI.WebService.V2
                     renderedImage = await renderedImage.Stretch(profile.ImageSettings.AutoStretchFactor, profile.ImageSettings.BlackClipping, profile.ImageSettings.UnlinkedStretch);
                     var bitmap = renderedImage.Image;
 
-                    response.Response = BitmapHelper.ResizeAndConvertBitmap(bitmap, sz, quality);
+                    if (scale == 0 && resize)
+                        response.Response = BitmapHelper.ResizeAndConvertBitmap(bitmap, sz, quality);
+                    if (scale != 0 && resize)
+                        response.Response = BitmapHelper.ScaleAndConvertBitmap(bitmap, scale, quality);
+                    if (!resize)
+                        response.Response = BitmapHelper.ScaleAndConvertBitmap(bitmap, 1, quality);
                 }
             }
             catch (Exception ex)

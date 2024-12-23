@@ -71,7 +71,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/application/screenshot")]
-        public void ApplicationScreenshot([QueryField] bool resize, [QueryField] int quality, [QueryField] string size)
+        public void ApplicationScreenshot([QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
@@ -107,7 +107,12 @@ namespace ninaAPI.WebService.V2
 
                 BitmapSource source = ImageUtility.ConvertBitmap(screenshot);
 
-                response.Response = BitmapHelper.ResizeAndConvertBitmap(source, new_size, quality);
+                if (scale == 0 && resize)
+                    response.Response = BitmapHelper.ResizeAndConvertBitmap(source, new_size, quality);
+                if (scale != 0 && resize)
+                    response.Response = BitmapHelper.ScaleAndConvertBitmap(source, scale, quality);
+                if (!resize)
+                    response.Response = BitmapHelper.ScaleAndConvertBitmap(source, 1, quality);
             }
             catch (Exception ex)
             {

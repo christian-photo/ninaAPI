@@ -275,7 +275,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/camera/capture")]
-        public void CameraCapture([QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] int gain)
+        public void CameraCapture([QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] int gain, [QueryField] double scale)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
 
@@ -314,7 +314,14 @@ namespace ninaAPI.WebService.V2
                 }
                 else if (getResult && CaptureTask.IsCompleted)
                 {
-                    string image = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, resolution, quality);
+                    string image = string.Empty;
+                    if (scale == 0 && resize)
+                        image = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, resolution, quality);
+                    if (scale != 0 && resize)
+                        image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
+                    if (!resize)
+                        image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
+
                     response.Response = new CaptureResponse() { Image = image, PlateSolveResult = plateSolveResult };
                 }
                 else if (!getResult && !cam.GetInfo().Connected)

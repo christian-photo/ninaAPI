@@ -9,16 +9,24 @@ servers:
 paths:
   /equipment/camera/info:
     get:
+      tags:
+        - Camera
       summary: Gets camera info
       description: This endpoint returns relevant information about the camera.
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CameraInfo"
         "500":
           description: Internal server error, Unknown error
 
   /equipment/camera/connect:
     get:
+      tags:
+        - Camera
       summary: Connects the camera
       description: This endpoint connects the camera.
       responses:
@@ -29,6 +37,8 @@ paths:
 
   /equipment/camera/disconnect:
     get:
+      tags:
+        - Camera
       summary: Disconnects the camera
       description: This endpoint disconnects the camera.
       responses:
@@ -39,6 +49,8 @@ paths:
 
   /equipment/camera/cool:
     get:
+      tags:
+        - Camera
       summary: Cools the camera
       description: This endpoint cools the camera.
       parameters:
@@ -72,6 +84,8 @@ paths:
 
   /equipment/camera/warm:
     get:
+      tags:
+        - Camera
       summary: Warms the camera
       description: This endpoint warms the camera.
       parameters:
@@ -91,6 +105,8 @@ paths:
 
   /equipment/camera/abort-exposure:
     get:
+      tags:
+        - Camera
       summary: Aborts the current exposure
       description: This endpoint aborts the current exposure.
       responses:
@@ -103,6 +119,8 @@ paths:
 
   /equipment/camera/dew-heater:
     get:
+      tags:
+        - Camera
       summary: Sets the dew heater
       description: This endpoint sets the dew heater.
       parameters:
@@ -122,8 +140,10 @@ paths:
 
   /equipment/camera/capture:
     get:
+      tags:
+        - Camera
       summary: Captures an image
-      description: This endpoint captures an image.
+      description: This endpoint captures and/or returns an image.
       parameters:
         - in: query
           name: solve
@@ -133,14 +153,14 @@ paths:
             type: boolean
         - in: query
           name: duration
-          description: The duration of the exposure.
+          description: The duration of the exposure. If omitted the exposure time for plate solving will be used.
           required: false
           schema:
             type: number
             format: double
         - in: query
           name: gain
-          description: The gain of the image.
+          description: The gain to use for the exposure. If omitted, the camera's default gain will be used.
           required: false
           schema:
             type: number
@@ -159,14 +179,14 @@ paths:
             type: boolean
         - in: query
           name: quality
-          description: The quality of the image.
+          description: The quality of the image, ranging from 1 (worst) to 100 (best). -1 or omitted for png
           required: false
           schema:
             type: number
             format: int32
         - in: query
           name: size
-          description: The size of the image.
+          description: The size of the image ([width]x[height]). Requires resize to be true.
           required: false
           schema:
             type: string
@@ -178,11 +198,578 @@ paths:
         "500":
           description: Internal server error, Unknown error
 
+  /equipment/dome/info:
+    get:
+      tags:
+        - Dome
+      summary: Get Dome information
+      description: Get Dome information
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DomeInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/dome/connect:
+    get:
+      tags:
+        - Dome
+      summary: Connect to Dome
+      description: Connect to Dome
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/dome/disconnect:
+    get:
+      tags:
+        - Dome
+      summary: Disconnect from Dome
+      description: Disconnect from Dome
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/dome/open:
+    get:
+      tags:
+        - Dome
+      summary: Open Dome Shutter
+      description: Open Dome Shutter
+      responses:
+        "200":
+          description: Successful response, Shutter opening, Shutter already open
+        "409":
+          description: Dome not connected
+        "500":
+          description: Internal server error, Unknown error
+
+  /equpiment/dome/close:
+    get:
+      tags:
+        - Dome
+      summary: Close Dome Shutter
+      description: Close Dome Shutter
+      responses:
+        "200":
+          description: Successful response, Shutter closing, Shutter already closed
+        "409":
+          description: Dome not connected
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/dome/stop:
+    get:
+      tags:
+        - Dome
+      summary: Stop Dome Shutter movement.
+      description: Stop Dome Shutter movement. This only works if the dome movement was started using the API
+      responses:
+        "200":
+          description: Successful response, Movement stopped
+        "409":
+          description: Dome not connected
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/filterwheel/info:
+    get:
+      tags:
+        - FilterWheel
+      summary: Get Filterwheel information
+      description: Get Filterwheel information
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FWInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/filterwheel/connect:
+    get:
+      tags:
+        - FilterWheel
+      summary: Connect to Filterwheel
+      description: Connect to Filterwheel
+      responses:
+        "200":
+          description: Successful response, Filterwheel connected
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/filterwheel/disconnect:
+    get:
+      tags:
+        - FilterWheel
+      summary: Disconnects the filterwheel
+      description: Disconnects the filterwheel
+      responses:
+        "200":
+          description: Successful response, Filterwheel disconnected
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/filterwheel/change-filter:
+    get:
+      tags:
+        - FilterWheel
+      summary: Change Filter
+      description: Change Filter
+      parameters:
+        - in: query
+          name: filterId
+          description: The filter to change to.
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful response, Filter changed
+        "409":
+          description: Filterwheel not connected / Filter not available
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/filterwheel/filter-info:
+    get:
+      tags:
+        - FilterWheel
+      summary: Get Filterwheel Filter
+      description: Get Filterwheel Filter
+      parameters:
+        - in: query
+          name: filterId
+          description: The filter to get.
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Filterwheel not connected / Filter not available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilterInfo"
+        "500":
+          description: Internal server error, Unknown error
+
 components:
   schemas:
-    Example:
+    CameraInfo:
       type: object
       properties:
-        message:
+        Response:
+          type: object
+          properties:
+            CanSetTemperature:
+              type: boolean
+            HasShutter:
+              type: boolean
+            Temperature:
+              type: integer
+            Gain:
+              type: integer
+            DefaultGain:
+              type: integer
+            ElectronsPerADU:
+              type: integer
+            BinX:
+              type: integer
+            BitDepth:
+              type: integer
+            BinY:
+              type: integer
+            CanSetOffset:
+              type: boolean
+            CanGetGain:
+              type: boolean
+            OffsetMin:
+              type: integer
+            OffsetMax:
+              type: integer
+            Offset:
+              type: integer
+            DefaultOffset:
+              type: integer
+            USBLimit:
+              type: integer
+            IsSubSampleEnabled:
+              type: boolean
+            CameraState:
+              type: integer
+            XSize:
+              type: integer
+            YSize:
+              type: integer
+            PixelSize:
+              type: integer
+            Battery:
+              type: integer
+            GainMin:
+              type: integer
+            GainMax:
+              type: integer
+            CanSetGain:
+              type: boolean
+            Gains:
+              type: array
+              items:
+                items: {}
+            CoolerOn:
+              type: boolean
+            CoolerPower:
+              type: integer
+            HasDewHeater:
+              type: boolean
+            DewHeaterOn:
+              type: boolean
+            CanSubSample:
+              type: boolean
+            SubSampleX:
+              type: integer
+            SubSampleY:
+              type: integer
+            SubSampleWidth:
+              type: integer
+            SubSampleHeight:
+              type: integer
+            TemperatureSetPoint:
+              type: integer
+            ReadoutModes:
+              type: array
+              items:
+                type: string
+            ReadoutMode:
+              type: integer
+            ReadoutModeForSnapImages:
+              type: integer
+            ReadoutModeForNormalImages:
+              type: integer
+            IsExposing:
+              type: boolean
+            ExposureEndTime:
+              type: string
+            LastDownloadTime:
+              type: integer
+            SensorType:
+              type: integer
+            BayerOffsetX:
+              type: integer
+            BayerOffsetY:
+              type: integer
+            BinningModes:
+              type: array
+              items:
+                type: object
+                properties:
+                  Name:
+                    type: string
+                  X:
+                    type: integer
+                  "Y":
+                    type: integer
+                required:
+                  - Name
+                  - X
+                  - "Y"
+            ExposureMax:
+              type: integer
+            ExposureMin:
+              type: integer
+            LiveViewEnabled:
+              type: boolean
+            CanShowLiveView:
+              type: boolean
+            SupportedActions:
+              type: array
+              items:
+                type: string
+            CanSetUSBLimit:
+              type: boolean
+            USBLimitMin:
+              type: integer
+            USBLimitMax:
+              type: integer
+            Connected:
+              type: boolean
+            Name:
+              type: string
+            DisplayName:
+              type: string
+            DeviceId:
+              type: string
+        Error:
           type: string
-          example: Hello, World!
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    DomeInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            ShutterStatus:
+              type: integer
+            DriverCanFollow:
+              type: boolean
+            CanSetShutter:
+              type: boolean
+            CanSetPark:
+              type: boolean
+            CanSetAzimuth:
+              type: boolean
+            CanSyncAzimuth:
+              type: boolean
+            CanPark:
+              type: boolean
+            CanFindHome:
+              type: boolean
+            AtPark:
+              type: boolean
+            AtHome:
+              type: boolean
+            DriverFollowing:
+              type: boolean
+            Slewing:
+              type: boolean
+            Azimuth:
+              type: integer
+            SupportedActions:
+              type: array
+              items: {}
+            Connected:
+              type: boolean
+            Name:
+              type: string
+            DisplayName:
+              type: string
+            Description:
+              type: string
+            DriverInfo:
+              type: string
+            DriverVersion:
+              type: string
+            DeviceId:
+              type: string
+          required:
+            - ShutterStatus
+            - DriverCanFollow
+            - CanSetShutter
+            - CanSetPark
+            - CanSetAzimuth
+            - CanSyncAzimuth
+            - CanPark
+            - CanFindHome
+            - AtPark
+            - AtHome
+            - DriverFollowing
+            - Slewing
+            - Azimuth
+            - SupportedActions
+            - Connected
+            - Name
+            - DisplayName
+            - Description
+            - DriverInfo
+            - DriverVersion
+            - DeviceId
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    FWInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            Connected:
+              type: boolean
+            Name:
+              type: string
+            DisplayName:
+              type: string
+            Description:
+              type: string
+            DriverInfo:
+              type: string
+            DriverVersion:
+              type: string
+            DeviceId:
+              type: string
+            CanSetFilter:
+              type: boolean
+            AvailableFilters:
+              type: array
+              items:
+                type: object
+                properties:
+                  Name:
+                    type: string
+                  Id:
+                    type: integer
+                required:
+                  - Name
+                  - Id
+          required:
+            - Connected
+            - Name
+            - DisplayName
+            - Description
+            - DriverInfo
+            - DriverVersion
+            - DeviceId
+            - CanSetFilter
+            - AvailableFilters
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    FilterInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            Name:
+              type: string
+            FocusOffset:
+              type: integer
+            Position:
+              type: integer
+            AutoFocusExposureTime:
+              type: integer
+            AutoFocusFilter:
+              type: boolean
+            FlatWizardFilterSettings:
+              type: object
+              properties:
+                FlatWizardMode:
+                  type: integer
+                HistogramMeanTarget:
+                  type: number
+                HistogramTolerance:
+                  type: number
+                MaxFlatExposureTime:
+                  type: integer
+                MinFlatExposureTime:
+                  type: number
+                MaxAbsoluteFlatDeviceBrightness:
+                  type: integer
+                MinAbsoluteFlatDeviceBrightness:
+                  type: integer
+                Gain:
+                  type: integer
+                Offset:
+                  type: integer
+                Binning:
+                  type: object
+                  properties:
+                    Name:
+                      type: string
+                    X:
+                      type: integer
+                    Y:
+                      type: integer
+                  required:
+                    - Name
+                    - X
+                    - Y
+              required:
+                - FlatWizardMode
+                - HistogramMeanTarget
+                - HistogramTolerance
+                - MaxFlatExposureTime
+                - MinFlatExposureTime
+                - MaxAbsoluteFlatDeviceBrightness
+                - MinAbsoluteFlatDeviceBrightness
+                - Gain
+                - Offset
+                - Binning
+            AutoFocusBinning:
+              type: object
+              properties:
+                Name:
+                  type: string
+                X:
+                  type: integer
+                Y:
+                  type: integer
+              required:
+                - Name
+                - X
+                - Y
+            AutoFocusGain:
+              type: integer
+            AutoFocusOffset:
+              type: integer
+          required:
+            - Name
+            - FocusOffset
+            - Position
+            - AutoFocusExposureTime
+            - AutoFocusFilter
+            - FlatWizardFilterSettings
+            - AutoFocusBinning
+            - AutoFocusGain
+            - AutoFocusOffset
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type

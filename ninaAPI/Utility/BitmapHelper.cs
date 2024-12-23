@@ -21,21 +21,27 @@ namespace ninaAPI.Utility
     {
         public static string ResizeAndConvertBitmap(BitmapSource source, Size size, int quality)
         {
-            string base64;
+            return ScaleAndConvertBitmap(source, size == Size.Empty ? 1 : size.Width / source.Width, quality);
+        }
 
-            if (size != Size.Empty) // Resize the image if requested
-            {
-                double scaling = size.Width / source.Width;
+        public static string ScaleAndConvertBitmap(BitmapSource source, double scale, int quality)
+        {
+            scale = Math.Clamp(scale, 0.1, 1);
 
-                source = new TransformedBitmap(source, new ScaleTransform(scaling, scaling));
-            }
+            source = new TransformedBitmap(source, new ScaleTransform(scale, scale));
 
+            string base64 = EncodeBitmap(source, quality);
+            return base64;
+        }
+
+        private static string EncodeBitmap(BitmapSource source, int quality)
+        {
             if (quality < 0)
             {
                 PngBitmapEncoder encoder = new PngBitmapEncoder();
                 encoder.Frames.Add(BitmapFrame.Create(source));
 
-                base64 = EncoderToBase64(encoder);
+                return EncoderToBase64(encoder);
             }
             else
             {
@@ -43,13 +49,11 @@ namespace ninaAPI.Utility
                 encoder.QualityLevel = quality;
                 encoder.Frames.Add(BitmapFrame.Create(source));
 
-                base64 = EncoderToBase64(encoder);
+                return EncoderToBase64(encoder);
             }
-
-            return base64;
         }
 
-        public static string EncoderToBase64(JpegBitmapEncoder encoder)
+        public static string EncoderToBase64(BitmapEncoder encoder)
         {
             using (MemoryStream memory = new MemoryStream())
             {
@@ -58,13 +62,16 @@ namespace ninaAPI.Utility
             }
         }
 
-        public static string EncoderToBase64(PngBitmapEncoder encoder)
+        // TODO: Use for testing
+        public static Bitmap Base64ToBitmapImage(string base64)
         {
-            using (MemoryStream memory = new MemoryStream())
+            byte[] binaryData = Convert.FromBase64String(base64);
+            Bitmap bmp;
+            using (MemoryStream stream = new MemoryStream(binaryData))
             {
-                encoder.Save(memory);
-                return Convert.ToBase64String(memory.ToArray());
+                bmp = new Bitmap(stream);
             }
+            return bmp;
         }
     }
 }
