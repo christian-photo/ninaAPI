@@ -49,7 +49,6 @@ namespace ninaAPI.WebService.V2
 
             try
             {
-                // TODO: Make returned sequence more descriptive, eg add specific fields for some instructions like af after time or loop unitl
                 ISequenceMediator Sequence = AdvancedAPI.Controls.Sequence;
 
                 if (!Sequence.Initialized)

@@ -23,7 +23,6 @@ using NINA.WPF.Base.Model;
 using NINA.Image.Interfaces;
 using NINA.Core.Enum;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 
 namespace ninaAPI.WebService.V2
 {

@@ -120,6 +120,10 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
                 }
+                else if (mount.GetInfo().AtPark)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount parked", 409));
+                }
                 else if (mount.GetInfo().AtHome)
                 {
                     response.Response = "Mount already homed";

@@ -2,10 +2,14 @@ openapi: 3.0.0
 info:
   title: Advanced API
   description: This is the API documentation for the NINA plugin Advanced API.
-  version: 1.0.0
+  version: 2.0.0
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
+  - url: ws://localhost:1888/v2/socket
+    description: V2 websocket server for events
+  - url: ws://localhost:1888/v2/tppa
+    description: Websocket for interacting with TPPA
 paths:
   /equipment/camera/info:
     get:
@@ -190,6 +194,13 @@ paths:
           required: false
           schema:
             type: string
+        - in: query
+          name: scale
+          description: The scale of the image. Requires resize to be true.
+          required: false
+          schema:
+            type: number
+            format: double
       responses:
         "200":
           description: Successful response
@@ -230,8 +241,8 @@ paths:
     get:
       tags:
         - Dome
-      summary: Disconnect from Dome
-      description: Disconnect from Dome
+      summary: Disconnect the Dome
+      description: Disconnect the Dome
       responses:
         "200":
           description: Successful response
@@ -252,7 +263,7 @@ paths:
         "500":
           description: Internal server error, Unknown error
 
-  /equpiment/dome/close:
+  /equipment/dome/close:
     get:
       tags:
         - Dome
@@ -312,8 +323,8 @@ paths:
     get:
       tags:
         - FilterWheel
-      summary: Disconnects the filterwheel
-      description: Disconnects the filterwheel
+      summary: Disconnect the filterwheel
+      description: Disconnect the filterwheel
       responses:
         "200":
           description: Successful response, Filterwheel disconnected
@@ -363,6 +374,905 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FilterInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/flatdevice/info:
+    get:
+      tags:
+        - Flat Panel
+      summary: Get information about the flat panel
+      description: Get information about the flat panel, Coverstate represents the following values&#58; 0&#58; Unknown, 1&#58; NeitherOpenNorClosed, 2&#58; Closed, 3&#58; Open, 4&#58; Error, 5&#58; Not present
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FlatDeviceInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/flatdevice/connect:
+    get:
+      tags:
+        - Flat Panel
+      summary: Connect the flat panel
+      description: Connect the flat panel
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/flatdevice/disconnect:
+    get:
+      tags:
+        - Flat Panel
+      summary: Disconnect the flat panel
+      description: Disconnect the flat panel
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/focuser/info:
+    get:
+      tags:
+        - Focuser
+      summary: Get the focuser info
+      description: Get the focuser info
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FocuserInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/focuser/connect:
+    get:
+      tags:
+        - Focuser
+      summary: Connect the focuser
+      description: Connect the focuser
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/focuser/disconnect:
+    get:
+      tags:
+        - Focuser
+      summary: Disconnect the focuser
+      description: Disconnect the focuser
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/focuser/move:
+    get:
+      tags:
+        - Focuser
+      summary: Move the focuser
+      description: Move the focuser
+      parameters:
+        - in: query
+          name: position
+          schema:
+            type: integer
+          required: true
+          description: Position to move to
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/focuser/auto-focus:
+    get:
+      tags:
+        - Focuser
+      summary: AF
+      description: Start an AF
+      parameters:
+        - in: query
+          name: cancel
+          schema:
+            type: boolean
+          required: false
+          description: Can be used to cancel a running autofocus (If it was started using the api)
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/focuser/last-af:
+    get:
+      tags:
+        - Focuser
+      summary: Get last autofocus
+      description: Get last autofocus
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FocuserLastAF"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/guider/info:
+    get:
+      tags:
+        - Guider
+      summary: Get guider information
+      description: Get guider information
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuiderInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/guider/connect:
+    get:
+      tags:
+        - Guider
+      summary: Connect to guider
+      description: Connect to guider
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/guider/disconnect:
+    get:
+      tags:
+        - Guider
+      summary: Disconnect the guider
+      description: Disconnect the guider
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/guider/start:
+    get:
+      tags:
+        - Guider
+      summary: Start guiding
+      description: Start guiding
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/guider/stop:
+    get:
+      tags:
+        - Guider
+      summary: Stop guiding
+      description: Stop guiding
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/mount/info:
+    get:
+      tags:
+        - Mount
+      summary: Get mount information
+      description: Get mount information
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MountInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/mount/connect:
+    get:
+      tags:
+        - Mount
+      summary: Connect to mount
+      description: Connect to mount
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/mount/disconnect:
+    get:
+      tags:
+        - Mount
+      summary: Disconnect the mount
+      description: Disconnect the mount
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/mount/home:
+    get:
+      tags:
+        - Mount
+      summary: Home the mount
+      description: Home the mount
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Mount not connected / Mount parked
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/mount/tracking:
+    get:
+      tags:
+        - Mount
+      summary: Set tracking mode
+      description: Set tracking mode
+      parameters:
+        - in: query
+          name: mode
+          description: The tracking mode to set. 0&#58; Siderial, 1&#58; Lunar, 2&#58; Solar, 3&#58; King, 4&#58; Stopped
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 4
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Mount not connected / Mount parked / Invalid tracking mode
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/mount/park:
+    get:
+      tags:
+        - Mount
+      summary: Park the mount
+      description: Park the mount
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Mount not connected
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/mount/unpark:
+    get:
+      tags:
+        - Mount
+      summary: Unpark the mount
+      description: Unpark the mount
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Mount not connected
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/rotator/info:
+    get:
+      tags:
+        - Rotator
+      summary: Get rotator information
+      description: Get rotator information
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RotatorInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/rotator/connect:
+    get:
+      tags:
+        - Rotator
+      summary: Connect to rotator
+      description: Connect to rotator
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/rotator/disconnect:
+    get:
+      tags:
+        - Rotator
+      summary: Disconnect the rotator
+      description: Disconnect the rotator
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/rotator/move:
+    get:
+      tags:
+        - Rotator
+      summary: Move the rotator
+      description: Move the rotator
+      parameters:
+        - in: query
+          name: position
+          description: The position to move to
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Rotator not connected
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/rotator/move-mechanical:
+    get:
+      tags:
+        - Rotator
+      summary: Move the rotator mechanically
+      description: Move the rotator mechanically
+      parameters:
+        - in: query
+          name: position
+          description: The position to move to
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Rotator not connected
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/safetymonitor/info:
+    get:
+      tags:
+        - Safety Monitor
+      summary: Get safety monitor information
+      description: Get safety monitor information
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SafetyMonitorInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/safetymonitor/connect:
+    get:
+      tags:
+        - Safety Monitor
+      summary: Connect to safety monitor
+      description: Connect to safety monitor
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/safetymonitor/disconnect:
+    get:
+      tags:
+        - Safety Monitor
+      summary: Disconnect the safety monitor
+      description: Disconnect the safety monitor
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/switch/info:
+    get:
+      tags:
+        - Switch
+      summary: Get switch information
+      description: Get switch information
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SwitchInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/switch/connect:
+    get:
+      tags:
+        - Switch
+      summary: Connect to switch
+      description: Connect to switch
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/switch/disconnect:
+    get:
+      tags:
+        - Switch
+      summary: Disconnect the switch
+      description: Disconnect the switch
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/switch/set:
+    get:
+      tags:
+        - Switch
+      summary: Set switch value
+      description: Set switch value
+      parameters:
+        - in: query
+          name: index
+          description: The index of the switch to set
+          required: true
+          schema:
+            type: integer
+            format: short
+        - in: query
+          name: value
+          description: The value to set
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Switch not connected
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/weather/info:
+    get:
+      tags:
+        - Weather
+      summary: Get weather information
+      description: Get weather information
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeatherInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/weather/connect:
+    get:
+      tags:
+        - Weather
+      summary: Connect to weather source
+      description: Connect to weather source
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /equipment/weather/disconnect:
+    get:
+      tags:
+        - Weather
+      summary: Disconnect the weather source
+      description: Disconnect the weather
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /application/switch-tab:
+    get:
+      tags:
+        - Application
+      summary: Switches the application tab
+      description: Switches the application tab
+      parameters:
+        - in: query
+          name: tab
+          description: The tab to switch to. Possible values&#58; equipment, skyatlas, framing, flatwizard, sequencer, imaging, options
+          required: true
+          schema:
+            type: string
+            enum:
+              - equipment
+              - skyatlas
+              - framing
+              - flatwizard
+              - sequencer
+              - imaging
+              - options
+      responses:
+        "200":
+          description: Successful response
+        "400":
+          description: Invalid application tab
+        "500":
+          description: Internal server error, Unknown error
+
+  /application/screenshot:
+    get:
+      tags:
+        - Application
+      summary: Takes a screenshot
+      description: Takes a screenshot
+      parameters:
+        - in: query
+          name: resize
+          description: Whether to resize the screenshot.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: quality
+          description: The quality of the screenshot, ranging from 1 (worst) to 100 (best). -1 or omitted for png
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: size
+          description: The size of the screenshot ([width]x[height]). Requires resize to be true.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: scale
+          description: The scale of the screenshot. Requires resize to be true.
+          required: false
+          schema:
+            type: number
+            format: double
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /framing/info:
+    get:
+      tags:
+        - Framing Assistant
+      summary: Get framing assistant information
+      description: Get framing assistant information
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FramingAssistantInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /framing/set-coordinates:
+    get:
+      tags:
+        - Framing Assistant
+      summary: Set framing assistant coordinates
+      description: Set framing assistant coordinates. This requires the framing assistant to be initalized, which can by achieved by openening it once.
+      parameters:
+        - in: query
+          name: RAangle
+          description: The RA angle to set
+          required: true
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: DecAngle
+          description: The Dec angle to set
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /framing/slew:
+    get:
+      tags:
+        - Framing Assistant
+      summary: Slew the mount to the current coordinates
+      description: Slew the mount to the current coordinates. This requires the framing assistant to be initalized, which can by achieved by openening it once.
+      parameters:
+        - in: query
+          name: slew_option
+          description: The slew option to use. Possible values&#58; Center, Rotate
+          required: false
+          schema:
+            type: string
+            enum:
+              - Center
+              - Rotate
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /framing/set-rotation:
+    get:
+      tags:
+        - Framing Assistant
+      summary: Set framing assistant rotation
+      description: Set framing assistant rotation. This requires the framing assistant to be initalized, which can by achieved by openening it once.
+      parameters:
+        - in: query
+          name: rotation
+          description: The rotation to set
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /image/{index}:
+    get:
+      tags:
+        - Image
+      summary: Get image
+      description: Get image
+      parameters:
+        - in: path
+          name: index
+          description: The index of the image to get
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: resize
+          description: Whether to resize the image.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: quality
+          description: The quality of the image, ranging from 1 (worst) to 100 (best). -1 or omitted for png
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: size
+          description: The size of the image ([width]x[height]). Requires resize to be true.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: scale
+          description: The scale of the image. Requires resize to be true.
+          required: false
+          schema:
+            type: number
+            format: double
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /image-history:
+    get:
+      tags:
+        - Image
+      summary: Get image history
+      description: Get image history. Only one parameter is required
+      parameters:
+        - in: query
+          name: all
+          description: Whether to get all images or only the current image
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: index
+          description: The index of the image to get
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: count
+          description: Whether to count the number of images
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /profile/show:
+    get:
+      tags:
+        - Profile
+      summary: Shows the profile
+      description: Shows the profile
+      parameters:
+        - in: query
+          name: active
+          description: Whether to show the active profile or a list of all available profiles
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileInfo"
+        "500":
+          description: Internal server error, Unknown error
+
+  /profile/change-value:
+    get:
+      tags:
+        - Profile
+      summary: Changes a value in the profile
+      description: Changes a value in the profile
+      parameters:
+        - in: query
+          name: settingpath
+          description: The path to the setting to change. (eg. CameraSettings-PixelSize)
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: newValue
+          description: The new value to set
+          required: true
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /profile/switch:
+    get:
+      tags:
+        - Profile
+      summary: Switches the profile
+      description: Switches the profile
+      parameters:
+        - in: query
+          name: profileid
+          description: The id of the profile to switch to. This id can be retrieved using show with active=false
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: No profile with specified id found!
+        "500":
+          description: Internal server error, Unknown error
+
+  /sequence/json:
+    get:
+      tags:
+        - Sequence
+      summary: Get sequence as json
+      description: Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized!
+      responses:
+        "200":
+          description: Successful response, best to try it out yourself
+          content:
+            application/json:
+              schema:
+                type: object
+        "409":
+          description: Sequencer not initialized / No DSO container found
+        "500":
+          description: Internal server error, Unknown error
+
+  /sequence/start:
+    get:
+      tags:
+        - Sequence
+      summary: Start sequence
+      description: Start sequence. This requires the sequencer to be initalized, which can be achieved by opening the tab once.
+      parameters:
+        - in: query
+          name: skipValidation
+          description: Skip validation of the sequence
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Sequencer not initialized
+        "500":
+          description: Internal server error, Unknown error
+
+  /sequence/list-available:
+    get:
+      tags:
+        - Sequence
+      summary: List available sequences.
+      description: List available sequences. This is currently not really useful as it is not possible to load sequences
+      responses:
+        "200":
+          description: Successful response
+        "500":
+          description: Internal server error, Unknown error
+
+  /event-history:
+    get:
+      tags:
+        - Event Websocket
+      summary: Get event history
+      description: Get event history
+      responses:
+        "200":
+          description: Successful response
         "500":
           description: Internal server error, Unknown error
 
@@ -426,8 +1336,7 @@ components:
               type: boolean
             Gains:
               type: array
-              items:
-                items: {}
+              items: {}
             CoolerOn:
               type: boolean
             CoolerPower:
@@ -773,3 +1682,1860 @@ components:
         - StatusCode
         - Success
         - Type
+
+    FlatDeviceInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            CoverState:
+              type: integer
+              description: 0&#58; Unknown, 1&#58; NeitherOpenNorClosed, 2&#58; Closed, 3&#58; Open, 4&#58; Error, 5&#58; Not present
+            LocalizedCoverState:
+              type: string
+            LocalizedLightOnState:
+              type: string
+            LightOn:
+              type: boolean
+            Brightness:
+              type: integer
+            SupportsOpenClose:
+              type: boolean
+            MinBrightness:
+              type: integer
+            MaxBrightness:
+              type: integer
+            SupportsOnOff:
+              type: boolean
+            SupportedActions:
+              type: array
+              items: {}
+            Connected:
+              type: boolean
+            Name:
+              type: string
+            DisplayName:
+              type: string
+            Description:
+              type: string
+            DriverInfo:
+              type: string
+            DriverVersion:
+              type: string
+            DeviceId:
+              type: string
+          required:
+            - CoverState
+            - LocalizedCoverState
+            - LocalizedLightOnState
+            - LightOn
+            - Brightness
+            - SupportsOpenClose
+            - MinBrightness
+            - MaxBrightness
+            - SupportsOnOff
+            - SupportedActions
+            - Connected
+            - Name
+            - DisplayName
+            - Description
+            - DriverInfo
+            - DriverVersion
+            - DeviceId
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    FocuserInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            Position:
+              type: integer
+            StepSize:
+              type: integer
+            Temperature:
+              type: number
+            IsMoving:
+              type: boolean
+            IsSettling:
+              type: boolean
+            TempComp:
+              type: boolean
+            TempCompAvailable:
+              type: boolean
+            SupportedActions:
+              type: array
+              items: {}
+            Connected:
+              type: boolean
+            Name:
+              type: string
+            DisplayName:
+              type: string
+            Description:
+              type: string
+            DriverInfo:
+              type: string
+            DriverVersion:
+              type: string
+            DeviceId:
+              type: string
+          required:
+            - Position
+            - StepSize
+            - Temperature
+            - IsMoving
+            - IsSettling
+            - TempComp
+            - TempCompAvailable
+            - SupportedActions
+            - Connected
+            - Name
+            - DisplayName
+            - Description
+            - DriverInfo
+            - DriverVersion
+            - DeviceId
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    FocuserLastAF:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            Version:
+              type: integer
+            Filter:
+              type: string
+            AutoFocuserName:
+              type: string
+            StarDetectorName:
+              type: string
+            Timestamp:
+              type: string
+            Temperature:
+              type: number
+            Method:
+              type: string
+            Fitting:
+              type: string
+            InitialFocusPoint:
+              type: object
+              properties:
+                Position:
+                  type: integer
+                Value:
+                  type: number
+                Error:
+                  type: integer
+              required:
+                - Position
+                - Value
+                - Error
+            CalculatedFocusPoint:
+              type: object
+              properties:
+                Position:
+                  type: number
+                Value:
+                  type: number
+                Error:
+                  type: integer
+              required:
+                - Position
+                - Value
+                - Error
+            PreviousFocusPoint:
+              type: object
+              properties:
+                Position:
+                  type: number
+                Value:
+                  type: number
+                Error:
+                  type: integer
+              required:
+                - Position
+                - Value
+                - Error
+            MeasurePoints:
+              type: array
+              items:
+                type: object
+                properties:
+                  Position:
+                    type: integer
+                  Value:
+                    type: number
+                  Error:
+                    type: number
+                required:
+                  - Position
+                  - Value
+                  - Error
+            Intersections:
+              type: object
+              properties:
+                TrendLineIntersection:
+                  type: object
+                  properties:
+                    Position:
+                      type: integer
+                    Value:
+                      type: number
+                    Error:
+                      type: integer
+                  required:
+                    - Position
+                    - Value
+                    - Error
+                HyperbolicMinimum:
+                  type: object
+                  properties:
+                    Position:
+                      type: number
+                    Value:
+                      type: number
+                    Error:
+                      type: integer
+                  required:
+                    - Position
+                    - Value
+                    - Error
+              required:
+                - TrendLineIntersection
+                - HyperbolicMinimum
+            Fittings:
+              type: object
+              properties:
+                Quadratic:
+                  type: string
+                Hyperbolic:
+                  type: string
+                Gaussian:
+                  type: string
+                LeftTrend:
+                  type: string
+                RightTrend:
+                  type: string
+              required:
+                - Quadratic
+                - Hyperbolic
+                - Gaussian
+                - LeftTrend
+                - RightTrend
+            RSquares:
+              type: object
+              properties:
+                Quadratic:
+                  type: string
+                Hyperbolic:
+                  type: number
+                LeftTrend:
+                  type: number
+                RightTrend:
+                  type: integer
+              required:
+                - Quadratic
+                - Hyperbolic
+                - LeftTrend
+                - RightTrend
+            BacklashCompensation:
+              type: object
+              properties:
+                BacklashCompensationModel:
+                  type: string
+                BacklashIN:
+                  type: integer
+                BacklashOUT:
+                  type: integer
+              required:
+                - BacklashCompensationModel
+                - BacklashIN
+                - BacklashOUT
+            Duration:
+              type: string
+          required:
+            - Version
+            - Filter
+            - AutoFocuserName
+            - StarDetectorName
+            - Timestamp
+            - Temperature
+            - Method
+            - Fitting
+            - InitialFocusPoint
+            - CalculatedFocusPoint
+            - PreviousFocusPoint
+            - MeasurePoints
+            - Intersections
+            - Fittings
+            - RSquares
+            - BacklashCompensation
+            - Duration
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    GuiderInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            Connected:
+              type: boolean
+            Name:
+              type: string
+            DisplayName:
+              type: string
+            Description:
+              type: string
+            DriverInfo:
+              type: string
+            DriverVersion:
+              type: string
+            DeviceId:
+              type: string
+            CanClearCalibration:
+              type: boolean
+            CanSetShiftRate:
+              type: boolean
+            CanGetLockPosition:
+              type: boolean
+            SupportedActions:
+              type: array
+              items: {}
+            RMSError:
+              type: object
+              properties:
+                RA:
+                  type: object
+                  properties:
+                    Pixel:
+                      type: integer
+                    Arcseconds:
+                      type: integer
+                  required:
+                    - Pixel
+                    - Arcseconds
+                Dec:
+                  type: object
+                  properties:
+                    Pixel:
+                      type: integer
+                    Arcseconds:
+                      type: integer
+                  required:
+                    - Pixel
+                    - Arcseconds
+                Total:
+                  type: object
+                  properties:
+                    Pixel:
+                      type: integer
+                    Arcseconds:
+                      type: integer
+                  required:
+                    - Pixel
+                    - Arcseconds
+                PeakRA:
+                  type: object
+                  properties:
+                    Pixel:
+                      type: integer
+                    Arcseconds:
+                      type: integer
+                  required:
+                    - Pixel
+                    - Arcseconds
+                PeakDec:
+                  type: object
+                  properties:
+                    Pixel:
+                      type: integer
+                    Arcseconds:
+                      type: integer
+                  required:
+                    - Pixel
+                    - Arcseconds
+              required:
+                - RA
+                - Dec
+                - Total
+                - PeakRA
+                - PeakDec
+            PixelScale:
+              type: number
+            LastGuideStep:
+              type: object
+              properties:
+                RADistanceRaw:
+                  type: number
+                DECDistanceRaw:
+                  type: number
+                RADuration:
+                  type: number
+                DECDuration:
+                  type: number
+              required:
+                - RADistanceRaw
+                - DECDistanceRaw
+                - RADuration
+                - DECDuration
+          required:
+            - Connected
+            - CanClearCalibration
+            - CanSetShiftRate
+            - CanGetLockPosition
+            - PixelScale
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    MountInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            SiderealTime:
+              type: number
+            RightAscension:
+              type: number
+            Declination:
+              type: number
+            SiteLatitude:
+              type: number
+            SiteLongitude:
+              type: number
+            SiteElevation:
+              type: integer
+            RightAscensionString:
+              type: string
+            DeclinationString:
+              type: string
+            Coordinates:
+              type: object
+              properties:
+                RA:
+                  type: number
+                RAString:
+                  type: string
+                RADegrees:
+                  type: number
+                Dec:
+                  type: number
+                DecString:
+                  type: string
+                Epoch:
+                  type: integer
+                DateTime:
+                  type: object
+                  properties:
+                    Now:
+                      type: string
+                    UtcNow:
+                      type: string
+                  required:
+                    - Now
+                    - UtcNow
+              required:
+                - RA
+                - RAString
+                - RADegrees
+                - Dec
+                - DecString
+                - Epoch
+                - DateTime
+            TimeToMeridianFlip:
+              type: integer
+            SideOfPier:
+              type: integer
+              description: 0&#58; East, 1&#58; West, -1&#58; Unknown
+            Altitude:
+              type: number
+            AltitudeString:
+              type: string
+            Azimuth:
+              type: integer
+            AzimuthString:
+              type: string
+            SiderealTimeString:
+              type: string
+            HoursToMeridianString:
+              type: string
+            AtPark:
+              type: boolean
+            TrackingRate:
+              type: object
+            TrackingEnabled:
+              type: boolean
+            TrackingModes:
+              type: array
+              items:
+                type: integer
+                description: 0 &#58; Siderial, 1 &#58; Lunar, 2 &#58; Solar, 3 &#58; King, 4 &#58; Stopped
+            AtHome:
+              type: boolean
+            CanFindHome:
+              type: boolean
+            CanPark:
+              type: boolean
+            CanSetPark:
+              type: boolean
+            CanSetTrackingEnabled:
+              type: boolean
+            CanSetDeclinationRate:
+              type: boolean
+            CanSetRightAscensionRate:
+              type: boolean
+            EquatorialSystem:
+              type: integer
+            HasUnknownEpoch:
+              type: boolean
+            TimeToMeridianFlipString:
+              type: string
+            Slewing:
+              type: boolean
+            GuideRateRightAscensionArcsecPerSec:
+              type: integer
+            GuideRateDeclinationArcsecPerSec:
+              type: integer
+            CanMovePrimaryAxis:
+              type: boolean
+            CanMoveSecondaryAxis:
+              type: boolean
+            PrimaryAxisRates:
+              type: array
+              items:
+                type: object
+            SecondaryAxisRates:
+              type: array
+              items:
+                type: object
+            SupportedActions:
+              type: array
+              items:
+                type: string
+            AlignmentMode:
+              type: integer
+            CanPulseGuide:
+              type: boolean
+            IsPulseGuiding:
+              type: boolean
+            CanSetPierSide:
+              type: boolean
+            CanSlew:
+              type: boolean
+            UTCDate:
+              type: string
+            Connected:
+              type: boolean
+            Name:
+              type: string
+            DisplayName:
+              type: string
+            DeviceId:
+              type: string
+          required:
+            - SiderealTime
+            - RightAscension
+            - Declination
+            - SiteLatitude
+            - SiteLongitude
+            - SiteElevation
+            - RightAscensionString
+            - DeclinationString
+            - Coordinates
+            - TimeToMeridianFlip
+            - SideOfPier
+            - Altitude
+            - AltitudeString
+            - Azimuth
+            - AzimuthString
+            - SiderealTimeString
+            - HoursToMeridianString
+            - AtPark
+            - TrackingRate
+            - TrackingEnabled
+            - TrackingModes
+            - AtHome
+            - CanFindHome
+            - CanPark
+            - CanSetPark
+            - CanSetTrackingEnabled
+            - CanSetDeclinationRate
+            - CanSetRightAscensionRate
+            - EquatorialSystem
+            - HasUnknownEpoch
+            - TimeToMeridianFlipString
+            - Slewing
+            - GuideRateRightAscensionArcsecPerSec
+            - GuideRateDeclinationArcsecPerSec
+            - CanMovePrimaryAxis
+            - CanMoveSecondaryAxis
+            - PrimaryAxisRates
+            - SecondaryAxisRates
+            - SupportedActions
+            - AlignmentMode
+            - CanPulseGuide
+            - IsPulseGuiding
+            - CanSetPierSide
+            - CanSlew
+            - UTCDate
+            - Connected
+            - Name
+            - DisplayName
+            - DeviceId
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    RotatorInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            CanReverse:
+              type: boolean
+            Reverse:
+              type: boolean
+            MechanicalPosition:
+              type: integer
+            Position:
+              type: integer
+            StepSize:
+              type: number
+            IsMoving:
+              type: boolean
+            Synced:
+              type: boolean
+            SupportedActions:
+              type: array
+              items: {}
+            Connected:
+              type: boolean
+            Name:
+              type: string
+            DisplayName:
+              type: string
+            Description:
+              type: string
+            DriverInfo:
+              type: string
+            DriverVersion:
+              type: string
+            DeviceId:
+              type: string
+          required:
+            - CanReverse
+            - Reverse
+            - MechanicalPosition
+            - Position
+            - StepSize
+            - IsMoving
+            - Synced
+            - SupportedActions
+            - Connected
+            - Name
+            - DisplayName
+            - Description
+            - DriverInfo
+            - DriverVersion
+            - DeviceId
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    SafetyMonitorInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            IsSafe:
+              type: boolean
+            SupportedActions:
+              type: array
+              items: {}
+            Connected:
+              type: boolean
+            Name:
+              type: string
+            DisplayName:
+              type: string
+            Description:
+              type: string
+            DriverInfo:
+              type: string
+            DriverVersion:
+              type: string
+            DeviceId:
+              type: string
+          required:
+            - IsSafe
+            - SupportedActions
+            - Connected
+            - Name
+            - DisplayName
+            - Description
+            - DriverInfo
+            - DriverVersion
+            - DeviceId
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    SwitchInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            WritableSwitches:
+              type: array
+              items:
+                type: object
+                properties:
+                  Maximum:
+                    type: integer
+                  Minimum:
+                    type: integer
+                  StepSize:
+                    type: number
+                  TargetValue:
+                    type: integer
+                  Id:
+                    type: integer
+                  Name:
+                    type: string
+                  Description:
+                    type: string
+                  Value:
+                    type: integer
+                required:
+                  - Maximum
+                  - Minimum
+                  - StepSize
+                  - TargetValue
+                  - Id
+                  - Name
+                  - Description
+                  - Value
+            ReadonlySwitches:
+              type: array
+              items:
+                type: object
+                properties:
+                  Id:
+                    type: integer
+                  Name:
+                    type: string
+                  Description:
+                    type: string
+                  Value:
+                    type: integer
+                required:
+                  - Id
+                  - Name
+                  - Description
+                  - Value
+            SupportedActions:
+              type: array
+              items:
+                type: string
+            Connected:
+              type: boolean
+            Name:
+              type: string
+            DisplayName:
+              type: string
+            Description:
+              type: string
+            DriverInfo:
+              type: string
+            DriverVersion:
+              type: string
+            DeviceId:
+              type: string
+          required:
+            - WritableSwitches
+            - ReadonlySwitches
+            - SupportedActions
+            - Connected
+            - Name
+            - DisplayName
+            - Description
+            - DriverInfo
+            - DriverVersion
+            - DeviceId
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    WeatherInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            AveragePeriod:
+              type: integer
+            CloudCover:
+              type: integer
+            DewPoint:
+              type: number
+            Humidity:
+              type: integer
+            Pressure:
+              type: integer
+            RainRate:
+              type: string
+            SkyBrightness:
+              type: string
+            SkyQuality:
+              type: string
+            SkyTemperature:
+              type: string
+            StarFWHM:
+              type: string
+            Temperature:
+              type: number
+            WindDirection:
+              type: integer
+            WindGust:
+              type: string
+            WindSpeed:
+              type: number
+            SupportedActions:
+              type: array
+              items: {}
+            Connected:
+              type: boolean
+            Name:
+              type: string
+            DisplayName:
+              type: string
+            Description:
+              type: string
+            DriverInfo:
+              type: string
+            DriverVersion:
+              type: string
+            DeviceId:
+              type: string
+          required:
+            - AveragePeriod
+            - CloudCover
+            - DewPoint
+            - Humidity
+            - Pressure
+            - RainRate
+            - SkyBrightness
+            - SkyQuality
+            - SkyTemperature
+            - StarFWHM
+            - Temperature
+            - WindDirection
+            - WindGust
+            - WindSpeed
+            - SupportedActions
+            - Connected
+            - Name
+            - DisplayName
+            - Description
+            - DriverInfo
+            - DriverVersion
+            - DeviceId
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    FramingAssistantInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            BoundHeight:
+              type: integer
+            BoundWidth:
+              type: integer
+            CameraHeight:
+              type: integer
+            CameraWidth:
+              type: integer
+            CameraPixelSize:
+              type: integer
+            DecDegrees:
+              type: integer
+            DecMinutes:
+              type: integer
+            DecSeconds:
+              type: integer
+            RAHours:
+              type: integer
+            RAMinutes:
+              type: integer
+            RASeconds:
+              type: integer
+            FieldOfView:
+              type: integer
+            FocalLength:
+              type: integer
+            HorizontalPanels:
+              type: integer
+            VerticalPanels:
+              type: integer
+            Rectangle:
+              type: object
+              properties:
+                OriginalX:
+                  type: integer
+                OriginalY:
+                  type: integer
+                Id:
+                  type: integer
+                DSOPositionAngle:
+                  type: integer
+                OriginalOffset:
+                  type: integer
+                RotationOffset:
+                  type: integer
+                Rotation:
+                  type: integer
+                TotalRotation:
+                  type: integer
+                X:
+                  type: integer
+                Y:
+                  type: integer
+                Width:
+                  type: integer
+                Height:
+                  type: integer
+              required:
+                - OriginalX
+                - OriginalY
+                - Id
+                - DSOPositionAngle
+                - OriginalOffset
+                - RotationOffset
+                - Rotation
+                - TotalRotation
+                - X
+                - Y
+                - Width
+                - Height
+          required:
+            - BoundHeight
+            - BoundWidth
+            - CameraHeight
+            - CameraWidth
+            - CameraPixelSize
+            - DecDegrees
+            - DecMinutes
+            - DecSeconds
+            - RAHours
+            - RAMinutes
+            - RASeconds
+            - FieldOfView
+            - FocalLength
+            - HorizontalPanels
+            - VerticalPanels
+            - Rectangle
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
+      required:
+        - Response
+        - Error
+        - StatusCode
+        - Success
+        - Type
+
+    ProfileInfo:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            Name:
+              type: string
+            Description:
+              type: string
+            Id:
+              type: string
+            LastUsed:
+              type: string
+            ApplicationSettings:
+              type: object
+              properties:
+                Culture:
+                  type: string
+                DevicePollingInterval:
+                  type: integer
+                PageSize:
+                  type: integer
+                LogLevel:
+                  type: integer
+            AstrometrySettings:
+              type: object
+              properties:
+                Latitude:
+                  type: number
+                Longitude:
+                  type: number
+                Elevation:
+                  type: integer
+                HorizonFilePath:
+                  type: string
+            CameraSettings:
+              type: object
+              properties:
+                BitDepth:
+                  type: integer
+                BulbMode:
+                  type: integer
+                Id:
+                  type: string
+                PixelSize:
+                  type: integer
+                RawConverter:
+                  type: integer
+                SerialPort:
+                  type: string
+                MinFlatExposureTime:
+                  type: number
+                MaxFlatExposureTime:
+                  type: integer
+                FileCameraFolder:
+                  type: string
+                FileCameraUseBulbMode:
+                  type: boolean
+                FileCameraIsBayered:
+                  type: boolean
+                FileCameraExtension:
+                  type: string
+                FileCameraAlwaysListen:
+                  type: boolean
+                FileCameraDownloadDelay:
+                  type: integer
+                BayerPattern:
+                  type: integer
+                FLIEnableFloodFlush:
+                  type: boolean
+                FLIEnableSnapshotFloodFlush:
+                  type: boolean
+                FLIFloodDuration:
+                  type: integer
+                FLIFlushCount:
+                  type: integer
+                BitScaling:
+                  type: boolean
+                CoolingDuration:
+                  type: integer
+                WarmingDuration:
+                  type: integer
+                Temperature:
+                  type: integer
+                Gain:
+                  type: integer
+                Offset:
+                  type: integer
+                QhyIncludeOverscan:
+                  type: boolean
+                Timeout:
+                  type: integer
+                DewHeaterOn:
+                  type: boolean
+                ASCOMAllowUnevenPixelDimension:
+                  type: boolean
+                MirrorLockupDelay:
+                  type: integer
+                BinAverageEnabled:
+                  type: boolean
+                TrackingCameraASCOMServerEnabled:
+                  type: boolean
+                TrackingCameraASCOMServerPipeName:
+                  type: string
+                TrackingCameraASCOMServerLoggingEnabled:
+                  type: boolean
+                SBIGUseExternalCcdTracker:
+                  type: boolean
+                AtikGainPreset:
+                  type: integer
+                AtikExposureSpeed:
+                  type: integer
+                AtikWindowHeaterPowerLevel:
+                  type: integer
+                TouptekAlikeUltraMode:
+                  type: boolean
+                TouptekAlikeHighFullwell:
+                  type: boolean
+                TouptekAlikeLEDLights:
+                  type: boolean
+                TouptekAlikeDewHeaterStrength:
+                  type: integer
+                GenericCameraDewHeaterStrength:
+                  type: integer
+                GenericCameraFanSpeed:
+                  type: integer
+                ZwoAsiMonoBinMode:
+                  type: boolean
+                ASCOMCreate32BitData:
+                  type: boolean
+                BadPixelCorrection:
+                  type: boolean
+                BadPixelCorrectionThreshold:
+                  type: integer
+            ColorSchemaSettings:
+              type: object
+              properties:
+                AltColorSchema:
+                  type: string
+                ColorSchema:
+                  type: string
+            DomeSettings:
+              type: object
+              properties:
+                Id:
+                  type: string
+                ScopePositionEastWest_mm:
+                  type: integer
+                ScopePositionNorthSouth_mm:
+                  type: integer
+                ScopePositionUpDown_mm:
+                  type: integer
+                DomeRadius_mm:
+                  type: integer
+                GemAxis_mm:
+                  type: integer
+                LateralAxis_mm:
+                  type: integer
+                AzimuthTolerance_degrees:
+                  type: integer
+                FindHomeBeforePark:
+                  type: boolean
+                DomeSyncTimeoutSeconds:
+                  type: integer
+                SynchronizeDuringMountSlew:
+                  type: boolean
+                SyncSlewDomeWhenMountSlews:
+                  type: boolean
+                RotateDegrees:
+                  type: integer
+                CloseOnUnsafe:
+                  type: boolean
+                ParkMountBeforeShutterMove:
+                  type: boolean
+                RefuseUnsafeShutterMove:
+                  type: boolean
+                RefuseUnsafeShutterOpenSansSafetyDevice:
+                  type: boolean
+                ParkDomeBeforeShutterMove:
+                  type: boolean
+                MountType:
+                  type: integer
+                DecOffsetHorizontal_mm:
+                  type: integer
+                SettleTimeSeconds:
+                  type: integer
+            FilterWheelSettings:
+              type: object
+              properties:
+                FilterWheelFilters:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      Name:
+                        type: string
+                      FocusOffset:
+                        type: integer
+                      Position:
+                        type: integer
+                      AutoFocusExposureTime:
+                        type: integer
+                      AutoFocusFilter:
+                        type: boolean
+                      FlatWizardFilterSettings:
+                        type: object
+                        properties:
+                          FlatWizardMode:
+                            type: integer
+                          HistogramMeanTarget:
+                            type: number
+                          HistogramTolerance:
+                            type: number
+                          MaxFlatExposureTime:
+                            type: integer
+                          MinFlatExposureTime:
+                            type: number
+                          MaxAbsoluteFlatDeviceBrightness:
+                            type: integer
+                          MinAbsoluteFlatDeviceBrightness:
+                            type: integer
+                          Gain:
+                            type: integer
+                          Offset:
+                            type: integer
+                          Binning:
+                            type: object
+                            properties:
+                              Name:
+                                type: string
+                              X:
+                                type: integer
+                              Y:
+                                type: integer
+                      AutoFocusBinning:
+                        type: object
+                        properties:
+                          Name:
+                            type: string
+                          X:
+                            type: integer
+                          Y:
+                            type: integer
+                      AutoFocusGain:
+                        type: integer
+                      AutoFocusOffset:
+                        type: integer
+                Id:
+                  type: string
+                DisableGuidingOnFilterChange:
+                  type: boolean
+                Unidirectional:
+                  type: boolean
+            FlatWizardSettings:
+              type: object
+              properties:
+                FlatCount:
+                  type: integer
+                HistogramMeanTarget:
+                  type: number
+                HistogramTolerance:
+                  type: number
+                DarkFlatCount:
+                  type: integer
+                OpenForDarkFlats:
+                  type: boolean
+                AltitudeSite:
+                  type: integer
+                FlatWizardMode:
+                  type: integer
+            FocuserSettings:
+              type: object
+              properties:
+                AutoFocusExposureTime:
+                  type: integer
+                AutoFocusInitialOffsetSteps:
+                  type: integer
+                AutoFocusStepSize:
+                  type: integer
+                Id:
+                  type: string
+                UseFilterWheelOffsets:
+                  type: boolean
+                AutoFocusDisableGuiding:
+                  type: boolean
+                FocuserSettleTime:
+                  type: integer
+                AutoFocusTotalNumberOfAttempts:
+                  type: integer
+                AutoFocusNumberOfFramesPerPoint:
+                  type: integer
+                AutoFocusInnerCropRatio:
+                  type: integer
+                AutoFocusOuterCropRatio:
+                  type: integer
+                AutoFocusUseBrightestStars:
+                  type: integer
+                BacklashIn:
+                  type: integer
+                BacklashOut:
+                  type: integer
+                AutoFocusBinning:
+                  type: integer
+                AutoFocusCurveFitting:
+                  type: integer
+                AutoFocusMethod:
+                  type: integer
+                ContrastDetectionMethod:
+                  type: integer
+                BacklashCompensationModel:
+                  type: integer
+                AutoFocusTimeoutSeconds:
+                  type: integer
+                RSquaredThreshold:
+                  type: number
+            FramingAssistantSettings:
+              type: object
+              properties:
+                CameraHeight:
+                  type: integer
+                CameraWidth:
+                  type: integer
+                FieldOfView:
+                  type: integer
+                Opacity:
+                  type: number
+                LastSelectedImageSource:
+                  type: integer
+                LastRotationAngle:
+                  type: integer
+                SaveImageInOfflineCache:
+                  type: boolean
+            GuiderSettings:
+              type: object
+              properties:
+                GuiderName:
+                  type: string
+                DitherPixels:
+                  type: integer
+                DitherRAOnly:
+                  type: boolean
+                PHD2GuiderScale:
+                  type: integer
+                MaxY:
+                  type: integer
+                PHD2HistorySize:
+                  type: integer
+                PHD2ServerPort:
+                  type: integer
+                PHD2ServerUrl:
+                  type: string
+                PHD2InstanceNumber:
+                  type: integer
+                SettleTime:
+                  type: integer
+                SettlePixels:
+                  type: number
+                SettleTimeout:
+                  type: integer
+                PHD2Path:
+                  type: string
+                AutoRetryStartGuiding:
+                  type: boolean
+                AutoRetryStartGuidingTimeoutSeconds:
+                  type: integer
+                MetaGuideUseIpAddressAny:
+                  type: boolean
+                MetaGuidePort:
+                  type: integer
+                MGENFocalLength:
+                  type: integer
+                MGENPixelMargin:
+                  type: integer
+                MetaGuideMinIntensity:
+                  type: integer
+                MetaGuideDitherSettleSeconds:
+                  type: integer
+                MetaGuideLockWhenGuiding:
+                  type: boolean
+                PHD2ROIPct:
+                  type: integer
+                SkyGuardServerPort:
+                  type: integer
+                SkyGuardServerUrl:
+                  type: string
+                SkyGuardPath:
+                  type: string
+                SkyGuardCallbackPort:
+                  type: integer
+                SkyGuardTimeLapsChecked:
+                  type: boolean
+                SkyGuardValueMaxGuiding:
+                  type: integer
+                SkyGuardTimeLapsGuiding:
+                  type: integer
+                SkyGuardTimeLapsDitherChecked:
+                  type: boolean
+                SkyGuardValueMaxDithering:
+                  type: integer
+                SkyGuardTimeLapsDithering:
+                  type: integer
+                SkyGuardTimeOutGuiding:
+                  type: integer
+                GuideChartRightAscensionColor:
+                  type: object
+                  properties:
+                    A:
+                      type: integer
+                    R:
+                      type: integer
+                    G:
+                      type: integer
+                    B:
+                      type: integer
+                    ScA:
+                      type: integer
+                    ScR:
+                      type: integer
+                    ScG:
+                      type: integer
+                    ScB:
+                      type: integer
+                GuideChartDeclinationColor:
+                  type: object
+                  properties:
+                    A:
+                      type: integer
+                    R:
+                      type: integer
+                    G:
+                      type: integer
+                    B:
+                      type: integer
+                    ScA:
+                      type: integer
+                    ScR:
+                      type: integer
+                    ScG:
+                      type: integer
+                    ScB:
+                      type: integer
+                GuideChartShowCorrections:
+                  type: boolean
+            ImageFileSettings:
+              type: object
+              properties:
+                FilePath:
+                  type: string
+                FilePattern:
+                  type: string
+                FilePatternDARK:
+                  type: string
+                FilePatternBIAS:
+                  type: string
+                FilePatternFLAT:
+                  type: string
+                FileType:
+                  type: integer
+                TIFFCompressionType:
+                  type: integer
+                XISFCompressionType:
+                  type: integer
+                XISFChecksumType:
+                  type: integer
+                XISFByteShuffling:
+                  type: boolean
+                FITSCompressionType:
+                  type: integer
+                FITSAddFzExtension:
+                  type: boolean
+                FITSUseLegacyWriter:
+                  type: boolean
+            ImageSettings:
+              type: object
+              properties:
+                AnnotateImage:
+                  type: boolean
+                DebayerImage:
+                  type: boolean
+                DebayeredHFR:
+                  type: boolean
+                UnlinkedStretch:
+                  type: boolean
+                AnnotateUnlimitedStars:
+                  type: boolean
+                AutoStretchFactor:
+                  type: number
+                BlackClipping:
+                  type: number
+                StarSensitivity:
+                  type: integer
+                NoiseReduction:
+                  type: integer
+                DetectStars:
+                  type: boolean
+                AutoStretch:
+                  type: boolean
+            MeridianFlipSettings:
+              type: object
+              properties:
+                MinutesAfterMeridian:
+                  type: integer
+                MaxMinutesAfterMeridian:
+                  type: integer
+                PauseTimeBeforeMeridian:
+                  type: integer
+                Recenter:
+                  type: boolean
+                SettleTime:
+                  type: integer
+                UseSideOfPier:
+                  type: boolean
+                AutoFocusAfterFlip:
+                  type: boolean
+                RotateImageAfterFlip:
+                  type: boolean
+            PlanetariumSettings:
+              type: object
+              properties:
+                StellariumHost:
+                  type: string
+                StellariumPort:
+                  type: integer
+                CdCHost:
+                  type: string
+                CdCPort:
+                  type: integer
+                TSXHost:
+                  type: string
+                TSXPort:
+                  type: integer
+                TSXUseSelectedObject:
+                  type: boolean
+                HNSKYHost:
+                  type: string
+                HNSKYPort:
+                  type: integer
+                C2AHost:
+                  type: string
+                C2APort:
+                  type: integer
+                SkytechXHost:
+                  type: string
+                SkytechXPort:
+                  type: integer
+                PreferredPlanetarium:
+                  type: integer
+            PlateSolveSettings:
+              type: object
+              properties:
+                AstrometryURL:
+                  type: string
+                AstrometryAPIKey:
+                  type: string
+                BlindSolverType:
+                  type: integer
+                CygwinLocation:
+                  type: string
+                ExposureTime:
+                  type: integer
+                Gain:
+                  type: integer
+                Binning:
+                  type: integer
+                PlateSolverType:
+                  type: integer
+                PS2Location:
+                  type: string
+                PS3Location:
+                  type: string
+                Regions:
+                  type: integer
+                SearchRadius:
+                  type: integer
+                Threshold:
+                  type: integer
+                RotationTolerance:
+                  type: integer
+                ReattemptDelay:
+                  type: integer
+                NumberOfAttempts:
+                  type: integer
+                AspsLocation:
+                  type: string
+                ASTAPLocation:
+                  type: string
+                DownSampleFactor:
+                  type: integer
+                MaxObjects:
+                  type: integer
+                Sync:
+                  type: boolean
+                SlewToTarget:
+                  type: boolean
+                BlindFailoverEnabled:
+                  type: boolean
+                TheSkyXHost:
+                  type: string
+                TheSkyXPort:
+                  type: integer
+                PinPointCatalogType:
+                  type: integer
+                PinPointCatalogRoot:
+                  type: string
+                PinPointMaxMagnitude:
+                  type: integer
+                PinPointExpansion:
+                  type: integer
+                PinPointAllSkyApiKey:
+                  type: string
+                PinPointAllSkyApiHost:
+                  type: string
+            RotatorSettings:
+              type: object
+              properties:
+                Id:
+                  type: string
+                Reverse2:
+                  type: boolean
+                RangeType:
+                  type: integer
+                RangeStartMechanicalPosition:
+                  type: integer
+            FlatDeviceSettings:
+              type: object
+              properties:
+                Id:
+                  type: string
+                PortName:
+                  type: string
+                SettleTime:
+                  type: integer
+                TrainedFlatExposureSettings:
+                  type: array
+                  items: {}
+            SequenceSettings:
+              type: object
+              properties:
+                EstimatedDownloadTime:
+                  type: string
+                TemplatePath:
+                  type: string
+                TimeSpanInTicks:
+                  type: integer
+                ParkMountAtSequenceEnd:
+                  type: boolean
+                CloseDomeShutterAtSequenceEnd:
+                  type: boolean
+                ParkDomeAtSequenceEnd:
+                  type: boolean
+                WarmCamAtSequenceEnd:
+                  type: boolean
+                DefaultSequenceFolder:
+                  type: string
+                StartupSequenceTemplate:
+                  type: string
+                SequencerTemplatesFolder:
+                  type: string
+                SequencerTargetsFolder:
+                  type: string
+                CollapseSequencerTemplatesByDefault:
+                  type: boolean
+                CoolCameraAtSequenceStart:
+                  type: boolean
+                UnparMountAtSequenceStart:
+                  type: boolean
+                OpenDomeShutterAtSequenceStart:
+                  type: boolean
+                DoMeridianFlip:
+                  type: boolean
+                DisableSimpleSequencer:
+                  type: boolean
+            SwitchSettings:
+              type: object
+              properties:
+                Id:
+                  type: string
+            TelescopeSettings:
+              type: object
+              properties:
+                Name:
+                  type: string
+                MountName:
+                  type: string
+                FocalLength:
+                  type: integer
+                FocalRatio:
+                  type: integer
+                Id:
+                  type: string
+                SettleTime:
+                  type: integer
+                SnapPortStart:
+                  type: string
+                SnapPortStop:
+                  type: string
+                NoSync:
+                  type: boolean
+                TimeSync:
+                  type: boolean
+                PrimaryReversed:
+                  type: boolean
+                SecondaryReversed:
+                  type: boolean
+                TelescopeLocationSyncDirection:
+                  type: integer
+            WeatherDataSettings:
+              type: object
+              properties:
+                Id:
+                  type: string
+                OpenWeatherMapAPIKey:
+                  type: string
+                TheWeatherCompanyAPIKey:
+                  type: string
+                WeatherUndergroundAPIKey:
+                  type: string
+                WeatherUndergroundStation:
+                  type: string
+            SnapShotControlSettings:
+              type: object
+              properties:
+                ExposureDuration:
+                  type: integer
+                Gain:
+                  type: integer
+                Save:
+                  type: boolean
+                Loop:
+                  type: boolean
+            SafetyMonitorSettings:
+              type: object
+              properties:
+                Id:
+                  type: string
+            PluginSettings:
+              type: object
+            AlpacaSettings:
+              type: object
+              properties:
+                NumberOfPolls:
+                  type: integer
+                PollInterval:
+                  type: integer
+                DiscoveryPort:
+                  type: integer
+                DiscoveryDuration:
+                  type: integer
+                ResolveDnsName:
+                  type: boolean
+                UseIPv4:
+                  type: boolean
+                UseIPv6:
+                  type: boolean
+                UseHttps:
+                  type: boolean
+            ImageHistorySettings:
+              type: object
+              properties:
+                ImageHistoryLeftSelected:
+                  type: integer
+                ImageHistoryRightSelected:
+                  type: integer
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string

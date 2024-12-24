@@ -1,0 +1,167 @@
+asyncapi: 2.0.0
+info:
+  title: Advanced API
+  version: 2.0.0
+  description: This is the Websocket documentation for the NINA plugin Advanced API.
+servers:
+  production:
+    url: ws://localhost:1888/v2
+    protocol: ws
+    description: Production server
+channels:
+  /v2/socket:
+    description: WebSocket channel for events
+    subscribe:
+      summary: Subscribe to WebSocket events
+      message:
+        oneOf:
+          - contentType: application/json
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      description: The event name
+                      enum:
+                        - CAMERA-CONNECTED
+                        - CAMERA-DISCONNECTED
+                        - CAMERA-DOWNLOAD-TIMEOUT
+                        - DOME-CONNECTED
+                        - DOME-DISCONNECTED
+                        - DOME-SHUTTER-CLOSED
+                        - DOME-SHUTTER-OPENED
+                        - DOME-HOMED
+                        - DOME-PARKED
+                        - DOME-STOPPED
+                        - FILTERWHEEL-CONNECTED
+                        - FILTERWHEEL-DISCONNECTED
+                        - FILTERWHEEL-CHANGED
+                        - FLAT-CONNECTED
+                        - FLAT-DISCONNECTED
+                        - FOCUSER-CONNECTED
+                        - FOCUSER-DISCONNECTED
+                        - GUIDER-CONNECTED
+                        - GUIDER-DISCONNECTED
+                        - GUIDER-START
+                        - GUIDER-STOP
+                        - GUIDER-DITHER
+                        - MOUNT-CONNECTED
+                        - MOUNT-DISCONNECTED
+                        - MOUNT-BEFORE-FLIP
+                        - MOUNT-AFTER-FLIP
+                        - MOUNT-HOMED
+                        - MOUNT-PARKED
+                        - MOUNT-UNPARKED
+                        - MOUNT-CENTER
+                        - ROTATOR-CONNECTED
+                        - ROTATOR-DISCONNECTED
+                        - SAFETY-CONNECTED
+                        - SAFETY-DISCONNECTED
+                        - SAFETY-CHANGED
+                        - SWITCH-CONNECTED
+                        - SWITCH-DISCONNECTED
+                        - WEATHER-CONNECTED
+                        - WEATHER-DISCONNECTED
+                        - ADV-SEQ-START
+                        - ADV-SEQ-STOP
+                        - ERROR-AF
+                        - ERROR-PLATESOLVE
+          - contentType: application/json
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      enum:
+                        - "IMAGE-SAVE"
+                    ImageStatistics:
+                      properties:
+                        ExposureTime:
+                          type: number
+                        Index:
+                          type: number
+                        Filter:
+                          type: string
+                        RmsText:
+                          type: string
+                        Temperature:
+                          type: number
+                        CameraName:
+                          type: string
+                        Gain:
+                          type: number
+                        Offset:
+                          type: number
+                        Date:
+                          type: string
+                        TelescopeName:
+                          type: string
+                        FocalLength:
+                          type: number
+                        StDev:
+                          type: number
+                        Mean:
+                          type: number
+                        Median:
+                          type: number
+                        Stars:
+                          type: number
+                        HFR:
+                          type: number
+
+  /v2/tppa:
+    description: TPPA WebSocket channel
+    publish:
+      summary: Start or Stop TPPA
+      message:
+        contentType: application/text
+        payload:
+          type: string
+          enum:
+            - start-alignment
+            - stop-alignment
+    subscribe:
+      summary: Subscribe to TPPA WebSocket events
+      operationId: onTPPAEvent
+      message:
+        oneOf:
+          - contentType: application/json
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    AzimuthError:
+                      type: number
+                    AltitudeError:
+                      type: number
+                    TotalError:
+                      type: number
+              required:
+                - Response
+                - Error
+                - StatusCode
+                - Success
+                - Type
+          - contentType: application/json
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: string
+                  enum:
+                    - "started procedure"
+                    - "stopped procedure"
+              required:
+                - Response
+                - Error
+                - StatusCode
+                - Success
+                - Type
