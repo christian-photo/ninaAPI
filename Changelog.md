@@ -9,6 +9,7 @@ V2 will probably stay for a longer time now, I made some changes behind the scen
 - ⚠️ **Breaking** Connection events in the websocket are now seperated into connected and disconnected ⚠️
 - ⚠️ **Breaking** Changed the structure of a profile response ⚠️
 - ⚠️ **Breaking** Removed the description field from a sequence response, added more specific fields for each item ⚠️
+- ⚠️ **Breaking** Image (history) now returns an error when there are no images available ⚠️
 - Added a new websocket for controlling TPPA and getting the current error in realtime
 - Framing Assistant is now supported:
   - Set the coordinates in the framing assistant
