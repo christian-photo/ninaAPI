@@ -146,6 +146,16 @@ namespace ninaAPI.Utility
         {
             context.Response.ContentType = MimeType.Json;
 
+            /*
+            HttpResponse response = (HttpResponse)json;
+            context.Response.StatusCode = response.StatusCode;
+            response.StatusCode = null;
+            if (!string.IsNullOrEmpty(response.Error)) {
+                response.Response = response.Error;
+                response.Error = null;
+            }
+            */
+
             string text = System.Text.Json.JsonSerializer.Serialize(json, options);
 
             using (var writer = new StreamWriter(context.Response.OutputStream))

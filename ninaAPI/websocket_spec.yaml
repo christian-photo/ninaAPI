@@ -9,7 +9,7 @@ servers:
     protocol: ws
     description: Production server
 channels:
-  /v2/socket:
+  /socket:
     description: WebSocket channel for events
     subscribe:
       summary: Subscribe to WebSocket events
@@ -115,7 +115,7 @@ channels:
                         HFR:
                           type: number
 
-  /v2/tppa:
+  /tppa:
     description: TPPA WebSocket channel
     publish:
       summary: Start or Stop TPPA

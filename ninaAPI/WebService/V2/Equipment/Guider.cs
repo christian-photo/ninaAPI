@@ -183,7 +183,10 @@ namespace ninaAPI.WebService.V2
                     await guider.StartGuiding(false, AdvancedAPI.Controls.StatusMediator.GetStatus(), GuideToken.Token);
                     response.Response = "Guiding started";
                 }
-                response = CoreUtility.CreateErrorTable(new Error("Guider not connected", 409));
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Guider not connected", 409));
+                }
             }
             catch (Exception ex)
             {
@@ -209,7 +212,10 @@ namespace ninaAPI.WebService.V2
                     await guider.StopGuiding(GuideToken.Token);
                     response.Response = "Guiding stopped";
                 }
-                response = CoreUtility.CreateErrorTable(new Error("Guider not connected", 409));
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Guider not connected", 409));
+                }
             }
             catch (Exception ex)
             {

@@ -55,7 +55,11 @@ namespace ninaAPI.WebService.V2
                 IImageHistoryVM hist = AdvancedAPI.Controls.ImageHistory;
                 if (hist.ImageHistory.Count <= 0)
                 {
-                    response.Response = "[]";
+                    response = CoreUtility.CreateErrorTable(new Error("No images available", 500));
+                }
+                else if (index >= hist.ImageHistory.Count || index < 0)
+                {
+                    response = CoreUtility.CreateErrorTable(CommonErrors.INDEX_OUT_OF_RANGE);
                 }
                 else
                 {

@@ -177,6 +177,7 @@ namespace ninaAPI.WebService.V2
 
                     if (mode >= 0 && mode < 6)
                     {
+                        response.Response = "Tracking mode changed";
                         response.Success = mount.SetTrackingMode((TrackingMode)mode);
                     }
                     else

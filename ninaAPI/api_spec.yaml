@@ -6,16 +6,12 @@ info:
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
-  - url: ws://localhost:1888/v2/socket
-    description: V2 websocket server for events
-  - url: ws://localhost:1888/v2/tppa
-    description: Websocket for interacting with TPPA
 paths:
   /equipment/camera/info:
     get:
       tags:
         - Camera
-      summary: Gets camera info
+      summary: Information
       description: This endpoint returns relevant information about the camera.
       responses:
         "200":
@@ -26,36 +22,88 @@ paths:
                 $ref: "#/components/schemas/CameraInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/camera/connect:
     get:
       tags:
         - Camera
-      summary: Connects the camera
+      summary: Connect
       description: This endpoint connects the camera.
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Camera connected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/camera/disconnect:
     get:
       tags:
         - Camera
-      summary: Disconnects the camera
+      summary: Disconnect
       description: This endpoint disconnects the camera.
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Camera disconnected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/camera/cool:
     get:
       tags:
         - Camera
-      summary: Cools the camera
+      summary: Cooling
       description: This endpoint cools the camera.
       parameters:
         - in: query
@@ -81,16 +129,64 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Cooling started
+                      - Cooling canceled
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Camera not connected / Camera has no temperature control
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Camera not connected
+                      - Camera has no temperature control
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/camera/warm:
     get:
       tags:
         - Camera
-      summary: Warms the camera
+      summary: Warming
       description: This endpoint warms the camera.
       parameters:
         - in: query
@@ -102,30 +198,126 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Warming started
+                      - Warming canceled
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Camera not connected / Camera has no temperature control
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Camera not connected
+                      - Camera has no temperature control
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/camera/abort-exposure:
     get:
       tags:
         - Camera
-      summary: Aborts the current exposure
+      summary: Exposure Abort
       description: This endpoint aborts the current exposure.
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Exposure aborted
+                      - Camera not exposing
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Camera not connected / Camera not exposing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Camera not connected
+                      - Camera not exposing
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/camera/dew-heater:
     get:
       tags:
         - Camera
-      summary: Sets the dew heater
+      summary: Dew Heater Control
       description: This endpoint sets the dew heater.
       parameters:
         - in: query
@@ -137,16 +329,63 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Dew heater set
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Camera not connected / Camera has no dew heater
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Camera not connected
+                      - Camera has no dew heater
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/camera/capture:
     get:
       tags:
         - Camera
-      summary: Captures an image
+      summary: Capture
       description: This endpoint captures and/or returns an image.
       parameters:
         - in: query
@@ -204,16 +443,108 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    oneOf:
+                      - type: string
+                        enum:
+                          - Capture already in progress
+                          - Capture started
+                      - type: object
+                        properties:
+                          Image:
+                            type: string
+                            example: "<base64 encoded image>"
+                            description: The base64 encoded image
+                          PlateSolveResult:
+                            type: object
+                            properties:
+                              Coordinates:
+                                type: object
+                                properties:
+                                  RA:
+                                    type: number
+                                  RADegrees:
+                                    type: number
+                                  Dec:
+                                    type: number
+                                  DECDegrees:
+                                    type: number
+                                  Epoch:
+                                    type: integer
+                              PositionAngle:
+                                type: number
+                              PixelScale:
+                                type: number
+                              Radius:
+                                type: number
+                              Flipped:
+                                type: boolean
+                              Success:
+                                type: boolean
+                              RaErrorString:
+                                type: string
+                              RaPixError:
+                                type: number
+                              DecPixError:
+                                type: number
+                              DecErrorString:
+                                type: string
+                        required:
+                          - Image
+
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Camera not connected / Camera currently exposing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Camera not connected
+                      - Camera currently exposing
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/dome/info:
     get:
       tags:
         - Dome
-      summary: Get Dome information
+      summary: Information
       description: Get Dome information
       responses:
         "200":
@@ -224,58 +555,202 @@ paths:
                 $ref: "#/components/schemas/DomeInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/dome/connect:
     get:
       tags:
         - Dome
-      summary: Connect to Dome
+      summary: Connect
       description: Connect to Dome
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Dome connected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/dome/disconnect:
     get:
       tags:
         - Dome
-      summary: Disconnect the Dome
+      summary: Disconnect
       description: Disconnect the Dome
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Dome disconnected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/dome/open:
     get:
       tags:
         - Dome
-      summary: Open Dome Shutter
+      summary: Open Shutter
       description: Open Dome Shutter
       responses:
         "200":
-          description: Successful response, Shutter opening, Shutter already open
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Shutter opening
+                      - Shutter already open
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Dome not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Dome not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/dome/close:
     get:
       tags:
         - Dome
-      summary: Close Dome Shutter
+      summary: Close Shutter
       description: Close Dome Shutter
       responses:
         "200":
-          description: Successful response, Shutter closing, Shutter already closed
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Shutter closing
+                      - Shutter already closed
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Dome not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Dome not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/dome/stop:
     get:
@@ -285,17 +760,61 @@ paths:
       description: Stop Dome Shutter movement. This only works if the dome movement was started using the API
       responses:
         "200":
-          description: Successful response, Movement stopped
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Movement stopped
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Dome not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Dome not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/filterwheel/info:
     get:
       tags:
         - FilterWheel
-      summary: Get Filterwheel information
+      summary: Information
       description: Get Filterwheel information
       responses:
         "200":
@@ -306,30 +825,82 @@ paths:
                 $ref: "#/components/schemas/FWInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/filterwheel/connect:
     get:
       tags:
         - FilterWheel
-      summary: Connect to Filterwheel
+      summary: Connect
       description: Connect to Filterwheel
       responses:
         "200":
-          description: Successful response, Filterwheel connected
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Filterwheel connected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/filterwheel/disconnect:
     get:
       tags:
         - FilterWheel
-      summary: Disconnect the filterwheel
+      summary: Disconnect
       description: Disconnect the filterwheel
       responses:
         "200":
-          description: Successful response, Filterwheel disconnected
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Filterwheel disconnected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/filterwheel/change-filter:
     get:
@@ -346,17 +917,63 @@ paths:
             type: integer
       responses:
         "200":
-          description: Successful response, Filter changed
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Filter changed
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Filterwheel not connected / Filter not available
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Filterwheel not connected
+                      - Filter not available
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/filterwheel/filter-info:
     get:
       tags:
         - FilterWheel
-      summary: Get Filterwheel Filter
+      summary: Filter Information
       description: Get Filterwheel Filter
       parameters:
         - in: query
@@ -368,20 +985,46 @@ paths:
       responses:
         "200":
           description: Successful response
-        "409":
-          description: Filterwheel not connected / Filter not available
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/FilterInfo"
+        "409":
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Filterwheel not connected
+                      - Filter not available
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/flatdevice/info:
     get:
       tags:
         - Flat Panel
-      summary: Get information about the flat panel
+      summary: Information
       description: Get information about the flat panel, Coverstate represents the following values&#58; 0&#58; Unknown, 1&#58; NeitherOpenNorClosed, 2&#58; Closed, 3&#58; Open, 4&#58; Error, 5&#58; Not present
       responses:
         "200":
@@ -392,36 +1035,88 @@ paths:
                 $ref: "#/components/schemas/FlatDeviceInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/flatdevice/connect:
     get:
       tags:
         - Flat Panel
-      summary: Connect the flat panel
+      summary: Connect
       description: Connect the flat panel
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Flatdevice connected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/flatdevice/disconnect:
     get:
       tags:
         - Flat Panel
-      summary: Disconnect the flat panel
+      summary: Disconnect
       description: Disconnect the flat panel
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Flatdevice disconnected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/focuser/info:
     get:
       tags:
         - Focuser
-      summary: Get the focuser info
+      summary: Information
       description: Get the focuser info
       responses:
         "200":
@@ -432,36 +1127,88 @@ paths:
                 $ref: "#/components/schemas/FocuserInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/focuser/connect:
     get:
       tags:
         - Focuser
-      summary: Connect the focuser
+      summary: Connect
       description: Connect the focuser
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Focuser connected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/focuser/disconnect:
     get:
       tags:
         - Focuser
-      summary: Disconnect the focuser
+      summary: Disconnect
       description: Disconnect the focuser
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Focuser disconnected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/focuser/move:
     get:
       tags:
         - Focuser
-      summary: Move the focuser
+      summary: Move
       description: Move the focuser
       parameters:
         - in: query
@@ -473,14 +1220,38 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Move started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/focuser/auto-focus:
     get:
       tags:
         - Focuser
-      summary: AF
+      summary: Auto Focus
       description: Start an AF
       parameters:
         - in: query
@@ -492,8 +1263,56 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Autofocus started
+                      - Autofocus canceled
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Focuser not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Focuser not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/focuser/last-af:
     get:
@@ -510,12 +1329,16 @@ paths:
                 $ref: "#/components/schemas/FocuserLastAF"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/guider/info:
     get:
       tags:
         - Guider
-      summary: Get guider information
+      summary: Information
       description: Get guider information
       responses:
         "200":
@@ -526,60 +1349,204 @@ paths:
                 $ref: "#/components/schemas/GuiderInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/guider/connect:
     get:
       tags:
         - Guider
-      summary: Connect to guider
+      summary: Connect
       description: Connect to guider
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Guider connected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/guider/disconnect:
     get:
       tags:
         - Guider
-      summary: Disconnect the guider
+      summary: Disconnect
       description: Disconnect the guider
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Guider disconnected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/guider/start:
     get:
       tags:
         - Guider
-      summary: Start guiding
+      summary: Start Guiding
       description: Start guiding
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Guiding started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Guider not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Guider not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/guider/stop:
     get:
       tags:
         - Guider
-      summary: Stop guiding
+      summary: Stop Guiding
       description: Stop guiding
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Guiding stopped
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Guider not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Guider not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/mount/info:
     get:
       tags:
         - Mount
-      summary: Get mount information
+      summary: Information
       description: Get mount information
       responses:
         "200":
@@ -590,50 +1557,150 @@ paths:
                 $ref: "#/components/schemas/MountInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/mount/connect:
     get:
       tags:
         - Mount
-      summary: Connect to mount
+      summary: Connect
       description: Connect to mount
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Mount connected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/mount/disconnect:
     get:
       tags:
         - Mount
-      summary: Disconnect the mount
+      summary: Disconnect
       description: Disconnect the mount
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Mount disconnected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/mount/home:
     get:
       tags:
         - Mount
-      summary: Home the mount
+      summary: Homing
       description: Home the mount
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Homing
+                      - Mount already homed
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Mount not connected / Mount parked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Mount not connected
+                      - Mount parked
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/mount/tracking:
     get:
       tags:
         - Mount
-      summary: Set tracking mode
+      summary: Tracking Mode
       description: Set tracking mode
       parameters:
         - in: query
@@ -648,44 +1715,183 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Tracking mode changed
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Mount not connected / Mount parked / Invalid tracking mode
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Mount not connected
+                      - Mount parked
+                      - Invalid tracking mode
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/mount/park:
     get:
       tags:
         - Mount
-      summary: Park the mount
+      summary: Parking
       description: Park the mount
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Parking
+                      - Mount already parked
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Mount not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Mount not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/mount/unpark:
     get:
       tags:
         - Mount
-      summary: Unpark the mount
+      summary: Unparking
       description: Unpark the mount
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Unparking
+                      - Mount not parked
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Mount not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Mount not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/rotator/info:
     get:
       tags:
         - Rotator
-      summary: Get rotator information
+      summary: Information
       description: Get rotator information
       responses:
         "200":
@@ -696,36 +1902,88 @@ paths:
                 $ref: "#/components/schemas/RotatorInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/rotator/connect:
     get:
       tags:
         - Rotator
-      summary: Connect to rotator
+      summary: Connect
       description: Connect to rotator
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Rotator connected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/rotator/disconnect:
     get:
       tags:
         - Rotator
-      summary: Disconnect the rotator
+      summary: Disconnect
       description: Disconnect the rotator
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Rotator disconnected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/rotator/move:
     get:
       tags:
         - Rotator
-      summary: Move the rotator
+      summary: Move
       description: Move the rotator
       parameters:
         - in: query
@@ -738,16 +1996,60 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Rotator move started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Rotator not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Rotator not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/rotator/move-mechanical:
     get:
       tags:
         - Rotator
-      summary: Move the rotator mechanically
+      summary: Move Mechanically
       description: Move the rotator mechanically
       parameters:
         - in: query
@@ -760,16 +2062,60 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Rotator move started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Rotator not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Rotator not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/safetymonitor/info:
     get:
       tags:
         - Safety Monitor
-      summary: Get safety monitor information
+      summary: Information
       description: Get safety monitor information
       responses:
         "200":
@@ -780,36 +2126,88 @@ paths:
                 $ref: "#/components/schemas/SafetyMonitorInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/safetymonitor/connect:
     get:
       tags:
         - Safety Monitor
-      summary: Connect to safety monitor
+      summary: Connect
       description: Connect to safety monitor
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Safetymonitor connected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/safetymonitor/disconnect:
     get:
       tags:
         - Safety Monitor
-      summary: Disconnect the safety monitor
+      summary: Disconnect
       description: Disconnect the safety monitor
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Safetymonitor disconnected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/switch/info:
     get:
       tags:
         - Switch
-      summary: Get switch information
+      summary: Information
       description: Get switch information
       responses:
         "200":
@@ -820,36 +2218,88 @@ paths:
                 $ref: "#/components/schemas/SwitchInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/switch/connect:
     get:
       tags:
         - Switch
-      summary: Connect to switch
+      summary: Connec
       description: Connect to switch
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Switch connected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/switch/disconnect:
     get:
       tags:
         - Switch
-      summary: Disconnect the switch
+      summary: Disconnect
       description: Disconnect the switch
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Switch disconnected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/switch/set:
     get:
       tags:
         - Switch
-      summary: Set switch value
+      summary: Set Value
       description: Set switch value
       parameters:
         - in: query
@@ -869,16 +2319,60 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Switch value updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Switch not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Switch not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/weather/info:
     get:
       tags:
         - Weather
-      summary: Get weather information
+      summary: Information
       description: Get weather information
       responses:
         "200":
@@ -889,41 +2383,93 @@ paths:
                 $ref: "#/components/schemas/WeatherInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/weather/connect:
     get:
       tags:
         - Weather
-      summary: Connect to weather source
+      summary: Connect
       description: Connect to weather source
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Weather connected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /equipment/weather/disconnect:
     get:
       tags:
         - Weather
-      summary: Disconnect the weather source
+      summary: Disconnect
       description: Disconnect the weather
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Weather disconnected
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /application/switch-tab:
     get:
       tags:
         - Application
-      summary: Switches the application tab
+      summary: Switch Tab
       description: Switches the application tab
       parameters:
         - in: query
           name: tab
-          description: The tab to switch to. Possible values&#58; equipment, skyatlas, framing, flatwizard, sequencer, imaging, options
+          description: The tab to switch to
           required: true
           schema:
             type: string
@@ -938,16 +2484,60 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Switched tab
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "400":
           description: Invalid application tab
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Invalid application tab
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /application/screenshot:
     get:
       tags:
         - Application
-      summary: Takes a screenshot
+      summary: Screenshot
       description: Takes a screenshot
       parameters:
         - in: query
@@ -979,14 +2569,38 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: "<base64 encoded image>"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /framing/info:
     get:
       tags:
         - Framing Assistant
-      summary: Get framing assistant information
+      summary: Information
       description: Get framing assistant information
       responses:
         "200":
@@ -997,12 +2611,16 @@ paths:
                 $ref: "#/components/schemas/FramingAssistantInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /framing/set-coordinates:
     get:
       tags:
         - Framing Assistant
-      summary: Set framing assistant coordinates
+      summary: Set Coordinates
       description: Set framing assistant coordinates. This requires the framing assistant to be initalized, which can by achieved by openening it once.
       parameters:
         - in: query
@@ -1022,14 +2640,38 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Coordinates updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /framing/slew:
     get:
       tags:
         - Framing Assistant
-      summary: Slew the mount to the current coordinates
+      summary: Slew
       description: Slew the mount to the current coordinates. This requires the framing assistant to be initalized, which can by achieved by openening it once.
       parameters:
         - in: query
@@ -1044,14 +2686,38 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Slew started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /framing/set-rotation:
     get:
       tags:
         - Framing Assistant
-      summary: Set framing assistant rotation
+      summary: Set Rotation
       description: Set framing assistant rotation. This requires the framing assistant to be initalized, which can by achieved by openening it once.
       parameters:
         - in: query
@@ -1064,14 +2730,38 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Rotation updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /image/{index}:
     get:
       tags:
         - Image
-      summary: Get image
+      summary: Get Image
       description: Get image
       parameters:
         - in: path
@@ -1110,14 +2800,60 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: "<base64 encoded image>"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Invalid image index
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Index out of range
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /image-history:
     get:
       tags:
         - Image
-      summary: Get image history
+      summary: Get Image History
       description: Get image history. Only one parameter is required
       parameters:
         - in: query
@@ -1142,14 +2878,40 @@ paths:
       responses:
         "200":
           description: Successful response
+        "400":
+          description: Invalid image index
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Index out of range
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /profile/show:
     get:
       tags:
         - Profile
-      summary: Shows the profile
+      summary: Show Profile
       description: Shows the profile
       parameters:
         - in: query
@@ -1167,12 +2929,16 @@ paths:
                 $ref: "#/components/schemas/ProfileInfo"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /profile/change-value:
     get:
       tags:
         - Profile
-      summary: Changes a value in the profile
+      summary: Change Profile Value
       description: Changes a value in the profile
       parameters:
         - in: query
@@ -1190,14 +2956,42 @@ paths:
       responses:
         "200":
           description: Successful response
+        "400":
+          description: Invalid path / Invalid value
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Invalid path
+                      - New value can't be null
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /profile/switch:
     get:
       tags:
         - Profile
-      summary: Switches the profile
+      summary: Switch Profile
       description: Switches the profile
       parameters:
         - in: query
@@ -1210,15 +3004,39 @@ paths:
         "200":
           description: Successful response
         "409":
-          description: No profile with specified id found!
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: No profile with specified id found!
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /sequence/json:
     get:
       tags:
         - Sequence
-      summary: Get sequence as json
+      summary: JSON
       description: Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized!
       responses:
         "200":
@@ -1229,14 +3047,40 @@ paths:
                 type: object
         "409":
           description: Sequencer not initialized / No DSO container found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Sequencer not initialized
+                      - No DSO container found
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /sequence/start:
     get:
       tags:
         - Sequence
-      summary: Start sequence
+      summary: Start
       description: Start sequence. This requires the sequencer to be initalized, which can be achieved by opening the tab once.
       parameters:
         - in: query
@@ -1248,33 +3092,103 @@ paths:
         "200":
           description: Successful response
         "409":
-          description: Sequencer not initialized
+          description: Sequence not initialized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Sequence isnot initialized
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /sequence/stop:
+    get:
+      tags:
+        - Sequence
+      summary: Stop
+      description: Stop sequence. This requires the sequencer to be initalized, which can be achieved by opening the tab once.
+      responses:
+        "200":
+          description: Successful response
+        "409":
+          description: Sequence not initialized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Sequence is not initialized
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /sequence/list-available:
     get:
       tags:
         - Sequence
-      summary: List available sequences.
+      summary: Available Targets
       description: List available sequences. This is currently not really useful as it is not possible to load sequences
       responses:
         "200":
           description: Successful response
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
   /event-history:
     get:
       tags:
         - Event Websocket
-      summary: Get event history
+      summary: Event History
       description: Get event history
       responses:
         "200":
           description: Successful response
         "500":
           description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
 
 components:
   schemas:
@@ -3539,3 +5453,22 @@ components:
           type: boolean
         Type:
           type: string
+
+    UnknownError:
+      type: object
+      properties:
+        Response:
+          type: string
+          example: ""
+        Error:
+          type: string
+          example: Unknown error
+        StatusCode:
+          type: integer
+          example: 500
+        Success:
+          type: boolean
+          example: false
+        Type:
+          type: string
+          example: "API"
