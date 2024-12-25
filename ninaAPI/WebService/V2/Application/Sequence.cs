@@ -36,6 +36,7 @@ using NINA.Sequencer.SequenceItem.Guider;
 using NINA.Sequencer.SequenceItem.Platesolving;
 using NINA.Sequencer.SequenceItem.Switch;
 using NINA.Sequencer.SequenceItem.Telescope;
+using System.IO;
 
 namespace ninaAPI.WebService.V2
 {
@@ -413,7 +414,18 @@ namespace ninaAPI.WebService.V2
                 IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
                 string sequenceFolder = profile.SequenceSettings.DefaultSequenceFolder;
 
-                response.Response = FileSystemHelper.GetFilesRecursively(sequenceFolder);
+                List<string> f = new List<string>();
+
+                string[] files = Directory.GetFiles(sequenceFolder);
+                foreach (string file in files)
+                {
+                    if (file.EndsWith(".json"))
+                    {
+                        f.Add(Path.GetFileNameWithoutExtension(file));
+                    }
+                }
+
+                response.Response = f;
             }
             catch (Exception ex)
             {

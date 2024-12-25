@@ -40,6 +40,7 @@ namespace ninaAPI.WebService.V2
                 {
                     result.Add(r.Response);
                 }
+                response.Response = result;
             }
             catch (Exception ex)
             {

@@ -16,7 +16,7 @@ channels:
       message:
         oneOf:
           - contentType: application/json
-            payload:
+            SimpleEvent:
               type: object
               properties:
                 Response:
@@ -70,7 +70,7 @@ channels:
                         - ERROR-AF
                         - ERROR-PLATESOLVE
           - contentType: application/json
-            payload:
+            ImageSaveEvent:
               type: object
               properties:
                 Response:
@@ -132,7 +132,7 @@ channels:
       message:
         oneOf:
           - contentType: application/json
-            payload:
+            ErrorEvent:
               type: object
               properties:
                 Response:
@@ -151,7 +151,7 @@ channels:
                 - Success
                 - Type
           - contentType: application/json
-            payload:
+            ActionFeedbackEvent:
               type: object
               properties:
                 Response:

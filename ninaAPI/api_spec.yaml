@@ -2878,6 +2878,65 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    oneOf:
+                      - type: integer
+                        example: 1
+                        minimum: 0
+                      - type: array
+                        items:
+                          type: object
+                          properties:
+                            ExposureTime:
+                              type: number
+                            Index:
+                              type: integer
+                            Filter:
+                              type: string
+                            RmsText:
+                              type: string
+                            Temperature:
+                              type: string
+                            CameraName:
+                              type: string
+                            Gain:
+                              type: integer
+                            Offset:
+                              type: integer
+                            Date:
+                              type: string
+                            TelescopeName:
+                              type: string
+                            FocalLength:
+                              type: number
+                            StDev:
+                              type: number
+                            Mean:
+                              type: number
+                            Median:
+                              type: number
+                            Stars:
+                              type: integer
+                            HFR:
+                              type: number
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "400":
           description: Invalid image index
           content:
@@ -2956,6 +3015,26 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Updated setting
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "400":
           description: Invalid path / Invalid value
           content:
@@ -3003,6 +3082,26 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Successfully switched profile
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Profile not found
           content:
@@ -3091,6 +3190,26 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Sequence started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Sequence not initialized
           content:
@@ -3103,7 +3222,7 @@ paths:
                     example: ""
                   Error:
                     type: string
-                    example: Sequence isnot initialized
+                    example: Sequence is not initialized
                   StatusCode:
                     type: integer
                     example: 409
@@ -3129,6 +3248,26 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Sequence stopped
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "409":
           description: Sequence not initialized
           content:
@@ -3162,11 +3301,32 @@ paths:
     get:
       tags:
         - Sequence
-      summary: Available Targets
+      summary: Available Sequences
       description: List available sequences. This is currently not really useful as it is not possible to load sequences
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: array
+                    items:
+                      type: string
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -3183,6 +3343,32 @@ paths:
       responses:
         "200":
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Event:
+                          type: string
+                        Time:
+                          type: string
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
           content:
