@@ -756,7 +756,7 @@ paths:
     get:
       tags:
         - Dome
-      summary: Stop Dome Shutter movement.
+      summary: Stop Shutter Movement
       description: Stop Dome Shutter movement. This only works if the dome movement was started using the API
       responses:
         "200":
@@ -1318,7 +1318,7 @@ paths:
     get:
       tags:
         - Focuser
-      summary: Get last autofocus
+      summary: Get Last Autofocus
       description: Get last autofocus
       responses:
         "200":
@@ -1638,7 +1638,7 @@ paths:
     get:
       tags:
         - Mount
-      summary: Homing
+      summary: Home
       description: Home the mount
       responses:
         "200":
@@ -1771,7 +1771,7 @@ paths:
     get:
       tags:
         - Mount
-      summary: Parking
+      summary: Park
       description: Park the mount
       responses:
         "200":
@@ -1831,7 +1831,7 @@ paths:
     get:
       tags:
         - Mount
-      summary: Unparking
+      summary: Unpark
       description: Unpark the mount
       responses:
         "200":
@@ -2227,7 +2227,7 @@ paths:
     get:
       tags:
         - Switch
-      summary: Connec
+      summary: Connect
       description: Connect to switch
       responses:
         "200":
@@ -2886,9 +2886,6 @@ paths:
                   Response:
                     type: string
                     oneOf:
-                      - type: integer
-                        example: 1
-                        minimum: 0
                       - type: array
                         items:
                           type: object
@@ -2925,6 +2922,10 @@ paths:
                               type: integer
                             HFR:
                               type: number
+                      - type: integer
+                        description: The number of images
+                        example: 1
+                        minimum: 0
                   Error:
                     type: string
                     example: ""
