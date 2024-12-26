@@ -116,7 +116,7 @@ channels:
                           type: number
 
   /tppa:
-    description: TPPA WebSocket channel
+    description: TPPA WebSocket channel. This requires TPPA >= v2.2.1.0
     publish:
       summary: Start or Stop TPPA
       message:
