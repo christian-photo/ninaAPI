@@ -1,4 +1,4 @@
-## 2.1 (not yet released, work in progress)
+## 2.1.0.0
 
 I **heavily** advise everyone still using V1 to start using V2 as V1 is now deprecated and will be removed with the next minor version!
 V2 will probably stay for a longer time now, I made some changes behind the scenes that will make it easier to add new features without breaking older versions.
