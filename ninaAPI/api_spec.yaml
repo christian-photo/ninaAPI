@@ -3642,8 +3642,19 @@ components:
               type: string
             DeviceId:
               type: string
-            CanSetFilter:
+            IsMoving:
               type: boolean
+            SupportedActions:
+              type: array
+              items:
+                type: string
+            SelectedFilter:
+              type: object
+              properties:
+                Name:
+                  type: string
+                Id:
+                  type: integer
             AvailableFilters:
               type: array
               items:

@@ -19,6 +19,7 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -35,6 +36,9 @@ namespace ninaAPI.WebService.V2
             DriverInfo = inf.DriverInfo;
             DriverVersion = inf.DriverVersion;
             DeviceId = inf.DeviceId;
+            SupportedActions = inf.SupportedActions;
+            IsMoving = inf.IsMoving;
+            SelectedFilter = new FInfo { Name = inf.SelectedFilter.Name, Id = inf.SelectedFilter.Position };
             AvailableFilters = filters;
         }
 
@@ -45,7 +49,10 @@ namespace ninaAPI.WebService.V2
         public string DriverInfo { get; set; }
         public string DriverVersion { get; set; }
         public string DeviceId { get; set; }
-        public bool CanSetFilter { get; set; }
+        public IList<string> SupportedActions { get; set; }
+        public bool IsMoving { get; set; }
+        public FInfo SelectedFilter { get; set; }
+
 
         public FInfo[] AvailableFilters { get; set; }
     }
