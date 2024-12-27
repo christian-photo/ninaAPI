@@ -16,7 +16,8 @@ channels:
       message:
         oneOf:
           - contentType: application/json
-            SimpleEvent:
+            title: Simple Event Response
+            payload:
               type: object
               properties:
                 Response:
@@ -69,8 +70,20 @@ channels:
                         - ADV-SEQ-STOP
                         - ERROR-AF
                         - ERROR-PLATESOLVE
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
           - contentType: application/json
-            ImageSaveEvent:
+            title: Image Save Response
+            payload:
               type: object
               properties:
                 Response:
@@ -114,9 +127,20 @@ channels:
                           type: number
                         HFR:
                           type: number
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
 
   /tppa:
-    description: TPPA WebSocket channel. This requires TPPA >= v2.2.1.0
+    description: TPPA WebSocket channel
     publish:
       summary: Start or Stop TPPA
       message:
@@ -132,7 +156,8 @@ channels:
       message:
         oneOf:
           - contentType: application/json
-            ErrorEvent:
+            title: Alignment Error Response
+            payload:
               type: object
               properties:
                 Response:
@@ -144,6 +169,17 @@ channels:
                       type: number
                     TotalError:
                       type: number
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
               required:
                 - Response
                 - Error
@@ -151,7 +187,8 @@ channels:
                 - Success
                 - Type
           - contentType: application/json
-            ActionFeedbackEvent:
+            title: Process Confirmation Response
+            payload:
               type: object
               properties:
                 Response:
@@ -159,6 +196,17 @@ channels:
                   enum:
                     - "started procedure"
                     - "stopped procedure"
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
               required:
                 - Response
                 - Error

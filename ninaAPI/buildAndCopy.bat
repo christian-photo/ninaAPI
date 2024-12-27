@@ -6,6 +6,9 @@ cd nina.plugin.manifests
 git pull
 git pull https://AstroChris23@bitbucket.org/Isbeorn/nina.plugin.manifests.git
 copy ..\ninaAPI\ninaAPI\manifest.json manifests\n\ninaAPI\3.0.0\manifest.json
+echo "Please finish the manifest and upload the file"
+pause
+node gather
 pause
 set /p "version=Enter Version: "
 git add manifests\n\ninaAPI\3.0.0\*
