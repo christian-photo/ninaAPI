@@ -121,7 +121,7 @@ paths:
             type: boolean
         - in: query
           name: minutes
-          description: The minimum duration to cool the camera.
+          description: The minimum duration to cool the camera. -1 for default duration
           required: false
           schema:
             type: number
@@ -191,7 +191,7 @@ paths:
       parameters:
         - in: query
           name: minutes
-          description: The minimum duration to warm the camera.
+          description: The minimum duration to warm the camera. -1 for default duration
           required: false
           schema:
             type: number
