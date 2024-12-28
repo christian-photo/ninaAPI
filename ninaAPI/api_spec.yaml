@@ -1991,8 +1991,7 @@ paths:
           description: The position to move to
           required: true
           schema:
-            type: integer
-            format: int32
+            type: number
       responses:
         "200":
           description: Successful response
@@ -2057,8 +2056,7 @@ paths:
           description: The position to move to
           required: true
           schema:
-            type: integer
-            format: int32
+            type: number
       responses:
         "200":
           description: Successful response
@@ -3675,8 +3673,6 @@ components:
             - DriverInfo
             - DriverVersion
             - DeviceId
-            - CanSetFilter
-            - AvailableFilters
         Error:
           type: string
         StatusCode:

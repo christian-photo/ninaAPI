@@ -38,7 +38,8 @@ namespace ninaAPI.WebService.V2
             DeviceId = inf.DeviceId;
             SupportedActions = inf.SupportedActions;
             IsMoving = inf.IsMoving;
-            SelectedFilter = new FInfo { Name = inf.SelectedFilter.Name, Id = inf.SelectedFilter.Position };
+            if (inf.Connected && inf.SelectedFilter != null)
+                SelectedFilter = new FInfo { Name = inf.SelectedFilter?.Name, Id = inf.SelectedFilter.Position };
             AvailableFilters = filters;
         }
 

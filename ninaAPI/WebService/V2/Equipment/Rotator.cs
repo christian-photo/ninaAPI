@@ -108,7 +108,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/rotator/move")]
-        public void RotatorMove([QueryField] int position)
+        public void RotatorMove([QueryField] float position)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
@@ -136,7 +136,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/rotator/move-mechanical")]
-        public void RotatorMoveMechanical([QueryField] int position)
+        public void RotatorMoveMechanical([QueryField] float position)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
