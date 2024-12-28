@@ -21,8 +21,10 @@ The documentation for the [api](https://bump.sh/christian-photo/doc/advanced-api
 - Autofocus can be cancelled (only if it was started using the api)
 - Add telescope homing and tracking modes
 - Add camera cooling, warming and dew heater control
+- Add TargetTemp and AtTargetTemp to CameraInfo
 - Added a gain field to capture
 - A lot more events in the websocket, see the documentation for a list of all events
 - GuiderInfo now includes the last guide step with raw distance
 - The Sequence json is now more sophisticated with additional fields for most sequence items
 - When retrieving images, you can now specify `scale` (0.1 to 1) to scale the image down while preserving its aspect ratio
+
