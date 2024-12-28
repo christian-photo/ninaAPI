@@ -190,6 +190,13 @@ paths:
       description: This endpoint warms the camera.
       parameters:
         - in: query
+          name: minutes
+          description: The minimum duration to warm the camera.
+          required: false
+          schema:
+            type: number
+            format: double
+        - in: query
           name: cancel
           description: Whether to cancel the warming process.
           required: false
@@ -3383,6 +3390,10 @@ components:
         Response:
           type: object
           properties:
+            TargetTemp:
+              type: number
+            AtTargetTemp:
+              type: boolean
             CanSetTemperature:
               type: boolean
             HasShutter:

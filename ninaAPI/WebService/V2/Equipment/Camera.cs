@@ -26,6 +26,7 @@ using NINA.PlateSolving;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
 using NINA.Core.Utility;
+using NINA.Equipment.Equipment.MyCamera;
 
 namespace ninaAPI.WebService.V2
 {
@@ -33,6 +34,84 @@ namespace ninaAPI.WebService.V2
     {
         public string Image { get; set; }
         public PlateSolveResult PlateSolveResult { get; set; }
+    }
+
+    class CameraInfoResponse : CameraInfo
+    {
+        public static CameraInfoResponse FromCam(ICameraMediator cam)
+        {
+            return new CameraInfoResponse()
+            {
+                Connected = cam.GetInfo().Connected,
+                CanSetTemperature = cam.GetInfo().CanSetTemperature,
+                HasDewHeater = cam.GetInfo().HasDewHeater,
+                IsExposing = cam.GetInfo().IsExposing,
+                PixelSize = cam.GetInfo().PixelSize,
+                BinX = cam.GetInfo().BinX,
+                BinY = cam.GetInfo().BinY,
+                Battery = cam.GetInfo().Battery,
+                Offset = cam.GetInfo().Offset,
+                OffsetMin = cam.GetInfo().OffsetMin,
+                OffsetMax = cam.GetInfo().OffsetMax,
+                DefaultOffset = cam.GetInfo().DefaultOffset,
+                USBLimit = cam.GetInfo().USBLimit,
+                USBLimitMin = cam.GetInfo().USBLimitMin,
+                USBLimitMax = cam.GetInfo().USBLimitMax,
+                DefaultGain = cam.GetInfo().DefaultGain,
+                GainMin = cam.GetInfo().GainMin,
+                GainMax = cam.GetInfo().GainMax,
+                CanSetGain = cam.GetInfo().CanSetGain,
+                Gains = cam.GetInfo().Gains,
+                CoolerOn = cam.GetInfo().CoolerOn,
+                CoolerPower = cam.GetInfo().CoolerPower,
+                HasShutter = cam.GetInfo().HasShutter,
+                Temperature = cam.GetInfo().Temperature,
+                TemperatureSetPoint = cam.GetInfo().TemperatureSetPoint,
+                ReadoutModes = cam.GetInfo().ReadoutModes,
+                ReadoutMode = cam.GetInfo().ReadoutMode,
+                ReadoutModeForSnapImages = cam.GetInfo().ReadoutModeForSnapImages,
+                ReadoutModeForNormalImages = cam.GetInfo().ReadoutModeForNormalImages,
+                IsSubSampleEnabled = cam.GetInfo().IsSubSampleEnabled,
+                SubSampleX = cam.GetInfo().SubSampleX,
+                SubSampleY = cam.GetInfo().SubSampleY,
+                SubSampleWidth = cam.GetInfo().SubSampleWidth,
+                SubSampleHeight = cam.GetInfo().SubSampleHeight,
+                ExposureMax = cam.GetInfo().ExposureMax,
+                ExposureMin = cam.GetInfo().ExposureMin,
+                LiveViewEnabled = cam.GetInfo().LiveViewEnabled,
+                CanShowLiveView = cam.GetInfo().CanShowLiveView,
+                SupportedActions = cam.GetInfo().SupportedActions,
+                CanSetUSBLimit = cam.GetInfo().CanSetUSBLimit,
+                Name = cam.GetInfo().Name,
+                DisplayName = cam.GetInfo().DisplayName,
+                DeviceId = cam.GetInfo().DeviceId,
+                BayerOffsetX = cam.GetInfo().BayerOffsetX,
+                BayerOffsetY = cam.GetInfo().BayerOffsetY,
+                BinningModes = cam.GetInfo().BinningModes,
+                BitDepth = cam.GetInfo().BitDepth,
+                CameraState = cam.GetInfo().CameraState,
+                XSize = cam.GetInfo().XSize,
+                YSize = cam.GetInfo().YSize,
+                CanGetGain = cam.GetInfo().CanGetGain,
+                CanSetOffset = cam.GetInfo().CanSetOffset,
+                CanSubSample = cam.GetInfo().CanSubSample,
+                Description = cam.GetInfo().Description,
+                DewHeaterOn = cam.GetInfo().DewHeaterOn,
+                DriverInfo = cam.GetInfo().DriverInfo,
+                DriverVersion = cam.GetInfo().DriverVersion,
+                ElectronsPerADU = cam.GetInfo().ElectronsPerADU,
+                ExposureEndTime = cam.GetInfo().ExposureEndTime,
+                LastDownloadTime = cam.GetInfo().LastDownloadTime,
+                SensorType = cam.GetInfo().SensorType,
+                Gain = cam.GetInfo().Gain,
+                offsetMax = cam.GetInfo().offsetMax,
+                offsetMin = cam.GetInfo().offsetMin,
+                TargetTemp = cam.TargetTemp,
+                AtTargetTemp = cam.AtTargetTemp,
+            };
+        }
+        public double TargetTemp { get; set; }
+        public bool AtTargetTemp { get; set; }
     }
 
     public partial class ControllerV2
@@ -60,7 +139,8 @@ namespace ninaAPI.WebService.V2
             try
             {
                 ICameraMediator cam = AdvancedAPI.Controls.Camera;
-                response.Response = cam.GetInfo();
+                CameraInfoResponse info = CameraInfoResponse.FromCam(cam);
+                response.Response = info;
             }
             catch (Exception ex)
             {
@@ -151,7 +231,7 @@ namespace ninaAPI.WebService.V2
                     {
                         CameraCoolToken?.Cancel();
                         CameraCoolToken = new CancellationTokenSource();
-                        cam.CoolCamera(temperature, TimeSpan.FromMinutes(minutes), AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCoolToken.Token);
+                        cam.CoolCamera(temperature, TimeSpan.FromMinutes(minutes == -1 ? AdvancedAPI.Controls.Profile.ActiveProfile.CameraSettings.CoolingDuration : minutes), AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCoolToken.Token);
                         response.Response = "Cooling started";
                     }
                 }
@@ -166,7 +246,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/camera/warm")]
-        public void CameraWarm([QueryField] bool cancel)
+        public void CameraWarm([QueryField] bool cancel, [QueryField] double minutes)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
@@ -194,7 +274,7 @@ namespace ninaAPI.WebService.V2
                     {
                         CameraCoolToken?.Cancel();
                         CameraCoolToken = new CancellationTokenSource();
-                        cam.WarmCamera(TimeSpan.Zero, AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCoolToken.Token);
+                        cam.WarmCamera(TimeSpan.FromMinutes(minutes == -1 ? AdvancedAPI.Controls.Profile.ActiveProfile.CameraSettings.WarmingDuration : minutes), AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCoolToken.Token);
                         response.Response = "Warming started";
                     }
                 }
