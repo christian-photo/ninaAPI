@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 [assembly: Guid("48b5bc05-f0d3-465e-a233-e2fe77d6e1a6")]
 
 // [MANDATORY] The assembly versioning
-//Should be incremented for each new release build of a plugin
-[assembly: AssemblyVersion("2.1.0.0")]
-[assembly: AssemblyFileVersion("2.1.0.0")]
+//Should be incremented for each new build of a plugin
+[assembly: AssemblyVersion("2.1.0.2")]
+[assembly: AssemblyFileVersion("2.1.0.2")]
 
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]

@@ -140,7 +140,7 @@ channels:
                   example: "Socket"
 
   /tppa:
-    description: TPPA WebSocket channel
+    description: TPPA WebSocket channel. To use this channel, TPPA >= 2.2.0.0 must be installed.
     publish:
       summary: Start or Stop TPPA
       message:

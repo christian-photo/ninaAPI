@@ -114,18 +114,18 @@ paths:
             type: number
             format: double
         - in: query
+          name: minutes
+          description: The minimum duration to cool the camera. -1 for default duration
+          required: true
+          schema:
+            type: number
+            format: double
+        - in: query
           name: cancel
           description: Whether to cancel the cooling process.
           required: false
           schema:
             type: boolean
-        - in: query
-          name: minutes
-          description: The minimum duration to cool the camera. -1 for default duration
-          required: false
-          schema:
-            type: number
-            format: double
       responses:
         "200":
           description: Successful response
@@ -192,7 +192,7 @@ paths:
         - in: query
           name: minutes
           description: The minimum duration to warm the camera. -1 for default duration
-          required: false
+          required: true
           schema:
             type: number
             format: double
