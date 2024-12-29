@@ -8,8 +8,8 @@ if "%beta%" == "y" (
     pwsh.exe CreateNET7Manifest.ps1 -file "C:\Users\Christian\AppData\Local\NINA\Plugins\3.0.0\Advanced API\ninaAPI.dll" -includeAll -createArchive -beta -installerUrl "https://github.com/christian-photo/ninaAPI/releases/download/%version%-b.%b%/ninaAPI.zip"
     gh release create "%version%-b.%b%" -t "ninaAPI %version%-beta %b%" -p -R christian-photo/ninaAPI ninaAPI.zip
 ) ELSE (
+    pwsh.exe CreateNET7Manifest.ps1 -file "C:\Users\Christian\AppData\Local\NINA\Plugins\3.0.0\Advanced API\ninaAPI.dll" -includeAll -createArchive -installerUrl "https://github.com/christian-photo/ninaAPI/releases/download/%version%/ninaAPI.zip"
     gh release create %version% -t "ninaAPI %version%" -R christian-photo/ninaAPI ninaAPI.zip
-    pwsh.exe CreateNET7Manifest.ps1 -file ninaAPI.zip -installerUrl "https://github.com/christian-photo/ninaAPI/releases/download/%version%/ninaAPI.zip"
 )
 cd ..
 cd ..
