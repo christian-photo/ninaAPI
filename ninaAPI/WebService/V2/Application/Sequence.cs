@@ -37,6 +37,9 @@ using NINA.Sequencer.SequenceItem.Platesolving;
 using NINA.Sequencer.SequenceItem.Switch;
 using NINA.Sequencer.SequenceItem.Telescope;
 using System.IO;
+using System.Security.Policy;
+using NINA.Sequencer;
+using System.Linq;
 
 namespace ninaAPI.WebService.V2
 {
@@ -65,7 +68,9 @@ namespace ninaAPI.WebService.V2
                     }
                     else
                     {
-                        response.Response = getSequenceRecursivley(targets[0].Parent.Parent);
+                        List<Hashtable> json = getSequenceRecursivley(targets[0].Parent.Parent);
+                        json.Add(new Hashtable() { { "GlobalTriggers", getTriggers(targets[0].Parent.Parent as SequenceContainer) } }); // Global triggers
+                        response.Response = json;
                     }
                 }
             }
@@ -78,9 +83,104 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        private static List<Hashtable> getConditions(SequenceContainer sequence)
+        {
+            List<Hashtable> conditions = new List<Hashtable>();
+            foreach (var condition in sequence.Conditions)
+            {
+                Hashtable ctable = new Hashtable
+                {
+                    { "Name", condition.Name + "_Condition" },
+                    { "Status", condition.Status.ToString() }
+                };
+                if (condition is TimeCondition c1)
+                {
+                    ctable.Add("RemainingTime", c1.RemainingTime);
+                    ctable.Add("TargetTime", c1.DateTime.Now + c1.RemainingTime);
+                }
+                else if (condition is LoopForAltitudeBase c2)
+                {
+                    ctable.Add("Altitude", c2.Data.Offset);
+                    ctable.Add("CurrentAltitude", c2.Data.CurrentAltitude);
+                    ctable.Add("ExpectedTime", c2.Data.ExpectedTime);
+                }
+                else if (condition is LoopCondition c3)
+                {
+                    ctable.Add("Iterations", c3.Iterations);
+                    ctable.Add("CompletedIterations", c3.CompletedIterations);
+                }
+                else if (condition is MoonIlluminationCondition c5)
+                {
+                    ctable.Add("TargetIllumination", c5.UserMoonIllumination);
+                    ctable.Add("CurrentIllumination", c5.CurrentMoonIllumination);
+                }
+                else if (condition is TimeSpanCondition c6)
+                {
+                    ctable.Add("RemainingTime", c6.RemainingTime);
+                    ctable.Add("TargetTime", c6.DateTime.Now + c6.RemainingTime);
+                }
+                conditions.Add(ctable);
+
+            }
+            return conditions;
+        }
+
+        private static List<Hashtable> getTriggers(SequenceContainer sequence)
+        {
+            List<Hashtable> triggers = new List<Hashtable>();
+            foreach (var trigger in sequence.Triggers)
+            {
+                Hashtable triggertable = new Hashtable
+                {
+                    { "Name", trigger.Name + "_Trigger" },
+                    { "Status", trigger.Status.ToString() }
+                };
+                if (trigger is AutofocusAfterExposures t1)
+                {
+                    triggertable.Add("Exposures", t1.ProgressExposures);
+                    triggertable.Add("DeltaExposures", t1.AfterExposures);
+                }
+                else if (trigger is AutofocusAfterHFRIncreaseTrigger t2)
+                {
+                    triggertable.Add("HFRTrendPercentage", t2.HFRTrendPercentage);
+                    triggertable.Add("OriginalHFR", t2.OriginalHFR);
+                    triggertable.Add("SampleSize", t2.SampleSize);
+                    triggertable.Add("DeltaHFR", t2.Amount);
+                }
+                else if (trigger is AutofocusAfterTemperatureChangeTrigger t3)
+                {
+                    triggertable.Add("DeltaTemperature", t3.DeltaT);
+                    triggertable.Add("TargetTemperature", t3.Amount);
+                }
+                else if (trigger is AutofocusAfterTimeTrigger t4)
+                {
+                    triggertable.Add("DeltaTime", t4.Amount);
+                    triggertable.Add("ElapsedTime", t4.Elapsed);
+                }
+                else if (trigger is DitherAfterExposures t5)
+                {
+                    triggertable.Add("Exposures", t5.ProgressExposures);
+                    triggertable.Add("TargetExposures", t5.AfterExposures);
+                }
+                else if (trigger is MeridianFlipTrigger t6)
+                {
+                    triggertable.Add("TimeToFlip", t6.TimeToMeridianFlip);
+                }
+                else if (trigger is CenterAfterDriftTrigger t7)
+                {
+                    triggertable.Add("Coordinates", t7.Coordinates);
+                    triggertable.Add("Drift", t7.LastDistanceArcMinutes);
+                    triggertable.Add("TargetDrift", t7.DistanceArcMinutes);
+                }
+                triggers.Add(triggertable);
+            }
+            return triggers;
+        }
+
         private static List<Hashtable> getSequenceRecursivley(ISequenceContainer sequence)
         {
             List<Hashtable> result = new List<Hashtable>();
+
             foreach (var item in sequence.Items)
             {
                 Hashtable it = new Hashtable
@@ -90,83 +190,17 @@ namespace ninaAPI.WebService.V2
                     // { "Description", item.Description }
                 };
 
-                if (item is ISequenceTrigger t)
-                {
-                    it["Name"] = item.Name + "_Trigger";
-                }
-                else if (item is ISequenceCondition c)
-                {
-                    it["Name"] = item.Name + "_Condition";
-                }
-                else if (item is ISequenceContainer container && item is not SmartExposure && item is not TakeManyExposures)
+                if (item is ISequenceContainer container && item is not SmartExposure && item is not TakeManyExposures)
                 {
                     it["Name"] = item.Name + "_Container";
                     it.Add("Items", getSequenceRecursivley(container));
+                    if (container is SequenceContainer sc)
+                    {
+                        it.Add("Conditions", getConditions(sc));
+                        it.Add("Triggers", getTriggers(sc));
+                    }
                 }
 
-                if (item is AutofocusAfterExposures trigger)
-                {
-                    it.Add("Exposures", trigger.ProgressExposures);
-                    it.Add("DeltaExposures", trigger.AfterExposures);
-                }
-                else if (item is AutofocusAfterHFRIncreaseTrigger t2)
-                {
-                    it.Add("HFRTrendPercentage", t2.HFRTrendPercentage);
-                    it.Add("OriginalHFR", t2.OriginalHFR);
-                    it.Add("SampleSize", t2.SampleSize);
-                    it.Add("DeltaHFR", t2.Amount);
-                }
-                else if (item is AutofocusAfterTemperatureChangeTrigger t3)
-                {
-                    it.Add("DeltaTemperature", t3.DeltaT);
-                    it.Add("TargetTemperature", t3.Amount);
-                }
-                else if (item is AutofocusAfterTimeTrigger t4)
-                {
-                    it.Add("DeltaTime", t4.Amount);
-                    it.Add("ElapsedTime", t4.Elapsed);
-                }
-                else if (item is DitherAfterExposures t5)
-                {
-                    it.Add("Exposures", t5.ProgressExposures);
-                    it.Add("TargetExposures", t5.AfterExposures);
-                }
-                else if (item is MeridianFlipTrigger t6)
-                {
-                    it.Add("TimeToFlip", t6.TimeToMeridianFlip);
-                }
-                else if (item is CenterAfterDriftTrigger t7)
-                {
-                    it.Add("Coordinates", t7.Coordinates);
-                    it.Add("Drift", t7.LastDistanceArcMinutes);
-                    it.Add("TargetDrift", t7.DistanceArcMinutes);
-                }
-                else if (item is TimeCondition c1)
-                {
-                    it.Add("RemainingTime", c1.RemainingTime);
-                    it.Add("DateTime", c1.DateTime);
-                }
-                else if (item is LoopForAltitudeBase c2)
-                {
-                    it.Add("Altitude", c2.Data.Offset);
-                    it.Add("CurrentAltitude", c2.Data.CurrentAltitude);
-                    it.Add("ExpectedTime", c2.Data.ExpectedTime);
-                }
-                else if (item is LoopCondition c3)
-                {
-                    it.Add("Iterations", c3.Iterations);
-                    it.Add("CompletedIterations", c3.CompletedIterations);
-                }
-                else if (item is MoonIlluminationCondition c5)
-                {
-                    it.Add("TargetIllumination", c5.UserMoonIllumination);
-                    it.Add("CurrentIllumination", c5.CurrentMoonIllumination);
-                }
-                else if (item is TimeSpanCondition c6)
-                {
-                    it.Add("RemainingTime", c6.RemainingTime);
-                    it.Add("DateTime", c6.DateTime);
-                }
                 else if (item is CoolCamera i1)
                 {
                     it.Add("Temperature", i1.Temperature);
@@ -302,7 +336,8 @@ namespace ninaAPI.WebService.V2
                 }
                 else if (item is WaitForTime i26)
                 {
-                    it.Add("Time", i26.DateTime);
+                    it.Add("TargetTime", i26.DateTime.Now + i26.GetEstimatedDuration());
+                    it.Add("CalculatedWaitDuration", i26.GetEstimatedDuration());
                 }
                 else if (item is WaitForTimeSpan i27)
                 {

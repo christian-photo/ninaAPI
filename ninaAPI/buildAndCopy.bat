@@ -16,6 +16,7 @@ cd ..
 cd nina.plugin.manifests
 git pull
 git pull https://AstroChris23@bitbucket.org/Isbeorn/nina.plugin.manifests.git
+mkdir manifests\n\ninaAPI\3.0.0\%version%
 copy ..\ninaAPI\ninaAPI\manifest.json manifests\n\ninaAPI\3.0.0\%version%\manifest.json
 echo "Testing the manifest"
 node gather
