@@ -4280,7 +4280,7 @@ components:
             SiteLongitude:
               type: number
             SiteElevation:
-              type: integer
+              type: number
             RightAscensionString:
               type: string
             DeclinationString:
@@ -4319,7 +4319,7 @@ components:
                 - Epoch
                 - DateTime
             TimeToMeridianFlip:
-              type: integer
+              type: number
             SideOfPier:
               type: integer
               description: 0&#58; East, 1&#58; West, -1&#58; Unknown
@@ -5654,10 +5654,54 @@ components:
           type: string
         StatusCode:
           type: integer
+          example: 200
         Success:
           type: boolean
+          example: true
         Type:
           type: string
+          example: "API"
+
+    SequenceBaseJson:
+      type: object
+      properties:
+        Response:
+          type: array
+          items:
+            oneOf:
+              - type: object
+                properties:
+                  Conditions:
+                    type: array
+                    items: {}
+                  Items:
+                    type: array
+                    items: {}
+                    description: Contains sequence instructions as well as containers
+                  Triggers:
+                    type: array
+                    items: {}
+                  Status:
+                    type: string
+                  Name:
+                    type: string
+              - type: object
+                properties:
+                  GlobalTriggers:
+                    type: array
+                    items: {}
+        Error:
+          type: string
+          example: ""
+        StatusCode:
+          type: integer
+          example: 200
+        Success:
+          type: boolean
+          example: true
+        Type:
+          type: string
+          example: "API"
 
     UnknownError:
       type: object
