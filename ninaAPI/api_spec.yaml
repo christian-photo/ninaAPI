@@ -3149,7 +3149,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: "#/components/schemas/SequenceBaseJson"
         "409":
           description: Sequencer not initialized / No DSO container found
           content:
