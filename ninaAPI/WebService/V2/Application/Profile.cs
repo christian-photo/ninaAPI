@@ -92,7 +92,7 @@ namespace ninaAPI.WebService.V2
                 WeatherDataSettings = profile.WeatherDataSettings,
                 SnapShotControlSettings = profile.SnapShotControlSettings,
                 SafetyMonitorSettings = profile.SafetyMonitorSettings,
-                PluginSettings = profile.PluginSettings,
+                // PluginSettings = profile.PluginSettings,
                 AlpacaSettings = profile.AlpacaSettings,
                 ImageHistorySettings = profile.ImageHistorySettings
             };
@@ -125,7 +125,7 @@ namespace ninaAPI.WebService.V2
         public IWeatherDataSettings WeatherDataSettings { get; set; }
         public ISnapShotControlSettings SnapShotControlSettings { get; set; }
         public ISafetyMonitorSettings SafetyMonitorSettings { get; set; }
-        public IPluginSettings PluginSettings { get; set; }
+        // public IPluginSettings PluginSettings { get; set; }, only provides methods
         public IAlpacaSettings AlpacaSettings { get; set; }
         public IImageHistorySettings ImageHistorySettings { get; set; }
     }

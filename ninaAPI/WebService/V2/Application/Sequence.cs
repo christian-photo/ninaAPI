@@ -409,6 +409,43 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        [Route(HttpVerbs.Get, "/sequence/reset")]
+        public void SequenceReset()
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
+
+                if (!sequence.Initialized)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence is not initialized", 409));
+                }
+                else
+                {
+                    IList<IDeepSkyObjectContainer> targets = sequence.GetAllTargets();
+                    if (targets.Count == 0)
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("No DSO Container found", 409));
+                    }
+                    else
+                    {
+                        targets[0].Parent.Parent.ResetAll();
+                        response.Response = "Sequence reset";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/sequence/load")]
         public void SequenceLoad([QueryField] string sequencename)
         {
