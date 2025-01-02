@@ -84,7 +84,7 @@ namespace ninaAPI.WebService.V2
 
         // Framing Assistant View needs to have benn opened once before to be initialized
         [Route(HttpVerbs.Get, "/framing/set-coordinates")]
-        public async Task FramingSetCoordinates([QueryField] double RAangle, [QueryField] double DECangle)
+        public void FramingSetCoordinates([QueryField] double RAangle, [QueryField] double DECangle)
         {
             Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
@@ -93,7 +93,7 @@ namespace ninaAPI.WebService.V2
             {
                 IFramingAssistantVM framing = AdvancedAPI.Controls.FramingAssistant;
 
-                await framing.SetCoordinates(new DeepSkyObject(string.Empty, new Coordinates(Angle.ByDegree(RAangle), Angle.ByDegree(DECangle), Epoch.J2000), string.Empty, null));
+                framing.SetCoordinates(new DeepSkyObject(string.Empty, new Coordinates(Angle.ByDegree(RAangle), Angle.ByDegree(DECangle), Epoch.J2000), string.Empty, null));
                 response.Response = "Coordinates updated";
             }
             catch (Exception ex)
