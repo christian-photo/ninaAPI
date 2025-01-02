@@ -61,6 +61,8 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
+                    // Could use reflection as well, however that would be a total of 4 properties to get via reflection
+                    // and that would be a bit too much uncertainty imo. So we have to wait until NINA implements an api for that
                     IList<IDeepSkyObjectContainer> targets = Sequence.GetAllTargets();
                     if (targets.Count == 0)
                     {
@@ -363,6 +365,10 @@ namespace ninaAPI.WebService.V2
                 if (!sequence.Initialized)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Sequence is not initialized", 409));
+                }
+                else if (sequence.IsAdvancedSequenceRunning())
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence is already running", 409));
                 }
                 else
                 {

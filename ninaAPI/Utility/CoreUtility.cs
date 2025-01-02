@@ -220,8 +220,8 @@ namespace ninaAPI.Utility
 
     public class HttpResponse
     {
-        public static string TypeAPI = "API";
-        public static string TypeSocket = "Socket";
+        public const string TypeAPI = "API";
+        public const string TypeSocket = "Socket";
 
         public object Response { get; set; } = string.Empty;
         public string Error { get; set; } = string.Empty;

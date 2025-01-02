@@ -3217,7 +3217,7 @@ paths:
                     type: string
                     example: "API"
         "409":
-          description: Sequence not initialized
+          description: Sequence not initialized / Sequence already running
           content:
             application/json:
               schema:
@@ -3228,7 +3228,9 @@ paths:
                     example: ""
                   Error:
                     type: string
-                    example: Sequence is not initialized
+                    enum:
+                      - Sequence is not initialized
+                      - Sequence is already running
                   StatusCode:
                     type: integer
                     example: 409
