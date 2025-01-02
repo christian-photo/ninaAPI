@@ -9,7 +9,6 @@
 
 #endregion "copyright"
 
-using Accord.Imaging.Filters;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;

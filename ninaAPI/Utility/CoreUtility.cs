@@ -28,6 +28,7 @@ using System.Windows.Media.Imaging;
 using ninaAPI.WebService;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Xceed.Wpf.Toolkit.Core.Converters;
 
 namespace ninaAPI.Utility
 {
@@ -162,6 +163,11 @@ namespace ninaAPI.Utility
             {
                 writer.Write(text);
             }
+        }
+
+        public static bool IsParameterOmitted(this IHttpContext context, string parameter)
+        {
+            return !context.Request.QueryString.AllKeys.Contains(parameter);
         }
 
         public static object CastString(this string str, Type type)

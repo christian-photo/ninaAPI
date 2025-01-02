@@ -81,7 +81,7 @@ namespace ninaAPI.WebService.V2
             HttpResponse Event = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", eventName }, { "Time", time } } };
             Events.Add(Event);
 
-            await instance.Send(response);
+            await instance?.Send(response);
         }
 
 
@@ -137,7 +137,7 @@ namespace ninaAPI.WebService.V2
 
         protected override Task OnClientConnectedAsync(IWebSocketContext context)
         {
-            Logger.Debug("WebSocket connected " + context.RemoteEndPoint.ToString());
+            Logger.Info("WebSocket connected " + context.RemoteEndPoint.ToString());
             return Task.CompletedTask;
         }
 
@@ -145,7 +145,7 @@ namespace ninaAPI.WebService.V2
         {
             foreach (IWebSocketContext context in ActiveContexts)
             {
-                Logger.Debug("Sending to " + context.RemoteEndPoint.ToString());
+                Logger.Trace("Sending to " + context.RemoteEndPoint.ToString());
                 await SendAsync(context, JsonConvert.SerializeObject(payload));
             }
         }

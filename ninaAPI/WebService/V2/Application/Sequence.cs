@@ -21,7 +21,6 @@ using NINA.Sequencer.Container;
 using System.Collections;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.Trigger.Autofocus;
-using NINA.Sequencer.Trigger;
 using NINA.Sequencer.Conditions;
 using NINA.Sequencer.SequenceItem.Utility;
 using NINA.Sequencer.Trigger.Guider;
@@ -37,9 +36,6 @@ using NINA.Sequencer.SequenceItem.Platesolving;
 using NINA.Sequencer.SequenceItem.Switch;
 using NINA.Sequencer.SequenceItem.Telescope;
 using System.IO;
-using System.Security.Policy;
-using NINA.Sequencer;
-using System.Linq;
 
 namespace ninaAPI.WebService.V2
 {
