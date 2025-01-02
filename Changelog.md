@@ -13,6 +13,7 @@ The documentation for the [api](https://bump.sh/christian-photo/doc/advanced-api
 - ⚠️ **Breaking** Connection events in the websocket are now seperated into connected and disconnected ⚠️
 - ⚠️ **Breaking** Changed the structure of a profile response ⚠️
 - ⚠️ **Breaking** Removed the description field from a sequence response, added more specific fields for each item ⚠️
+- ⚠️ **Breaking** `sequence/start` will now return an error if the sequence is already running ⚠️
 - ⚠️ **Breaking** Image (history) now returns an error when there are no images available ⚠️
 - Added a new websocket for controlling TPPA and getting the current error in realtime
 - Framing Assistant is now supported:
