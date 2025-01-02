@@ -1,6 +1,6 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
-## 2.1.0.0
+## 2.1.0.*
 
 I **heavily** advise everyone still using V1 to start using V2 as V1 is now deprecated and will be removed with the next minor version!
 V2 will probably stay for a longer time now, I made some changes behind the scenes that will make it easier to add new features without breaking older versions.
