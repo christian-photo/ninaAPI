@@ -27,5 +27,5 @@ The documentation for the [api](https://bump.sh/christian-photo/doc/advanced-api
 - GuiderInfo now includes the last guide step with raw distance
 - The Sequence json is now more sophisticated with additional fields for most sequence items
 - Added Conditions (global ones too) and triggers to the sequence json
+- Added `sequence/reset` to reset the progress of a sequence
 - When retrieving images, you can now specify `scale` (0.1 to 1) to scale the image down while preserving its aspect ratio
-
