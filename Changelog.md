@@ -1,4 +1,4 @@
-## 2.1.0.0
+## 2.1.0.0 beta 1
 
 I **heavily** advise everyone still using V1 to start using V2 as V1 is now deprecated and will be removed with the next minor version!
 V2 will probably stay for a longer time now, I made some changes behind the scenes that will make it easier to add new features without breaking older versions.
@@ -21,7 +21,7 @@ The documentation for the [api](https://bump.sh/christian-photo/doc/advanced-api
 - Autofocus can be cancelled (only if it was started using the api)
 - Add telescope homing and tracking modes
 - Add camera cooling, warming and dew heater control
-- Add TargetTemp and AtTargetTemp to CameraInfo
+- Add `TargetTemp` and `AtTargetTemp` to CameraInfo
 - Added a gain field to capture
 - A lot more events in the websocket, see the documentation for a list of all events
 - GuiderInfo now includes the last guide step with raw distance
