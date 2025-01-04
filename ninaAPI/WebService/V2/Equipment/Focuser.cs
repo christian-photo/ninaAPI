@@ -30,10 +30,19 @@ namespace ninaAPI.WebService.V2
     {
         private static CancellationTokenSource AutoFocusToken;
 
+        private static readonly Func<object, EventArgs, Task> FocuserConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FOCUSER-CONNECTED");
+        private static readonly Func<object, EventArgs, Task> FocuserDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FOCUSER-DISCONNECTED");
+
         public static void StartFocuserWatchers()
         {
-            AdvancedAPI.Controls.Focuser.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("FOCUSER-CONNECTED");
-            AdvancedAPI.Controls.Focuser.Disconnected += async (_, _) => await WebSocketV2.SendAndAddEvent("FOCUSER-DISCONNECTED");
+            AdvancedAPI.Controls.Focuser.Connected += FocuserConnectedHandler;
+            AdvancedAPI.Controls.Focuser.Disconnected += FocuserDisconnectedHandler;
+        }
+
+        public static void StopFocuserWatchers()
+        {
+            AdvancedAPI.Controls.Focuser.Connected -= FocuserConnectedHandler;
+            AdvancedAPI.Controls.Focuser.Disconnected -= FocuserDisconnectedHandler;
         }
 
         [Route(HttpVerbs.Get, "/equipment/focuser/info")]

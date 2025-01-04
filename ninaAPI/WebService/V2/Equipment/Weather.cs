@@ -23,10 +23,19 @@ namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
+        private static readonly Func<object, EventArgs, Task> WeatherConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("WEATHER-CONNECTED");
+        private static readonly Func<object, EventArgs, Task> WeatherDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("WEATHER-DISCONNECTED");
+
         public static void StartWeatherWatchers()
         {
-            AdvancedAPI.Controls.Weather.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("WEATHER-CONNECTED");
-            AdvancedAPI.Controls.Weather.Disconnected += async (_, _) => await WebSocketV2.SendAndAddEvent("WEATHER-DISCONNECTED");
+            AdvancedAPI.Controls.Weather.Connected += WeatherConnectedHandler;
+            AdvancedAPI.Controls.Weather.Disconnected += WeatherDisconnectedHandler;
+        }
+
+        public static void StopWeatherWatchers()
+        {
+            AdvancedAPI.Controls.Weather.Connected -= WeatherConnectedHandler;
+            AdvancedAPI.Controls.Weather.Disconnected -= WeatherDisconnectedHandler;
         }
 
 

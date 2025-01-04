@@ -116,12 +116,24 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
+        private static readonly Func<object, EventArgs, Task> CameraConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-CONNECTED");
+        private static readonly Func<object, EventArgs, Task> CameraDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DISCONNECTED");
+        private static readonly Func<object, EventArgs, Task> CameraDownloadTimeoutHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DOWNLOAD-TIMEOUT");
+
         public static void StartCameraWatchers()
         {
-            AdvancedAPI.Controls.Camera.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-CONNECTED");
-            AdvancedAPI.Controls.Camera.Disconnected += async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DISCONNECTED");
-            AdvancedAPI.Controls.Camera.DownloadTimeout += async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DOWNLOAD-TIMEOUT");
+            AdvancedAPI.Controls.Camera.Connected += CameraConnectedHandler;
+            AdvancedAPI.Controls.Camera.Disconnected += CameraDisconnectedHandler;
+            AdvancedAPI.Controls.Camera.DownloadTimeout += CameraDownloadTimeoutHandler;
         }
+
+        public static void StopCameraWatchers()
+        {
+            AdvancedAPI.Controls.Camera.Connected -= CameraConnectedHandler;
+            AdvancedAPI.Controls.Camera.Disconnected -= CameraDisconnectedHandler;
+            AdvancedAPI.Controls.Camera.DownloadTimeout -= CameraDownloadTimeoutHandler;
+        }
+
         private static CancellationTokenSource CameraCaptureToken;
         private static PlateSolveResult plateSolveResult;
         private static IRenderedImage renderedImage;

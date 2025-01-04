@@ -14,12 +14,10 @@ using EmbedIO.Routing;
 using EmbedIO.WebSockets;
 using Newtonsoft.Json;
 using NINA.Core.Utility;
-using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -58,10 +56,6 @@ namespace ninaAPI.WebService.V2
         public WebSocketV2(string urlPath) : base(urlPath, true)
         {
             instance = this;
-
-            AdvancedAPI.Controls.ImageSaveMediator.ImageSaved += ImageSaved;
-
-            AdvancedAPI.Server.LogProcessor.NINALogEventSaved += LogProcessor_NINALogEventSaved;
         }
 
         public static async Task SendAndAddEvent(string eventName)
@@ -81,53 +75,10 @@ namespace ninaAPI.WebService.V2
             HttpResponse Event = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", eventName }, { "Time", time } } };
             Events.Add(Event);
 
-            await instance?.Send(response);
+            await SendEvent(response);
         }
 
-
-        public static List<HttpResponse> Images = new List<HttpResponse>();
         public static List<HttpResponse> Events = new List<HttpResponse>();
-
-        private void ImageSaved(object sender, ImageSavedEventArgs e)
-        {
-            if (!e.MetaData.Image.ImageType.Equals("LIGHT"))
-                return;
-
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
-
-            response.Response = new Dictionary<string, object>()
-            {
-                { "Event", "IMAGE-SAVE" },
-                { "ImageStatistics", new Dictionary<string, object>() {
-                    { "ExposureTime", e.Duration },
-                    { "Index", e.MetaData.Image.Id - 1 },
-                    { "Filter", e.Filter },
-                    { "RmsText", e.MetaData.Image.RecordedRMS.TotalText },
-                    { "Temperature", e.MetaData.Camera.Temperature },
-                    { "CameraName", e.MetaData.Camera.Name },
-                    { "Gain", e.MetaData.Camera.Gain },
-                    { "Offset", e.MetaData.Camera.Offset },
-                    { "Date", DateTime.Now },
-                    { "TelescopeName", e.MetaData.Telescope.Name },
-                    { "FocalLength", e.MetaData.Telescope.FocalLength },
-                    { "StDev", e.Statistics.StDev },
-                    { "Mean", e.Statistics.Mean },
-                    { "Median", e.Statistics.Median },
-                    { "Stars", e.StarDetectionAnalysis.DetectedStars },
-                    { "HFR", e.StarDetectionAnalysis.HFR }
-                    }
-                }
-            };
-
-            HttpResponse imageEvent = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", "IMAGE-SAVE" }, { "Time", DateTime.Now } } };
-
-            Images.Add(response);
-            Events.Add(imageEvent);
-
-            Send(response);
-        }
-
-        private async void LogProcessor_NINALogEventSaved(object sender, NINALogEvent e) => await SendAndAddEvent(e.type, e.time);
 
         protected override Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult rxResult)
         {
@@ -139,6 +90,11 @@ namespace ninaAPI.WebService.V2
         {
             Logger.Info("WebSocket connected " + context.RemoteEndPoint.ToString());
             return Task.CompletedTask;
+        }
+
+        public static async Task SendEvent(HttpResponse payload)
+        {
+            await instance?.Send(payload);
         }
 
         public async Task Send(HttpResponse payload)

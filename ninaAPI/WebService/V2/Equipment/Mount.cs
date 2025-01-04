@@ -24,15 +24,35 @@ namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
+
+        private static readonly Func<object, EventArgs, Task> MountConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-CONNECTED");
+        private static readonly Func<object, EventArgs, Task> MountDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-DISCONNECTED");
+        private static readonly Func<object, EventArgs, Task> MountBeforeMeridianFlipHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-BEFORE-FLIP");
+        private static readonly Func<object, EventArgs, Task> MountAfterMeridianFlipHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-AFTER-FLIP");
+        private static readonly Func<object, EventArgs, Task> MountHomedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-HOMED");
+        private static readonly Func<object, EventArgs, Task> MountParkedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-PARKED");
+        private static readonly Func<object, EventArgs, Task> MountUnparkedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-UNPARKED");
+
         public static void StartMountWatchers()
         {
-            AdvancedAPI.Controls.Mount.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-CONNECTED");
-            AdvancedAPI.Controls.Mount.Disconnected += async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-DISCONNECTED");
-            AdvancedAPI.Controls.Mount.BeforeMeridianFlip += async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-BEFORE-FLIP");
-            AdvancedAPI.Controls.Mount.AfterMeridianFlip += async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-AFTER-FLIP");
-            AdvancedAPI.Controls.Mount.Homed += async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-HOMED");
-            AdvancedAPI.Controls.Mount.Parked += async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-PARKED");
-            AdvancedAPI.Controls.Mount.Unparked += async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-UNPARKED");
+            AdvancedAPI.Controls.Mount.Connected += MountConnectedHandler;
+            AdvancedAPI.Controls.Mount.Disconnected += MountDisconnectedHandler;
+            AdvancedAPI.Controls.Mount.BeforeMeridianFlip += MountBeforeMeridianFlipHandler;
+            AdvancedAPI.Controls.Mount.AfterMeridianFlip += MountAfterMeridianFlipHandler;
+            AdvancedAPI.Controls.Mount.Homed += MountHomedHandler;
+            AdvancedAPI.Controls.Mount.Parked += MountParkedHandler;
+            AdvancedAPI.Controls.Mount.Unparked += MountUnparkedHandler;
+        }
+
+        public static void StopMountWatchers()
+        {
+            AdvancedAPI.Controls.Mount.Connected -= MountConnectedHandler;
+            AdvancedAPI.Controls.Mount.Disconnected -= MountDisconnectedHandler;
+            AdvancedAPI.Controls.Mount.BeforeMeridianFlip -= MountBeforeMeridianFlipHandler;
+            AdvancedAPI.Controls.Mount.AfterMeridianFlip -= MountAfterMeridianFlipHandler;
+            AdvancedAPI.Controls.Mount.Homed -= MountHomedHandler;
+            AdvancedAPI.Controls.Mount.Parked -= MountParkedHandler;
+            AdvancedAPI.Controls.Mount.Unparked -= MountUnparkedHandler;
         }
 
         [Route(HttpVerbs.Get, "/equipment/mount/info")]

@@ -26,10 +26,19 @@ namespace ninaAPI.WebService.V2
     {
         private static CancellationTokenSource SwitchToken;
 
+        private static readonly Func<object, EventArgs, Task> SwitchConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SWITCH-CONNECTED");
+        private static readonly Func<object, EventArgs, Task> SwitchDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SWITCH-DISCONNECTED");
+
         public static void StartSwitchWatchers()
         {
-            AdvancedAPI.Controls.Switch.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("SWITCH-CONNECTED");
-            AdvancedAPI.Controls.Switch.Disconnected += async (_, _) => await WebSocketV2.SendAndAddEvent("SWITCH-DISCONNECTED");
+            AdvancedAPI.Controls.Switch.Connected += SwitchConnectedHandler;
+            AdvancedAPI.Controls.Switch.Disconnected += SwitchDisconnectedHandler;
+        }
+
+        public static void StopSwitchWatchers()
+        {
+            AdvancedAPI.Controls.Switch.Connected -= SwitchConnectedHandler;
+            AdvancedAPI.Controls.Switch.Disconnected -= SwitchDisconnectedHandler;
         }
 
 

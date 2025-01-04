@@ -26,14 +26,31 @@ namespace ninaAPI.WebService.V2
     {
         private static CancellationTokenSource DomeToken;
 
+        private static readonly Func<object, EventArgs, Task> DomeConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-CONNECTED");
+        private static readonly Func<object, EventArgs, Task> DomeDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-DISCONNECTED");
+        private static readonly Func<object, EventArgs, Task> DomeClosedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-SHUTTER-CLOSED");
+        private static readonly Func<object, EventArgs, Task> DomeOpenedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-SHUTTER-OPENED");
+        private static readonly Func<object, EventArgs, Task> DomeHomedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-HOMED");
+        private static readonly Func<object, EventArgs, Task> DomeParkedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-PARKED");
+
         public static void StartDomeWatchers()
         {
-            AdvancedAPI.Controls.Dome.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-CONNECTED");
-            AdvancedAPI.Controls.Dome.Disconnected += async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-DISCONNECTED");
-            AdvancedAPI.Controls.Dome.Closed += async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-SHUTTER-CLOSED");
-            AdvancedAPI.Controls.Dome.Opened += async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-SHUTTER-OPENED");
-            AdvancedAPI.Controls.Dome.Homed += async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-HOMED");
-            AdvancedAPI.Controls.Dome.Parked += async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-PARKED");
+            AdvancedAPI.Controls.Dome.Connected += DomeConnectedHandler;
+            AdvancedAPI.Controls.Dome.Disconnected += DomeDisconnectedHandler;
+            AdvancedAPI.Controls.Dome.Closed += DomeClosedHandler;
+            AdvancedAPI.Controls.Dome.Opened += DomeOpenedHandler;
+            AdvancedAPI.Controls.Dome.Homed += DomeHomedHandler;
+            AdvancedAPI.Controls.Dome.Parked += DomeParkedHandler;
+        }
+
+        public static void StopDomeWatchers()
+        {
+            AdvancedAPI.Controls.Dome.Connected -= DomeConnectedHandler;
+            AdvancedAPI.Controls.Dome.Disconnected -= DomeDisconnectedHandler;
+            AdvancedAPI.Controls.Dome.Closed -= DomeClosedHandler;
+            AdvancedAPI.Controls.Dome.Opened -= DomeOpenedHandler;
+            AdvancedAPI.Controls.Dome.Homed -= DomeHomedHandler;
+            AdvancedAPI.Controls.Dome.Parked -= DomeParkedHandler;
         }
 
 

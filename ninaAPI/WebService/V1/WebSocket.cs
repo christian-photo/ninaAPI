@@ -57,8 +57,6 @@ namespace ninaAPI.WebService.V1
             AdvancedAPI.Controls.FlatDevice.Disconnected += FlatConnection;
 
             AdvancedAPI.Controls.ImageSaveMediator.ImageSaved += ImageSaved;
-
-            AdvancedAPI.Server.LogProcessor.NINALogEventSaved += LogProcessor_NINALogEventSaved;
         }
 
         public static List<HttpResponse> Images = new List<HttpResponse>();

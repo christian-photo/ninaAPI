@@ -27,10 +27,19 @@ namespace ninaAPI.WebService.V2
     {
         private static CancellationTokenSource RotatorToken;
 
+        private static readonly Func<object, EventArgs, Task> RotatorConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("ROTATOR-CONNECTED");
+        private static readonly Func<object, EventArgs, Task> RotatorDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("ROTATOR-DISCONNECTED");
+
         public static void StartRotatorWatchers()
         {
-            AdvancedAPI.Controls.Rotator.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("ROTATOR-CONNECTED");
-            AdvancedAPI.Controls.Rotator.Disconnected += async (_, _) => await WebSocketV2.SendAndAddEvent("ROTATOR-DISCONNECTED");
+            AdvancedAPI.Controls.Rotator.Connected += RotatorConnectedHandler;
+            AdvancedAPI.Controls.Rotator.Disconnected += RotatorDisconnectedHandler;
+        }
+
+        public static void StopRotatorWatchers()
+        {
+            AdvancedAPI.Controls.Rotator.Connected -= RotatorConnectedHandler;
+            AdvancedAPI.Controls.Rotator.Disconnected -= RotatorDisconnectedHandler;
         }
 
 

@@ -22,10 +22,19 @@ namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
+        private static readonly Func<object, EventArgs, Task> FlatDeviceConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-CONNECTED");
+        private static readonly Func<object, EventArgs, Task> FlatDeviceDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-DISCONNECTED");
+
         public static void StartFlatDeviceWatchers()
         {
-            AdvancedAPI.Controls.FlatDevice.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-CONNECTED");
-            AdvancedAPI.Controls.FlatDevice.Disconnected += async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-DISCONNECTED");
+            AdvancedAPI.Controls.FlatDevice.Connected += FlatDeviceConnectedHandler;
+            AdvancedAPI.Controls.FlatDevice.Disconnected += FlatDeviceDisconnectedHandler;
+        }
+
+        public static void StopFlatDeviceWatchers()
+        {
+            AdvancedAPI.Controls.FlatDevice.Connected -= FlatDeviceConnectedHandler;
+            AdvancedAPI.Controls.FlatDevice.Disconnected -= FlatDeviceDisconnectedHandler;
         }
 
 

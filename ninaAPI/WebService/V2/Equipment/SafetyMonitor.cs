@@ -14,6 +14,7 @@ using EmbedIO.Routing;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MySafetyMonitor;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.Equipment.Interfaces.ViewModel;
 using ninaAPI.Utility;
 using System;
 using System.Threading.Tasks;
@@ -22,11 +23,22 @@ namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
+
+        private static readonly Func<object, EventArgs, Task> SafetyConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-CONNECTED");
+        private static readonly Func<object, EventArgs, Task> SafetyDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-DISCONNECTED");
+        private static readonly EventHandler<IsSafeEventArgs> SafetyIsSafeChangedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-CHANGED");
         public static void StartSafetyWatchers()
         {
-            AdvancedAPI.Controls.SafetyMonitor.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-CONNECTED");
-            AdvancedAPI.Controls.SafetyMonitor.Disconnected += async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-DISCONNECTED");
-            AdvancedAPI.Controls.SafetyMonitor.IsSafeChanged += async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-CHANGED");
+            AdvancedAPI.Controls.SafetyMonitor.Connected += SafetyConnectedHandler;
+            AdvancedAPI.Controls.SafetyMonitor.Disconnected += SafetyDisconnectedHandler;
+            AdvancedAPI.Controls.SafetyMonitor.IsSafeChanged += SafetyIsSafeChangedHandler;
+        }
+
+        public static void StopSafetyWatchers()
+        {
+            AdvancedAPI.Controls.SafetyMonitor.Connected -= SafetyConnectedHandler;
+            AdvancedAPI.Controls.SafetyMonitor.Disconnected -= SafetyDisconnectedHandler;
+            AdvancedAPI.Controls.SafetyMonitor.IsSafeChanged -= SafetyIsSafeChangedHandler;
         }
 
 

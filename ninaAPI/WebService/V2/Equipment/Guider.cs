@@ -79,17 +79,34 @@ namespace ninaAPI.WebService.V2
         private static GuideStep lastGuideStep { get; set; }
         private static CancellationTokenSource GuideToken;
 
+        private static readonly Func<object, EventArgs, Task> GuiderConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-CONNECTED");
+        private static readonly Func<object, EventArgs, Task> GuiderDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-DISCONNECTED");
+        private static readonly Func<object, EventArgs, Task> GuiderDitherHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-DITHER");
+        private static readonly Func<object, EventArgs, Task> GuiderStartHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-START");
+        private static readonly Func<object, EventArgs, Task> GuiderStopHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-STOP");
+        private static readonly EventHandler<IGuideStep> GuiderGuideEventHandler = (object sender, IGuideStep e) =>
+        {
+            lastGuideStep = new GuideStep() { DECDistanceRaw = e.DECDistanceRaw, DECDuration = e.DECDuration, RADistanceRaw = e.RADistanceRaw, RADuration = e.RADuration };
+        };
+
         public static void StartGuiderWatchers()
         {
-            AdvancedAPI.Controls.Guider.GuideEvent += (object sender, IGuideStep e) =>
-            {
-                lastGuideStep = new GuideStep() { DECDistanceRaw = e.DECDistanceRaw, DECDuration = e.DECDuration, RADistanceRaw = e.RADistanceRaw, RADuration = e.RADuration };
-            };
-            AdvancedAPI.Controls.Guider.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-CONNECTED");
-            AdvancedAPI.Controls.Guider.Disconnected += async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-DISCONNECTED");
-            AdvancedAPI.Controls.Guider.AfterDither += async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-DITHER");
-            AdvancedAPI.Controls.Guider.GuidingStarted += async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-START");
-            AdvancedAPI.Controls.Guider.GuidingStopped += async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-STOP");
+            AdvancedAPI.Controls.Guider.GuideEvent += GuiderGuideEventHandler;
+            AdvancedAPI.Controls.Guider.Connected += GuiderConnectedHandler;
+            AdvancedAPI.Controls.Guider.Disconnected += GuiderDisconnectedHandler;
+            AdvancedAPI.Controls.Guider.AfterDither += GuiderDitherHandler;
+            AdvancedAPI.Controls.Guider.GuidingStarted += GuiderStartHandler;
+            AdvancedAPI.Controls.Guider.GuidingStopped += GuiderStopHandler;
+        }
+
+        public static void StopGuiderWatchers()
+        {
+            AdvancedAPI.Controls.Guider.GuideEvent -= GuiderGuideEventHandler;
+            AdvancedAPI.Controls.Guider.Connected -= GuiderConnectedHandler;
+            AdvancedAPI.Controls.Guider.Disconnected -= GuiderDisconnectedHandler;
+            AdvancedAPI.Controls.Guider.AfterDither -= GuiderDitherHandler;
+            AdvancedAPI.Controls.Guider.GuidingStarted -= GuiderStartHandler;
+            AdvancedAPI.Controls.Guider.GuidingStopped -= GuiderStopHandler;
         }
 
 

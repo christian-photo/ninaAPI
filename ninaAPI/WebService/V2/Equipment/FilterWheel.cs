@@ -65,11 +65,21 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
+        private static readonly Func<object, EventArgs, Task> FilterWheelConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-CONNECTED");
+        private static readonly Func<object, EventArgs, Task> FilterWheelDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-DISCONNECTED");
+        private static readonly Func<object, EventArgs, Task> FilterWheelFilterChangedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-CHANGED");
         public static void StartFilterWheelWatchers()
         {
-            AdvancedAPI.Controls.FilterWheel.Connected += async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-CONNECTED");
-            AdvancedAPI.Controls.FilterWheel.Disconnected += async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-DISCONNECTED");
-            AdvancedAPI.Controls.FilterWheel.FilterChanged += async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-CHANGED");
+            AdvancedAPI.Controls.FilterWheel.Connected += FilterWheelConnectedHandler;
+            AdvancedAPI.Controls.FilterWheel.Disconnected += FilterWheelDisconnectedHandler;
+            AdvancedAPI.Controls.FilterWheel.FilterChanged += FilterWheelFilterChangedHandler;
+        }
+
+        public static void StopFilterWheelWatchers()
+        {
+            AdvancedAPI.Controls.FilterWheel.Connected -= FilterWheelConnectedHandler;
+            AdvancedAPI.Controls.FilterWheel.Disconnected -= FilterWheelDisconnectedHandler;
+            AdvancedAPI.Controls.FilterWheel.FilterChanged -= FilterWheelFilterChangedHandler;
         }
 
 

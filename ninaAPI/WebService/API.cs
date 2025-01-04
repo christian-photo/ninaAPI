@@ -30,8 +30,8 @@ namespace ninaAPI.WebService
 
         private Thread serverThread;
 
-        public NINALogMessageProcessor LogProcessor;
-        public NINALogWatcher LogWatcher;
+        public static NINALogMessageProcessor LogProcessor;
+        private static NINALogWatcher LogWatcher;
         private CancellationTokenSource apiToken;
         public readonly int Port;
 
@@ -39,7 +39,6 @@ namespace ninaAPI.WebService
         public API()
         {
             Port = Settings.Default.Port;
-            LogProcessor = new NINALogMessageProcessor();
         }
 
         public void CreateServer()
@@ -64,24 +63,44 @@ namespace ninaAPI.WebService
             }
         }
 
+        public static void StartWatchers()
+        {
+            ControllerV2.StartCameraWatchers();
+            ControllerV2.StartDomeWatchers();
+            ControllerV2.StartFilterWheelWatchers();
+            ControllerV2.StartFlatDeviceWatchers();
+            ControllerV2.StartFocuserWatchers();
+            ControllerV2.StartGuiderWatchers();
+            ControllerV2.StartMountWatchers();
+            ControllerV2.StartRotatorWatchers();
+            ControllerV2.StartSafetyWatchers();
+            ControllerV2.StartSwitchWatchers();
+            ControllerV2.StartWeatherWatchers();
+            ControllerV2.StartImageWatcher();
+            ControllerV2.StartLogWatcher();
+        }
+
+        public static void StopWatchers()
+        {
+            ControllerV2.StopDomeWatchers();
+            ControllerV2.StopCameraWatchers();
+            ControllerV2.StopFilterWheelWatchers();
+            ControllerV2.StopFlatDeviceWatchers();
+            ControllerV2.StopFocuserWatchers();
+            ControllerV2.StopGuiderWatchers();
+            ControllerV2.StopMountWatchers();
+            ControllerV2.StopRotatorWatchers();
+            ControllerV2.StopSafetyWatchers();
+            ControllerV2.StopSwitchWatchers();
+            ControllerV2.StopWeatherWatchers();
+            ControllerV2.StopImageWatcher();
+            ControllerV2.StopLogWatcher();
+        }
+
         public void Start()
         {
             try
             {
-                LogWatcher = new NINALogWatcher(LogProcessor);
-                LogWatcher.Start();
-                ControllerV2.StartCameraWatchers();
-                ControllerV2.StartDomeWatchers();
-                ControllerV2.StartFilterWheelWatchers();
-                ControllerV2.StartFlatDeviceWatchers();
-                ControllerV2.StartFocuserWatchers();
-                ControllerV2.StartGuiderWatchers();
-                ControllerV2.StartMountWatchers();
-                ControllerV2.StartRotatorWatchers();
-                ControllerV2.StartSafetyWatchers();
-                ControllerV2.StartSwitchWatchers();
-                ControllerV2.StartWeatherWatchers();
-
                 Logger.Debug("Creating Webserver");
                 CreateServer();
                 Logger.Info("Starting Webserver");
@@ -103,7 +122,6 @@ namespace ninaAPI.WebService
         {
             try
             {
-                LogWatcher?.Stop();
                 apiToken?.Cancel();
                 Server?.Dispose();
                 Server = null;

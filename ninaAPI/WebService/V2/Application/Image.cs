@@ -23,11 +23,60 @@ using NINA.WPF.Base.Model;
 using NINA.Image.Interfaces;
 using NINA.Core.Enum;
 using System.Collections.Generic;
+using NINA.WPF.Base.Interfaces.Mediator;
 
 namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
+        public static List<HttpResponse> Images = new List<HttpResponse>();
+
+        public static void StartImageWatcher()
+        {
+            AdvancedAPI.Controls.ImageSaveMediator.ImageSaved += ImageSaved;
+        }
+
+        public static void StopImageWatcher()
+        {
+            AdvancedAPI.Controls.ImageSaveMediator.ImageSaved -= ImageSaved;
+        }
+
+        private static void ImageSaved(object sender, ImageSavedEventArgs e)
+        {
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+
+            response.Response = new Dictionary<string, object>()
+            {
+                { "Event", "IMAGE-SAVE" },
+                { "ImageStatistics", new Dictionary<string, object>() {
+                    { "ExposureTime", e.Duration },
+                    { "Filter", e.Filter },
+                    { "RmsText", e.MetaData.Image.RecordedRMS.TotalText },
+                    { "Temperature", e.MetaData.Camera.Temperature },
+                    { "CameraName", e.MetaData.Camera.Name },
+                    { "Gain", e.MetaData.Camera.Gain },
+                    { "Offset", e.MetaData.Camera.Offset },
+                    { "Date", DateTime.Now },
+                    { "TelescopeName", e.MetaData.Telescope.Name },
+                    { "FocalLength", e.MetaData.Telescope.FocalLength },
+                    { "StDev", e.Statistics.StDev },
+                    { "Mean", e.Statistics.Mean },
+                    { "Median", e.Statistics.Median },
+                    { "Stars", e.StarDetectionAnalysis.DetectedStars },
+                    { "HFR", e.StarDetectionAnalysis.HFR },
+                    { "ImageType", e.MetaData.Image.ImageType }
+                    }
+                }
+            };
+
+            HttpResponse imageEvent = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", "IMAGE-SAVE" }, { "Time", DateTime.Now } } };
+
+            Images.Add(response);
+            WebSocketV2.Events.Add(imageEvent);
+
+            WebSocketV2.SendEvent(response);
+        }
+
         [Route(HttpVerbs.Get, "/image/{index}")]
         public async Task GetImage(int index, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale)
         {
@@ -101,22 +150,22 @@ namespace ninaAPI.WebService.V2
                 List<object> result = new List<object>();
                 if (count)
                 {
-                    response.Response = WebSocketV2.Images.Count;
+                    response.Response = Images.Count;
                 }
                 else if (all)
                 {
-                    foreach (HttpResponse r in WebSocketV2.Images)
+                    foreach (HttpResponse r in Images)
                     {
                         result.Add(((Dictionary<string, object>)r.Response)["ImageStatistics"]);
                     }
                     response.Response = result;
                 }
-                else if (index >= 0 && index < WebSocketV2.Images.Count)
+                else if (index >= 0 && index < Images.Count)
                 {
-                    result.Add(((Dictionary<string, object>)WebSocketV2.Images[index].Response)["ImageStatistics"]);
+                    result.Add(((Dictionary<string, object>)Images[index].Response)["ImageStatistics"]);
                     response.Response = result;
                 }
-                else if (index >= WebSocketV2.Images.Count || index < 0)
+                else if (index >= Images.Count || index < 0)
                 {
                     response = CoreUtility.CreateErrorTable(CommonErrors.INDEX_OUT_OF_RANGE);
                 }

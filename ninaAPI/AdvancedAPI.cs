@@ -66,7 +66,7 @@ namespace ninaAPI
                            IMessageBroker broker,
                            IFramingAssistantVM framing)
         {
-            
+
             Controls = new NINAControls()
             {
                 Camera = camera,
@@ -107,7 +107,7 @@ namespace ninaAPI
 
                 SetHostNames();
             }
-            
+
             RestartAPI = new RelayCommand(() =>
             {
                 if (Server != null)
@@ -124,6 +124,7 @@ namespace ninaAPI
             });
 
             PluginId = this.Identifier;
+            API.StartWatchers();
         }
 
         public override Task Teardown()
@@ -133,6 +134,7 @@ namespace ninaAPI
                 Server.Stop();
                 Server = null;
             }
+            API.StopWatchers();
             return base.Teardown();
         }
 
@@ -220,11 +222,11 @@ namespace ninaAPI
         }
 
         public RelayCommand RestartAPI { get; set; }
-        
+
         private void SetHostNames()
         {
             Dictionary<string, string> dict = CoreUtility.GetLocalNames();
-            
+
             LocalAdress = $"http://{dict["LOCALHOST"]}:{Port}/api";
             LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{Port}/api";
             HostAdress = $"http://{dict["HOSTNAME"]}:{Port}/api";
