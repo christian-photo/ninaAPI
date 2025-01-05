@@ -136,7 +136,7 @@ namespace ninaAPI.Utility
             return new HttpResponse() { Error = error.message, Success = false, StatusCode = error.code };
         }
 
-        private static JsonSerializerOptions options = new JsonSerializerOptions()
+        private static readonly JsonSerializerOptions options = new JsonSerializerOptions()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,

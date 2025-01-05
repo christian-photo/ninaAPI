@@ -66,8 +66,11 @@ namespace ninaAPI.WebService.V2
                     }
                     else
                     {
-                        List<Hashtable> json = getSequenceRecursivley(targets[0].Parent.Parent);
-                        json.Add(new Hashtable() { { "GlobalTriggers", getTriggers(targets[0].Parent.Parent as SequenceContainer) } }); // Global triggers
+                        List<Hashtable> json =
+                        [
+                            new Hashtable() { { "GlobalTriggers", getTriggers(targets[0].Parent.Parent as SequenceContainer) } },
+                            .. getSequenceRecursivley(targets[0].Parent.Parent),
+                        ]; // Global triggers
                         response.Response = json;
                     }
                 }
