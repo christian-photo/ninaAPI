@@ -15,6 +15,7 @@ The documentation for the [api](https://bump.sh/christian-photo/doc/advanced-api
 - ⚠️ **Breaking** Removed the description field from a sequence response, added more specific fields for each item ⚠️
 - ⚠️ **Breaking** `sequence/start` will now return an error if the sequence is already running ⚠️
 - ⚠️ **Breaking** Image (history) now returns an error when there are no images available ⚠️
+- ⚠️ **Breaking** Removed Id field from image-history response ⚠️
 - Added a new websocket for controlling TPPA and getting the current error in realtime
 - Framing Assistant is now supported:
   - Set the coordinates in the framing assistant
