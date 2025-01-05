@@ -50,6 +50,7 @@ namespace ninaAPI.WebService.V2
                 { "Event", "IMAGE-SAVE" },
                 { "ImageStatistics", new Dictionary<string, object>() {
                     { "ExposureTime", e.Duration },
+                    { "ImageType", e.MetaData.Image.ImageType },
                     { "Filter", e.Filter },
                     { "RmsText", e.MetaData.Image.RecordedRMS.TotalText },
                     { "Temperature", e.MetaData.Camera.Temperature },
@@ -63,8 +64,7 @@ namespace ninaAPI.WebService.V2
                     { "Mean", e.Statistics.Mean },
                     { "Median", e.Statistics.Median },
                     { "Stars", e.StarDetectionAnalysis.DetectedStars },
-                    { "HFR", e.StarDetectionAnalysis.HFR },
-                    { "ImageType", e.MetaData.Image.ImageType }
+                    { "HFR", e.StarDetectionAnalysis.HFR }
                     }
                 }
             };

@@ -2897,8 +2897,14 @@ paths:
                           properties:
                             ExposureTime:
                               type: number
-                            Index:
-                              type: integer
+                            ImageType:
+                              type: string
+                              enum:
+                                - LIGHT
+                                - FLAT
+                                - DARK
+                                - BIAS
+                                - SNAPSHOT
                             Filter:
                               type: string
                             RmsText:
@@ -3382,7 +3388,15 @@ paths:
                   Response:
                     type: array
                     items:
-                      type: string
+                      type: object
+                      properties:
+                        Event:
+                          type: string
+                        Time:
+                          type: string
+                      required:
+                        - Event
+                        - Time
                   Error:
                     type: string
                     example: ""
