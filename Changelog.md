@@ -8,6 +8,7 @@ V2 will probably stay for a longer time now, I made some changes behind the scen
 The documentation for the [api](https://bump.sh/christian-photo/doc/advanced-api) and the [websockets](https://bump.sh/christian-photo/doc/advanced-api-websockets/) will be hosted externally from now on
 
 - It is now possible to add the `Access-Control-Allow-Origin: *` header to make requests via javascript without proxies possible. This does pose a security vulnerability though, so make sure you only enable it when you need to. A proxy may be better suited when in production.
+- Eventwatchers are now started independently of the api, therefore Events can still be retrieved using event-history even if the api wasn't running before.
 
 ### V2 Changes:
 - ⚠️ **Breaking** Connection events in the websocket are now seperated into connected and disconnected ⚠️
@@ -33,3 +34,5 @@ The documentation for the [api](https://bump.sh/christian-photo/doc/advanced-api
 - Added Conditions (global ones too) and triggers to the sequence json
 - Added `sequence/reset` to reset the progress of a sequence
 - When retrieving images, you can now specify `scale` (0.1 to 1) to scale the image down while preserving its aspect ratio
+- Added the field `ImageType` to the IMAGE-SAVE Event and image-history
+- All Image Types (LIGHT, DARK, BIAS, FLAT, SNAPSHOT) now raise an IMAGE-SAVE event
