@@ -27,6 +27,7 @@ using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyCamera;
+using System.Linq;
 
 namespace ninaAPI.WebService.V2
 {
@@ -204,6 +205,35 @@ namespace ninaAPI.WebService.V2
                     await cam.Disconnect();
                 }
                 response.Response = "Camera disconnected";
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/camera/set-readout")]
+        public void CameraSetReadout([QueryField] short mode)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ICameraMediator cam = AdvancedAPI.Controls.Camera;
+
+                if (mode >= 0 && mode < cam.GetInfo().ReadoutModes.Count())
+                {
+                    cam.SetReadoutMode(mode);
+                    response.Response = "Readout mode updated";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid readout mode", 400));
+                }
             }
             catch (Exception ex)
             {

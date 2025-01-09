@@ -172,25 +172,29 @@ namespace ninaAPI.Utility
 
         public static object CastString(this string str, Type type)
         {
-            if (type == typeof(int))
+            if (type == typeof(int) || type == typeof(int?))
             {
                 return int.Parse(str);
             }
-            if (type == typeof(double))
+            if (type == typeof(double) || type == typeof(double?))
             {
                 return double.Parse(str);
             }
-            if (type == typeof(bool))
+            if (type == typeof(bool) || type == typeof(bool?))
             {
                 return bool.Parse(str);
             }
-            if (type == typeof(long))
+            if (type == typeof(long) || type == typeof(long?))
             {
                 return long.Parse(str);
             }
-            if (type == typeof(short))
+            if (type == typeof(short) || type == typeof(short?))
             {
                 return short.Parse(str);
+            }
+            if (type.IsEnum)
+            {
+                return Enum.Parse(type, str);
             }
             return str;
         }

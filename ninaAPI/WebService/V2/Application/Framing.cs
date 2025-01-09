@@ -18,6 +18,8 @@ using NINA.Core.Utility;
 using NINA.Astrometry;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using System.Threading.Tasks;
+using NINA.WPF.Base.SkySurvey;
+using NINA.Core.Enum;
 
 namespace ninaAPI.WebService.V2
 {
@@ -72,6 +74,35 @@ namespace ninaAPI.WebService.V2
                     Rectangle = framing.Rectangle,
                 };
                 response.Response = info;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/framing/set-source")]
+        public void FramingSetSource([QueryField] string source)
+        {
+            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IFramingAssistantVM framing = AdvancedAPI.Controls.FramingAssistant;
+
+                if (Enum.TryParse(source, out SkySurveySource result))
+                {
+                    framing.FramingAssistantSource = result;
+                    response.Response = "Source updated";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid source", 400));
+                }
             }
             catch (Exception ex)
             {

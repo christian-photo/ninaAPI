@@ -99,6 +99,72 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /equipment/camera/set-readout:
+    get:
+      tags:
+        - Camera
+      summary: Set readout mode
+      description: This endpoint sets the readout mode of the camera.
+      parameters:
+        - in: query
+          name: mode
+          description: The readout mode to set.
+          schema:
+            type: integer
+            minimum: 0
+          required: true
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Readout mode updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        400:
+          description: Invalid readout mode
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Invalid readout mode
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /equipment/camera/cool:
     get:
       tags:
@@ -2614,6 +2680,80 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FramingAssistantInfo"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /framing/set-source:
+    get:
+      tags:
+        - Framing Assistant
+      summary: Set Source
+      description: Set framing assistant source. This requires the framing assistant to be initalized, which can by achieved by openening it once.
+      parameters:
+        - in: query
+          name: source
+          description: The source to set
+          required: true
+          schema:
+            type: string
+            enum:
+              - NASA
+              - SKYSERVER
+              - STSCI
+              - ESO
+              - HIPS2FITS
+              - SKYATLAS
+              - FILE
+              - CACHE
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Source updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Invalid source
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Invalid source
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -5295,6 +5435,7 @@ components:
                   type: number
                 LastSelectedImageSource:
                   type: integer
+                  description: 0&#58; NASA, 1&#58; SKYSERVER, 2&#58; STSCI, 3&#58; ESO, 4&#58; HIPS2FITS, 5&#58; SKYATLAS, 6&#58; FILE, 7&#58; CACHE
                 LastRotationAngle:
                   type: integer
                 SaveImageInOfflineCache:
