@@ -36,3 +36,6 @@ The documentation for the [api](https://bump.sh/christian-photo/doc/advanced-api
 - When retrieving images, you can now specify `scale` (0.1 to 1) to scale the image down while preserving its aspect ratio
 - Added the field `ImageType` to the IMAGE-SAVE Event and image-history
 - All Image Types (LIGHT, DARK, BIAS, FLAT, SNAPSHOT) now raise an IMAGE-SAVE event
+- `framing/set-source` added
+- `camera/set-readout` added to set the readout mode
+- `version` now returns the Plugin Version instead of an Independent Version number
