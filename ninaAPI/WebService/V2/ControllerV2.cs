@@ -24,7 +24,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/")]
         public string Index()
         {
-            return $"ninaAPI: https://github.com/rennmaus-coder/ninaAPI/wiki/V2";
+            return $"ninaAPI: https://github.com/rennmaus-coder/ninaAPI/, https://bump.sh/christian-photo/doc/advanced-api";
         }
 
         [Route(HttpVerbs.Get, "/version")]

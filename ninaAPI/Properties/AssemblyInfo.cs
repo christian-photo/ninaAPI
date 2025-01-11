@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 
 // [MANDATORY] The assembly versioning
 //Should be incremented for each new build of a plugin
-[assembly: AssemblyVersion("2.1.0.6")]
-[assembly: AssemblyFileVersion("2.1.0.6")]
+[assembly: AssemblyVersion("2.1.0.7")]
+[assembly: AssemblyFileVersion("2.1.0.7")]
 
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]
@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("Christian Palm")]
 // The product name that this plugin is part of
 [assembly: AssemblyProduct("Advanced API")]
-[assembly: AssemblyCopyright("Copyright ©  2024")]
+[assembly: AssemblyCopyright("Copyright ©  2025")]
 
 // The minimum Version of N.I.N.A. that this plugin is compatible with
 [assembly: AssemblyMetadata("MinimumApplicationVersion", "3.1.2.9001")]

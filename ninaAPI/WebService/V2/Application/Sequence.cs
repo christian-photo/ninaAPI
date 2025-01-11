@@ -66,10 +66,11 @@ namespace ninaAPI.WebService.V2
                     }
                     else
                     {
+                        ISequenceRootContainer root = ((SequenceContainer)targets[0]).GetRootContainer(targets[0]);
                         List<Hashtable> json =
                         [
-                            new Hashtable() { { "GlobalTriggers", getTriggers(targets[0].Parent.Parent as SequenceContainer) } },
-                            .. getSequenceRecursivley(targets[0].Parent.Parent),
+                            new Hashtable() { { "GlobalTriggers", getTriggers((SequenceContainer)root) } },
+                            .. getSequenceRecursivley(root),
                         ]; // Global triggers
                         response.Response = json;
                     }
