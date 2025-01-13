@@ -57,7 +57,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/dome/info")]
         public void DomeInfo()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -79,7 +78,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/dome/connect")]
         public async Task DomeConnect()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -105,7 +103,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/dome/disconnect")]
         public async Task DomeDisconnect()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -130,7 +127,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/dome/open")]
         public void DomeOpen()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -162,7 +158,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/dome/close")]
         public void DomeClose()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -197,7 +192,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/dome/stop")]
         public void DomeStop()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try

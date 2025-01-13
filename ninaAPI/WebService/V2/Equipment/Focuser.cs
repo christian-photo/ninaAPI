@@ -48,7 +48,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/focuser/info")]
         public void FocuserInfo()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -68,7 +67,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/focuser/connect")]
         public async Task FocuserConnect()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -93,7 +91,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/focuser/disconnect")]
         public async Task FocuserDisconnect()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -117,7 +114,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/focuser/move")]
         public void FocuserMove([QueryField] int position)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -143,7 +139,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/focuser/auto-focus")]
         public void FocuserStartAF([QueryField] bool cancel)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -183,7 +178,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/focuser/last-af")]
         public void FocuserLastAF()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try

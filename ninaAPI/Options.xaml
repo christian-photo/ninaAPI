@@ -20,7 +20,7 @@
                     Text="API Enabled " />
                 <CheckBox IsChecked="{Binding APIEnabled}" />
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <!--<StackPanel Orientation="Horizontal">
                 <TextBlock
                     Width="100"
                     Margin="0,0,5,0"
@@ -33,7 +33,7 @@
                     Margin="0,0,5,0"
                     Text="Use V2 " />
                 <CheckBox IsChecked="{Binding UseV2}" />
-            </StackPanel>
+            </StackPanel> -->
             <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
                 <TextBlock
                     Width="100"

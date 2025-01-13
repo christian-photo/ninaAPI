@@ -80,7 +80,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/image/{index}")]
         public async Task GetImage(int index, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             quality = Math.Clamp(quality, -1, 100);
@@ -142,7 +141,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/image-history")]
         public void GetHistoryCount([QueryField] bool all, [QueryField] int index, [QueryField] bool count)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try

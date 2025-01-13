@@ -45,7 +45,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/safetymonitor/info")]
         public void SafetyMonitorInfo()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -67,7 +66,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/safetymonitor/connect")]
         public async Task SafetyMonitorConnect()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -93,7 +91,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/safetymonitor/disconnect")]
         public async Task SafetyMonitorDisconnect()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try

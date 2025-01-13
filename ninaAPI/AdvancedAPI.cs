@@ -158,16 +158,6 @@ namespace ninaAPI
             }
         }
 
-        public bool UseV1
-        {
-            get => Settings.Default.StartV1;
-            set
-            {
-                Settings.Default.StartV1 = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
-            }
-        }
-
         public bool UseV2
         {
             get => Settings.Default.StartV2;

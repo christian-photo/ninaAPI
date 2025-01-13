@@ -135,7 +135,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/profile/show")]
         public void ProfileShow([QueryField] bool active)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -163,7 +162,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/profile/change-value")]
         public void ProfileChangeValue([QueryField] string settingpath, [QueryField] object newValue)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -211,7 +209,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/profile/switch")]
         public void ProfileSwitch([QueryField] string profileid)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try

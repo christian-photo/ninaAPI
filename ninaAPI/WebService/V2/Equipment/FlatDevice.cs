@@ -41,7 +41,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/flatdevice/info")]
         public void FlatDeviceInfo()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -63,7 +62,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/flatdevice/connect")]
         public async Task FlatDeviceConnect()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -89,7 +87,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/flatdevice/disconnect")]
         public async Task FlatDeviceDisconnect()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try

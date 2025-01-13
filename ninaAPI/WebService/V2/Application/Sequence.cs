@@ -44,7 +44,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/json")]
         public void SequenceJson()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -355,7 +354,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/start")]
         public void SequenceStart([QueryField] bool skipValidation)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -389,7 +387,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/stop")]
         public void SequenceStop()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -418,7 +415,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/reset")]
         public void SequenceReset()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -455,7 +451,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/load")]
         public void SequenceLoad([QueryField] string sequencename)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -484,7 +479,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/list-available")]
         public void SequenceGetAvailable()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try

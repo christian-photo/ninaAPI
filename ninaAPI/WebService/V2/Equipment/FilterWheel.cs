@@ -86,7 +86,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/filterwheel/info")]
         public void FilterWheelInfo()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -111,7 +110,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/filterwheel/connect")]
         public async Task FilterWheelConnect()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -137,7 +135,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/filterwheel/disconnect")]
         public async Task FilterWheelDisconnect()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -162,7 +159,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/filterwheel/change-filter")]
         public void FilterWheelChangeFilter([QueryField] int filterId)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -199,7 +195,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/filterwheel/filter-info")]
         public void FilterWheelFilterInfo([QueryField] int filterId)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try

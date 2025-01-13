@@ -27,7 +27,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/application/switch-tab")]
         public void ApplicationSwitchTab([QueryField] string tab)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -73,7 +72,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/application/screenshot")]
         public void ApplicationScreenshot([QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try

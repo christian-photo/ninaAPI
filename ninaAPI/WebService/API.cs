@@ -10,13 +10,11 @@
 #endregion "copyright"
 
 using EmbedIO;
-using EmbedIO.Cors;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
 using ninaAPI.Properties;
 using ninaAPI.Utility;
-using ninaAPI.WebService.V1;
 using ninaAPI.WebService.V2;
 using System;
 using System.Threading;
@@ -30,12 +28,9 @@ namespace ninaAPI.WebService
 
         private Thread serverThread;
 
-        public static NINALogMessageProcessor LogProcessor;
-        private static NINALogWatcher LogWatcher;
         private CancellationTokenSource apiToken;
         public readonly int Port;
 
-        public SynchronizationContext SyncContext { get; private set; } = SynchronizationContext.Current;
         public API()
         {
             Port = Settings.Default.Port;
@@ -45,22 +40,11 @@ namespace ninaAPI.WebService
         {
             Server = new WebServer(o => o
                 .WithUrlPrefix($"http://*:{Port}")
-                .WithMode(HttpListenerMode.EmbedIO));
-
-            Server.WithModule(new CustomHeaderModule());
-
-            if (Settings.Default.StartV1)
-            {
-                Server.WithWebApi("/api", m => m.WithController<Controller>());
-                Server.WithModule(new WebSocket("/socket"));
-            }
-
-            if (Settings.Default.StartV2)
-            {
-                Server.WithWebApi("/v2/api", m => m.WithController<ControllerV2>());
-                Server.WithModule(new WebSocketV2("/v2/socket"));
-                Server.WithModule(new TPPASocket("/v2/tppa"));
-            }
+                .WithMode(HttpListenerMode.EmbedIO))
+                .WithModule(new PreprocessRequestModule())
+                .WithWebApi("/v2/api", m => m.WithController<ControllerV2>())
+                .WithModule(new WebSocketV2("/v2/socket"))
+                .WithModule(new TPPASocket("/v2/tppa"));
         }
 
         public static void StartWatchers()
@@ -155,14 +139,15 @@ namespace ninaAPI.WebService
         }
     }
 
-    public class CustomHeaderModule : WebModuleBase
+    public class PreprocessRequestModule : WebModuleBase
     {
-        public CustomHeaderModule() : base("/")
+        public PreprocessRequestModule() : base("/")
         {
         }
 
         protected override Task OnRequestAsync(IHttpContext context)
         {
+            Logger.Trace($"Request: {context.Request.Url.OriginalString}");
             if (Settings.Default.UseAccessControlHeader)
             {
                 context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
