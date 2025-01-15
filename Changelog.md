@@ -1,5 +1,16 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
+## 2.1.2.0 (WIP)
+**⚠️ THIS UPDATE REMOVES V1 SUPPORT ⚠️**
+
+### Changes:
+- ⚠️ **Breaking** Removed support for the deprecated v1 api ⚠️
+- Added more endpoints to `flatdevice`:
+  - `flatdevice/set-cover` to open or close the cover
+  - `flatdevice/set-light` to toggle the light on or off
+  - `flatdevice/set-brightness` to change the brightness of the flatpanel
+- The server now automatically picks the next available port to launch the api. Can be disabled
+
 ## 2.1.0.* (betas) and 2.1.1.0
 
 I **heavily** advise everyone still using V1 to start using V2 as V1 is now deprecated and will be removed with the next minor version!
