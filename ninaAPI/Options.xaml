@@ -48,7 +48,7 @@
                 <TextBlock
                     Margin="0,0,5,0"
                     VerticalAlignment="Center"
-                    Text="⚠️Use Access-Control-Allow-Origin Header⚠️ (not recommended)"
+                    Text="⚠️Use Access-Control-Allow-Origin Header⚠️"
                     ToolTip="This makes it possible to fetch the api using javascript without having to set up a proxy. However it is advised to setup a proxy for security reasons. Though it is not recommended, it is required for some applications like Touch 'N' Stars" />
                 <CheckBox IsChecked="{Binding UseAccessHeader}" />
             </StackPanel>

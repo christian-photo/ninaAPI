@@ -104,11 +104,10 @@ namespace ninaAPI
                 Settings.Default.UpdateSettings = false;
                 CoreUtil.SaveSettings(Settings.Default);
             }
-            Port = CoreUtility.GetNearestAvailablePort(Port);
+            cachedPort = CoreUtility.GetNearestAvailablePort(Port);
             if (APIEnabled)
             {
-                Logger.Info($"starting API on port {Port}");
-                Server = new API(Port);
+                Server = new API(cachedPort);
                 Server.Start();
             }
 
@@ -127,6 +126,8 @@ namespace ninaAPI
             return base.Teardown();
         }
 
+        private int cachedPort = -1;
+
         public int Port
         {
             get => Settings.Default.Port;
@@ -134,6 +135,7 @@ namespace ninaAPI
             {
                 Settings.Default.Port = value;
                 CoreUtil.SaveSettings(Settings.Default);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
             }
         }
 
@@ -146,7 +148,8 @@ namespace ninaAPI
                 CoreUtil.SaveSettings(Settings.Default);
                 if (value)
                 {
-                    Server = new API(Port);
+                    cachedPort = CoreUtility.GetNearestAvailablePort(Port);
+                    Server = new API(cachedPort);
                     Server.Start();
                     Notification.ShowSuccess("API successfully started");
 
