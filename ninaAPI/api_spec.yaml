@@ -1185,6 +1185,203 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /equipment/flatdevice/set-light:
+    get:
+      tags:
+        - FlatDevice
+      summary: Set light
+      description: Set the light on the flatdevice
+      parameters:
+        - in: query
+          name: on
+          schema:
+            type: boolean
+          required: true
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: "Flatdevice light set"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+
+        "409":
+          description: Flatdevice not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: "Flatdevice not connected"
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/flatdevice/set-cover:
+    get:
+      tags:
+        - FlatDevice
+      summary: Set Cover
+      description: Set the cover to the specified position
+      parameters:
+        - name: closed
+          in: query
+          description: Indicates if the cover should be closed or open
+          required: true
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: "Flatdevice cover set"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+
+        "409":
+          description: Flatdevice not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: "Flatdevice not connected"
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/flatdevice/set-brightness:
+    get:
+      tags:
+        - FlatDevice
+      summary: Set Brightness
+      description: Set Brightness
+      parameters:
+        - name: brightness
+          in: query
+          description: Brightness
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: "Flatdevice brightness set"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+
+        "409":
+          description: Flatdevice not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: "Flatdevice not connected"
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /equipment/focuser/info:
     get:
       tags:

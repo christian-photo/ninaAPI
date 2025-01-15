@@ -31,9 +31,9 @@ namespace ninaAPI.WebService
         private CancellationTokenSource apiToken;
         public readonly int Port;
 
-        public API()
+        public API(int port)
         {
-            Port = Settings.Default.Port;
+            Port = port;
         }
 
         public void CreateServer()
@@ -109,8 +109,6 @@ namespace ninaAPI.WebService
                 apiToken?.Cancel();
                 Server?.Dispose();
                 Server = null;
-
-                Notification.ShowSuccess($"API stopped");
             }
             catch (Exception ex)
             {

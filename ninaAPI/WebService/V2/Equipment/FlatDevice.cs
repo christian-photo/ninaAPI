@@ -11,11 +11,13 @@
 
 using EmbedIO;
 using EmbedIO.Routing;
+using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyFlatDevice;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
@@ -98,6 +100,95 @@ namespace ninaAPI.WebService.V2
                     await flat.Disconnect();
                 }
                 response.Response = "Flatdevice disconnected";
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/flatdevice/set-light")]
+        public void FlatDeviceToggle([QueryField] bool on)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IFlatDeviceMediator flat = AdvancedAPI.Controls.FlatDevice;
+
+                if (flat.GetInfo().Connected)
+                {
+                    flat.ToggleLight(on, AdvancedAPI.Controls.StatusMediator.GetStatus(), new CancellationTokenSource().Token);
+                    response.Response = "Flatdevice light set";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable("Flatdevice not connected", 409);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/flatdevice/set-cover")]
+        public void FlatDeviceCover([QueryField] bool closed)
+        {
+            HttpResponse response = new HttpResponse();
+            try
+            {
+                IFlatDeviceMediator flat = AdvancedAPI.Controls.FlatDevice;
+
+                if (flat.GetInfo().Connected)
+                {
+                    if (closed)
+                    {
+                        flat.CloseCover(AdvancedAPI.Controls.StatusMediator.GetStatus(), new CancellationTokenSource().Token);
+                    }
+                    else
+                    {
+                        flat.OpenCover(AdvancedAPI.Controls.StatusMediator.GetStatus(), new CancellationTokenSource().Token);
+                    }
+                    response.Response = "Flatdevice cover set";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable("Flatdevice not connected", 409);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/flatdevice/set-brightness")]
+        public void FlatDeviceSetLight([QueryField] int brightness)
+        {
+            HttpResponse response = new HttpResponse();
+            try
+            {
+                IFlatDeviceMediator flat = AdvancedAPI.Controls.FlatDevice;
+
+                if (flat.GetInfo().Connected)
+                {
+                    flat.SetBrightness(brightness, AdvancedAPI.Controls.StatusMediator.GetStatus(), new CancellationTokenSource().Token);
+                    response.Response = "Flatdevice brightness set";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable("Flatdevice not connected", 409);
+                }
             }
             catch (Exception ex)
             {

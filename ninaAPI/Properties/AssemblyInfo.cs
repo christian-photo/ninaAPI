@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 
 // [MANDATORY] The assembly versioning
 //Should be incremented for each new build of a plugin
-[assembly: AssemblyVersion("2.1.1.0")] // last one is for beta
-[assembly: AssemblyFileVersion("2.1.1.0")]
+[assembly: AssemblyVersion("2.1.2.0")] // last one is for beta
+[assembly: AssemblyFileVersion("2.1.2.0")]
 
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]
@@ -47,7 +47,7 @@ using System.Runtime.InteropServices;
   
 ---
 If you have question/issues/feedback, you can create an issue [here](https://github.com/christian-photo/ninaAPI/issues), take a look at the
-[documentation](https://github.com/christian-photo/ninaAPI/wiki) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)    
+[documentation](https://bump.sh/christian-photo/doc/advanced-api/) and here for the [websockets](https://bump.sh/christian-photo/doc/advanced-api-websockets) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)    
 **Thanks to szymon and notzeeg (discord) for their help!**")]
 
 

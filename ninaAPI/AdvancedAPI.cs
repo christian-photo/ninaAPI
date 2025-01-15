@@ -24,9 +24,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using NINA.Image.Interfaces;
 using NINA.WPF.Base.Interfaces;
-using CommunityToolkit.Mvvm.Input;
 using NINA.PlateSolving.Interfaces;
 using ninaAPI.Utility;
+using NINA.Core.Utility.Notification;
+using Microsoft.Extensions.Logging;
+using NINA.Core.Utility;
 
 namespace ninaAPI
 {
@@ -67,6 +69,8 @@ namespace ninaAPI
                            IFramingAssistantVM framing)
         {
 
+            PluginId = this.Identifier;
+
             Controls = new NINAControls()
             {
                 Camera = camera,
@@ -98,32 +102,17 @@ namespace ninaAPI
             {
                 Settings.Default.Upgrade();
                 Settings.Default.UpdateSettings = false;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
             }
+            Port = CoreUtility.GetNearestAvailablePort(Port);
             if (APIEnabled)
             {
-                Server = new API();
+                Logger.Info($"starting API on port {Port}");
+                Server = new API(Port);
                 Server.Start();
-
-                SetHostNames();
             }
 
-            RestartAPI = new RelayCommand(() =>
-            {
-                if (Server != null)
-                {
-                    Server.Stop();
-                    Server = null;
-                }
-                if (APIEnabled)
-                {
-                    SetHostNames();
-                    Server = new API();
-                    Server.Start();
-                }
-            });
-
-            PluginId = this.Identifier;
+            SetHostNames();
             API.StartWatchers();
         }
 
@@ -144,7 +133,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.Port = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
             }
         }
 
@@ -154,7 +143,20 @@ namespace ninaAPI
             set
             {
                 Settings.Default.APIEnabled = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
+                if (value)
+                {
+                    Server = new API(Port);
+                    Server.Start();
+                    Notification.ShowSuccess("API successfully started");
+
+                }
+                else
+                {
+                    Server.Stop();
+                    Server = null;
+                    Notification.ShowSuccess("API successfully stopped");
+                }
             }
         }
 
@@ -164,7 +166,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.StartV2 = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
             }
         }
 
@@ -174,7 +176,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.UseAccessControlHeader = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
             }
         }
 
@@ -184,7 +186,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.LocalAdress = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalAdress)));
             }
         }
@@ -195,7 +197,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.LocalNetworkAdress = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalNetworkAdress)));
             }
         }
@@ -206,12 +208,10 @@ namespace ninaAPI
             set
             {
                 Settings.Default.HostAdress = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HostAdress)));
             }
         }
-
-        public RelayCommand RestartAPI { get; set; }
 
         private void SetHostNames()
         {
