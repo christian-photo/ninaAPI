@@ -40,6 +40,9 @@ namespace ninaAPI
         public static API Server;
 
         public static string PluginId { get; private set; }
+        private static AdvancedAPI instance;
+
+        private Communicator communicator;
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -71,6 +74,7 @@ namespace ninaAPI
         {
 
             PluginId = this.Identifier;
+            instance = this;
 
             Controls = new NINAControls()
             {
@@ -112,16 +116,23 @@ namespace ninaAPI
                 CachedPort = Port; // This may look useless, but that way the visibility only changes when cachedPort changes and not when the user enters a new port
             });
 
-            CachedPort = CoreUtility.GetNearestAvailablePort(Port);
             if (APIEnabled)
             {
+                CachedPort = CoreUtility.GetNearestAvailablePort(Port);
                 Server = new API(CachedPort);
                 Server.Start();
                 ShowNotificationIfPortChanged();
             }
 
+            communicator = new Communicator();
+
             SetHostNames();
             API.StartWatchers();
+        }
+
+        public static int GetCachedPort()
+        {
+            return instance.CachedPort;
         }
 
         private void ShowNotificationIfPortChanged()
@@ -140,6 +151,7 @@ namespace ninaAPI
                 Server = null;
             }
             API.StopWatchers();
+            communicator.Dispose();
             return base.Teardown();
         }
 
