@@ -27,7 +27,8 @@ using NINA.WPF.Base.Interfaces;
 using NINA.PlateSolving.Interfaces;
 using ninaAPI.Utility;
 using NINA.Core.Utility.Notification;
-using Microsoft.Extensions.Logging;
+using System.Windows;
+using CommunityToolkit.Mvvm.Input;
 using NINA.Core.Utility;
 
 namespace ninaAPI
@@ -104,15 +105,31 @@ namespace ninaAPI
                 Settings.Default.UpdateSettings = false;
                 CoreUtil.SaveSettings(Settings.Default);
             }
-            cachedPort = CoreUtility.GetNearestAvailablePort(Port);
+
+            UpdateDefaultPortCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
+            {
+                Port = CachedPort;
+                CachedPort = Port; // This may look useless, but that way the visibility only changes when cachedPort changes and not when the user enters a new port
+            });
+
+            CachedPort = CoreUtility.GetNearestAvailablePort(Port);
             if (APIEnabled)
             {
-                Server = new API(cachedPort);
+                Server = new API(CachedPort);
                 Server.Start();
+                ShowNotificationIfPortChanged();
             }
 
             SetHostNames();
             API.StartWatchers();
+        }
+
+        private void ShowNotificationIfPortChanged()
+        {
+            if (CachedPort != Port)
+            {
+                Notification.ShowInformation("Advanced API launched on a different port: " + CachedPort);
+            }
         }
 
         public override Task Teardown()
@@ -126,7 +143,31 @@ namespace ninaAPI
             return base.Teardown();
         }
 
+        public CommunityToolkit.Mvvm.Input.RelayCommand UpdateDefaultPortCommand { get; set; }
+
         private int cachedPort = -1;
+        public int CachedPort
+        {
+            get => cachedPort;
+            set
+            {
+                cachedPort = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CachedPort)));
+                PortVisibility = CachedPort == Port ? Visibility.Hidden : Visibility.Visible;
+                SetHostNames();
+            }
+        }
+
+        private Visibility portVisibility = Visibility.Hidden;
+        public Visibility PortVisibility
+        {
+            get => portVisibility;
+            set
+            {
+                portVisibility = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PortVisibility)));
+            }
+        }
 
         public int Port
         {
@@ -148,10 +189,11 @@ namespace ninaAPI
                 CoreUtil.SaveSettings(Settings.Default);
                 if (value)
                 {
-                    cachedPort = CoreUtility.GetNearestAvailablePort(Port);
-                    Server = new API(cachedPort);
+                    CachedPort = CoreUtility.GetNearestAvailablePort(Port);
+                    Server = new API(CachedPort);
                     Server.Start();
                     Notification.ShowSuccess("API successfully started");
+                    ShowNotificationIfPortChanged();
 
                 }
                 else
@@ -220,9 +262,9 @@ namespace ninaAPI
         {
             Dictionary<string, string> dict = CoreUtility.GetLocalNames();
 
-            LocalAdress = $"http://{dict["LOCALHOST"]}:{Port}/api";
-            LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{Port}/api";
-            HostAdress = $"http://{dict["HOSTNAME"]}:{Port}/api";
+            LocalAdress = $"http://{dict["LOCALHOST"]}:{CachedPort}/api";
+            LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{CachedPort}/api";
+            HostAdress = $"http://{dict["HOSTNAME"]}:{CachedPort}/api";
         }
     }
 }

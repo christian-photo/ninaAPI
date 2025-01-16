@@ -36,6 +36,7 @@ using NINA.Sequencer.SequenceItem.Platesolving;
 using NINA.Sequencer.SequenceItem.Switch;
 using NINA.Sequencer.SequenceItem.Telescope;
 using System.IO;
+using NINA.Astrometry;
 
 namespace ninaAPI.WebService.V2
 {
@@ -498,6 +499,45 @@ namespace ninaAPI.WebService.V2
                 }
 
                 response.Response = f;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/sequence/set-target")]
+        public void SequenceSetTarget([QueryField] string name, [QueryField] double ra, [QueryField] double dec, [QueryField] double rotation, [QueryField] int index)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
+
+                if (!sequence.Initialized)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence is not initialized", 409));
+                }
+                else
+                {
+                    var targets = sequence.GetAllTargetsInAdvancedSequence();
+                    if (targets.Count <= index)
+                    {
+                        response = CoreUtility.CreateErrorTable(CommonErrors.INDEX_OUT_OF_RANGE);
+                    }
+                    else
+                    {
+                        IDeepSkyObjectContainer container = targets[0];
+                        container.Target.InputCoordinates.Coordinates = new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000);
+                        container.Target.TargetName = name;
+                        container.Target.PositionAngle = rotation;
+                        response.Response = "Target updated";
+                    }
+                }
             }
             catch (Exception ex)
             {
