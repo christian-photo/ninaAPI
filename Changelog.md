@@ -9,7 +9,13 @@ The changes for each individual beta release can be seen [here](https://github.c
   - `flatdevice/set-cover` to open or close the cover
   - `flatdevice/set-light` to toggle the light on or off
   - `flatdevice/set-brightness` to change the brightness of the flatpanel
-- The server now automatically picks the next available port to launch the api. Can be disabled
+- Added more events regarding the flat panel:
+  - `FLAT-LIGHT-TOGGLED`
+  - `FLAT-COVER-OPENED`
+  - `FLAT-COVER-CLOSED`
+  - `FLAT-BRIGHTNESS-CHANGED`
+- Added `sequence/set-target` to update the target in a target container
+- The server now automatically picks the next available port to launch the api
 
 ## 2.1.0.* (betas) and 2.1.1.0
 
