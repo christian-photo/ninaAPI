@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -26,17 +26,29 @@ namespace ninaAPI.WebService.V2
     {
         private static readonly Func<object, EventArgs, Task> FlatDeviceConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-CONNECTED");
         private static readonly Func<object, EventArgs, Task> FlatDeviceDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-DISCONNECTED");
+        private static readonly Func<object, EventArgs, Task> FlatDeviceLightToggledHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-LIGHT-TOGGLED");
+        private static readonly Func<object, EventArgs, Task> FlatDeviceOpenedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-COVER-OPENED");
+        private static readonly Func<object, EventArgs, Task> FlatDeviceClosedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-COVER-CLOSED");
+        private static readonly Func<object, EventArgs, Task> FlatDeviceBrightnessChangedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-BRIGHTNESS-CHANGED");
 
         public static void StartFlatDeviceWatchers()
         {
             AdvancedAPI.Controls.FlatDevice.Connected += FlatDeviceConnectedHandler;
             AdvancedAPI.Controls.FlatDevice.Disconnected += FlatDeviceDisconnectedHandler;
+            AdvancedAPI.Controls.FlatDevice.LightToggled += FlatDeviceLightToggledHandler;
+            AdvancedAPI.Controls.FlatDevice.Opened += FlatDeviceOpenedHandler;
+            AdvancedAPI.Controls.FlatDevice.Closed += FlatDeviceClosedHandler;
+            AdvancedAPI.Controls.FlatDevice.BrightnessChanged += FlatDeviceBrightnessChangedHandler;
         }
 
         public static void StopFlatDeviceWatchers()
         {
             AdvancedAPI.Controls.FlatDevice.Connected -= FlatDeviceConnectedHandler;
             AdvancedAPI.Controls.FlatDevice.Disconnected -= FlatDeviceDisconnectedHandler;
+            AdvancedAPI.Controls.FlatDevice.LightToggled -= FlatDeviceLightToggledHandler;
+            AdvancedAPI.Controls.FlatDevice.Opened -= FlatDeviceOpenedHandler;
+            AdvancedAPI.Controls.FlatDevice.Closed -= FlatDeviceClosedHandler;
+            AdvancedAPI.Controls.FlatDevice.BrightnessChanged -= FlatDeviceBrightnessChangedHandler;
         }
 
 

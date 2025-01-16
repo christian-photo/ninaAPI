@@ -42,6 +42,10 @@ channels:
                         - FILTERWHEEL-CHANGED
                         - FLAT-CONNECTED
                         - FLAT-DISCONNECTED
+                        - FLAT-LIGHT-TOGGLED
+                        - FLAT-COVER-OPENED
+                        - FLAT-COVER-CLOSED
+                        - FLAT-BRIGHTNESS-CHANGED
                         - FOCUSER-CONNECTED
                         - FOCUSER-DISCONNECTED
                         - GUIDER-CONNECTED
