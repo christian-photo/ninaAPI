@@ -16,6 +16,7 @@ The changes for each individual beta release can be seen [here](https://github.c
   - `FLAT-BRIGHTNESS-CHANGED`
 - Added `sequence/set-target` to update the target in a target container
 - The server now automatically picks the next available port to launch the api
+- Implemented IMessageBroker for cross Plugin communication. Use Topic `AdvancedAPI.RequestPort` to request the port the api is running on, subscribe to `AdvancedAPI.Port` to recieve the answer. The port is directly written into Content
 
 ## 2.1.0.* (betas) and 2.1.1.0
 
