@@ -7,6 +7,7 @@ The changes for each individual beta release can be seen [here](https://github.c
   - `FILTERWHEEL-CHANGED` includes the previous and new filter
   - `FLAT-BRIGHTNESS-CHANGED` includes the previous and new brightness
   - `SAFETY-CHANGED` includes the new status
+- `image/{index}` now also includes parameters to configure the stretch parameters. These default to false if omitted 
 
 ## 2.1.2.0
 **⚠️ THIS UPDATE REMOVES V1 SUPPORT ⚠️**
