@@ -18,6 +18,7 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
 using ninaAPI.Utility;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
@@ -27,7 +28,10 @@ namespace ninaAPI.WebService.V2
 
         private static readonly Func<object, EventArgs, Task> SafetyConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-CONNECTED");
         private static readonly Func<object, EventArgs, Task> SafetyDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-DISCONNECTED");
-        private static readonly EventHandler<IsSafeEventArgs> SafetyIsSafeChangedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-CHANGED");
+        private static readonly EventHandler<IsSafeEventArgs> SafetyIsSafeChangedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent(
+            "SAFETY-CHANGED",
+            new Dictionary<string, object>() { { "IsSafe", e.IsSafe } });
+
         public static void StartSafetyWatchers()
         {
             AdvancedAPI.Controls.SafetyMonitor.Connected += SafetyConnectedHandler;

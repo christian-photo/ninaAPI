@@ -1220,8 +1220,8 @@ paths:
   /equipment/flatdevice/set-light:
     get:
       tags:
-        - FlatDevice
-      summary: Set light
+        - Flat Panel
+      summary: Set Light
       description: Set the light on the flatdevice
       parameters:
         - in: query
@@ -1285,7 +1285,7 @@ paths:
   /equipment/flatdevice/set-cover:
     get:
       tags:
-        - FlatDevice
+        - Flat Panel
       summary: Set Cover
       description: Set the cover to the specified position
       parameters:
@@ -1351,7 +1351,7 @@ paths:
   /equipment/flatdevice/set-brightness:
     get:
       tags:
-        - FlatDevice
+        - Flat Panel
       summary: Set Brightness
       description: Set Brightness
       parameters:

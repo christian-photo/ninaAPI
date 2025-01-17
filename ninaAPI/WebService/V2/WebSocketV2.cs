@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using Accord.IO;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebSockets;
@@ -57,21 +58,43 @@ namespace ninaAPI.WebService.V2
             instance = this;
         }
 
+        public static async Task SendAndAddEvent(string eventName, Dictionary<string, object> data)
+        {
+            await SendAndAddEvent(eventName, DateTime.Now, data);
+        }
+
         public static async Task SendAndAddEvent(string eventName)
         {
-            await SendAndAddEvent(eventName, DateTime.Now);
+            await SendAndAddEvent(eventName, DateTime.Now, null);
         }
 
         public static async Task SendAndAddEvent(string eventName, DateTime time)
         {
+            await SendAndAddEvent(eventName, time, null);
+        }
+
+        public static async Task SendAndAddEvent(string eventName, DateTime time, Dictionary<string, object> data)
+        {
             HttpResponse response = new HttpResponse();
             response.Type = HttpResponse.TypeSocket;
 
-            response.Response = new Hashtable()
+            Hashtable responseData = new Hashtable
             {
-                { "Event", eventName },
+                { "Event", eventName }
             };
-            HttpResponse Event = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", eventName }, { "Time", time } } };
+            if (data != null)
+            {
+                foreach (KeyValuePair<string, object> kvp in data)
+                {
+                    responseData.Add(kvp.Key, kvp.Value);
+                }
+            }
+
+            response.Response = responseData;
+
+            Hashtable eventTable = responseData.DeepClone();
+            eventTable.Add("Time", time);
+            HttpResponse Event = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = eventTable };
             Events.Add(Event);
 
             await SendEvent(response);

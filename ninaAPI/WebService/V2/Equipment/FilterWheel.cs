@@ -12,6 +12,7 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using NINA.Core.Model.Equipment;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyFilterWheel;
 using NINA.Equipment.Interfaces.Mediator;
@@ -57,17 +58,26 @@ namespace ninaAPI.WebService.V2
         public FInfo[] AvailableFilters { get; set; }
     }
 
+    [Serializable]
     public class FInfo
     {
         public string Name { get; set; }
         public int Id { get; set; }
+
+        public static FInfo FromFilter(FilterInfo f)
+        {
+            return new FInfo() { Name = f.Name, Id = f.Position };
+        }
     }
 
     public partial class ControllerV2
     {
         private static readonly Func<object, EventArgs, Task> FilterWheelConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-CONNECTED");
         private static readonly Func<object, EventArgs, Task> FilterWheelDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-DISCONNECTED");
-        private static readonly Func<object, EventArgs, Task> FilterWheelFilterChangedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-CHANGED");
+        private static readonly Func<object, FilterChangedEventArgs, Task> FilterWheelFilterChangedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent(
+            "FILTERWHEEL-CHANGED",
+            new Dictionary<string, object>() { { "Previous", FInfo.FromFilter(e.From) }, { "New", FInfo.FromFilter(e.To) } });
+
         public static void StartFilterWheelWatchers()
         {
             AdvancedAPI.Controls.FilterWheel.Connected += FilterWheelConnectedHandler;

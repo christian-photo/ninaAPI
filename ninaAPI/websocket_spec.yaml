@@ -39,13 +39,11 @@ channels:
                         - DOME-STOPPED
                         - FILTERWHEEL-CONNECTED
                         - FILTERWHEEL-DISCONNECTED
-                        - FILTERWHEEL-CHANGED
                         - FLAT-CONNECTED
                         - FLAT-DISCONNECTED
                         - FLAT-LIGHT-TOGGLED
                         - FLAT-COVER-OPENED
                         - FLAT-COVER-CLOSED
-                        - FLAT-BRIGHTNESS-CHANGED
                         - FOCUSER-CONNECTED
                         - FOCUSER-DISCONNECTED
                         - GUIDER-CONNECTED
@@ -65,7 +63,6 @@ channels:
                         - ROTATOR-DISCONNECTED
                         - SAFETY-CONNECTED
                         - SAFETY-DISCONNECTED
-                        - SAFETY-CHANGED
                         - SWITCH-CONNECTED
                         - SWITCH-DISCONNECTED
                         - WEATHER-CONNECTED
@@ -131,6 +128,99 @@ channels:
                           type: number
                         HFR:
                           type: number
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Filter Changed Response
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      example: FILTERWHEEL-CHANGED
+                    Previous:
+                      properties:
+                        Name:
+                          type: string
+                          example: Filter 1
+                        Íd:
+                          type: integer
+                          example: 1
+                    New:
+                      properties:
+                        Name:
+                          type: string
+                          example: Filter 2
+                        Íd:
+                          type: integer
+                          example: 2
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Flat Brightness Changed Response
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      example: FLAT-BRIGHTNESS-CHANGED
+                    Previous:
+                      type: integer
+                      example: 0
+                      description: Brightness in percent
+                    New:
+                      type: integer
+                      example: 100
+                      description: Brightness in percent
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Safety Changed Response
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      example: SAFETY-CHANGED
+                    IsSafe:
+                      type: boolean
+                      example: true
                 Error:
                   type: string
                 StatusCode:
