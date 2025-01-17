@@ -1225,7 +1225,7 @@ paths:
       description: Set the light on the flatdevice
       parameters:
         - in: query
-          name: on
+          name: "on"
           schema:
             type: boolean
           required: true
