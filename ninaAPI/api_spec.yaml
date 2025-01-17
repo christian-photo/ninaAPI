@@ -3230,6 +3230,26 @@ paths:
           schema:
             type: number
             format: double
+        - in: query
+          name: factor
+          description: The stretch factor to apply, between 0 and 1. Defaults to what is configured in the profile.
+          required: false
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: blackClipping
+          description: The black clipping to apply. Defaults to what is configured in the profile.
+          required: false
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: unlinked
+          description: Indicates if the stretch should be unlinked. Defaults to what is configured in the profile.
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
