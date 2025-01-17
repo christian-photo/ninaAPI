@@ -1,5 +1,13 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
+## 2.1.3.0 (WIP)
+### Changed:
+- Added query parameter `skipRescan` to all connect endpoints, which can be used to skip the rescanning process resulting in a faster connection
+- Some websockets events now include more information:
+  - `FILTERWHEEL-CHANGED` includes the previous and new filter
+  - `FLAT-BRIGHTNESS-CHANGED` includes the previous and new brightness
+  - `SAFETY-CHANGED` includes the new status
+
 ## 2.1.2.0
 **⚠️ THIS UPDATE REMOVES V1 SUPPORT ⚠️**
 
