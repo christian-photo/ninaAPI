@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,6 +11,7 @@
 
 using EmbedIO;
 using EmbedIO.Routing;
+using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MySafetyMonitor;
 using NINA.Equipment.Interfaces.Mediator;
@@ -64,7 +65,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/safetymonitor/connect")]
-        public async Task SafetyMonitorConnect()
+        public async Task SafetyMonitorConnect([QueryField] bool skipRescan)
         {
             HttpResponse response = new HttpResponse();
 
@@ -74,7 +75,10 @@ namespace ninaAPI.WebService.V2
 
                 if (!safetymonitor.GetInfo().Connected)
                 {
-                    await safetymonitor.Rescan();
+                    if (!skipRescan)
+                    {
+                        await safetymonitor.Rescan();
+                    }
                     await safetymonitor.Connect();
                 }
                 response.Response = "Safetymonitor connected";

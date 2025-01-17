@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -108,7 +108,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/filterwheel/connect")]
-        public async Task FilterWheelConnect()
+        public async Task FilterWheelConnect([QueryField] bool skipRescan)
         {
             HttpResponse response = new HttpResponse();
 
@@ -118,10 +118,14 @@ namespace ninaAPI.WebService.V2
 
                 if (!filterwheel.GetInfo().Connected)
                 {
-                    await filterwheel.Rescan();
+                    if (!skipRescan)
+                    {
+                        await filterwheel.Rescan();
+                    }
                     await filterwheel.Connect();
+
+                    response.Response = "Filterwheel connected";
                 }
-                response.Response = "Filterwheel connected";
             }
             catch (Exception ex)
             {

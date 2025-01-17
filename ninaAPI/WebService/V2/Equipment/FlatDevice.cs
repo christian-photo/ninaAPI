@@ -74,7 +74,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/flatdevice/connect")]
-        public async Task FlatDeviceConnect()
+        public async Task FlatDeviceConnect([QueryField] bool skipRescan)
         {
             HttpResponse response = new HttpResponse();
 
@@ -84,7 +84,10 @@ namespace ninaAPI.WebService.V2
 
                 if (!flat.GetInfo().Connected)
                 {
-                    await flat.Rescan();
+                    if (!skipRescan)
+                    {
+                        await flat.Rescan();
+                    }
                     await flat.Connect();
                 }
                 response.Response = "Flatdevice connected";

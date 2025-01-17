@@ -1,7 +1,7 @@
 ﻿#region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,6 +11,7 @@
 
 using EmbedIO;
 using EmbedIO.Routing;
+using EmbedIO.WebApi;
 using NINA.Core.Interfaces;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyGuider;
@@ -132,7 +133,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/guider/connect")]
-        public async Task GuiderConnect()
+        public async Task GuiderConnect([QueryField] bool skipRescan)
         {
             HttpResponse response = new HttpResponse();
 
@@ -142,7 +143,10 @@ namespace ninaAPI.WebService.V2
 
                 if (!guider.GetInfo().Connected)
                 {
-                    await guider.Rescan();
+                    if (!skipRescan)
+                    {
+                        await guider.Rescan();
+                    }
                     await guider.Connect();
                 }
                 response.Response = "Guider connected";

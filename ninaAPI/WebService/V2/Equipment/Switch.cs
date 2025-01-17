@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -64,7 +64,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/switch/connect")]
-        public async Task SwitchConnect()
+        public async Task SwitchConnect([QueryField] bool skipRescan)
         {
             HttpResponse response = new HttpResponse();
 
@@ -74,7 +74,10 @@ namespace ninaAPI.WebService.V2
 
                 if (!sw.GetInfo().Connected)
                 {
-                    await sw.Rescan();
+                    if (!skipRescan)
+                    {
+                        await sw.Rescan();
+                    }
                     await sw.Connect();
                 }
                 response.Response = "Switch connected";
