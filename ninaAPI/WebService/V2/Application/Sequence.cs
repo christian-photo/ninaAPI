@@ -535,6 +535,7 @@ namespace ninaAPI.WebService.V2
                         container.Target.InputCoordinates.Coordinates = new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000);
                         container.Target.TargetName = name;
                         container.Target.PositionAngle = rotation;
+                        container.Name = name;
                         response.Response = "Target updated";
                     }
                 }
