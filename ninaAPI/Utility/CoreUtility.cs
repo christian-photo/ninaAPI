@@ -1,7 +1,7 @@
 ﻿#region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,25 +10,22 @@
 #endregion "copyright"
 
 using EmbedIO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using NINA.Core.Model;
 using NINA.Sequencer.Container;
 using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Windows.Media.Imaging;
 using ninaAPI.WebService;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Xceed.Wpf.Toolkit.Core.Converters;
+using System.Net.NetworkInformation;
+using System.Diagnostics;
+using NINA.Core.Utility;
 
 namespace ninaAPI.Utility
 {
@@ -74,6 +71,36 @@ namespace ninaAPI.Utility
             return lazyNames.Value;
         }
 
+        public static bool IsPortAvailable(int port)
+        {
+            bool isPortAvailable = true;
+
+            IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
+            IPEndPoint[] ipEndPoints = ipGlobalProperties.GetActiveTcpListeners();
+
+            foreach (IPEndPoint endPoint in ipEndPoints)
+            {
+                if (endPoint.Port == port)
+                {
+                    isPortAvailable = false;
+                    break;
+                }
+            }
+
+            return isPortAvailable;
+        }
+
+        public static int GetNearestAvailablePort(int startPort)
+        {
+            using var watch = MyStopWatch.Measure();
+            int port = startPort;
+            while (!IsPortAvailable(port))
+            {
+                port++;
+            }
+            return port;
+        }
+
         private static string GetIPv4Address()
         {
             IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
@@ -86,44 +113,6 @@ namespace ninaAPI.Utility
                 }
             }
             return null;
-        }
-
-        public static string BitmapToBase64(Bitmap bmp)
-        {
-            Bitmap map = new Bitmap(bmp);
-            using (MemoryStream memory = new MemoryStream())
-            {
-                map.Save(memory, ImageFormat.Png);
-                return Convert.ToBase64String(memory.ToArray());
-            }
-        }
-
-        public static string BitmapToBase64(Bitmap bmp, int jpgQuality)
-        {
-            //Bitmap map = new Bitmap(bmp.Width, bmp.Height);
-            using (MemoryStream memory = new MemoryStream())
-            {
-                bmp.Save(memory, GetEncoder(ImageFormat.Jpeg), GetCompression(jpgQuality)); // backup compressed copy of image
-                return Convert.ToBase64String(memory.ToArray());
-            }
-        }
-
-        public static string EncoderToBase64(JpegBitmapEncoder encoder)
-        {
-            using (MemoryStream memory = new MemoryStream())
-            {
-                encoder.Save(memory);
-                return Convert.ToBase64String(memory.ToArray());
-            }
-        }
-
-        public static string EncoderToBase64(PngBitmapEncoder encoder)
-        {
-            using (MemoryStream memory = new MemoryStream())
-            {
-                encoder.Save(memory);
-                return Convert.ToBase64String(memory.ToArray());
-            }
         }
 
         public static HttpResponse CreateErrorTable(string message, int code = 500)
@@ -198,34 +187,6 @@ namespace ninaAPI.Utility
             }
             return str;
         }
-
-        /// <summary>
-        /// 1 = Lowest Quality
-        /// 25 = Low Quality
-        /// 50 = Medium Quality
-        /// 75 = High Quality
-        /// 100 = Highest Quality
-        /// </summary>
-        /// <returns></returns>
-        public static EncoderParameters GetCompression(int quality)
-        {
-            var encoderParameters = new EncoderParameters(1);
-            encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, quality);
-            return encoderParameters;
-        }
-
-        public static ImageCodecInfo GetEncoder(ImageFormat format)
-        {
-            var codecs = ImageCodecInfo.GetImageDecoders();
-            foreach (var codec in codecs)
-            {
-                if (codec.FormatID == format.Guid)
-                {
-                    return codec;
-                }
-            }
-            return null;
-        }
     }
 
     public class HttpResponse
@@ -253,24 +214,5 @@ namespace ninaAPI.Utility
         Switch,
         SafetyMonitor,
         Weather
-    }
-
-    public class IgnorePropertiesResolver : DefaultContractResolver
-    {
-        private readonly HashSet<string> ignoreProps;
-        public IgnorePropertiesResolver(IEnumerable<string> propNamesToIgnore)
-        {
-            ignoreProps = new HashSet<string>(propNamesToIgnore);
-        }
-
-        protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(System.Reflection.MemberInfo member, MemberSerialization memberSerialization)
-        {
-            Newtonsoft.Json.Serialization.JsonProperty property = base.CreateProperty(member, memberSerialization);
-            if (this.ignoreProps.Contains(property.PropertyName))
-            {
-                property.ShouldSerialize = _ => false;
-            }
-            return property;
-        }
     }
 }

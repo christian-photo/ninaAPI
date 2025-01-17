@@ -20,7 +20,7 @@
                     Text="API Enabled " />
                 <CheckBox IsChecked="{Binding APIEnabled}" />
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <!--<StackPanel Orientation="Horizontal">
                 <TextBlock
                     Width="100"
                     Margin="0,0,5,0"
@@ -33,21 +33,27 @@
                     Margin="0,0,5,0"
                     Text="Use V2 " />
                 <CheckBox IsChecked="{Binding UseV2}" />
-            </StackPanel>
+            </StackPanel>-->
             <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
                 <TextBlock
                     Width="100"
                     Margin="0,0,5,0"
                     Text="API Port " />
                 <TextBox Width="100" Text="{Binding Port}" />
+                <TextBlock Margin="20,0,0,0" Text="API running on port: " Visibility="{Binding PortVisibility}" />
+                <TextBlock Text="{Binding CachedPort}" Visibility="{Binding PortVisibility}" />
+                <Button Margin="10,0,0,0" Content="Update Default Port" Command="{Binding UpdateDefaultPortCommand}" Width="200" Visibility="{Binding PortVisibility}" ToolTip="This updates the port the api is launched on, meaning that the api will always launch on that port"/>
             </StackPanel>
+
+            <Separator Margin="30" />
+
             <StackPanel Orientation="Horizontal">
-                <Button
-                    Width="100"
-                    Margin="0,15,0,0"
-                    Command="{Binding RestartAPI}"
-                    Content="Restart API"
-                    ToolTip="Stops the API (and if enabled) starts it again. Useful if you created an API key or changed the port" />
+                <TextBlock
+                    Margin="0,0,5,0"
+                    VerticalAlignment="Center"
+                    Text="⚠️Use Access-Control-Allow-Origin Header⚠️"
+                    ToolTip="This makes it possible to fetch the api using javascript without having to set up a proxy. However it is advised to setup a proxy for security reasons. Though it is not recommended, it is required for some applications like Touch 'N' Stars" />
+                <CheckBox IsChecked="{Binding UseAccessHeader}" />
             </StackPanel>
 
             <Separator
@@ -93,17 +99,6 @@
                         </Hyperlink>
                     </TextBlock>
                 </StackPanel>
-            </StackPanel>
-
-            <Separator Margin="10" />
-
-            <StackPanel Orientation="Horizontal">
-                <TextBlock
-                    Margin="0,0,5,0"
-                    VerticalAlignment="Center"
-                    Text="⚠️Use Access-Control-Allow-Origin Header⚠️"
-                    ToolTip="This makes it possible to fetch the api using javascript without having to set up a proxy. However it is advised to use a proxy as this is more secure" />
-                <CheckBox IsChecked="{Binding UseAccessHeader}" />
             </StackPanel>
 
         </StackPanel>

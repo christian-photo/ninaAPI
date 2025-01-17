@@ -30,7 +30,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/version")]
         public void GetVersion()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpContext.WriteToResponse(new HttpResponse() { Response = Assembly.GetAssembly(typeof(AdvancedAPI)).GetName().Version.ToString() });
         }
     }

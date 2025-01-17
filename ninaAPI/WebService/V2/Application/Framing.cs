@@ -47,7 +47,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/framing/info")]
         public void FramingInfo()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -87,7 +86,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/framing/set-source")]
         public void FramingSetSource([QueryField] string source)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -117,7 +115,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/framing/set-coordinates")]
         public void FramingSetCoordinates([QueryField] double RAangle, [QueryField] double DECangle)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -139,7 +136,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/framing/slew")]
         public void FramingSlew([QueryField] string slew_option)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try
@@ -161,7 +157,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/framing/set-rotation")]
         public void FramingSetRotation([QueryField] double rotation)
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try

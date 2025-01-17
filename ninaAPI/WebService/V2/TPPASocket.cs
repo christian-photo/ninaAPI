@@ -1,7 +1,7 @@
 ﻿#region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -60,16 +60,16 @@ namespace ninaAPI.WebService.V2
 
         protected override Task OnClientConnectedAsync(IWebSocketContext context)
         {
-            Logger.Debug("TPPA WebSocket connected " + context.RemoteEndPoint.ToString());
+            Logger.Info("TPPA WebSocket connected " + context.RemoteEndPoint.ToString());
             return Task.CompletedTask;
         }
 
         public async Task Send(HttpResponse payload)
         {
-            Logger.Debug("Sending " + payload.Response + " to TPPA WebSocket");
+            Logger.Trace("Sending " + payload.Response + " to TPPA WebSocket");
             foreach (IWebSocketContext context in ActiveContexts)
             {
-                Logger.Debug("Sending to " + context.RemoteEndPoint.ToString());
+                Logger.Trace("Sending to " + context.RemoteEndPoint.ToString());
                 await SendAsync(context, JsonConvert.SerializeObject(payload));
             }
         }
@@ -80,7 +80,7 @@ namespace ninaAPI.WebService.V2
             if (message.Topic == "PolarAlignmentPlugin_PolarAlignment_AlignmentError" && message.Version == 1)
             {
                 Type t = message.Content.GetType();
-                
+
                 double AzimuthError = (double)t.GetProperty("AzimuthError").GetValue(message.Content, null);
                 double AltitudeError = (double)t.GetProperty("AltitudeError").GetValue(message.Content, null);
                 double TotalError = (double)t.GetProperty("TotalError").GetValue(message.Content, null);

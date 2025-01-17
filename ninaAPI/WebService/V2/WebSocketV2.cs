@@ -28,7 +28,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/event-history")]
         public void GetEventHistory()
         {
-            Logger.Debug($"API call: {HttpContext.Request.Url.AbsoluteUri}");
             HttpResponse response = new HttpResponse();
 
             try

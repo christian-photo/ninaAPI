@@ -1,7 +1,7 @@
 ﻿#region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -24,9 +24,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using NINA.Image.Interfaces;
 using NINA.WPF.Base.Interfaces;
-using CommunityToolkit.Mvvm.Input;
 using NINA.PlateSolving.Interfaces;
 using ninaAPI.Utility;
+using NINA.Core.Utility.Notification;
+using System.Windows;
+using NINA.Core.Utility;
 
 namespace ninaAPI
 {
@@ -37,6 +39,9 @@ namespace ninaAPI
         public static API Server;
 
         public static string PluginId { get; private set; }
+        private static AdvancedAPI instance;
+
+        private Communicator communicator;
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -66,6 +71,9 @@ namespace ninaAPI
                            IMessageBroker broker,
                            IFramingAssistantVM framing)
         {
+
+            PluginId = this.Identifier;
+            instance = this;
 
             Controls = new NINAControls()
             {
@@ -98,33 +106,40 @@ namespace ninaAPI
             {
                 Settings.Default.Upgrade();
                 Settings.Default.UpdateSettings = false;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
-            }
-            if (APIEnabled)
-            {
-                Server = new API();
-                Server.Start();
-
-                SetHostNames();
+                CoreUtil.SaveSettings(Settings.Default);
             }
 
-            RestartAPI = new RelayCommand(() =>
+            UpdateDefaultPortCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
             {
-                if (Server != null)
-                {
-                    Server.Stop();
-                    Server = null;
-                }
-                if (APIEnabled)
-                {
-                    SetHostNames();
-                    Server = new API();
-                    Server.Start();
-                }
+                Port = CachedPort;
+                CachedPort = Port; // This may look useless, but that way the visibility only changes when cachedPort changes and not when the user enters a new port
             });
 
-            PluginId = this.Identifier;
+            if (APIEnabled)
+            {
+                CachedPort = CoreUtility.GetNearestAvailablePort(Port);
+                Server = new API(CachedPort);
+                Server.Start();
+                ShowNotificationIfPortChanged();
+            }
+
+            communicator = new Communicator();
+
+            SetHostNames();
             API.StartWatchers();
+        }
+
+        public static int GetCachedPort()
+        {
+            return instance.CachedPort;
+        }
+
+        private void ShowNotificationIfPortChanged()
+        {
+            if (CachedPort != Port)
+            {
+                Notification.ShowInformation("Advanced API launched on a different port: " + CachedPort);
+            }
         }
 
         public override Task Teardown()
@@ -135,7 +150,34 @@ namespace ninaAPI
                 Server = null;
             }
             API.StopWatchers();
+            communicator.Dispose();
             return base.Teardown();
+        }
+
+        public CommunityToolkit.Mvvm.Input.RelayCommand UpdateDefaultPortCommand { get; set; }
+
+        private int cachedPort = -1;
+        public int CachedPort
+        {
+            get => cachedPort;
+            set
+            {
+                cachedPort = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CachedPort)));
+                PortVisibility = CachedPort == Port ? Visibility.Hidden : Visibility.Visible;
+                SetHostNames();
+            }
+        }
+
+        private Visibility portVisibility = Visibility.Hidden;
+        public Visibility PortVisibility
+        {
+            get => portVisibility;
+            set
+            {
+                portVisibility = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PortVisibility)));
+            }
         }
 
         public int Port
@@ -144,7 +186,8 @@ namespace ninaAPI
             set
             {
                 Settings.Default.Port = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
             }
         }
 
@@ -154,17 +197,22 @@ namespace ninaAPI
             set
             {
                 Settings.Default.APIEnabled = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
-            }
-        }
+                CoreUtil.SaveSettings(Settings.Default);
+                if (value)
+                {
+                    CachedPort = CoreUtility.GetNearestAvailablePort(Port);
+                    Server = new API(CachedPort);
+                    Server.Start();
+                    Notification.ShowSuccess("API successfully started");
+                    ShowNotificationIfPortChanged();
 
-        public bool UseV1
-        {
-            get => Settings.Default.StartV1;
-            set
-            {
-                Settings.Default.StartV1 = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                }
+                else
+                {
+                    Server.Stop();
+                    Server = null;
+                    Notification.ShowSuccess("API successfully stopped");
+                }
             }
         }
 
@@ -174,7 +222,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.StartV2 = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
             }
         }
 
@@ -184,7 +232,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.UseAccessControlHeader = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
             }
         }
 
@@ -194,7 +242,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.LocalAdress = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalAdress)));
             }
         }
@@ -205,7 +253,7 @@ namespace ninaAPI
             set
             {
                 Settings.Default.LocalNetworkAdress = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalNetworkAdress)));
             }
         }
@@ -216,20 +264,18 @@ namespace ninaAPI
             set
             {
                 Settings.Default.HostAdress = value;
-                NINA.Core.Utility.CoreUtil.SaveSettings(Settings.Default);
+                CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HostAdress)));
             }
         }
-
-        public RelayCommand RestartAPI { get; set; }
 
         private void SetHostNames()
         {
             Dictionary<string, string> dict = CoreUtility.GetLocalNames();
 
-            LocalAdress = $"http://{dict["LOCALHOST"]}:{Port}/api";
-            LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{Port}/api";
-            HostAdress = $"http://{dict["HOSTNAME"]}:{Port}/api";
+            LocalAdress = $"http://{dict["LOCALHOST"]}:{CachedPort}/api";
+            LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{CachedPort}/api";
+            HostAdress = $"http://{dict["HOSTNAME"]}:{CachedPort}/api";
         }
     }
 }
