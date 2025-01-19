@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,6 +11,7 @@
 
 using EmbedIO;
 using EmbedIO.Routing;
+using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyDome;
 using NINA.Equipment.Interfaces;
@@ -76,7 +77,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/dome/connect")]
-        public async Task DomeConnect()
+        public async Task DomeConnect([QueryField] bool skipRescan)
         {
             HttpResponse response = new HttpResponse();
 
@@ -86,7 +87,10 @@ namespace ninaAPI.WebService.V2
 
                 if (!dome.GetInfo().Connected)
                 {
-                    await dome.Rescan();
+                    if (!skipRescan)
+                    {
+                        await dome.Rescan();
+                    }
                     await dome.Connect();
                 }
                 response.Response = "Dome connected";

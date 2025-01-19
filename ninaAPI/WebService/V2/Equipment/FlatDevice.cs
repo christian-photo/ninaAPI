@@ -17,6 +17,7 @@ using NINA.Equipment.Equipment.MyFlatDevice;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,7 +30,9 @@ namespace ninaAPI.WebService.V2
         private static readonly Func<object, EventArgs, Task> FlatDeviceLightToggledHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-LIGHT-TOGGLED");
         private static readonly Func<object, EventArgs, Task> FlatDeviceOpenedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-COVER-OPENED");
         private static readonly Func<object, EventArgs, Task> FlatDeviceClosedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-COVER-CLOSED");
-        private static readonly Func<object, EventArgs, Task> FlatDeviceBrightnessChangedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-BRIGHTNESS-CHANGED");
+        private static readonly Func<object, FlatDeviceBrightnessChangedEventArgs, Task> FlatDeviceBrightnessChangedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent(
+            "FLAT-BRIGHTNESS-CHANGED",
+            new Dictionary<string, object>() { { "Previous", e.From }, { "New", e.To } });
 
         public static void StartFlatDeviceWatchers()
         {
@@ -74,7 +77,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/flatdevice/connect")]
-        public async Task FlatDeviceConnect()
+        public async Task FlatDeviceConnect([QueryField] bool skipRescan)
         {
             HttpResponse response = new HttpResponse();
 
@@ -84,7 +87,10 @@ namespace ninaAPI.WebService.V2
 
                 if (!flat.GetInfo().Connected)
                 {
-                    await flat.Rescan();
+                    if (!skipRescan)
+                    {
+                        await flat.Rescan();
+                    }
                     await flat.Connect();
                 }
                 response.Response = "Flatdevice connected";

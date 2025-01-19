@@ -1,7 +1,7 @@
 ﻿#region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -75,7 +75,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/mount/connect")]
-        public async Task MountConnect()
+        public async Task MountConnect([QueryField] bool skipRescan)
         {
             HttpResponse response = new HttpResponse();
 
@@ -85,7 +85,10 @@ namespace ninaAPI.WebService.V2
 
                 if (!mount.GetInfo().Connected)
                 {
-                    await mount.Rescan();
+                    if (!skipRescan)
+                    {
+                        await mount.Rescan();
+                    }
                     await mount.Connect();
                 }
                 response.Response = "Mount connected";

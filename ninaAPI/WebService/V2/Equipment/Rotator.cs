@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -65,7 +65,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/rotator/connect")]
-        public async Task RotatorConnect()
+        public async Task RotatorConnect([QueryField] bool skipRescan)
         {
             HttpResponse response = new HttpResponse();
 
@@ -75,7 +75,10 @@ namespace ninaAPI.WebService.V2
 
                 if (!rotator.GetInfo().Connected)
                 {
-                    await rotator.Rescan();
+                    if (!skipRescan)
+                    {
+                        await rotator.Rescan();
+                    }
                     await rotator.Connect();
                 }
                 response.Response = "Rotator connected";

@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,12 +11,14 @@
 
 using EmbedIO;
 using EmbedIO.Routing;
+using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MySafetyMonitor;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
 using ninaAPI.Utility;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
@@ -26,7 +28,10 @@ namespace ninaAPI.WebService.V2
 
         private static readonly Func<object, EventArgs, Task> SafetyConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-CONNECTED");
         private static readonly Func<object, EventArgs, Task> SafetyDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-DISCONNECTED");
-        private static readonly EventHandler<IsSafeEventArgs> SafetyIsSafeChangedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-CHANGED");
+        private static readonly EventHandler<IsSafeEventArgs> SafetyIsSafeChangedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent(
+            "SAFETY-CHANGED",
+            new Dictionary<string, object>() { { "IsSafe", e.IsSafe } });
+
         public static void StartSafetyWatchers()
         {
             AdvancedAPI.Controls.SafetyMonitor.Connected += SafetyConnectedHandler;
@@ -64,7 +69,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/safetymonitor/connect")]
-        public async Task SafetyMonitorConnect()
+        public async Task SafetyMonitorConnect([QueryField] bool skipRescan)
         {
             HttpResponse response = new HttpResponse();
 
@@ -74,7 +79,10 @@ namespace ninaAPI.WebService.V2
 
                 if (!safetymonitor.GetInfo().Connected)
                 {
-                    await safetymonitor.Rescan();
+                    if (!skipRescan)
+                    {
+                        await safetymonitor.Rescan();
+                    }
                     await safetymonitor.Connect();
                 }
                 response.Response = "Safetymonitor connected";

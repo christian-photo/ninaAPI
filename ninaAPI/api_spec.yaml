@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.0.*
-  version: 1.0.0
+  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.3.*
+  version: 2.1.3
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -32,7 +32,15 @@ paths:
       tags:
         - Camera
       summary: Connect
-      description: This endpoint connects the camera.
+      description: Connect to Camera
+      parameters:
+        - in: query
+          name: skipRescan
+          required: false
+          description: Indicates if rescan should be skipped
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Successful response
@@ -639,6 +647,14 @@ paths:
         - Dome
       summary: Connect
       description: Connect to Dome
+      parameters:
+        - in: query
+          name: skipRescan
+          required: false
+          description: Indicates if rescan should be skipped
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Successful response
@@ -909,6 +925,14 @@ paths:
         - FilterWheel
       summary: Connect
       description: Connect to Filterwheel
+      parameters:
+        - in: query
+          name: skipRescan
+          required: false
+          description: Indicates if rescan should be skipped
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Successful response
@@ -1119,6 +1143,14 @@ paths:
         - Flat Panel
       summary: Connect
       description: Connect the flat panel
+      parameters:
+        - in: query
+          name: skipRescan
+          required: false
+          description: Indicates if rescan should be skipped
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Successful response
@@ -1188,12 +1220,12 @@ paths:
   /equipment/flatdevice/set-light:
     get:
       tags:
-        - FlatDevice
-      summary: Set light
+        - Flat Panel
+      summary: Set Light
       description: Set the light on the flatdevice
       parameters:
         - in: query
-          name: on
+          name: "on"
           schema:
             type: boolean
           required: true
@@ -1253,7 +1285,7 @@ paths:
   /equipment/flatdevice/set-cover:
     get:
       tags:
-        - FlatDevice
+        - Flat Panel
       summary: Set Cover
       description: Set the cover to the specified position
       parameters:
@@ -1319,7 +1351,7 @@ paths:
   /equipment/flatdevice/set-brightness:
     get:
       tags:
-        - FlatDevice
+        - Flat Panel
       summary: Set Brightness
       description: Set Brightness
       parameters:
@@ -1410,7 +1442,15 @@ paths:
       tags:
         - Focuser
       summary: Connect
-      description: Connect the focuser
+      description: Connect to Focuser
+      parameters:
+        - in: query
+          name: skipRescan
+          required: false
+          description: Indicates if rescan should be skipped
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Successful response
@@ -1632,7 +1672,15 @@ paths:
       tags:
         - Guider
       summary: Connect
-      description: Connect to guider
+      description: Connect to Guider
+      parameters:
+        - in: query
+          name: skipRescan
+          required: false
+          description: Indicates if rescan should be skipped
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Successful response
@@ -1840,7 +1888,15 @@ paths:
       tags:
         - Mount
       summary: Connect
-      description: Connect to mount
+      description: Connect to Mount
+      parameters:
+        - in: query
+          name: skipRescan
+          required: false
+          description: Indicates if rescan should be skipped
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Successful response
@@ -2185,7 +2241,15 @@ paths:
       tags:
         - Rotator
       summary: Connect
-      description: Connect to rotator
+      description: Connect to Rotator
+      parameters:
+        - in: query
+          name: skipRescan
+          required: false
+          description: Indicates if rescan should be skipped
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Successful response
@@ -2408,6 +2472,14 @@ paths:
         - Safety Monitor
       summary: Connect
       description: Connect to safety monitor
+      parameters:
+        - in: query
+          name: skipRescan
+          required: false
+          description: Indicates if rescan should be skipped
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Successful response
@@ -2499,7 +2571,15 @@ paths:
       tags:
         - Switch
       summary: Connect
-      description: Connect to switch
+      description: Connect to Switch
+      parameters:
+        - in: query
+          name: skipRescan
+          required: false
+          description: Indicates if rescan should be skipped
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Successful response
@@ -2665,6 +2745,14 @@ paths:
         - Weather
       summary: Connect
       description: Connect to weather source
+      parameters:
+        - in: query
+          name: skipRescan
+          required: false
+          description: Indicates if rescan should be skipped
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Successful response
@@ -3142,6 +3230,26 @@ paths:
           schema:
             type: number
             format: double
+        - in: query
+          name: factor
+          description: The stretch factor to apply, between 0 and 1. Defaults to what is configured in the profile.
+          required: false
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: blackClipping
+          description: The black clipping to apply. Defaults to what is configured in the profile.
+          required: false
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: unlinked
+          description: Indicates if the stretch should be unlinked. Defaults to what is configured in the profile.
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response

@@ -78,9 +78,23 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/image/{index}")]
-        public async Task GetImage(int index, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale)
+        public async Task GetImage(int index, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale, [QueryField] double factor, [QueryField] double blackClipping, [QueryField] bool unlinked)
         {
             HttpResponse response = new HttpResponse();
+            IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+
+            if (HttpContext.IsParameterOmitted(nameof(factor)))
+            {
+                factor = profile.ImageSettings.AutoStretchFactor;
+            }
+            if (HttpContext.IsParameterOmitted(nameof(blackClipping)))
+            {
+                blackClipping = profile.ImageSettings.BlackClipping;
+            }
+            if (HttpContext.IsParameterOmitted(nameof(unlinked)))
+            {
+                unlinked = profile.ImageSettings.UnlinkedStretch;
+            }
 
             quality = Math.Clamp(quality, -1, 100);
             if (quality == 0)
@@ -111,14 +125,12 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
                     ImageHistoryPoint p = hist.ImageHistory[index]; // Get the historyPoint at the specified index for the image
 
                     IImageData imageData = await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.LocalPath, 16, true, RawConverterEnum.FREEIMAGE);
                     IRenderedImage renderedImage = imageData.RenderImage();
 
-                    // Stretch the image for preview, could be made adjustable with url parameters
-                    renderedImage = await renderedImage.Stretch(profile.ImageSettings.AutoStretchFactor, profile.ImageSettings.BlackClipping, profile.ImageSettings.UnlinkedStretch);
+                    renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);
                     var bitmap = renderedImage.Image;
 
                     if (scale == 0 && resize)
