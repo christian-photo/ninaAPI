@@ -185,7 +185,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/guider/start")]
-        public async Task GuiderStart()
+        public async Task GuiderStart([QueryField] bool calibrate)
         {
             HttpResponse response = new HttpResponse();
 
@@ -197,7 +197,7 @@ namespace ninaAPI.WebService.V2
                 {
                     GuideToken?.Cancel();
                     GuideToken = new CancellationTokenSource();
-                    await guider.StartGuiding(false, AdvancedAPI.Controls.StatusMediator.GetStatus(), GuideToken.Token);
+                    await guider.StartGuiding(calibrate, AdvancedAPI.Controls.StatusMediator.GetStatus(), GuideToken.Token);
                     response.Response = "Guiding started";
                 }
                 else

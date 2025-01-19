@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.3.*
-  version: 2.1.3
+  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.4.*
+  version: 2.1.4
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -1754,6 +1754,13 @@ paths:
         - Guider
       summary: Start Guiding
       description: Start guiding
+      parameters:
+        - in: query
+          name: calibrate
+          description: Whether to force the guider to calibrate before start guiding
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
