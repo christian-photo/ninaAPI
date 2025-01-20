@@ -1,5 +1,12 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
+## 2.1.4.0 (WIP)
+### Changes:
+- `guider/start` now accepts the parameter calibrate to force a calibration (true / false)
+- Guider info now contains a State field indicating what the guider is currently doing
+- `guider/clear-calibration` added to clear the current calibration
+- `guider/graph` to get the last n guide steps as configured on the guide graph in NINA (in NINA you can set x to be 50, 100, 200 or 400)
+
 ## 2.1.3.0
 ### Changes:
 - Added query parameter `skipRescan` to all connect endpoints, which can be used to skip the rescanning process resulting in a faster connection
