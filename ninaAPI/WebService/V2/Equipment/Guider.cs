@@ -12,10 +12,15 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using NINA.Core.Enum;
 using NINA.Core.Interfaces;
 using NINA.Core.Utility;
+using NINA.Equipment.Equipment;
 using NINA.Equipment.Equipment.MyGuider;
+using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.Equipment.Interfaces.ViewModel;
+using NINA.WPF.Base.Mediator;
 using ninaAPI.Utility;
 using System;
 using System.Collections.Generic;
@@ -26,7 +31,7 @@ namespace ninaAPI.WebService.V2
 {
     public class GuideInfo
     {
-        public GuideInfo(GuiderInfo inf, GuideStep step)
+        public GuideInfo(GuiderInfo inf, GuideStep step, string state)
         {
             Connected = inf.Connected;
             Name = inf.Name;
@@ -42,6 +47,8 @@ namespace ninaAPI.WebService.V2
             RMSError = inf.RMSError;
             PixelScale = inf.PixelScale;
             LastGuideStep = step;
+
+            State = state;
         }
 
         public bool Connected { get; set; }
@@ -63,6 +70,7 @@ namespace ninaAPI.WebService.V2
 
         public double PixelScale { get; set; }
         public GuideStep LastGuideStep { get; set; }
+        public string State { get; set; }
     }
 
     public class GuideStep
@@ -120,7 +128,9 @@ namespace ninaAPI.WebService.V2
             {
                 IGuiderMediator guider = AdvancedAPI.Controls.Guider;
 
-                GuideInfo info = new GuideInfo(guider.GetInfo(), lastGuideStep);
+                IGuider g = (IGuider)guider.GetDevice();
+
+                GuideInfo info = new GuideInfo(guider.GetInfo(), lastGuideStep, g?.State);
                 response.Response = info;
             }
             catch (Exception ex)
@@ -232,6 +242,63 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Guider not connected", 409));
                 }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/guider/clear-calibration")]
+        public async Task ClearCalibration()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
+
+                if (guider.GetInfo().Connected)
+                {
+                    response.Success = await guider.ClearCalibration(new CancellationTokenSource().Token);
+                    response.Response = "Calibration cleared";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Guider not connected", 409));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/guider/graph")]
+        public void GuiderGraph()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
+
+                var handlerField = guider.GetType().GetField("handler",
+                    System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.FlattenHierarchy);
+
+                IGuiderVM gvm = (IGuiderVM)handlerField.GetValue(guider);
+                var guiderProperty = gvm.GetType().GetProperty("GuideStepsHistory");
+
+                GuideStepsHistory history = (GuideStepsHistory)guiderProperty.GetValue(gvm);
+                response.Response = history;
             }
             catch (Exception ex)
             {

@@ -1871,6 +1871,84 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /equipment/guider/clear-calibration:
+    get:
+      tags:
+        - Guider
+      summary: Clear Calibration
+      description: Clears the calibration data, forces the guider to recalibrate when it starts guiding
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Calibration cleared
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Guider not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Guider not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/guider/graph:
+    get:
+      tags:
+        - Guider
+      summary: Graph
+      description: Gets the last n guide steps needed to construct a graph, with n being the number of saved steps as configured on the graph in NINA
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuideStepsHistory"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /equipment/mount/info:
     get:
       tags:
@@ -4894,6 +4972,14 @@ components:
                 - DECDistanceRaw
                 - RADuration
                 - DECDuration
+            State:
+              type: string
+              enum:
+                - Looping
+                - LostLock
+                - Guiding
+                - Stopped
+                - Calibrating
           required:
             - Connected
             - CanClearCalibration
@@ -6341,6 +6427,7 @@ components:
                   GlobalTriggers:
                     type: array
                     items: {}
+
         Error:
           type: string
           example: ""
@@ -6353,6 +6440,89 @@ components:
         Type:
           type: string
           example: "API"
+
+    GuideStepsHistory:
+      type: object
+      properties:
+        Response:
+          type: object
+          properties:
+            RMS:
+              type: object
+              properties:
+                RA:
+                  type: number
+                Dec:
+                  type: number
+                Total:
+                  type: number
+                RAText:
+                  type: string
+                DecText:
+                  type: string
+                TotalText:
+                  type: string
+                PeakRAText:
+                  type: string
+                PeakDecText:
+                  type: string
+                Scale:
+                  type: number
+                PeakRA:
+                  type: number
+                PeakDec:
+                  type: number
+                DataPoints:
+                  type: integer
+            Interval:
+              type: integer
+            MaxY:
+              type: integer
+            MinY:
+              type: integer
+            MaxDurationY:
+              type: integer
+            MinDurationY:
+              type: integer
+            GuideSteps:
+              type: array
+              items:
+                type: object
+                properties:
+                  Id:
+                    type: integer
+                  IdOffsetLeft:
+                    type: number
+                  IdOffsetRight:
+                    type: number
+                  RADistanceRaw:
+                    type: number
+                  RADistanceRawDisplay:
+                    type: number
+                  RADuration:
+                    type: integer
+                  DECDistanceRaw:
+                    type: number
+                  DECDistanceRawDisplay:
+                    type: number
+                  DECDuration:
+                    type: integer
+                  Dither:
+                    type: string
+            HistorySize:
+              type: integer
+            PixelScale:
+              type: number
+            Scale:
+              type: integer
+        Error:
+          type: string
+        StatusCode:
+          type: integer
+        Success:
+          type: boolean
+        Type:
+          type: string
 
     UnknownError:
       type: object
