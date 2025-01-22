@@ -1,6 +1,6 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
-## 2.1.4.0 (WIP)
+## 2.1.4.0
 ### Changes:
 - `guider/start` now accepts the parameter calibrate to force a calibration (true / false)
 - Guider info now contains a State field indicating what the guider is currently doing
