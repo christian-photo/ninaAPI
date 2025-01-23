@@ -23,9 +23,11 @@ using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
+
     public partial class ControllerV2
     {
         private static CancellationTokenSource DomeToken;
+        private static CancellationTokenSource FollowToken;
 
         private static readonly Func<object, EventArgs, Task> DomeConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-CONNECTED");
         private static readonly Func<object, EventArgs, Task> DomeDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-DISCONNECTED");
@@ -141,14 +143,17 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 409));
                 }
-                if (dome.GetInfo().ShutterStatus == ShutterState.ShutterOpen || dome.GetInfo().ShutterStatus == ShutterState.ShutterOpening)
+                else if (dome.GetInfo().ShutterStatus == ShutterState.ShutterOpen || dome.GetInfo().ShutterStatus == ShutterState.ShutterOpening)
                 {
                     response.Response = "Shutter already open";
                 }
-                DomeToken?.Cancel();
-                DomeToken = new CancellationTokenSource();
-                dome.OpenShutter(DomeToken.Token);
-                response.Response = "Shutter opening";
+                else
+                {
+                    DomeToken?.Cancel();
+                    DomeToken = new CancellationTokenSource();
+                    dome.OpenShutter(DomeToken.Token);
+                    response.Response = "Shutter opening";
+                }
             }
             catch (Exception ex)
             {
@@ -172,14 +177,17 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 409));
                 }
-                if (dome.GetInfo().ShutterStatus == ShutterState.ShutterClosed || dome.GetInfo().ShutterStatus == ShutterState.ShutterClosing)
+                else if (dome.GetInfo().ShutterStatus == ShutterState.ShutterClosed || dome.GetInfo().ShutterStatus == ShutterState.ShutterClosing)
                 {
                     response.Response = "Shutter already closed";
                 }
-                DomeToken?.Cancel();
-                DomeToken = new CancellationTokenSource();
-                dome.CloseShutter(DomeToken.Token);
-                response.Response = "Shutter closing";
+                else
+                {
+                    DomeToken?.Cancel();
+                    DomeToken = new CancellationTokenSource();
+                    dome.CloseShutter(DomeToken.Token);
+                    response.Response = "Shutter closing";
+                }
             }
             catch (Exception ex)
             {
@@ -206,9 +214,70 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 409));
                 }
+                else
+                {
+                    DomeToken?.Cancel();
+                    response.Response = "Movement stopped";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
 
-                DomeToken?.Cancel();
-                response.Response = "Movement stopped";
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/dome/set-follow")]
+        public async Task DomeEnableFollow([QueryField] bool enabled)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IDomeMediator dome = AdvancedAPI.Controls.Dome;
+
+                if (!dome.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 409));
+                }
+                else
+                {
+                    FollowToken?.Cancel();
+                    FollowToken = new CancellationTokenSource();
+                    response.Success = enabled ? await dome.EnableFollowing(FollowToken.Token) : await dome.DisableFollowing(FollowToken.Token);
+                    response.Response = enabled ? "Following enabled" : "Following disabled";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/dome/sync")]
+        public void DomeSync()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IDomeMediator dome = AdvancedAPI.Controls.Dome;
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!dome.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 409));
+                }
+                else
+                {
+                    dome.SyncToScopeCoordinates(mount.GetInfo().Coordinates, mount.GetInfo().SideOfPier, new CancellationTokenSource().Token);
+                    response.Response = "Dome Sync Started";
+                }
             }
             catch (Exception ex)
             {

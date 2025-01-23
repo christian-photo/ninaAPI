@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Image.Interfaces;
 using NINA.PlateSolving.Interfaces;
@@ -36,6 +37,7 @@ namespace ninaAPI
         public ISafetyMonitorMediator SafetyMonitor;
         public IAutoFocusVMFactory AutoFocusFactory;
         public IWeatherDataMediator Weather;
+        public IDomeFollower DomeFollower;
         #endregion
 
         #region Image

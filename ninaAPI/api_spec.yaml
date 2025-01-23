@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.4.*
-  version: 2.1.4
+  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.5.*
+  version: 2.1.5
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -858,6 +858,124 @@ paths:
                   Response:
                     type: string
                     example: Movement stopped
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Dome not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Dome not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/dome/set-follow:
+    get:
+      tags:
+        - Dome
+      summary: Set Dome Follow
+      description: Start or stop the dome to follow the telescope
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Following enabled
+                      - Following disabled
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Dome not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Dome not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/dome/sync:
+    get:
+      tags:
+        - Dome
+      summary: Sync Dome To Telescope
+      description: Sync dome to telescope coordinates
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Dome Sync Started
                   Error:
                     type: string
                     example: ""
@@ -2286,6 +2404,141 @@ paths:
                   Error:
                     type: string
                     example: Mount not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/mount/flip:
+    get:
+      tags:
+        - Mount
+      summary: Flip
+      description: Performs a meridian flip to the current coordinates
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Flipping
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Mount not connected / parked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Mount not connected
+                      - Mount parked
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/mount/slew:
+    get:
+      tags:
+        - Mount
+      summary: Slew
+      description: Performs a slew to the provided coordinates
+      parameters:
+        - in: query
+          name: ra
+          description: The RA angle of the target in degree
+          required: true
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: dec
+          description: The Dec angle of the target in degree
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Started Slew
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Mount not connected / parked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Mount not connected
+                      - Mount parked
                   StatusCode:
                     type: integer
                     example: 409

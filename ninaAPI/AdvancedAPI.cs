@@ -29,6 +29,7 @@ using ninaAPI.Utility;
 using NINA.Core.Utility.Notification;
 using System.Windows;
 using NINA.Core.Utility;
+using NINA.Equipment.Interfaces;
 
 namespace ninaAPI
 {
@@ -69,7 +70,8 @@ namespace ninaAPI
                            IWeatherDataMediator weather,
                            IPlateSolverFactory platesolver,
                            IMessageBroker broker,
-                           IFramingAssistantVM framing)
+                           IFramingAssistantVM framing,
+                           IDomeFollower domeFollower)
         {
 
             PluginId = this.Identifier;
@@ -100,6 +102,7 @@ namespace ninaAPI
                 PlateSolver = platesolver,
                 MessageBroker = broker,
                 FramingAssistant = framing,
+                DomeFollower = domeFollower,
             };
 
             if (Settings.Default.UpdateSettings)
