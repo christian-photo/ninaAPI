@@ -1,5 +1,14 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
+## 2.1.5.0 (WIP)
+### Changes:
+- `mount/flip` added to perfom a meridian flip, the flip will only be executed if it is needed
+- `mount/slew` slews the mount to the specified ra and dec angles
+- `dome/set-follow` to start or stop the dome following the mount
+- `dome/sync` to start a sync of mount and scope
+- `dome/slew` to slew the dome to the specified azimuth angle (degree)
+- `DOME-SLEWED` and `DOME-SYNCED` added as new events in the websocket
+
 ## 2.1.4.0
 ### Changes:
 - `guider/start` now accepts the parameter calibrate to force a calibration (true / false)
