@@ -37,6 +37,8 @@ channels:
                         - DOME-HOMED
                         - DOME-PARKED
                         - DOME-STOPPED
+                        - DOME-SLEWED
+                        - DOME-SYNCED
                         - FILTERWHEEL-CONNECTED
                         - FILTERWHEEL-DISCONNECTED
                         - FLAT-CONNECTED
