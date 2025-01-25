@@ -1,6 +1,6 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
-## 2.1.5.0 (WIP)
+## 2.1.5.0
 ### Changes:
 - `mount/flip` added to perfom a meridian flip, the flip will only be executed if it is needed
 - `mount/slew` slews the mount to the specified ra and dec angles
