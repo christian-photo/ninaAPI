@@ -12,6 +12,7 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using NINA.Astrometry;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
@@ -271,6 +272,70 @@ namespace ninaAPI.WebService.V2
                 {
                     mount.UnparkTelescope(AdvancedAPI.Controls.StatusMediator.GetStatus(), new CancellationTokenSource().Token);
                     response.Response = "Unparking";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/flip")]
+        public void MountFlip()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
+                }
+                else if (mount.GetInfo().AtPark)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount parked", 409));
+                }
+                else
+                {
+                    mount.MeridianFlip(mount.GetInfo().Coordinates, new CancellationTokenSource().Token);
+                    response.Response = "Flipping";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/slew")]
+        public void MountSlew([QueryField] double ra, [QueryField] double dec)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
+                }
+                else if (mount.GetInfo().AtPark)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount parked", 409));
+                }
+                else
+                {
+                    mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), new CancellationTokenSource().Token);
+                    response.Response = "Started Slew";
                 }
             }
             catch (Exception ex)
