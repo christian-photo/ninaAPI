@@ -430,7 +430,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/camera/capture")]
-        public async Task CameraCapture([QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] int gain, [QueryField] double scale, [QueryField] bool stream)
+        public async Task CameraCapture([QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] int gain, [QueryField] double scale, [QueryField] bool stream, [QueryField] bool omitImage)
         {
 
             HttpResponse response = new HttpResponse();
@@ -495,15 +495,22 @@ namespace ninaAPI.WebService.V2
                     }
                     else
                     {
-                        string image = string.Empty;
-                        if (scale == 0 && resize)
-                            image = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, resolution, quality);
-                        if (scale != 0 && resize)
-                            image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
-                        if (!resize)
-                            image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
+                        if (!omitImage)
+                        {
+                            string image = string.Empty;
+                            if (scale == 0 && resize)
+                                image = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, resolution, quality);
+                            if (scale != 0 && resize)
+                                image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
+                            if (!resize)
+                                image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
 
-                        response.Response = new CaptureResponse() { Image = image, PlateSolveResult = plateSolveResult };
+                            response.Response = new CaptureResponse() { Image = image, PlateSolveResult = plateSolveResult };
+                        }
+                        else
+                        {
+                            response.Response = new CaptureResponse() { PlateSolveResult = plateSolveResult, Image = null };
+                        }
                     }
                 }
                 else if (!getResult && !cam.GetInfo().Connected)

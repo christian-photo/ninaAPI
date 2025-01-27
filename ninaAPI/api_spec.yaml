@@ -542,8 +542,8 @@ paths:
     get:
       tags:
         - Camera
-      summary: Capture
-      description: This endpoint captures and/or returns an image.
+      summary: Capture / Platesolve
+      description: This endpoint captures and/or returns an image. Can optionally solve the image.
       parameters:
         - in: query
           name: solve
@@ -599,7 +599,13 @@ paths:
             format: double
         - in: query
           name: stream
-          description: Stream the image to the client.
+          description: Stream the image to the client. This will only stream the image in image/jpg or image/png format. The platesolve result is not included.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: omitImage
+          description: Omit the image from the response. This will only send the platesolve result, if the image was platesolved. Use it if you do not care about the image, only about the platesolve result.
           required: false
           schema:
             type: boolean
