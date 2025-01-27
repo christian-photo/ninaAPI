@@ -4,7 +4,10 @@ The changes for each individual beta release can be seen [here](https://github.c
 
 ### Changes
 
-- `framing/determine-rotation` added to determine the rotation from the camera,
+- `framing/determine-rotation` added to determine the rotation from the camera
+- `camera/set-binning` added to set the binning of the camera, the binning mode has to be supported by the camera
+- `camera/capture` now includes `omitImage` to omit the captured image, if only the platesolve result is of interest. `stream` to stream the image, content type will be either image/jpg or image/png
+- Added `API-CAPTURE-FINISHED` event to get notified when `camera/capture` finishes
 
 ## 2.1.5.0
 

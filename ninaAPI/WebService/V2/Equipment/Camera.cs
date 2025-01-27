@@ -548,7 +548,6 @@ namespace ninaAPI.WebService.V2
                         IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(sequence, CameraCaptureToken.Token, AdvancedAPI.Controls.StatusMediator.GetStatus());
                         renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(exposure, parameters, CameraCaptureToken.Token);
 
-
                         if (solve)
                         {
                             IPlateSolverFactory platesolver = AdvancedAPI.Controls.PlateSolver;
@@ -571,6 +570,7 @@ namespace ninaAPI.WebService.V2
                             IImageSolver captureSolver = platesolver.GetImageSolver(platesolver.GetPlateSolver(settings), platesolver.GetBlindSolver(settings));
                             plateSolveResult = await captureSolver.Solve(renderedImage.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCaptureToken.Token);
                         }
+                        await WebSocketV2.SendAndAddEvent("API-CAPTURE-FINISHED");
                     }, CameraCaptureToken.Token);
 
                     response.Response = "Capture started";
