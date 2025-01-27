@@ -3596,6 +3596,72 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /framing/determine-rotation:
+    get:
+      tags:
+        - Framing Assistant
+      summary: Determine Rotation
+      description: Determine rotation from camera. This does nothing else than what the button in the framing assistant does. If waitForResult is set to true, the method will wait until the rotation is determined.
+      parameters:
+        - in: query
+          name: waitForResult
+          description: Whether to wait for the result.
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      Response:
+                        type: string
+                        example: Determine rotation started
+                      Error:
+                        type: string
+                        example: ""
+                      StatusCode:
+                        type: integer
+                        example: 200
+                      Success:
+                        type: boolean
+                        example: true
+                      Type:
+                        type: string
+                        example: "API"
+                  - $ref: "#/components/schemas/FramingAssistantInfo"
+        "400":
+          description: Process could not be started
+          content:
+            application/json:
+              schema:
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Could not start process
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /image/{index}:
     get:
       tags:

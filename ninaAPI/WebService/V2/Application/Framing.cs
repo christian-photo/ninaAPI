@@ -20,6 +20,7 @@ using NINA.WPF.Base.Interfaces.ViewModel;
 using System.Threading.Tasks;
 using NINA.WPF.Base.SkySurvey;
 using NINA.Core.Enum;
+using NINA.Equipment.Interfaces.Mediator;
 
 namespace ninaAPI.WebService.V2
 {
@@ -44,6 +45,31 @@ namespace ninaAPI.WebService.V2
     }
     public partial class ControllerV2
     {
+        private FramingInfoContainer GetFramingInfo()
+        {
+            IFramingAssistantVM framing = AdvancedAPI.Controls.FramingAssistant;
+            FramingInfoContainer info = new FramingInfoContainer()
+            {
+                BoundHeight = framing.BoundHeight,
+                BoundWidth = framing.BoundWidth,
+                CameraHeight = framing.CameraHeight,
+                CameraWidth = framing.CameraWidth,
+                CameraPixelSize = framing.CameraPixelSize,
+                DecDegrees = framing.DecDegrees,
+                DecMinutes = framing.DecMinutes,
+                DecSeconds = framing.DecSeconds,
+                RAHours = framing.RAHours,
+                RAMinutes = framing.RAMinutes,
+                RASeconds = framing.RASeconds,
+                FieldOfView = framing.FieldOfView,
+                FocalLength = framing.FocalLength,
+                HorizontalPanels = framing.HorizontalPanels,
+                VerticalPanels = framing.VerticalPanels,
+                Rectangle = framing.Rectangle,
+            };
+            return info;
+        }
+
         [Route(HttpVerbs.Get, "/framing/info")]
         public void FramingInfo()
         {
@@ -51,28 +77,7 @@ namespace ninaAPI.WebService.V2
 
             try
             {
-                IFramingAssistantVM framing = AdvancedAPI.Controls.FramingAssistant;
-
-                FramingInfoContainer info = new FramingInfoContainer()
-                {
-                    BoundHeight = framing.BoundHeight,
-                    BoundWidth = framing.BoundWidth,
-                    CameraHeight = framing.CameraHeight,
-                    CameraWidth = framing.CameraWidth,
-                    CameraPixelSize = framing.CameraPixelSize,
-                    DecDegrees = framing.DecDegrees,
-                    DecMinutes = framing.DecMinutes,
-                    DecSeconds = framing.DecSeconds,
-                    RAHours = framing.RAHours,
-                    RAMinutes = framing.RAMinutes,
-                    RASeconds = framing.RASeconds,
-                    FieldOfView = framing.FieldOfView,
-                    FocalLength = framing.FocalLength,
-                    HorizontalPanels = framing.HorizontalPanels,
-                    VerticalPanels = framing.VerticalPanels,
-                    Rectangle = framing.Rectangle,
-                };
-                response.Response = info;
+                response.Response = GetFramingInfo();
             }
             catch (Exception ex)
             {
@@ -165,6 +170,44 @@ namespace ninaAPI.WebService.V2
 
                 framing.Rectangle.TotalRotation = 360 - rotation;
                 response.Response = "Rotation updated";
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/framing/determine-rotation")]
+        public async Task FramingDetermineRotation([QueryField] bool waitForResult)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ICameraMediator camera = AdvancedAPI.Controls.Camera;
+                IFramingAssistantVM framing = AdvancedAPI.Controls.FramingAssistant;
+                if (framing.RectangleCalculated && camera.GetInfo().Connected && camera.IsFreeToCapture(framing))
+                {
+                    Task<bool> rotationTask = (Task<bool>)framing.GetType().GetMethod("GetRotationFromCamera", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(framing, [null]);
+
+                    if (waitForResult)
+                    {
+                        await rotationTask;
+                        response.Response = GetFramingInfo();
+                        response.Success = rotationTask.Result;
+                    }
+                    else
+                    {
+                        response.Response = "Determine rotation started";
+                    }
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Could not start process", 400));
+                }
             }
             catch (Exception ex)
             {

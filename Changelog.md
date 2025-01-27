@@ -1,8 +1,16 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
-## 2.1.5.0 (WIP)
-### Changes:
-- `mount/flip` added to perfom a meridian flip, the flip will only be executed if it is needed
+## 2.1.6.0 (WIP)
+
+### Changes
+
+- `framing/determine-rotation` added to determine the rotation from the camera,
+
+## 2.1.5.0
+
+### Changes
+
+- `mount/flip` added to perform a meridian flip, the flip will only be executed if it is needed
 - `mount/slew` slews the mount to the specified ra and dec angles
 - `dome/set-follow` to start or stop the dome following the mount
 - `dome/sync` to start a sync of mount and scope
@@ -10,25 +18,31 @@ The changes for each individual beta release can be seen [here](https://github.c
 - `DOME-SLEWED` and `DOME-SYNCED` added as new events in the websocket
 
 ## 2.1.4.0
-### Changes:
+
+### Changes
+
 - `guider/start` now accepts the parameter calibrate to force a calibration (true / false)
 - Guider info now contains a State field indicating what the guider is currently doing
 - `guider/clear-calibration` added to clear the current calibration
 - `guider/graph` to get the last n guide steps as configured on the guide graph in NINA (in NINA you can set x to be 50, 100, 200 or 400)
 
 ## 2.1.3.0
-### Changes:
+
+### Changes
+
 - Added query parameter `skipRescan` to all connect endpoints, which can be used to skip the rescanning process resulting in a faster connection
 - Some websockets events now include more information:
   - `FILTERWHEEL-CHANGED` includes the previous and new filter
   - `FLAT-BRIGHTNESS-CHANGED` includes the previous and new brightness
   - `SAFETY-CHANGED` includes the new status
-- `image/{index}` now also includes parameters to configure the stretch parameters. These default to the profile default if omitted 
+- `image/{index}` now also includes parameters to configure the stretch parameters. These default to the profile default if omitted
 
 ## 2.1.2.0
+
 **⚠️ THIS UPDATE REMOVES V1 SUPPORT ⚠️**
 
-### Changes:
+### Changes
+
 - ⚠️ **Breaking** Removed support for the deprecated v1 api ⚠️
 - Added more endpoints to `flatdevice`:
   - `flatdevice/set-cover` to open or close the cover
@@ -43,7 +57,7 @@ The changes for each individual beta release can be seen [here](https://github.c
 - The server now automatically picks the next available port to launch the api
 - Implemented IMessageBroker for cross Plugin communication. Use Topic `AdvancedAPI.RequestPort` to request the port the api is running on, subscribe to `AdvancedAPI.Port` to recieve the answer. The port is directly written into Content
 
-## 2.1.0.* (betas) and 2.1.1.0
+## 2.1.0.\* (betas) and 2.1.1.0
 
 I **heavily** advise everyone still using V1 to start using V2 as V1 is now deprecated and will be removed with the next minor version!
 V2 will probably stay for a longer time now, I made some changes behind the scenes that will make it easier to add new features without breaking older versions.
@@ -53,7 +67,8 @@ The documentation for the [api](https://bump.sh/christian-photo/doc/advanced-api
 - It is now possible to add the `Access-Control-Allow-Origin: *` header to make requests via javascript without proxies possible. This does pose a security vulnerability though, so make sure you only enable it when you need to. A proxy may be better suited when in production.
 - Eventwatchers are now started independently of the api, therefore Events can still be retrieved using event-history even if the api wasn't running before.
 
-### V2 Changes:
+### V2 Changes
+
 - ⚠️ **Breaking** Connection events in the websocket are now seperated into connected and disconnected ⚠️
 - ⚠️ **Breaking** Changed the structure of a profile response ⚠️
 - ⚠️ **Breaking** Removed the description field from a sequence response, added more specific fields for each item ⚠️
