@@ -28,6 +28,8 @@ using ninaAPI.Utility;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyCamera;
 using System.Linq;
+using System.Windows.Media.Imaging;
+using System.IO;
 
 namespace ninaAPI.WebService.V2
 {
@@ -391,8 +393,44 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        [Route(HttpVerbs.Get, "/equipment/camera/set-binning")]
+        public void CameraSetBinning([QueryField] short x, [QueryField] short y)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ICameraMediator cam = AdvancedAPI.Controls.Camera;
+
+                if (!cam.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Camera not connected", 409));
+                }
+                else
+                {
+                    BinningMode binning = cam.GetInfo().BinningModes.FirstOrDefault(b => b.X == x && b.Y == y, null);
+                    if (binning == null)
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Invalid binning mode", 409));
+                    }
+                    else
+                    {
+                        cam.SetBinning(x, y);
+                        response.Response = "Binning mode updated";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/equipment/camera/capture")]
-        public void CameraCapture([QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] int gain, [QueryField] double scale)
+        public async Task CameraCapture([QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] int gain, [QueryField] double scale, [QueryField] bool stream)
         {
 
             HttpResponse response = new HttpResponse();
@@ -430,15 +468,43 @@ namespace ninaAPI.WebService.V2
                 }
                 else if (getResult && CaptureTask.IsCompleted)
                 {
-                    string image = string.Empty;
-                    if (scale == 0 && resize)
-                        image = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, resolution, quality);
-                    if (scale != 0 && resize)
-                        image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
-                    if (!resize)
-                        image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
+                    if (stream)
+                    {
+                        BitmapEncoder encoder = null;
+                        if (scale == 0 && resize)
+                        {
+                            BitmapSource image = BitmapHelper.ResizeBitmap(renderedImage.Image, resolution);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        if (scale != 0 && resize)
+                        {
+                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, scale);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        if (!resize)
+                        {
+                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpg";
+                        using (MemoryStream memory = new MemoryStream())
+                        {
+                            encoder.Save(memory);
+                            await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
+                        }
+                    }
+                    else
+                    {
+                        string image = string.Empty;
+                        if (scale == 0 && resize)
+                            image = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, resolution, quality);
+                        if (scale != 0 && resize)
+                            image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
+                        if (!resize)
+                            image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
 
-                    response.Response = new CaptureResponse() { Image = image, PlateSolveResult = plateSolveResult };
+                        response.Response = new CaptureResponse() { Image = image, PlateSolveResult = plateSolveResult };
+                    }
                 }
                 else if (!getResult && !cam.GetInfo().Connected)
                 {

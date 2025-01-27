@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Drawing;
 using System.IO;
 using System;
+using System.Drawing.Drawing2D;
 
 namespace ninaAPI.Utility
 {
@@ -26,22 +27,34 @@ namespace ninaAPI.Utility
 
         public static string ScaleAndConvertBitmap(BitmapSource source, double scale, int quality)
         {
+            source = ScaleBitmap(source, scale);
+
+            string base64 = EncoderToBase64(GetEncoder(source, quality));
+            return base64;
+        }
+
+        public static BitmapSource ResizeBitmap(BitmapSource source, Size size)
+        {
+            return ScaleBitmap(source, size == Size.Empty ? 1 : size.Width / source.Width);
+        }
+
+        public static BitmapSource ScaleBitmap(BitmapSource source, double scale)
+        {
             scale = Math.Clamp(scale, 0.1, 1);
 
             source = new TransformedBitmap(source, new ScaleTransform(scale, scale));
 
-            string base64 = EncodeBitmap(source, quality);
-            return base64;
+            return source;
         }
 
-        private static string EncodeBitmap(BitmapSource source, int quality)
+        public static BitmapEncoder GetEncoder(BitmapSource source, int quality)
         {
             if (quality < 0)
             {
                 PngBitmapEncoder encoder = new PngBitmapEncoder();
                 encoder.Frames.Add(BitmapFrame.Create(source));
 
-                return EncoderToBase64(encoder);
+                return encoder;
             }
             else
             {
@@ -49,7 +62,7 @@ namespace ninaAPI.Utility
                 encoder.QualityLevel = quality;
                 encoder.Frames.Add(BitmapFrame.Create(source));
 
-                return EncoderToBase64(encoder);
+                return encoder;
             }
         }
 

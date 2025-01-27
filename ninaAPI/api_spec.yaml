@@ -417,8 +417,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    enum:
-                      - Dew heater set
+                    example: Dew heater set
                   Error:
                     type: string
                     example: ""
@@ -446,6 +445,83 @@ paths:
                     enum:
                       - Camera not connected
                       - Camera has no dew heater
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/camera/set-binning:
+    get:
+      tags:
+        - Camera
+      summary: Set Binning
+      description: This endpoint sets the binning of the camera, if the specified binning is supported
+      parameters:
+        - in: query
+          name: x
+          description: The X-Binning
+          required: true
+          schema:
+            type: number
+            format: integer
+            minimum: 1
+        - in: query
+          name: y
+          description: The Y-Binning
+          required: true
+          schema:
+            type: number
+            format: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Binning mode updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Camera not connected / Invalid binning mode
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Camera not connected
+                      - Invalid binning mode
                   StatusCode:
                     type: integer
                     example: 409
@@ -521,6 +597,12 @@ paths:
           schema:
             type: number
             format: double
+        - in: query
+          name: stream
+          description: Stream the image to the client.
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
@@ -577,7 +659,6 @@ paths:
                                 type: string
                         required:
                           - Image
-
                   Error:
                     type: string
                     example: ""
@@ -590,6 +671,16 @@ paths:
                   Type:
                     type: string
                     example: "API"
+            image/png:
+              schema:
+                description: Image in png format, when stream is set to true and the image quality is not specified or set to -1
+                type: array
+                format: binary
+            image/jpg:
+              schema:
+                description: Image in jpg format, when stream is set to true and the image quality is specified
+                type: array
+                format: binary
         "409":
           description: Camera not connected / Camera currently exposing
           content:
