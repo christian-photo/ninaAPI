@@ -30,6 +30,7 @@ using NINA.Equipment.Equipment.MyCamera;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using System.IO;
+using System.Windows.Media.Media3D;
 
 namespace ninaAPI.WebService.V2
 {
@@ -394,7 +395,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/camera/set-binning")]
-        public void CameraSetBinning([QueryField] short x, [QueryField] short y)
+        public void CameraSetBinning([QueryField] string binning)
         {
             HttpResponse response = new HttpResponse();
 
@@ -402,22 +403,38 @@ namespace ninaAPI.WebService.V2
             {
                 ICameraMediator cam = AdvancedAPI.Controls.Camera;
 
-                if (!cam.GetInfo().Connected)
+                if (string.IsNullOrEmpty(binning))
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Binning must be specified", 409));
+                }
+                else if (!cam.GetInfo().Connected)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Camera not connected", 409));
                 }
-                else
+                else if (binning.Contains('x'))
                 {
-                    BinningMode binning = cam.GetInfo().BinningModes.FirstOrDefault(b => b.X == x && b.Y == y, null);
-                    if (binning == null)
+                    string[] parts = binning.Split('x');
+                    if (int.TryParse(parts[0], out int x) && int.TryParse(parts[1], out int y))
                     {
-                        response = CoreUtility.CreateErrorTable(new Error("Invalid binning mode", 409));
+                        BinningMode mode = cam.GetInfo().BinningModes.FirstOrDefault(b => b.X == x && b.Y == y, null);
+                        if (mode == null)
+                        {
+                            response = CoreUtility.CreateErrorTable(new Error("Invalid binning mode", 409));
+                        }
+                        else
+                        {
+                            cam.SetBinning(mode.X, mode.Y);
+                            response.Response = "Binning set";
+                        }
                     }
                     else
                     {
-                        cam.SetBinning(x, y);
-                        response.Response = "Binning mode updated";
+                        response = CoreUtility.CreateErrorTable(new Error("Invalid binning mode", 409));
                     }
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Binning must be specified", 409));
                 }
             }
             catch (Exception ex)
@@ -430,7 +447,18 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/camera/capture")]
-        public async Task CameraCapture([QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] int gain, [QueryField] double scale, [QueryField] bool stream, [QueryField] bool omitImage)
+        public async Task CameraCapture(
+            [QueryField] bool solve,
+            [QueryField] float duration,
+            [QueryField] bool getResult,
+            [QueryField] bool resize,
+            [QueryField] int quality,
+            [QueryField] string size,
+            [QueryField] int gain,
+            [QueryField] double scale,
+            [QueryField] bool stream,
+            [QueryField] bool omitImage,
+            [QueryField] bool waitForResult)
         {
 
             HttpResponse response = new HttpResponse();
@@ -491,6 +519,7 @@ namespace ninaAPI.WebService.V2
                         {
                             encoder.Save(memory);
                             await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
+                            return;
                         }
                     }
                     else
@@ -573,6 +602,12 @@ namespace ninaAPI.WebService.V2
                         await WebSocketV2.SendAndAddEvent("API-CAPTURE-FINISHED");
                     }, CameraCaptureToken.Token);
 
+                    if (waitForResult)
+                    {
+                        await CaptureTask;
+                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false);
+                        return;
+                    }
                     response.Response = "Capture started";
                 }
             }

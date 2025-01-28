@@ -6,8 +6,14 @@ The changes for each individual beta release can be seen [here](https://github.c
 
 - `framing/determine-rotation` added to determine the rotation from the camera
 - `camera/set-binning` added to set the binning of the camera, the binning mode has to be supported by the camera
-- `camera/capture` now includes `omitImage` to omit the captured image, if only the platesolve result is of interest. `stream` to stream the image, content type will be either image/jpg or image/png
+- `camera/capture`:
+  - URL parameter `omitImage` added to ignore the captured image, use if only the platesolve result is of interest
+  - URL parameter `stream` added to stream the image, content type will be either image/jpg or image/png
+  - URL parameter `waitForResult` added to wait for the capture to finish and then return the result. All parameters which you would normally use together with `getResult` will apply here as well
 - Added `API-CAPTURE-FINISHED` event to get notified when `camera/capture` finishes
+- Added `stream` parameter to `image/{index}` to stream the image, content type will be either image/jpg or image/png
+- Added `stream` parameter to `application/screenshot` to stream the image, content type will be either image/jpg or image/png
+- Added `factor`, `blackClipping`, `unlinked` parameters to `image/{index}` to configure the stretch parameters
 
 ## 2.1.5.0
 

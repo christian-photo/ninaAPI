@@ -24,6 +24,8 @@ using NINA.Image.Interfaces;
 using NINA.Core.Enum;
 using System.Collections.Generic;
 using NINA.WPF.Base.Interfaces.Mediator;
+using System.Windows.Media.Imaging;
+using System.IO;
 
 namespace ninaAPI.WebService.V2
 {
@@ -78,7 +80,15 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/image/{index}")]
-        public async Task GetImage(int index, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale, [QueryField] double factor, [QueryField] double blackClipping, [QueryField] bool unlinked)
+        public async Task GetImage(int index,
+            [QueryField] bool resize,
+            [QueryField] int quality,
+            [QueryField] string size,
+            [QueryField] double scale,
+            [QueryField] double factor,
+            [QueryField] double blackClipping,
+            [QueryField] bool unlinked,
+            [QueryField] bool stream)
         {
             HttpResponse response = new HttpResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
@@ -131,14 +141,43 @@ namespace ninaAPI.WebService.V2
                     IRenderedImage renderedImage = imageData.RenderImage();
 
                     renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);
-                    var bitmap = renderedImage.Image;
 
-                    if (scale == 0 && resize)
-                        response.Response = BitmapHelper.ResizeAndConvertBitmap(bitmap, sz, quality);
-                    if (scale != 0 && resize)
-                        response.Response = BitmapHelper.ScaleAndConvertBitmap(bitmap, scale, quality);
-                    if (!resize)
-                        response.Response = BitmapHelper.ScaleAndConvertBitmap(bitmap, 1, quality);
+                    if (stream)
+                    {
+                        BitmapEncoder encoder = null;
+                        if (scale == 0 && resize)
+                        {
+                            BitmapSource image = BitmapHelper.ResizeBitmap(renderedImage.Image, sz);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        if (scale != 0 && resize)
+                        {
+                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, scale);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        if (!resize)
+                        {
+                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpg";
+                        using (MemoryStream memory = new MemoryStream())
+                        {
+                            encoder.Save(memory);
+                            await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
+                            return;
+                        }
+                    }
+                    else
+                    {
+
+                        if (scale == 0 && resize)
+                            response.Response = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, sz, quality);
+                        if (scale != 0 && resize)
+                            response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
+                        if (!resize)
+                            response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
+                    }
                 }
             }
             catch (Exception ex)

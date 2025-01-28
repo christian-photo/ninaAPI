@@ -27,6 +27,7 @@ channels:
                       type: string
                       description: The event name
                       enum:
+                        - API-CAPTURE-FINISHED
                         - CAMERA-CONNECTED
                         - CAMERA-DISCONNECTED
                         - CAMERA-DOWNLOAD-TIMEOUT
