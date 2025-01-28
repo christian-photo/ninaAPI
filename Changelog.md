@@ -13,7 +13,6 @@ The changes for each individual beta release can be seen [here](https://github.c
 - Added `API-CAPTURE-FINISHED` event to get notified when `camera/capture` finishes
 - Added `stream` parameter to `image/{index}` to stream the image, content type will be either image/jpg or image/png
 - Added `stream` parameter to `application/screenshot` to stream the image, content type will be either image/jpg or image/png
-- Added `factor`, `blackClipping`, `unlinked` parameters to `image/{index}` to configure the stretch parameters
 
 ## 2.1.5.0
 
@@ -44,7 +43,7 @@ The changes for each individual beta release can be seen [here](https://github.c
   - `FILTERWHEEL-CHANGED` includes the previous and new filter
   - `FLAT-BRIGHTNESS-CHANGED` includes the previous and new brightness
   - `SAFETY-CHANGED` includes the new status
-- `image/{index}` now also includes parameters to configure the stretch parameters. These default to the profile default if omitted
+- Added `factor`, `blackClipping`, `unlinked` parameters to `image/{index}` to configure the stretch parameters
 
 ## 2.1.2.0
 
