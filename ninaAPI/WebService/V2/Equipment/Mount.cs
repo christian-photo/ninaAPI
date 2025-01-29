@@ -14,27 +14,33 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Astrometry;
 using NINA.Core.Utility;
+using NINA.Equipment.Equipment.MyTelescope;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
+using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
-    public partial class ControllerV2
+    public class MountWatcher : INinaWatcher, ITelescopeConsumer
     {
+        private readonly Func<object, EventArgs, Task> MountConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-CONNECTED");
+        private readonly Func<object, EventArgs, Task> MountDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-DISCONNECTED");
+        private readonly Func<object, EventArgs, Task> MountBeforeMeridianFlipHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-BEFORE-FLIP");
+        private readonly Func<object, EventArgs, Task> MountAfterMeridianFlipHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-AFTER-FLIP");
+        private readonly Func<object, EventArgs, Task> MountHomedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-HOMED");
+        private readonly Func<object, EventArgs, Task> MountParkedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-PARKED");
+        private readonly Func<object, EventArgs, Task> MountUnparkedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-UNPARKED");
 
-        private static readonly Func<object, EventArgs, Task> MountConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> MountDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-DISCONNECTED");
-        private static readonly Func<object, EventArgs, Task> MountBeforeMeridianFlipHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-BEFORE-FLIP");
-        private static readonly Func<object, EventArgs, Task> MountAfterMeridianFlipHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-AFTER-FLIP");
-        private static readonly Func<object, EventArgs, Task> MountHomedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-HOMED");
-        private static readonly Func<object, EventArgs, Task> MountParkedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-PARKED");
-        private static readonly Func<object, EventArgs, Task> MountUnparkedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-UNPARKED");
+        public void Dispose()
+        {
+            AdvancedAPI.Controls.Mount.RemoveConsumer(this);
+        }
 
-        public static void StartMountWatchers()
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.Mount.Connected += MountConnectedHandler;
             AdvancedAPI.Controls.Mount.Disconnected += MountDisconnectedHandler;
@@ -43,9 +49,10 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Mount.Homed += MountHomedHandler;
             AdvancedAPI.Controls.Mount.Parked += MountParkedHandler;
             AdvancedAPI.Controls.Mount.Unparked += MountUnparkedHandler;
+            AdvancedAPI.Controls.Mount.RegisterConsumer(this);
         }
 
-        public static void StopMountWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.Mount.Connected -= MountConnectedHandler;
             AdvancedAPI.Controls.Mount.Disconnected -= MountDisconnectedHandler;
@@ -54,8 +61,17 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Mount.Homed -= MountHomedHandler;
             AdvancedAPI.Controls.Mount.Parked -= MountParkedHandler;
             AdvancedAPI.Controls.Mount.Unparked -= MountUnparkedHandler;
+            AdvancedAPI.Controls.Mount.RemoveConsumer(this);
         }
 
+        public void UpdateDeviceInfo(TelescopeInfo deviceInfo)
+        {
+            WebSocketV2.SendConsumerEvent("MOUNT");
+        }
+    }
+
+    public partial class ControllerV2
+    {
         [Route(HttpVerbs.Get, "/equipment/mount/info")]
         public void MountInfo()
         {

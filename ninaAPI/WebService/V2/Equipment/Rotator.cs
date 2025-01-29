@@ -12,35 +12,50 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
-using NINA.Core.Interfaces;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyRotator;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
+using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
-    public partial class ControllerV2
+    public class RotatorWatcher : INinaWatcher, IRotatorConsumer
     {
-        private static CancellationTokenSource RotatorToken;
+        private readonly Func<object, EventArgs, Task> RotatorConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("ROTATOR-CONNECTED");
+        private readonly Func<object, EventArgs, Task> RotatorDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("ROTATOR-DISCONNECTED");
 
-        private static readonly Func<object, EventArgs, Task> RotatorConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("ROTATOR-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> RotatorDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("ROTATOR-DISCONNECTED");
+        public void Dispose()
+        {
+            AdvancedAPI.Controls.Rotator.RemoveConsumer(this);
+        }
 
-        public static void StartRotatorWatchers()
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.Rotator.Connected += RotatorConnectedHandler;
             AdvancedAPI.Controls.Rotator.Disconnected += RotatorDisconnectedHandler;
+            AdvancedAPI.Controls.Rotator.RegisterConsumer(this);
         }
 
-        public static void StopRotatorWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.Rotator.Connected -= RotatorConnectedHandler;
             AdvancedAPI.Controls.Rotator.Disconnected -= RotatorDisconnectedHandler;
+            AdvancedAPI.Controls.Rotator.RemoveConsumer(this);
         }
+
+        public void UpdateDeviceInfo(RotatorInfo deviceInfo)
+        {
+            WebSocketV2.SendConsumerEvent("ROTATOR");
+        }
+    }
+
+    public partial class ControllerV2
+    {
+        private static CancellationTokenSource RotatorToken;
 
 
         [Route(HttpVerbs.Get, "/equipment/rotator/info")]

@@ -1,7 +1,7 @@
 ﻿#region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -16,7 +16,9 @@ using NINA.Core.Utility.Notification;
 using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.WebService.V2;
+using ninaAPI.WebService.V2.Equipment;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,6 +32,8 @@ namespace ninaAPI.WebService
 
         private CancellationTokenSource apiToken;
         public readonly int Port;
+
+        private static List<INinaWatcher> Watchers { get; set; } = new List<INinaWatcher>();
 
         public API(int port)
         {
@@ -49,36 +53,32 @@ namespace ninaAPI.WebService
 
         public static void StartWatchers()
         {
-            ControllerV2.StartCameraWatchers();
-            ControllerV2.StartDomeWatchers();
-            ControllerV2.StartFilterWheelWatchers();
-            ControllerV2.StartFlatDeviceWatchers();
-            ControllerV2.StartFocuserWatchers();
-            ControllerV2.StartGuiderWatchers();
-            ControllerV2.StartMountWatchers();
-            ControllerV2.StartRotatorWatchers();
-            ControllerV2.StartSafetyWatchers();
-            ControllerV2.StartSwitchWatchers();
-            ControllerV2.StartWeatherWatchers();
-            ControllerV2.StartImageWatcher();
-            ControllerV2.StartLogWatcher();
+            Watchers.Add(new CameraWatcher());
+            Watchers.Add(new DomeWatcher());
+            Watchers.Add(new FilterWheelWatcher());
+            Watchers.Add(new FlatDeviceWatcher());
+            Watchers.Add(new FocuserWatcher());
+            Watchers.Add(new GuiderWatcher());
+            Watchers.Add(new MountWatcher());
+            Watchers.Add(new RotatorWatcher());
+            Watchers.Add(new SafetyWatcher());
+            Watchers.Add(new SwitchWatcher());
+            Watchers.Add(new WeatherWatcher());
+            Watchers.Add(new ImageWatcher());
+            Watchers.Add(new NinaLogWatcher());
+
+            foreach (INinaWatcher watcher in Watchers)
+            {
+                watcher.StartWatchers();
+            }
         }
 
         public static void StopWatchers()
         {
-            ControllerV2.StopDomeWatchers();
-            ControllerV2.StopCameraWatchers();
-            ControllerV2.StopFilterWheelWatchers();
-            ControllerV2.StopFlatDeviceWatchers();
-            ControllerV2.StopFocuserWatchers();
-            ControllerV2.StopGuiderWatchers();
-            ControllerV2.StopMountWatchers();
-            ControllerV2.StopRotatorWatchers();
-            ControllerV2.StopSafetyWatchers();
-            ControllerV2.StopSwitchWatchers();
-            ControllerV2.StopWeatherWatchers();
-            ControllerV2.StopImageWatcher();
-            ControllerV2.StopLogWatcher();
+            foreach (INinaWatcher watcher in Watchers)
+            {
+                watcher.StopWatchers();
+            }
         }
 
         public void Start()

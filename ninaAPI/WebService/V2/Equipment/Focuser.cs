@@ -14,36 +14,62 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using Newtonsoft.Json;
 using NINA.Core.Utility;
+using NINA.Equipment.Equipment.MyFocuser;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Utility.AutoFocus;
 using ninaAPI.Utility;
+using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
-    public partial class ControllerV2
+    public class FocuserWatcher : INinaWatcher, IFocuserConsumer
     {
-        private static CancellationTokenSource AutoFocusToken;
+        private readonly Func<object, EventArgs, Task> FocuserConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FOCUSER-CONNECTED");
+        private readonly Func<object, EventArgs, Task> FocuserDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FOCUSER-DISCONNECTED");
 
-        private static readonly Func<object, EventArgs, Task> FocuserConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FOCUSER-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> FocuserDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FOCUSER-DISCONNECTED");
+        public void Dispose()
+        {
+            AdvancedAPI.Controls.Focuser.RemoveConsumer(this);
+        }
 
-        public static void StartFocuserWatchers()
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.Focuser.Connected += FocuserConnectedHandler;
             AdvancedAPI.Controls.Focuser.Disconnected += FocuserDisconnectedHandler;
+            AdvancedAPI.Controls.Focuser.RegisterConsumer(this);
         }
 
-        public static void StopFocuserWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.Focuser.Connected -= FocuserConnectedHandler;
             AdvancedAPI.Controls.Focuser.Disconnected -= FocuserDisconnectedHandler;
+            AdvancedAPI.Controls.Focuser.RemoveConsumer(this);
         }
+
+        public void UpdateDeviceInfo(FocuserInfo deviceInfo)
+        {
+            WebSocketV2.SendConsumerEvent("FOCUSER");
+        }
+
+        public void UpdateEndAutoFocusRun(AutoFocusInfo info)
+        {
+            WebSocketV2.SendAndAddEvent("AUTOFOCUS-FINISHED");
+        }
+
+        public void UpdateUserFocused(FocuserInfo info)
+        {
+            WebSocketV2.SendAndAddEvent("FOCUSER-USER-FOCUSED");
+        }
+    }
+
+    public partial class ControllerV2
+    {
+        private static CancellationTokenSource AutoFocusToken;
 
         [Route(HttpVerbs.Get, "/equipment/focuser/info")]
         public void FocuserInfo()

@@ -30,7 +30,7 @@ using NINA.Equipment.Equipment.MyCamera;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using System.IO;
-using System.Windows.Media.Media3D;
+using ninaAPI.WebService.V2.Equipment;
 
 namespace ninaAPI.WebService.V2
 {
@@ -118,26 +118,41 @@ namespace ninaAPI.WebService.V2
         public bool AtTargetTemp { get; set; }
     }
 
-    public partial class ControllerV2
+    public class CameraWatcher : INinaWatcher, ICameraConsumer
     {
-        private static readonly Func<object, EventArgs, Task> CameraConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> CameraDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DISCONNECTED");
-        private static readonly Func<object, EventArgs, Task> CameraDownloadTimeoutHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DOWNLOAD-TIMEOUT");
+        private readonly Func<object, EventArgs, Task> CameraConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-CONNECTED");
+        private readonly Func<object, EventArgs, Task> CameraDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DISCONNECTED");
+        private readonly Func<object, EventArgs, Task> CameraDownloadTimeoutHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DOWNLOAD-TIMEOUT");
 
-        public static void StartCameraWatchers()
+        public void Dispose()
+        {
+            AdvancedAPI.Controls.Camera.RemoveConsumer(this);
+        }
+
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.Camera.Connected += CameraConnectedHandler;
             AdvancedAPI.Controls.Camera.Disconnected += CameraDisconnectedHandler;
             AdvancedAPI.Controls.Camera.DownloadTimeout += CameraDownloadTimeoutHandler;
+            AdvancedAPI.Controls.Camera.RegisterConsumer(this);
         }
 
-        public static void StopCameraWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.Camera.Connected -= CameraConnectedHandler;
             AdvancedAPI.Controls.Camera.Disconnected -= CameraDisconnectedHandler;
             AdvancedAPI.Controls.Camera.DownloadTimeout -= CameraDownloadTimeoutHandler;
+            AdvancedAPI.Controls.Camera.RemoveConsumer(this);
         }
 
+        public void UpdateDeviceInfo(CameraInfo deviceInfo)
+        {
+            WebSocketV2.SendConsumerEvent("CAMERA");
+        }
+    }
+
+    public partial class ControllerV2
+    {
         private static CancellationTokenSource CameraCaptureToken;
         private static PlateSolveResult plateSolveResult;
         private static IRenderedImage renderedImage;

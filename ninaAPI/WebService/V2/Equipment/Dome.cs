@@ -17,32 +17,36 @@ using NINA.Equipment.Equipment.MyDome;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
+using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
 
-    public partial class ControllerV2
+    public class DomeWatcher : INinaWatcher, IDomeConsumer
     {
-        private static CancellationTokenSource DomeToken;
-        private static CancellationTokenSource FollowToken;
-
-        private static readonly Func<object, EventArgs, Task> DomeConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> DomeDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-DISCONNECTED");
-        private static readonly Func<object, EventArgs, Task> DomeClosedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-SHUTTER-CLOSED");
-        private static readonly Func<object, EventArgs, Task> DomeOpenedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-SHUTTER-OPENED");
-        private static readonly Func<object, EventArgs, Task> DomeHomedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-HOMED");
-        private static readonly Func<object, EventArgs, Task> DomeParkedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-PARKED");
-        private static readonly Func<object, DomeEventArgs, Task> DomeSlewedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent("DOME-SLEWED", new Dictionary<string, object>() {
+        private readonly Func<object, EventArgs, Task> DomeConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-CONNECTED");
+        private readonly Func<object, EventArgs, Task> DomeDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-DISCONNECTED");
+        private readonly Func<object, EventArgs, Task> DomeClosedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-SHUTTER-CLOSED");
+        private readonly Func<object, EventArgs, Task> DomeOpenedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-SHUTTER-OPENED");
+        private readonly Func<object, EventArgs, Task> DomeHomedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-HOMED");
+        private readonly Func<object, EventArgs, Task> DomeParkedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-PARKED");
+        private readonly Func<object, DomeEventArgs, Task> DomeSlewedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent("DOME-SLEWED", new Dictionary<string, object>() {
             { "From", e.From },
             { "To", e.To }
         });
-        private static readonly EventHandler<EventArgs> DomeSyncedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent("DOME-SYNCED");
+        private readonly EventHandler<EventArgs> DomeSyncedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent("DOME-SYNCED");
 
-        public static void StartDomeWatchers()
+        public void Dispose()
+        {
+            AdvancedAPI.Controls.Dome.RemoveConsumer(this);
+        }
+
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.Dome.Connected += DomeConnectedHandler;
             AdvancedAPI.Controls.Dome.Disconnected += DomeDisconnectedHandler;
@@ -52,9 +56,10 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Dome.Parked += DomeParkedHandler;
             AdvancedAPI.Controls.Dome.Slewed += DomeSlewedHandler;
             AdvancedAPI.Controls.Dome.Synced += DomeSyncedHandler;
+            AdvancedAPI.Controls.Dome.RegisterConsumer(this);
         }
 
-        public static void StopDomeWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.Dome.Connected -= DomeConnectedHandler;
             AdvancedAPI.Controls.Dome.Disconnected -= DomeDisconnectedHandler;
@@ -64,7 +69,19 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Dome.Parked -= DomeParkedHandler;
             AdvancedAPI.Controls.Dome.Slewed -= DomeSlewedHandler;
             AdvancedAPI.Controls.Dome.Synced -= DomeSyncedHandler;
+            AdvancedAPI.Controls.Dome.RemoveConsumer(this);
         }
+
+        public void UpdateDeviceInfo(DomeInfo deviceInfo)
+        {
+            WebSocketV2.SendConsumerEvent("DOME");
+        }
+    }
+
+    public partial class ControllerV2
+    {
+        private static CancellationTokenSource DomeToken;
+        private static CancellationTokenSource FollowToken;
 
 
         [Route(HttpVerbs.Get, "/equipment/dome/info")]

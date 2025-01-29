@@ -200,19 +200,4 @@ namespace ninaAPI.Utility
         public bool Success { get; set; } = true;
         public string Type { get; set; } = TypeAPI;
     }
-
-    public enum EquipmentType
-    {
-        Camera,
-        Mount,
-        FilterWheel,
-        Focuser,
-        Dome,
-        Rotator,
-        Guider,
-        FlatDevice,
-        Switch,
-        SafetyMonitor,
-        Weather
-    }
 }

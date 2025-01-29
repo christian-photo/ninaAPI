@@ -1,6 +1,6 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
-## 2.1.6.0 (WIP)
+## 2.1.6.0
 
 ### Changes
 
@@ -10,9 +10,12 @@ The changes for each individual beta release can be seen [here](https://github.c
   - URL parameter `omitImage` added to ignore the captured image, use if only the platesolve result is of interest
   - URL parameter `stream` added to stream the image, content type will be either image/jpg or image/png
   - URL parameter `waitForResult` added to wait for the capture to finish and then return the result. All parameters which you would normally use together with `getResult` will apply here as well
-- Added `API-CAPTURE-FINISHED` event to get notified when `camera/capture` finishes
 - Added `stream` parameter to `image/{index}` to stream the image, content type will be either image/jpg or image/png
 - Added `stream` parameter to `application/screenshot` to stream the image, content type will be either image/jpg or image/png
+- New Websocket Events:
+  - `FOCUSER-USER-FOCUSED`
+  - `AUTOFOCUS-FINISHED`
+  - `API-CAPTURE-FINISHED` is sent, when `camera/capture` finishes
 
 ## 2.1.5.0
 
@@ -39,7 +42,7 @@ The changes for each individual beta release can be seen [here](https://github.c
 ### Changes
 
 - Added query parameter `skipRescan` to all connect endpoints, which can be used to skip the rescanning process resulting in a faster connection
-- Some websockets events now include more information:
+- Some websocket events now include more information:
   - `FILTERWHEEL-CHANGED` includes the previous and new filter
   - `FLAT-BRIGHTNESS-CHANGED` includes the previous and new brightness
   - `SAFETY-CHANGED` includes the new status

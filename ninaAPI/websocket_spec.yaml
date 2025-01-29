@@ -1,7 +1,7 @@
 asyncapi: 2.0.0
 info:
   title: Advanced API
-  version: 2.0.0
+  version: 2.1.6
   description: This is the Websocket documentation for the NINA plugin Advanced API.
 servers:
   production:
@@ -28,6 +28,7 @@ channels:
                       description: The event name
                       enum:
                         - API-CAPTURE-FINISHED
+                        - AUTOFOCUS-FINISHED
                         - CAMERA-CONNECTED
                         - CAMERA-DISCONNECTED
                         - CAMERA-DOWNLOAD-TIMEOUT
@@ -49,6 +50,7 @@ channels:
                         - FLAT-COVER-CLOSED
                         - FOCUSER-CONNECTED
                         - FOCUSER-DISCONNECTED
+                        - FOCUSER-USER-FOCUSED
                         - GUIDER-CONNECTED
                         - GUIDER-DISCONNECTED
                         - GUIDER-START

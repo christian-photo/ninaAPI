@@ -18,6 +18,7 @@ using NINA.Equipment.Equipment.MyFilterWheel;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
+using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,29 +71,43 @@ namespace ninaAPI.WebService.V2
         }
     }
 
-    public partial class ControllerV2
+    public class FilterWheelWatcher : INinaWatcher, IFilterWheelConsumer
     {
-        private static readonly Func<object, EventArgs, Task> FilterWheelConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> FilterWheelDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-DISCONNECTED");
-        private static readonly Func<object, FilterChangedEventArgs, Task> FilterWheelFilterChangedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent(
+        private readonly Func<object, EventArgs, Task> FilterWheelConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-CONNECTED");
+        private readonly Func<object, EventArgs, Task> FilterWheelDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FILTERWHEEL-DISCONNECTED");
+        private readonly Func<object, FilterChangedEventArgs, Task> FilterWheelFilterChangedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent(
             "FILTERWHEEL-CHANGED",
             new Dictionary<string, object>() { { "Previous", FInfo.FromFilter(e.From) }, { "New", FInfo.FromFilter(e.To) } });
 
-        public static void StartFilterWheelWatchers()
+        public void Dispose()
+        {
+            AdvancedAPI.Controls.FilterWheel.RemoveConsumer(this);
+        }
+
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.FilterWheel.Connected += FilterWheelConnectedHandler;
             AdvancedAPI.Controls.FilterWheel.Disconnected += FilterWheelDisconnectedHandler;
             AdvancedAPI.Controls.FilterWheel.FilterChanged += FilterWheelFilterChangedHandler;
+            AdvancedAPI.Controls.FilterWheel.RegisterConsumer(this);
         }
 
-        public static void StopFilterWheelWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.FilterWheel.Connected -= FilterWheelConnectedHandler;
             AdvancedAPI.Controls.FilterWheel.Disconnected -= FilterWheelDisconnectedHandler;
             AdvancedAPI.Controls.FilterWheel.FilterChanged -= FilterWheelFilterChangedHandler;
+            AdvancedAPI.Controls.FilterWheel.RemoveConsumer(this);
         }
 
+        public void UpdateDeviceInfo(FilterWheelInfo deviceInfo)
+        {
+            WebSocketV2.SendConsumerEvent("FILTERWHEEL");
+        }
+    }
 
+    public partial class ControllerV2
+    {
         [Route(HttpVerbs.Get, "/equipment/filterwheel/info")]
         public void FilterWheelInfo()
         {
