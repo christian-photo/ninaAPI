@@ -1,5 +1,5 @@
 ﻿<!--
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -52,9 +52,11 @@
                     Margin="0,0,5,0"
                     VerticalAlignment="Center"
                     Text="⚠️Use Access-Control-Allow-Origin Header⚠️"
-                    ToolTip="This makes it possible to fetch the api using javascript without having to set up a proxy. However it is advised to setup a proxy for security reasons. Though it is not recommended, it is required for some applications like Touch 'N' Stars" />
+                    ToolTip="This makes it possible to fetch the api using javascript without having to set up a proxy. It is required for some applications like Touch 'N' Stars" />
                 <CheckBox IsChecked="{Binding UseAccessHeader}" />
             </StackPanel>
+
+            <TextBlock Margin="0,5,0,0" Text="Access-Control-Allow-Origin is part of the CORS rules and determines which websites are allowed to access a server's data. Without this header, browsers block requests from other domains for security reasons. This is only relevant if the software is accessible via the Internet - in closed networks, such attacks from outside are not possible." />
 
             <Separator
                 Width="20"

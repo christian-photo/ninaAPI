@@ -12,7 +12,6 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
-using NINA.Core.Enum;
 using NINA.Core.Interfaces;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment;
@@ -20,8 +19,8 @@ using NINA.Equipment.Equipment.MyGuider;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
-using NINA.WPF.Base.Mediator;
 using ninaAPI.Utility;
+using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -82,23 +81,21 @@ namespace ninaAPI.WebService.V2
         public double DECDuration { get; set; }
     }
 
-
-    public partial class ControllerV2
+    public class GuiderWatcher : INinaWatcher, IGuiderConsumer
     {
-        private static GuideStep lastGuideStep { get; set; }
-        private static CancellationTokenSource GuideToken;
+        public static GuideStep lastGuideStep { get; set; }
 
-        private static readonly Func<object, EventArgs, Task> GuiderConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> GuiderDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-DISCONNECTED");
-        private static readonly Func<object, EventArgs, Task> GuiderDitherHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-DITHER");
-        private static readonly Func<object, EventArgs, Task> GuiderStartHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-START");
-        private static readonly Func<object, EventArgs, Task> GuiderStopHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-STOP");
-        private static readonly EventHandler<IGuideStep> GuiderGuideEventHandler = (object sender, IGuideStep e) =>
+        private readonly Func<object, EventArgs, Task> GuiderConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-CONNECTED");
+        private readonly Func<object, EventArgs, Task> GuiderDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-DISCONNECTED");
+        private readonly Func<object, EventArgs, Task> GuiderDitherHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-DITHER");
+        private readonly Func<object, EventArgs, Task> GuiderStartHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-START");
+        private readonly Func<object, EventArgs, Task> GuiderStopHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("GUIDER-STOP");
+        private readonly EventHandler<IGuideStep> GuiderGuideEventHandler = (object sender, IGuideStep e) =>
         {
             lastGuideStep = new GuideStep() { DECDistanceRaw = e.DECDistanceRaw, DECDuration = e.DECDuration, RADistanceRaw = e.RADistanceRaw, RADuration = e.RADuration };
         };
 
-        public static void StartGuiderWatchers()
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.Guider.GuideEvent += GuiderGuideEventHandler;
             AdvancedAPI.Controls.Guider.Connected += GuiderConnectedHandler;
@@ -106,9 +103,10 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Guider.AfterDither += GuiderDitherHandler;
             AdvancedAPI.Controls.Guider.GuidingStarted += GuiderStartHandler;
             AdvancedAPI.Controls.Guider.GuidingStopped += GuiderStopHandler;
+            AdvancedAPI.Controls.Guider.RegisterConsumer(this);
         }
 
-        public static void StopGuiderWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.Guider.GuideEvent -= GuiderGuideEventHandler;
             AdvancedAPI.Controls.Guider.Connected -= GuiderConnectedHandler;
@@ -116,8 +114,23 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Guider.AfterDither -= GuiderDitherHandler;
             AdvancedAPI.Controls.Guider.GuidingStarted -= GuiderStartHandler;
             AdvancedAPI.Controls.Guider.GuidingStopped -= GuiderStopHandler;
+            AdvancedAPI.Controls.Guider.RemoveConsumer(this);
         }
 
+        public void UpdateDeviceInfo(GuiderInfo deviceInfo)
+        {
+            WebSocketV2.SendConsumerEvent("GUIDER");
+        }
+
+        public void Dispose()
+        {
+            AdvancedAPI.Controls.Guider.RemoveConsumer(this);
+        }
+    }
+
+    public partial class ControllerV2
+    {
+        private static CancellationTokenSource GuideToken;
 
         [Route(HttpVerbs.Get, "/equipment/guider/info")]
         public void GuiderInfo()
@@ -130,7 +143,7 @@ namespace ninaAPI.WebService.V2
 
                 IGuider g = (IGuider)guider.GetDevice();
 
-                GuideInfo info = new GuideInfo(guider.GetInfo(), lastGuideStep, g?.State);
+                GuideInfo info = new GuideInfo(guider.GetInfo(), GuiderWatcher.lastGuideStep, g?.State);
                 response.Response = info;
             }
             catch (Exception ex)

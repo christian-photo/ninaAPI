@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -24,19 +24,22 @@ using NINA.Image.Interfaces;
 using NINA.Core.Enum;
 using System.Collections.Generic;
 using NINA.WPF.Base.Interfaces.Mediator;
+using System.Windows.Media.Imaging;
+using System.IO;
+using ninaAPI.WebService.V2.Equipment;
 
 namespace ninaAPI.WebService.V2
 {
-    public partial class ControllerV2
+    public class ImageWatcher : INinaWatcher
     {
         public static List<HttpResponse> Images = new List<HttpResponse>();
 
-        public static void StartImageWatcher()
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.ImageSaveMediator.ImageSaved += ImageSaved;
         }
 
-        public static void StopImageWatcher()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.ImageSaveMediator.ImageSaved -= ImageSaved;
         }
@@ -76,9 +79,20 @@ namespace ninaAPI.WebService.V2
 
             WebSocketV2.SendEvent(response);
         }
+    }
 
+    public partial class ControllerV2
+    {
         [Route(HttpVerbs.Get, "/image/{index}")]
-        public async Task GetImage(int index, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale, [QueryField] double factor, [QueryField] double blackClipping, [QueryField] bool unlinked)
+        public async Task GetImage(int index,
+            [QueryField] bool resize,
+            [QueryField] int quality,
+            [QueryField] string size,
+            [QueryField] double scale,
+            [QueryField] double factor,
+            [QueryField] double blackClipping,
+            [QueryField] bool unlinked,
+            [QueryField] bool stream)
         {
             HttpResponse response = new HttpResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
@@ -131,14 +145,43 @@ namespace ninaAPI.WebService.V2
                     IRenderedImage renderedImage = imageData.RenderImage();
 
                     renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);
-                    var bitmap = renderedImage.Image;
 
-                    if (scale == 0 && resize)
-                        response.Response = BitmapHelper.ResizeAndConvertBitmap(bitmap, sz, quality);
-                    if (scale != 0 && resize)
-                        response.Response = BitmapHelper.ScaleAndConvertBitmap(bitmap, scale, quality);
-                    if (!resize)
-                        response.Response = BitmapHelper.ScaleAndConvertBitmap(bitmap, 1, quality);
+                    if (stream)
+                    {
+                        BitmapEncoder encoder = null;
+                        if (scale == 0 && resize)
+                        {
+                            BitmapSource image = BitmapHelper.ResizeBitmap(renderedImage.Image, sz);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        if (scale != 0 && resize)
+                        {
+                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, scale);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        if (!resize)
+                        {
+                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpg";
+                        using (MemoryStream memory = new MemoryStream())
+                        {
+                            encoder.Save(memory);
+                            await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
+                            return;
+                        }
+                    }
+                    else
+                    {
+
+                        if (scale == 0 && resize)
+                            response.Response = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, sz, quality);
+                        if (scale != 0 && resize)
+                            response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
+                        if (!resize)
+                            response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
+                    }
                 }
             }
             catch (Exception ex)
@@ -160,22 +203,22 @@ namespace ninaAPI.WebService.V2
                 List<object> result = new List<object>();
                 if (count)
                 {
-                    response.Response = Images.Count;
+                    response.Response = ImageWatcher.Images.Count;
                 }
                 else if (all)
                 {
-                    foreach (HttpResponse r in Images)
+                    foreach (HttpResponse r in ImageWatcher.Images)
                     {
                         result.Add(((Dictionary<string, object>)r.Response)["ImageStatistics"]);
                     }
                     response.Response = result;
                 }
-                else if (index >= 0 && index < Images.Count)
+                else if (index >= 0 && index < ImageWatcher.Images.Count)
                 {
-                    result.Add(((Dictionary<string, object>)Images[index].Response)["ImageStatistics"]);
+                    result.Add(((Dictionary<string, object>)ImageWatcher.Images[index].Response)["ImageStatistics"]);
                     response.Response = result;
                 }
-                else if (index >= Images.Count || index < 0)
+                else if (index >= ImageWatcher.Images.Count || index < 0)
                 {
                     response = CoreUtility.CreateErrorTable(CommonErrors.INDEX_OUT_OF_RANGE);
                 }

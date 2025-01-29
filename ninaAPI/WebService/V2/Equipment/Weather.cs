@@ -16,29 +16,44 @@ using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyWeatherData;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
+using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
-    public partial class ControllerV2
+    public class WeatherWatcher : INinaWatcher, IWeatherDataConsumer
     {
-        private static readonly Func<object, EventArgs, Task> WeatherConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("WEATHER-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> WeatherDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("WEATHER-DISCONNECTED");
+        private readonly Func<object, EventArgs, Task> WeatherConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("WEATHER-CONNECTED");
+        private readonly Func<object, EventArgs, Task> WeatherDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("WEATHER-DISCONNECTED");
 
-        public static void StartWeatherWatchers()
+        public void Dispose()
+        {
+            AdvancedAPI.Controls.Weather.RemoveConsumer(this);
+        }
+
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.Weather.Connected += WeatherConnectedHandler;
             AdvancedAPI.Controls.Weather.Disconnected += WeatherDisconnectedHandler;
+            AdvancedAPI.Controls.Weather.RegisterConsumer(this);
         }
 
-        public static void StopWeatherWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.Weather.Connected -= WeatherConnectedHandler;
             AdvancedAPI.Controls.Weather.Disconnected -= WeatherDisconnectedHandler;
+            AdvancedAPI.Controls.Weather.RemoveConsumer(this);
         }
 
+        public void UpdateDeviceInfo(WeatherDataInfo deviceInfo)
+        {
+            WebSocketV2.SendConsumerEvent("WEATHER");
+        }
+    }
 
+    public partial class ControllerV2
+    {
         [Route(HttpVerbs.Get, "/equipment/weather/info")]
         public void WeatherInfo()
         {

@@ -19,6 +19,8 @@ using NINA.Core.Utility;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using NINA.Image.ImageAnalysis;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
@@ -70,7 +72,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/application/screenshot")]
-        public void ApplicationScreenshot([QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale)
+        public async Task ApplicationScreenshot([QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale, [QueryField] bool stream)
         {
             HttpResponse response = new HttpResponse();
 
@@ -105,12 +107,42 @@ namespace ninaAPI.WebService.V2
 
                 BitmapSource source = ImageUtility.ConvertBitmap(screenshot);
 
-                if (scale == 0 && resize)
-                    response.Response = BitmapHelper.ResizeAndConvertBitmap(source, new_size, quality);
-                if (scale != 0 && resize)
-                    response.Response = BitmapHelper.ScaleAndConvertBitmap(source, scale, quality);
-                if (!resize)
-                    response.Response = BitmapHelper.ScaleAndConvertBitmap(source, 1, quality);
+                if (stream)
+                {
+                    BitmapEncoder encoder = null;
+                    if (scale == 0 && resize)
+                    {
+                        BitmapSource image = BitmapHelper.ResizeBitmap(source, new_size);
+                        encoder = BitmapHelper.GetEncoder(image, quality);
+                    }
+                    if (scale != 0 && resize)
+                    {
+                        BitmapSource image = BitmapHelper.ScaleBitmap(source, scale);
+                        encoder = BitmapHelper.GetEncoder(image, quality);
+                    }
+                    if (!resize)
+                    {
+                        BitmapSource image = BitmapHelper.ScaleBitmap(source, 1);
+                        encoder = BitmapHelper.GetEncoder(image, quality);
+                    }
+                    HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpg";
+                    using (MemoryStream memory = new MemoryStream())
+                    {
+                        encoder.Save(memory);
+                        await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
+                        return;
+                    }
+                }
+                else
+                {
+
+                    if (scale == 0 && resize)
+                        response.Response = BitmapHelper.ResizeAndConvertBitmap(source, new_size, quality);
+                    if (scale != 0 && resize)
+                        response.Response = BitmapHelper.ScaleAndConvertBitmap(source, scale, quality);
+                    if (!resize)
+                        response.Response = BitmapHelper.ScaleAndConvertBitmap(source, 1, quality);
+                }
             }
             catch (Exception ex)
             {

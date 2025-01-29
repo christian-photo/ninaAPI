@@ -52,10 +52,27 @@ namespace ninaAPI.WebService.V2
 
     public class WebSocketV2 : WebSocketModule
     {
+        private static bool sendConsumerEvents = false;
+
         private static WebSocketV2 instance;
         public WebSocketV2(string urlPath) : base(urlPath, true)
         {
             instance = this;
+        }
+
+        public static async Task SendConsumerEvent(string consumer)
+        {
+            // Maybe not, because it would be a lot of unnecessary traffic since most devices update their info constantly and then this would be useless
+            return;
+            consumer = consumer.ToUpper();
+            Logger.Info($"Sending {consumer}-INFO-UPDATED");
+            if (sendConsumerEvents && consumer != "MOUNT")
+            {
+                // Do not allow mount updates for now, because that would be a lot of unnecessary traffic
+                // because every time the coordinates change, the info also changes. We could enable this with an extra bool
+                // in the future
+                await SendEvent(new HttpResponse() { Response = $"{consumer}-INFO-UPDATED", Type = HttpResponse.TypeSocket });
+            }
         }
 
         public static async Task SendAndAddEvent(string eventName, Dictionary<string, object> data)
@@ -104,7 +121,15 @@ namespace ninaAPI.WebService.V2
 
         protected override Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult rxResult)
         {
-            Encoding.GetString(rxBuffer); // Do something with it
+            string s = Encoding.GetString(rxBuffer);
+            if (s.Equals("enable-consumer-events"))
+            {
+                sendConsumerEvents = true;
+            }
+            else if (s.Equals("disable-consumer-events"))
+            {
+                sendConsumerEvents = false;
+            }
             return Task.CompletedTask;
         }
 

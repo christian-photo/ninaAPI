@@ -16,6 +16,7 @@ using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyFlatDevice;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
+using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -23,18 +24,23 @@ using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
-    public partial class ControllerV2
+    public class FlatDeviceWatcher : INinaWatcher, IFlatDeviceConsumer
     {
-        private static readonly Func<object, EventArgs, Task> FlatDeviceConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> FlatDeviceDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-DISCONNECTED");
-        private static readonly Func<object, EventArgs, Task> FlatDeviceLightToggledHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-LIGHT-TOGGLED");
-        private static readonly Func<object, EventArgs, Task> FlatDeviceOpenedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-COVER-OPENED");
-        private static readonly Func<object, EventArgs, Task> FlatDeviceClosedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-COVER-CLOSED");
-        private static readonly Func<object, FlatDeviceBrightnessChangedEventArgs, Task> FlatDeviceBrightnessChangedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent(
+        private readonly Func<object, EventArgs, Task> FlatDeviceConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-CONNECTED");
+        private readonly Func<object, EventArgs, Task> FlatDeviceDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-DISCONNECTED");
+        private readonly Func<object, EventArgs, Task> FlatDeviceLightToggledHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-LIGHT-TOGGLED");
+        private readonly Func<object, EventArgs, Task> FlatDeviceOpenedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-COVER-OPENED");
+        private readonly Func<object, EventArgs, Task> FlatDeviceClosedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("FLAT-COVER-CLOSED");
+        private readonly Func<object, FlatDeviceBrightnessChangedEventArgs, Task> FlatDeviceBrightnessChangedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent(
             "FLAT-BRIGHTNESS-CHANGED",
             new Dictionary<string, object>() { { "Previous", e.From }, { "New", e.To } });
 
-        public static void StartFlatDeviceWatchers()
+        public void Dispose()
+        {
+            AdvancedAPI.Controls.FlatDevice.RemoveConsumer(this);
+        }
+
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.FlatDevice.Connected += FlatDeviceConnectedHandler;
             AdvancedAPI.Controls.FlatDevice.Disconnected += FlatDeviceDisconnectedHandler;
@@ -42,9 +48,10 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.FlatDevice.Opened += FlatDeviceOpenedHandler;
             AdvancedAPI.Controls.FlatDevice.Closed += FlatDeviceClosedHandler;
             AdvancedAPI.Controls.FlatDevice.BrightnessChanged += FlatDeviceBrightnessChangedHandler;
+            AdvancedAPI.Controls.FlatDevice.RegisterConsumer(this);
         }
 
-        public static void StopFlatDeviceWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.FlatDevice.Connected -= FlatDeviceConnectedHandler;
             AdvancedAPI.Controls.FlatDevice.Disconnected -= FlatDeviceDisconnectedHandler;
@@ -52,9 +59,17 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.FlatDevice.Opened -= FlatDeviceOpenedHandler;
             AdvancedAPI.Controls.FlatDevice.Closed -= FlatDeviceClosedHandler;
             AdvancedAPI.Controls.FlatDevice.BrightnessChanged -= FlatDeviceBrightnessChangedHandler;
+            AdvancedAPI.Controls.FlatDevice.RemoveConsumer(this);
         }
 
+        public void UpdateDeviceInfo(FlatDeviceInfo deviceInfo)
+        {
+            WebSocketV2.SendConsumerEvent("FLATDEVICE");
+        }
+    }
 
+    public partial class ControllerV2
+    {
         [Route(HttpVerbs.Get, "/equipment/flatdevice/info")]
         public void FlatDeviceInfo()
         {

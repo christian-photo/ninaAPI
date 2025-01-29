@@ -9,14 +9,16 @@
 
 #endregion "copyright"
 
+using ninaAPI.WebService.V2.Equipment;
+
 namespace ninaAPI.WebService.V2
 {
-    public partial class ControllerV2
+    public class NinaLogWatcher : INinaWatcher
     {
-        private static NINALogMessageProcessor LogProcessor;
-        private static NINALogWatcher LogWatcher;
+        private NINALogMessageProcessor LogProcessor;
+        private NINALogWatcher LogWatcher;
 
-        public static void StartLogWatcher()
+        public void StartWatchers()
         {
             LogProcessor = new NINALogMessageProcessor();
             LogWatcher = new NINALogWatcher(LogProcessor);
@@ -25,12 +27,12 @@ namespace ninaAPI.WebService.V2
             LogProcessor.NINALogEventSaved += LogEvent;
         }
 
-        public static void StopLogWatcher()
+        public void StopWatchers()
         {
             LogProcessor.NINALogEventSaved -= LogEvent;
             LogWatcher?.Stop();
         }
 
-        private static async void LogEvent(object _, NINALogEvent e) => await WebSocketV2.SendAndAddEvent(e.type, e.time);
+        private async void LogEvent(object _, NINALogEvent e) => await WebSocketV2.SendAndAddEvent(e.type, e.time);
     }
 }

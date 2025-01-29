@@ -17,36 +17,38 @@ using NINA.Equipment.Equipment.MySafetyMonitor;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
 using ninaAPI.Utility;
+using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
-    public partial class ControllerV2
+    public class SafetyWatcher : INinaWatcher
     {
-
-        private static readonly Func<object, EventArgs, Task> SafetyConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> SafetyDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-DISCONNECTED");
-        private static readonly EventHandler<IsSafeEventArgs> SafetyIsSafeChangedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent(
+        private readonly Func<object, EventArgs, Task> SafetyConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-CONNECTED");
+        private readonly Func<object, EventArgs, Task> SafetyDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SAFETY-DISCONNECTED");
+        private readonly EventHandler<IsSafeEventArgs> SafetyIsSafeChangedHandler = async (_, e) => await WebSocketV2.SendAndAddEvent(
             "SAFETY-CHANGED",
             new Dictionary<string, object>() { { "IsSafe", e.IsSafe } });
 
-        public static void StartSafetyWatchers()
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.SafetyMonitor.Connected += SafetyConnectedHandler;
             AdvancedAPI.Controls.SafetyMonitor.Disconnected += SafetyDisconnectedHandler;
             AdvancedAPI.Controls.SafetyMonitor.IsSafeChanged += SafetyIsSafeChangedHandler;
         }
 
-        public static void StopSafetyWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.SafetyMonitor.Connected -= SafetyConnectedHandler;
             AdvancedAPI.Controls.SafetyMonitor.Disconnected -= SafetyDisconnectedHandler;
             AdvancedAPI.Controls.SafetyMonitor.IsSafeChanged -= SafetyIsSafeChangedHandler;
         }
+    }
 
-
+    public partial class ControllerV2
+    {
         [Route(HttpVerbs.Get, "/equipment/safetymonitor/info")]
         public void SafetyMonitorInfo()
         {

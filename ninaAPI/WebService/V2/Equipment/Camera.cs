@@ -28,6 +28,9 @@ using ninaAPI.Utility;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyCamera;
 using System.Linq;
+using System.Windows.Media.Imaging;
+using System.IO;
+using ninaAPI.WebService.V2.Equipment;
 
 namespace ninaAPI.WebService.V2
 {
@@ -115,26 +118,41 @@ namespace ninaAPI.WebService.V2
         public bool AtTargetTemp { get; set; }
     }
 
-    public partial class ControllerV2
+    public class CameraWatcher : INinaWatcher, ICameraConsumer
     {
-        private static readonly Func<object, EventArgs, Task> CameraConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> CameraDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DISCONNECTED");
-        private static readonly Func<object, EventArgs, Task> CameraDownloadTimeoutHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DOWNLOAD-TIMEOUT");
+        private readonly Func<object, EventArgs, Task> CameraConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-CONNECTED");
+        private readonly Func<object, EventArgs, Task> CameraDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DISCONNECTED");
+        private readonly Func<object, EventArgs, Task> CameraDownloadTimeoutHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("CAMERA-DOWNLOAD-TIMEOUT");
 
-        public static void StartCameraWatchers()
+        public void Dispose()
+        {
+            AdvancedAPI.Controls.Camera.RemoveConsumer(this);
+        }
+
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.Camera.Connected += CameraConnectedHandler;
             AdvancedAPI.Controls.Camera.Disconnected += CameraDisconnectedHandler;
             AdvancedAPI.Controls.Camera.DownloadTimeout += CameraDownloadTimeoutHandler;
+            AdvancedAPI.Controls.Camera.RegisterConsumer(this);
         }
 
-        public static void StopCameraWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.Camera.Connected -= CameraConnectedHandler;
             AdvancedAPI.Controls.Camera.Disconnected -= CameraDisconnectedHandler;
             AdvancedAPI.Controls.Camera.DownloadTimeout -= CameraDownloadTimeoutHandler;
+            AdvancedAPI.Controls.Camera.RemoveConsumer(this);
         }
 
+        public void UpdateDeviceInfo(CameraInfo deviceInfo)
+        {
+            WebSocketV2.SendConsumerEvent("CAMERA");
+        }
+    }
+
+    public partial class ControllerV2
+    {
         private static CancellationTokenSource CameraCaptureToken;
         private static PlateSolveResult plateSolveResult;
         private static IRenderedImage renderedImage;
@@ -391,8 +409,71 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        [Route(HttpVerbs.Get, "/equipment/camera/set-binning")]
+        public void CameraSetBinning([QueryField] string binning)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ICameraMediator cam = AdvancedAPI.Controls.Camera;
+
+                if (string.IsNullOrEmpty(binning))
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Binning must be specified", 409));
+                }
+                else if (!cam.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Camera not connected", 409));
+                }
+                else if (binning.Contains('x'))
+                {
+                    string[] parts = binning.Split('x');
+                    if (int.TryParse(parts[0], out int x) && int.TryParse(parts[1], out int y))
+                    {
+                        BinningMode mode = cam.GetInfo().BinningModes.FirstOrDefault(b => b.X == x && b.Y == y, null);
+                        if (mode == null)
+                        {
+                            response = CoreUtility.CreateErrorTable(new Error("Invalid binning mode", 409));
+                        }
+                        else
+                        {
+                            cam.SetBinning(mode.X, mode.Y);
+                            response.Response = "Binning set";
+                        }
+                    }
+                    else
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Invalid binning mode", 409));
+                    }
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Binning must be specified", 409));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/equipment/camera/capture")]
-        public void CameraCapture([QueryField] bool solve, [QueryField] float duration, [QueryField] bool getResult, [QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] int gain, [QueryField] double scale)
+        public async Task CameraCapture(
+            [QueryField] bool solve,
+            [QueryField] float duration,
+            [QueryField] bool getResult,
+            [QueryField] bool resize,
+            [QueryField] int quality,
+            [QueryField] string size,
+            [QueryField] int gain,
+            [QueryField] double scale,
+            [QueryField] bool stream,
+            [QueryField] bool omitImage,
+            [QueryField] bool waitForResult)
         {
 
             HttpResponse response = new HttpResponse();
@@ -430,15 +511,51 @@ namespace ninaAPI.WebService.V2
                 }
                 else if (getResult && CaptureTask.IsCompleted)
                 {
-                    string image = string.Empty;
-                    if (scale == 0 && resize)
-                        image = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, resolution, quality);
-                    if (scale != 0 && resize)
-                        image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
-                    if (!resize)
-                        image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
+                    if (stream)
+                    {
+                        BitmapEncoder encoder = null;
+                        if (scale == 0 && resize)
+                        {
+                            BitmapSource image = BitmapHelper.ResizeBitmap(renderedImage.Image, resolution);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        if (scale != 0 && resize)
+                        {
+                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, scale);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        if (!resize)
+                        {
+                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpg";
+                        using (MemoryStream memory = new MemoryStream())
+                        {
+                            encoder.Save(memory);
+                            await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (!omitImage)
+                        {
+                            string image = string.Empty;
+                            if (scale == 0 && resize)
+                                image = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, resolution, quality);
+                            if (scale != 0 && resize)
+                                image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
+                            if (!resize)
+                                image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
 
-                    response.Response = new CaptureResponse() { Image = image, PlateSolveResult = plateSolveResult };
+                            response.Response = new CaptureResponse() { Image = image, PlateSolveResult = plateSolveResult };
+                        }
+                        else
+                        {
+                            response.Response = new CaptureResponse() { PlateSolveResult = plateSolveResult, Image = null };
+                        }
+                    }
                 }
                 else if (!getResult && !cam.GetInfo().Connected)
                 {
@@ -475,7 +592,6 @@ namespace ninaAPI.WebService.V2
                         IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(sequence, CameraCaptureToken.Token, AdvancedAPI.Controls.StatusMediator.GetStatus());
                         renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(exposure, parameters, CameraCaptureToken.Token);
 
-
                         if (solve)
                         {
                             IPlateSolverFactory platesolver = AdvancedAPI.Controls.PlateSolver;
@@ -498,8 +614,15 @@ namespace ninaAPI.WebService.V2
                             IImageSolver captureSolver = platesolver.GetImageSolver(platesolver.GetPlateSolver(settings), platesolver.GetBlindSolver(settings));
                             plateSolveResult = await captureSolver.Solve(renderedImage.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCaptureToken.Token);
                         }
+                        await WebSocketV2.SendAndAddEvent("API-CAPTURE-FINISHED");
                     }, CameraCaptureToken.Token);
 
+                    if (waitForResult)
+                    {
+                        await CaptureTask;
+                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false);
+                        return;
+                    }
                     response.Response = "Capture started";
                 }
             }

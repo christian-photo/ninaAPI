@@ -16,31 +16,46 @@ using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MySwitch;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
+using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
-    public partial class ControllerV2
+    public class SwitchWatcher : INinaWatcher, ISwitchConsumer
     {
-        private static CancellationTokenSource SwitchToken;
+        private readonly Func<object, EventArgs, Task> SwitchConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SWITCH-CONNECTED");
+        private readonly Func<object, EventArgs, Task> SwitchDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SWITCH-DISCONNECTED");
 
-        private static readonly Func<object, EventArgs, Task> SwitchConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SWITCH-CONNECTED");
-        private static readonly Func<object, EventArgs, Task> SwitchDisconnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("SWITCH-DISCONNECTED");
+        public void Dispose()
+        {
+            AdvancedAPI.Controls.Switch.RemoveConsumer(this);
+        }
 
-        public static void StartSwitchWatchers()
+        public void StartWatchers()
         {
             AdvancedAPI.Controls.Switch.Connected += SwitchConnectedHandler;
             AdvancedAPI.Controls.Switch.Disconnected += SwitchDisconnectedHandler;
+            AdvancedAPI.Controls.Switch.RegisterConsumer(this);
         }
 
-        public static void StopSwitchWatchers()
+        public void StopWatchers()
         {
             AdvancedAPI.Controls.Switch.Connected -= SwitchConnectedHandler;
             AdvancedAPI.Controls.Switch.Disconnected -= SwitchDisconnectedHandler;
+            AdvancedAPI.Controls.Switch.RemoveConsumer(this);
         }
 
+        public void UpdateDeviceInfo(SwitchInfo deviceInfo)
+        {
+            WebSocketV2.SendConsumerEvent("SWITCH");
+        }
+    }
+
+    public partial class ControllerV2
+    {
+        private static CancellationTokenSource SwitchToken;
 
         [Route(HttpVerbs.Get, "/equipment/switch/info")]
         public void SwitchInfo()
