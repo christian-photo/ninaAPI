@@ -20,7 +20,6 @@ using ninaAPI.Utility;
 using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Collections.Generic;
-using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -323,7 +322,6 @@ namespace ninaAPI.WebService.V2
             try
             {
                 IDomeMediator dome = AdvancedAPI.Controls.Dome;
-
                 if (!dome.GetInfo().Connected)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 409));
