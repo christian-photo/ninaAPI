@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 
 // [MANDATORY] The assembly versioning
 //Should be incremented for each new build of a plugin
-[assembly: AssemblyVersion("2.1.6.0")] // last one is for beta
-[assembly: AssemblyFileVersion("2.1.6.0")]
+[assembly: AssemblyVersion("2.1.7.0")] // last one is for beta
+[assembly: AssemblyFileVersion("2.1.7.0")]
 
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]

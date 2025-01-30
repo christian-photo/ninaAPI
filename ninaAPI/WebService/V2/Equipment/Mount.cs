@@ -18,7 +18,6 @@ using NINA.Equipment.Equipment.MyTelescope;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
-using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

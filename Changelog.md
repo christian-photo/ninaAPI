@@ -1,5 +1,13 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
+## 2.2.0.0 (Breaking Update)
+
+### Changes
+
+- ⚠️ **Breaking** Enums are now serialized as strings, check the documentation for concrete updates. Please note, that not everything might be updated correctly ⚠️
+- Added a 1s delay to the `IMAGE-SAVE` event to give NINA a bit more time to finish up the image
+- `image/{index}` now automatically retries the image retrieval 10 times with a 200ms delay between each try, if it fails to load the image (because it is in use for example)
+
 ## 2.1.6.0
 
 ### Changes
