@@ -126,5 +126,25 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/weather/search")]
+        public async Task WeatherSearch()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IWeatherDataMediator weather = AdvancedAPI.Controls.Weather;
+                var scanResult = await weather.Rescan();
+                response.Response = scanResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 }

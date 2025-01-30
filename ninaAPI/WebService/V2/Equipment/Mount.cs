@@ -362,5 +362,25 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/search")]
+        public async Task MountSearch()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+                var scanResult = await mount.Rescan();
+                response.Response = scanResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 }

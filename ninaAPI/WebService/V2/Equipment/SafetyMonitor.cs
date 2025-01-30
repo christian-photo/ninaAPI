@@ -121,5 +121,25 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/safetymonitor/search")]
+        public async Task SafetyMonitorSearch()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ISafetyMonitorMediator safetymonitor = AdvancedAPI.Controls.SafetyMonitor;
+                var scanResult = await safetymonitor.Rescan();
+                response.Response = scanResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 }

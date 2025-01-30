@@ -12,6 +12,7 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using NINA.Astrometry;
 using NINA.Core.Interfaces;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment;
@@ -25,6 +26,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Win32;
+using System.Linq;
+using System.IO;
 
 namespace ninaAPI.WebService.V2
 {
@@ -321,5 +325,282 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/guider/dither")]
+        public async Task GuiderDither()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
+
+                if (guider.GetInfo().Connected)
+                {
+                    var success = await guider.Dither(GuideToken.Token);
+                    response.Response = success ? "Dithering successful" : "Dithering failed";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Guider not connected", 409));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/guider/shift")]
+        public async Task GuiderShift([QueryField] double rate)
+        {
+            var response = new HttpResponse();
+
+            try
+            {
+                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
+
+                if (guider.GetInfo().Connected)
+                {
+                    var shiftRate = SiderealShiftTrackingRate.Create(rate, 0);
+                    var success = await guider.SetShiftRate(shiftRate, GuideToken.Token);
+                    response.Response = success ? "Shift rate set" : "Failed to set shift rate";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Guider not connected", 409));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/guider/stop-shift")]
+        public async Task GuiderStopShift()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
+
+                if (guider.GetInfo().Connected)
+                {
+                    var success = await guider.StopShifting(GuideToken.Token);
+                    response.Response = success ? "Shifting stopped" : "Failed to stop shifting";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Guider not connected", 409));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/guider/select-star")]
+        public async Task GuiderSelectStar()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
+
+                if (guider.GetInfo().Connected)
+                {
+                    var success = await guider.AutoSelectGuideStar(GuideToken.Token);
+                    response.Response = success ? "Guide star selected" : "Failed to select guide star";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Guider not connected", 409));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/guider/get-lock")]
+        public void GuiderGetLock()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
+
+                if (guider.GetInfo().Connected)
+                {
+                    var lockPosition = guider.GetLockPosition();
+                    response.Response = lockPosition;
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Guider not connected", 409));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/guider/search")]
+        public async Task GuiderSearch()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
+                var scanResult = await guider.Rescan();
+                response.Response = scanResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        public static bool IsSoftwareInstalled(string softwareName)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                const string registryKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+                bool is64Bit = Environment.Is64BitOperatingSystem;
+
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(registryKey))
+                {
+                    if (CheckSubKeys(key, softwareName)) return true;
+                }
+
+                if (is64Bit)
+                {
+                    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(
+                        @"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"))
+                    {
+                        if (CheckSubKeys(key, softwareName)) return true;
+                    }
+                }
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                try
+                {
+                    using var process = new System.Diagnostics.Process();
+                    process.StartInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "which",
+                        Arguments = softwareName,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    };
+                    process.Start();
+                    string result = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+
+                    if (process.ExitCode == 0 && !string.IsNullOrEmpty(result))
+                        return true;
+
+                    string[] commonPaths = new[]
+                    {
+                        $"/usr/bin/{softwareName}",
+                        $"/usr/local/bin/{softwareName}",
+                        $"/opt/{softwareName}/bin/{softwareName}"
+                    };
+
+                    if (commonPaths.Any(File.Exists))
+                        return true;
+
+                    process.StartInfo.FileName = "whereis";
+                    process.StartInfo.Arguments = softwareName;
+                    process.Start();
+                    result = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+
+                    return process.ExitCode == 0 && result.Split(' ').Length > 1;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool CheckSubKeys(RegistryKey key, string softwareName)
+        {
+            if (key == null) return false;
+
+            if (!OperatingSystem.IsWindows()) return false;
+
+            foreach (string subKeyName in key.GetSubKeyNames())
+            {
+                using (RegistryKey subKey = key.OpenSubKey(subKeyName))
+                {
+                    string displayName = subKey?.GetValue("DisplayName") as string;
+                    if (!string.IsNullOrEmpty(displayName) &&
+                        displayName.Contains(softwareName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/guider/check-software")]
+        public void CheckSoftware([QueryField] string name = "PHD2")
+        {
+            var response = new HttpResponse();
+
+            try
+            {
+                if (string.IsNullOrEmpty(name))
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Software name is required", 400));
+                }
+                else
+                {
+                    response.Response = IsSoftwareInstalled(name);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
+
+
 }

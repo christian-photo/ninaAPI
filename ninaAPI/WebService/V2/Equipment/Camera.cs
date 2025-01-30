@@ -181,6 +181,28 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        [Route(HttpVerbs.Get, "/equipment/camera/search")]
+        public async Task SearchCamera()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ICameraMediator cam = AdvancedAPI.Controls.Camera;
+
+                var scanResult = await cam.Rescan();
+
+                response.Response = scanResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/equipment/camera/connect")]
         public async Task CameraConnect([QueryField] bool skipRescan)
         {

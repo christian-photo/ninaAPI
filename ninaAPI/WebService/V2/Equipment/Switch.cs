@@ -156,5 +156,25 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/switch/search")]
+        public async Task SwitchSearch()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ISwitchMediator sw = AdvancedAPI.Controls.Switch;
+                var scanResult = await sw.Rescan();
+                response.Response = scanResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 }

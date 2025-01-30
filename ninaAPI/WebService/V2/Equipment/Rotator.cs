@@ -57,7 +57,6 @@ namespace ninaAPI.WebService.V2
     {
         private static CancellationTokenSource RotatorToken;
 
-
         [Route(HttpVerbs.Get, "/equipment/rotator/info")]
         public void RotatorInfo()
         {
@@ -175,6 +174,26 @@ namespace ninaAPI.WebService.V2
                 RotatorToken = new CancellationTokenSource();
                 rotator.MoveMechanical(position, RotatorToken.Token);
                 response.Response = "Rotator move started";
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/rotator/search")]
+        public async Task RotatorSearch()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IRotatorMediator rotator = AdvancedAPI.Controls.Rotator;
+                var scanResult = await rotator.Rescan();
+                response.Response = scanResult;
             }
             catch (Exception ex)
             {

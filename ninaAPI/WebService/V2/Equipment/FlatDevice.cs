@@ -231,5 +231,25 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/flatdevice/search")]
+        public async Task FlatDeviceSearch()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IFlatDeviceMediator flatDevice = AdvancedAPI.Controls.FlatDevice;
+                var scanResult = await flatDevice.Rescan();
+                response.Response = scanResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 }

@@ -255,5 +255,25 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/filterwheel/search")]
+        public async Task FilterWheelSearch()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IFilterWheelMediator filterWheel = AdvancedAPI.Controls.FilterWheel;
+                var scanResult = await filterWheel.Rescan();
+                response.Response = scanResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 }

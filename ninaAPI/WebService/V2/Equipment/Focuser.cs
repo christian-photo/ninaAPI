@@ -238,5 +238,25 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/focuser/search")]
+        public async Task FocuserSearch()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
+                var scanResult = await focuser.Rescan();
+                response.Response = scanResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 }

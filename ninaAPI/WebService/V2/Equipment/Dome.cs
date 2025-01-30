@@ -104,6 +104,28 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        [Route(HttpVerbs.Get, "/equipment/dome/search")]
+        public async Task DomeSearch()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IDomeMediator dome = AdvancedAPI.Controls.Dome;
+
+                var scanResult = await dome.Rescan();
+
+                response.Response = scanResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/equipment/dome/connect")]
         public async Task DomeConnect([QueryField] bool skipRescan)
         {
