@@ -30,7 +30,7 @@ using NINA.Equipment.Equipment.MyCamera;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using System.IO;
-using ninaAPI.WebService.V2.Equipment;
+using NINA.Image.FileFormat;
 
 namespace ninaAPI.WebService.V2
 {
@@ -619,7 +619,6 @@ namespace ninaAPI.WebService.V2
                             IPlateSolverFactory platesolver = AdvancedAPI.Controls.PlateSolver;
                             Coordinates coordinates = AdvancedAPI.Controls.Mount.GetCurrentPosition();
                             double focalLength = AdvancedAPI.Controls.Profile.ActiveProfile.TelescopeSettings.FocalLength;
-                            double pixelSize = cam.GetInfo().PixelSize;
                             CaptureSolverParameter solverParameter = new CaptureSolverParameter()
                             {
                                 Attempts = 1,
@@ -631,7 +630,7 @@ namespace ninaAPI.WebService.V2
                                 MaxObjects = settings.MaxObjects,
                                 Regions = settings.Regions,
                                 SearchRadius = settings.SearchRadius,
-                                PixelSize = cam.GetInfo().PixelSize
+                                PixelSize = exposure.MetaData.Camera.PixelSize
                             };
                             IImageSolver captureSolver = platesolver.GetImageSolver(platesolver.GetPlateSolver(settings), platesolver.GetBlindSolver(settings));
                             plateSolveResult = await captureSolver.Solve(renderedImage.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCaptureToken.Token);

@@ -16,7 +16,6 @@ using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyFlatDevice;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
-using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Collections.Generic;
 using System.Threading;

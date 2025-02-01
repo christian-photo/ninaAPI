@@ -18,7 +18,6 @@ using NINA.Equipment.Equipment.MyFilterWheel;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
-using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Collections.Generic;
 using System.Linq;

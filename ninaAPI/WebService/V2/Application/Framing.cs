@@ -139,7 +139,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/framing/slew")]
-        public void FramingSlew([QueryField] string slew_option)
+        public async Task FramingSlew([QueryField] string slew_option, [QueryField] bool waitForResult)
         {
             HttpResponse response = new HttpResponse();
 
@@ -147,8 +147,12 @@ namespace ninaAPI.WebService.V2
             {
                 IFramingAssistantVM framing = AdvancedAPI.Controls.FramingAssistant;
 
-                framing.SlewToCoordinatesCommand.Execute(slew_option ?? string.Empty); // SlewOption is either Center Rotate or empty
-                response.Response = $"Slew started";
+                if (waitForResult)
+                    await framing.SlewToCoordinatesCommand.ExecuteAsync(slew_option ?? string.Empty); // SlewOption is either Center Rotate or empty
+                else
+                    framing.SlewToCoordinatesCommand.Execute(slew_option ?? string.Empty); // SlewOption is either Center Rotate or empty
+
+                response.Response = waitForResult ? "Slew finished" : "Slew started";
             }
             catch (Exception ex)
             {

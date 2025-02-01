@@ -18,7 +18,6 @@ using NINA.Equipment.Equipment.MyFocuser;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Utility.AutoFocus;
 using ninaAPI.Utility;
-using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.IO;
 using System.Linq;

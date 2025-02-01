@@ -16,7 +16,6 @@ using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MySwitch;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
-using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
