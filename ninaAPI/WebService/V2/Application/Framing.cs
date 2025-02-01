@@ -147,6 +147,12 @@ namespace ninaAPI.WebService.V2
             {
                 IFramingAssistantVM framing = AdvancedAPI.Controls.FramingAssistant;
 
+                if (framing.ImageParameter is null)
+                {
+                    await framing.LoadImageCommand.ExecuteAsync(null);
+                    await Task.Delay(1000);
+                }
+
                 if (waitForResult)
                     await framing.SlewToCoordinatesCommand.ExecuteAsync(slew_option ?? string.Empty); // SlewOption is either Center Rotate or empty
                 else

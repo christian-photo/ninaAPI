@@ -10,6 +10,7 @@ The changes for each individual beta release can be seen [here](https://github.c
 - Added `waitForResult` to `framing/slew`
 - Added `move-axis` to `mount` to manually move the mount axis
 - Fixed solving a capture image
+- Fixed an issue where the slew failed if no image was loaded in the framing assistant. An image is now automatically loaded
 
 ## 2.1.6.0
 

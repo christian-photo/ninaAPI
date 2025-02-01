@@ -65,6 +65,7 @@ namespace ninaAPI.WebService
             Watchers.Add(new WeatherWatcher());
             Watchers.Add(new ImageWatcher());
             Watchers.Add(new NinaLogWatcher());
+            Watchers.Add(new LiveStackWatcher());
 
             foreach (INinaWatcher watcher in Watchers)
             {
