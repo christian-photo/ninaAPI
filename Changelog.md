@@ -11,6 +11,7 @@ The changes for each individual beta release can be seen [here](https://github.c
 - Added `move-axis` to `mount` to manually move the mount axis
 - Fixed solving a capture image
 - Fixed an issue where the slew failed if no image was loaded in the framing assistant. An image is now automatically loaded
+- Fixed an issue where NINA would crash if the api was not enabled
 
 ## 2.1.6.0
 
