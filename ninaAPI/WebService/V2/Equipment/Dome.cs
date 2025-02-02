@@ -321,7 +321,6 @@ namespace ninaAPI.WebService.V2
             try
             {
                 IDomeMediator dome = AdvancedAPI.Controls.Dome;
-
                 if (!dome.GetInfo().Connected)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 409));
