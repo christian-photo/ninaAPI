@@ -1,5 +1,18 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
+## 2.1.7.0
+
+### Changes
+
+- ⚠️ **Breaking** Enums are now serialized as strings, check the documentation for concrete updates. Please note, that not everything might be updated correctly ⚠️
+- Added a 1s delay to the `IMAGE-SAVE` event to give NINA a bit more time to finish up the image
+- `image/{index}` now automatically retries the image retrieval 10 times with a 200ms delay between each try, if it fails to load the image (because it is in use for example)
+- Added `waitForResult` to `framing/slew`
+- Added `move-axis` to `mount` to manually move the mount axis
+- Fixed solving a capture image
+- Fixed an issue where the slew failed if no image was loaded in the framing assistant. An image is now automatically loaded
+- Fixed an issue where NINA would crash if the api was not enabled
+
 ## 2.1.6.0
 
 ### Changes

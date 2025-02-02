@@ -13,12 +13,12 @@ using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Astrometry;
+using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyTelescope;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
-using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -361,6 +361,69 @@ namespace ninaAPI.WebService.V2
             }
 
             HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/move-axis")]
+        public void MountMoveAxis([QueryField] string direction, [QueryField] double rate)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                if (HttpContext.IsParameterOmitted(nameof(rate)))
+                {
+                    rate = 20;
+                }
+
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
+                }
+                else if (mount.GetInfo().AtPark)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount parked", 409));
+                }
+                else
+                {
+                    TelescopeAxes axis = TelescopeAxes.Primary;
+                    switch (direction)
+                    {
+                        case "east":
+                            break;
+
+                        case "west":
+                            rate = -rate;
+                            break;
+
+                        case "north":
+                            axis = TelescopeAxes.Secondary;
+                            break;
+
+                        case "south":
+                            axis = TelescopeAxes.Secondary;
+                            rate = -rate;
+                            break;
+                    }
+                    mount.MoveAxis(axis, rate);
+
+                    response.Response = rate == 0 ? "Axis stopped" : "Axis moving";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/move-axis/stop")]
+        public void MountMoveAxisStop([QueryField] string direction)
+        {
+            MountMoveAxis(direction, 0);
         }
     }
 }
