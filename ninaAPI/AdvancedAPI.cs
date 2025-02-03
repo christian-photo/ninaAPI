@@ -167,7 +167,7 @@ namespace ninaAPI
             {
                 cachedPort = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CachedPort)));
-                PortVisibility = CachedPort == Port ? Visibility.Hidden : Visibility.Visible;
+                PortVisibility = ((CachedPort != Port) && APIEnabled) ? Visibility.Visible : Visibility.Hidden;
                 SetHostNames();
             }
         }
@@ -208,12 +208,12 @@ namespace ninaAPI
                     Server.Start();
                     Notification.ShowSuccess("API successfully started");
                     ShowNotificationIfPortChanged();
-
                 }
                 else
                 {
                     Server.Stop();
                     Server = null;
+                    CachedPort = -1;
                     Notification.ShowSuccess("API successfully stopped");
                 }
             }

@@ -1,12 +1,42 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.6.*
-  version: 2.1.6
+  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.7.*
+  version: 2.1.7
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
 paths:
+  /version:
+    get:
+      tags:
+        - Application
+      summary: Version
+      description: Returns the installed plugin version.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: 2.1.7.0
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+
   /equipment/camera/info:
     get:
       tags:

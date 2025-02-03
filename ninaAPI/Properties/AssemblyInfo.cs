@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 
 // [MANDATORY] The assembly versioning
 //Should be incremented for each new build of a plugin
-[assembly: AssemblyVersion("2.2.0.0")] // last one is for beta
-[assembly: AssemblyFileVersion("2.2.0.0")]
+[assembly: AssemblyVersion("2.1.7.0")] // last one is for beta
+[assembly: AssemblyFileVersion("2.1.7.0")]
 
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]
@@ -41,18 +41,20 @@ using System.Runtime.InteropServices;
 
 ## Features:
 - Listen to events like connections, meridian flips and much more
-- TPPA integration (Requires TPPA to be installed and V2 of the api)
+- TPPA integration (Requires TPPA to be installed)
+- Livestack integration(Requires Livestack to be installed)
 - Supports basic control over the equipment and application in general
 - And much more!
-  
+
 ---
+
 If you have question/issues/feedback, you can create an issue [here](https://github.com/christian-photo/ninaAPI/issues), take a look at the
-[documentation](https://bump.sh/christian-photo/doc/advanced-api/) and here for the [websockets](https://bump.sh/christian-photo/doc/advanced-api-websockets) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)    
+[documentation](https://bump.sh/christian-photo/doc/advanced-api/) and here for the [websockets](https://bump.sh/christian-photo/doc/advanced-api-websockets) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)
 **Thanks to szymon and notzeeg (discord) for their help!**")]
 
 
 // Setting ComVisible to false makes the types in this assembly not visible
-// to COM components.  If you need to access a type in this assembly from
+// to COM components. If you need to access a type in this assembly from
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 // [Unused]

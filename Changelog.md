@@ -1,27 +1,22 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
-## 2.2.0.0
-
-### Changes
+## 2.1.7.0
 
 - ⚠️ **Breaking** Enums are now serialized as strings, check the documentation for concrete updates. Please note, that not everything might be updated correctly ⚠️
 - Added a 1s delay to the `IMAGE-SAVE` event to give NINA a bit more time to finish up the image
 - `image/{index}` now automatically retries the image retrieval 10 times with a 200ms delay between each try, if it fails to load the image (because it is in use for example)
 - Added `waitForResult` to `framing/slew`
 - Added `mount/move-axis` to manually move the mount axis
+- Added `version` to the documentation, it was always there just not documented
 - Fixed solving a capture image
 - Fixed an issue where the slew failed if no image was loaded in the framing assistant. An image is now automatically loaded
-
-#### Added support for the Livestack plugin (>= 1.0.0.9)
-
+- **Added support for the Livestack plugin (>= 1.0.0.9)**
 - `livestack/start` to start the livestack
 - `livestack/stop` to stop the livestack
 - `livestack/image/{target}/{filter}` to get the current stacked image for a given filter and target
 - `STACK-UPDATED` event in the websocket added, to notify when a new image is available
 
 ## 2.1.6.0
-
-### Changes
 
 - `framing/determine-rotation` added to determine the rotation from the camera
 - `camera/set-binning` added to set the binning of the camera, the binning mode has to be supported by the camera
@@ -38,8 +33,6 @@ The changes for each individual beta release can be seen [here](https://github.c
 
 ## 2.1.5.0
 
-### Changes
-
 - `mount/flip` added to perform a meridian flip, the flip will only be executed if it is needed
 - `mount/slew` slews the mount to the specified ra and dec angles
 - `dome/set-follow` to start or stop the dome following the mount
@@ -49,16 +42,12 @@ The changes for each individual beta release can be seen [here](https://github.c
 
 ## 2.1.4.0
 
-### Changes
-
 - `guider/start` now accepts the parameter calibrate to force a calibration (true / false)
 - Guider info now contains a State field indicating what the guider is currently doing
 - `guider/clear-calibration` added to clear the current calibration
 - `guider/graph` to get the last n guide steps as configured on the guide graph in NINA (in NINA you can set x to be 50, 100, 200 or 400)
 
 ## 2.1.3.0
-
-### Changes
 
 - Added query parameter `skipRescan` to all connect endpoints, which can be used to skip the rescanning process resulting in a faster connection
 - Some websocket events now include more information:
@@ -70,8 +59,6 @@ The changes for each individual beta release can be seen [here](https://github.c
 ## 2.1.2.0
 
 **⚠️ THIS UPDATE REMOVES V1 SUPPORT ⚠️**
-
-### Changes
 
 - ⚠️ **Breaking** Removed support for the deprecated v1 api ⚠️
 - Added more endpoints to `flatdevice`:
