@@ -2767,7 +2767,7 @@ paths:
                     type: string
                     example: "API"
         "409":
-          description: Mount not connected / parked
+          description: Mount not connected / parked / invalid axis
           content:
             application/json:
               schema:
@@ -2781,6 +2781,7 @@ paths:
                     enum:
                       - Mount not connected
                       - Mount parked
+                      - Invalid axis
                   StatusCode:
                     type: integer
                     example: 409
@@ -2806,8 +2807,8 @@ paths:
       parameters:
         - in: query
           name: direction
-          description: Which direction should be stopped
-          required: true
+          description: Which direction should be stopped. If omitted, all directions will be stopped.
+          required: false
           schema:
             type: string
             enum:
@@ -3535,6 +3536,50 @@ paths:
                   Success:
                     type: boolean
                     example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /application/plugins:
+    get:
+      tags:
+        - Application
+      summary: Plugins
+      description: Get a list of installed plugins. This is useful for example
+        if you want to use an integrated plugin like livestack or TPPA
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: array
+                    format: string
+                    example:
+                      [
+                        "Advanced API",
+                        "Livestack",
+                        "Three Point Polar Alignment",
+                        "Touch 'N' Stars",
+                      ]
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
                   Type:
                     type: string
                     example: "API"
@@ -4774,6 +4819,137 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /livestack/start:
+    get:
+      tags:
+        - Livestack
+      summary: Start Livestack
+      description: Starts Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to start the livestack.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Live stack started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /livestack/stop:
+    get:
+      tags:
+        - Livestack
+      summary: Stop Livestack
+      description: Stops Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to stop the livestack.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Live stack stopped
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /livestack/{target}/{filter}:
+    get:
+      tags:
+        - Livestack
+      summary: Stop Livestack
+      description: Stops Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to stop the livestack.
+      parameters:
+        - in: path
+          name: target
+          required: true
+          schema:
+            type: string
+            example: M31
+        - in: path
+          name: filter
+          required: true
+          schema:
+            type: string
+            example: RGB
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: "<base64 encoded image>"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+            image/png:
+              schema:
+                description: Image in png format, when stream is set to true and the image quality is not specified or set to -1
+                type: array
+                format: binary
+            image/jpg:
+              schema:
+                description: Image in jpg format, when stream is set to true and the image quality is specified
+                type: array
+                format: binary
         "500":
           description: Internal server error, Unknown error
           content:

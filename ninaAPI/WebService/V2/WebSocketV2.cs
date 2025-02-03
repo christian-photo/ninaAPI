@@ -139,17 +139,22 @@ namespace ninaAPI.WebService.V2
             return Task.CompletedTask;
         }
 
-        public static async Task SendEvent(HttpResponse payload)
+        public static async Task<bool> SendEvent(HttpResponse payload)
         {
             try
             {
                 if (instance is not null)
+                {
                     await instance?.Send(payload);
+                    return true;
+                }
+                return false;
             }
             catch (Exception ex)
             {
                 Logger.Error($"WebSocket SendEvent failed: {ex.Message}");
             }
+            return false;
         }
 
         public async Task Send(HttpResponse payload)

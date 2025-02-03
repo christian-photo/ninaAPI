@@ -387,28 +387,37 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    TelescopeAxes axis = TelescopeAxes.Primary;
                     switch (direction)
                     {
                         case "east":
+                            mount.MoveAxis(TelescopeAxes.Primary, rate);
                             break;
 
                         case "west":
-                            rate = -rate;
+                            mount.MoveAxis(TelescopeAxes.Primary, -rate);
                             break;
 
                         case "north":
-                            axis = TelescopeAxes.Secondary;
+                            mount.MoveAxis(TelescopeAxes.Secondary, rate);
                             break;
 
                         case "south":
-                            axis = TelescopeAxes.Secondary;
-                            rate = -rate;
+                            mount.MoveAxis(TelescopeAxes.Secondary, -rate);
+                            break;
+
+                        case "stopAll":
+                            mount.MoveAxis(TelescopeAxes.Primary, 0);
+                            mount.MoveAxis(TelescopeAxes.Secondary, 0);
+                            rate = 0;
+                            break;
+
+                        default:
+                            response = CoreUtility.CreateErrorTable(new Error("Invalid axis", 409));
                             break;
                     }
-                    mount.MoveAxis(axis, rate);
 
-                    response.Response = rate == 0 ? "Axis stopped" : "Axis moving";
+                    if (response.Success)
+                        response.Response = rate == 0 ? "Axis stopped" : "Axis moving";
                 }
             }
             catch (Exception ex)
@@ -423,7 +432,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/mount/move-axis/stop")]
         public void MountMoveAxisStop([QueryField] string direction)
         {
-            MountMoveAxis(direction, 0);
+            MountMoveAxis(HttpContext.IsParameterOmitted(nameof(direction)) ? "stopAll" : direction, 0);
         }
     }
 }

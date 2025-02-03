@@ -70,7 +70,7 @@ namespace ninaAPI.WebService.V2
             if (message.Content.GetType().GetProperty("Image").GetValue(message.Content) is BitmapSource image)
             {
                 LiveStackHistory.Add(filter, target, image);
-                await WebSocketV2.SendAndAddEvent("LIVE-STACK-IMAGE", new Dictionary<string, object>()
+                await WebSocketV2.SendAndAddEvent("STACK-UPDATED", new Dictionary<string, object>()
                 {
                     { "Filter", filter },
                     { "Target", target }
@@ -116,7 +116,7 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/application/live-stack/stop")]
+        [Route(HttpVerbs.Get, "/livestack/stop")]
         public void LiveStackStop()
         {
             HttpResponse response = new HttpResponse();
@@ -135,7 +135,7 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/application/live-stack/start")]
+        [Route(HttpVerbs.Get, "/livestack/start")]
         public void LiveStackStart()
         {
             HttpResponse response = new HttpResponse();
@@ -154,7 +154,7 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/application/live-stack/image/{target}/{filter}")]
+        [Route(HttpVerbs.Get, "/livestack/image/{target}/{filter}")]
         public async Task LiveStackImage(string filter, string target,
             [QueryField] bool resize,
             [QueryField] int quality,
@@ -173,6 +173,13 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
+                    quality = Math.Clamp(quality, -1, 100);
+                    if (quality == 0)
+                        quality = -1; // quality should be set to -1 for png if omitted
+
+                    if (resize && string.IsNullOrWhiteSpace(size)) // workaround as default parameters are not working
+                        size = "640x480";
+
                     Size sz = Size.Empty;
                     if (resize)
                     {
