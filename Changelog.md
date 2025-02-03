@@ -8,6 +8,7 @@ The changes for each individual beta release can be seen [here](https://github.c
 - Added `waitForResult` to `framing/slew`
 - Added `mount/move-axis` to manually move the mount axis
 - Added `version` to the documentation, it was always there just not documented
+- Added `application/plugins` to get alist of installed plugins
 - Fixed solving a capture image
 - Fixed an issue where the slew failed if no image was loaded in the framing assistant. An image is now automatically loaded
 - **Added support for the Livestack plugin (>= 1.0.0.9)**
