@@ -366,7 +366,6 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/equipment/mount/move-axis")]
         public void MountMoveAxis([QueryField] string direction, [QueryField] double rate)
         {
-            return; // TODO :Make this safer
             HttpResponse response = new HttpResponse();
 
             try

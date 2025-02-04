@@ -1,5 +1,9 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
+## 2.1.8.0
+
+- Added `mount/move-axis` to move the mount axis
+
 ## 2.1.7.1
 
 - ⚠️ **Breaking** Enums are now serialized as strings, check the documentation for concrete updates. Please note, that not everything might be updated correctly ⚠️
