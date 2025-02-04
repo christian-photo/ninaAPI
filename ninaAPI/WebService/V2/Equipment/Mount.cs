@@ -12,6 +12,7 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using EmbedIO.WebSockets;
 using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
@@ -20,6 +21,8 @@ using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -332,7 +335,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/mount/slew")]
-        public void MountSlew([QueryField] double ra, [QueryField] double dec)
+        public async Task MountSlew([QueryField] double ra, [QueryField] double dec, [QueryField] bool waitForResult)
         {
             HttpResponse response = new HttpResponse();
 
@@ -350,8 +353,17 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), new CancellationTokenSource().Token);
-                    response.Response = "Started Slew";
+                    if (waitForResult)
+                    {
+                        bool result = await mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), CancellationToken.None);
+                        response.Success = result;
+                        response.Response = result ? "Slew finished" : "Slew failed";
+                    }
+                    else
+                    {
+                        mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), CancellationToken.None);
+                        response.Response = "Slew started";
+                    }
                 }
             }
             catch (Exception ex)
@@ -362,28 +374,34 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+    }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/move-axis")]
-        public void MountMoveAxis([QueryField] string direction, [QueryField] double rate)
+    public class MountAxisMoveSocket : WebSocketModule
+    {
+        public MountAxisMoveSocket(string urlPath) : base(urlPath, true)
+        {
+        }
+
+        protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
         {
             HttpResponse response = new HttpResponse();
-
+            response.Type = HttpResponse.TypeSocket;
             try
             {
-                if (HttpContext.IsParameterOmitted(nameof(rate)))
-                {
-                    rate = 20;
-                }
+                var message = Encoding.GetString(buffer);
+                var json = JsonSerializer.Deserialize<Dictionary<string, object>>(message);
+                string direction = json["direction"].ToString().ToLower();
+                double rate = double.Parse(json["rate"].ToString());
 
                 ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
 
                 if (!mount.GetInfo().Connected)
                 {
-                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 400));
                 }
                 else if (mount.GetInfo().AtPark)
                 {
-                    response = CoreUtility.CreateErrorTable(new Error("Mount parked", 409));
+                    response = CoreUtility.CreateErrorTable(new Error("Mount parked", 400));
                 }
                 else
                 {
@@ -405,34 +423,25 @@ namespace ninaAPI.WebService.V2
                             mount.MoveAxis(TelescopeAxes.Secondary, -rate);
                             break;
 
-                        case "stopAll":
-                            mount.MoveAxis(TelescopeAxes.Primary, 0);
-                            mount.MoveAxis(TelescopeAxes.Secondary, 0);
-                            rate = 0;
-                            break;
-
                         default:
-                            response = CoreUtility.CreateErrorTable(new Error("Invalid axis", 409));
+                            response = CoreUtility.CreateErrorTable(new Error("Invalid direction", 400));
                             break;
                     }
-
-                    if (response.Success)
-                        response.Response = rate == 0 ? "Axis stopped" : "Axis moving";
+                    response.Response = rate == 0 ? "Stopped Move" : "Started Move";
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+                response = CoreUtility.CreateErrorTable(new Error(ex.Message, 400));
             }
-
-            HttpContext.WriteToResponse(response);
+            await context.WebSocket.SendAsync(Encoding.GetBytes(JsonSerializer.Serialize(response)), true);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/move-axis/stop")]
-        public void MountMoveAxisStop([QueryField] string direction)
+        protected override Task OnClientDisconnectedAsync(IWebSocketContext context)
         {
-            MountMoveAxis(HttpContext.IsParameterOmitted(nameof(direction)) ? "stopAll" : direction, 0);
+            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Primary, 0);
+            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Secondary, 0);
+            return base.OnClientDisconnectedAsync(context);
         }
     }
 }

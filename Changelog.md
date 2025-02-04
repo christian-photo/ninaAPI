@@ -2,7 +2,8 @@ The changes for each individual beta release can be seen [here](https://github.c
 
 ## 2.1.8.0
 
-- Added `mount/move-axis` to move the mount axis
+- Added a `mount` websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
+- Added `waitForResult` to `mount/slew` to wait for the slew to finish
 
 ## 2.1.7.1
 

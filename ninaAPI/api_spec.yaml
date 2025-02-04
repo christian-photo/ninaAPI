@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.7.*
-  version: 2.1.7
+  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.8.*
+  version: 2.1.8
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -23,7 +23,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: 2.1.7.0
+                    example: 2.1.8.0
                   Error:
                     type: string
                     example: ""
@@ -2693,159 +2693,12 @@ paths:
           schema:
             type: number
             format: double
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Started Slew
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Mount not connected / parked
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Mount not connected
-                      - Mount parked
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        "500":
-          description: Internal server error, Unknown error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UnknownError"
-
-  /equipment/mount/move-axis:
-    get:
-      tags:
-        - Mount
-      summary: Move Axis
-      description: Moves the mount axis with the specified rate
-      parameters:
         - in: query
-          name: direction
-          description: The direction in which to move the axis
-          required: true
-          schema:
-            type: string
-            enum:
-              - west
-              - east
-              - north
-              - south
-        - in: query
-          name: rate
-          description: The rate at which to move the axis. Always positive, the api negates it if necessary.
-          required: true
-          schema:
-            type: number
-            format: double
-            minimum: 0
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Axis moving
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Mount not connected / parked / invalid axis
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Mount not connected
-                      - Mount parked
-                      - Invalid axis
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        "500":
-          description: Internal server error, Unknown error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UnknownError"
-
-  /equipment/mount/move-axis/stop:
-    get:
-      tags:
-        - Mount
-      summary: Stop Move Axis
-      description: Stops the axis movement
-      parameters:
-        - in: query
-          name: direction
-          description: Which direction should be stopped. If omitted, all directions will be stopped.
+          name: waitForResult
+          description: Whether to wait for the slew to finish
           required: false
           schema:
-            type: string
-            enum:
-              - west
-              - east
-              - north
-              - south
+            type: boolean
       responses:
         "200":
           description: Successful response
@@ -2856,7 +2709,10 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Axis stopped
+                    enum:
+                      - Started Slew
+                      - Slew finished
+                      - Slew failed
                   Error:
                     type: string
                     example: ""

@@ -1,7 +1,7 @@
 asyncapi: 2.0.0
 info:
   title: Advanced API
-  version: 2.1.6
+  version: 2.1.8
   description: This is the Websocket documentation for the NINA plugin Advanced API.
 servers:
   production:
@@ -340,3 +340,66 @@ channels:
                 - StatusCode
                 - Success
                 - Type
+  /mount:
+    description: A websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
+    publish:
+      summary: Move mount axis
+      message:
+        contentType: application/json
+        payload:
+          type: object
+          properties:
+            direction:
+              type: string
+              enum:
+                - east
+                - west
+                - north
+                - south
+            rate:
+              type: number
+              format: double
+    subscribe:
+      summary: Subscribe to mount axis move events
+      message:
+        oneOf:
+          - contentType: application/json
+            title: Mount Axis Move Response
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: string
+                  enum:
+                    - Started Move
+                    - Stopped Move
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Error
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: string
+                  example: Some Error
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 400
+                Success:
+                  type: boolean
+                  example: false
+                Type:
+                  type: string
+                  example: "Socket"

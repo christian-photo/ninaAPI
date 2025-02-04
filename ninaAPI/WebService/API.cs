@@ -47,7 +47,8 @@ namespace ninaAPI.WebService
                 .WithModule(new PreprocessRequestModule())
                 .WithWebApi("/v2/api", m => m.WithController<ControllerV2>())
                 .WithModule(new WebSocketV2("/v2/socket"))
-                .WithModule(new TPPASocket("/v2/tppa"));
+                .WithModule(new TPPASocket("/v2/tppa"))
+                .WithModule(new MountAxisMoveSocket("/v2/mount"));
         }
 
         public static void StartWatchers()
