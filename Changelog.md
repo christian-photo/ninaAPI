@@ -1,21 +1,23 @@
 The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
 
-## 2.1.7.0
+## 2.1.7.1
 
 - ⚠️ **Breaking** Enums are now serialized as strings, check the documentation for concrete updates. Please note, that not everything might be updated correctly ⚠️
-- Added a 1s delay to the `IMAGE-SAVE` event to give NINA a bit more time to finish up the image
-- `image/{index}` now automatically retries the image retrieval 10 times with a 200ms delay between each try, if it fails to load the image (because it is in use for example)
-- Added `waitForResult` to `framing/slew`
-- Added `mount/move-axis` to manually move the mount axis
-- Added `version` to the documentation, it was always there just not documented
-- Added `application/plugins` to get alist of installed plugins
-- Fixed solving a capture image
-- Fixed an issue where the slew failed if no image was loaded in the framing assistant. An image is now automatically loaded
 - **Added support for the Livestack plugin (>= 1.0.0.9)**
 - `livestack/start` to start the livestack
 - `livestack/stop` to stop the livestack
 - `livestack/image/{target}/{filter}` to get the current stacked image for a given filter and target
 - `STACK-UPDATED` event in the websocket added, to notify when a new image is available
+
+- Added `waitForResult` to `framing/slew`
+- Added `version` to the documentation, it was always there just not documented
+- Added `application/plugins` to get a list of installed plugins
+
+- Added a 1s delay to the `IMAGE-SAVE` event to give NINA a bit more time to finish up the image
+- `image/{index}` now automatically retries the image retrieval 10 times with a 200ms delay between each try, if it fails to load the image (because it is in use for example)
+
+- Fixed solving a capture image
+- Fixed an issue where the slew failed if no image was loaded in the framing assistant. An image is now automatically loaded
 
 ## 2.1.6.0
 

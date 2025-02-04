@@ -2,6 +2,7 @@ dotnet build C:\Users\Christian\source\repos\NINA\ninaAPI\ninaAPI\ninaAPI.csproj
 set /p "beta=Should this be a beta release? y/n: "
 echo "%beta%"
 set /p "version=Version: "
+set /p "folder=Folder: "
 echo "%version%"
 set /p "b=Beta Version (leave empty for no beta release): "
 if "%beta%" == "y" (
@@ -16,8 +17,8 @@ cd ..
 cd nina.plugin.manifests
 git pull
 git pull https://AstroChris23@bitbucket.org/Isbeorn/nina.plugin.manifests.git
-mkdir manifests\n\ninaAPI\3.0.0\%version%
-copy ..\ninaAPI\ninaAPI\manifest.json manifests\n\ninaAPI\3.0.0\%version%\manifest.json
+mkdir manifests\n\ninaAPI\3.0.0\%folder%
+copy ..\ninaAPI\ninaAPI\manifest.json manifests\n\ninaAPI\3.0.0\%folder%\manifest.json
 echo "Testing the manifest"
 node gather
 echo "Please verify that the test ran successfully"

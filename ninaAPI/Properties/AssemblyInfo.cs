@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 
 // [MANDATORY] The assembly versioning
 //Should be incremented for each new build of a plugin
-[assembly: AssemblyVersion("2.1.7.0")] // last one is for beta
-[assembly: AssemblyFileVersion("2.1.7.0")]
+[assembly: AssemblyVersion("2.1.7.1")] // last one is for beta
+[assembly: AssemblyFileVersion("2.1.7.1")]
 
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]
@@ -42,7 +42,7 @@ using System.Runtime.InteropServices;
 ## Features:
 - Listen to events like connections, meridian flips and much more
 - TPPA integration (Requires TPPA to be installed)
-- Livestack integration(Requires Livestack to be installed)
+- Livestack integration (Requires Livestack to be installed)
 - Supports basic control over the equipment and application in general
 - And much more!
 
