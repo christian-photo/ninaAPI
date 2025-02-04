@@ -83,7 +83,7 @@ namespace ninaAPI
             re = new Regex("^Stopping all dome movement$", options);
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_DOME_STOPPED, false, null));
 
-            // Center / Plate solve
+            // Center / Plate solve in Sequence
             re = new Regex("^Starting Category: Telescope, Item: Center, (?<extra>.+)$", options);
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_CENTER, true, null));
 

@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System.Windows.Media.Imaging;
 using System.IO;
-using ninaAPI.WebService.V2.Equipment;
 
 namespace ninaAPI.WebService.V2
 {
@@ -141,7 +140,7 @@ namespace ninaAPI.WebService.V2
                 {
                     ImageHistoryPoint p = hist.ImageHistory[index]; // Get the historyPoint at the specified index for the image
 
-                    IImageData imageData = await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.LocalPath, 16, true, RawConverterEnum.FREEIMAGE);
+                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.LocalPath, 16, true, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
                     IRenderedImage renderedImage = imageData.RenderImage();
 
                     renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);

@@ -21,6 +21,9 @@ using System.Windows.Media.Imaging;
 using NINA.Image.ImageAnalysis;
 using System.IO;
 using System.Threading.Tasks;
+using System.Reflection;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ninaAPI.WebService.V2
 {
@@ -143,6 +146,26 @@ namespace ninaAPI.WebService.V2
                     if (!resize)
                         response.Response = BitmapHelper.ScaleAndConvertBitmap(source, 1, quality);
                 }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/application/plugins")]
+        public void ApplicationPlugins()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                string path = Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName;
+                List<string> plugins = [.. Directory.GetDirectories(path).Select(Path.GetFileName)];
+                response.Response = plugins;
             }
             catch (Exception ex)
             {

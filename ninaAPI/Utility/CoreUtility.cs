@@ -31,6 +31,11 @@ namespace ninaAPI.Utility
 {
     public static class CoreUtility
     {
+        static CoreUtility()
+        {
+            options.Converters.Add(new JsonStringEnumConverter());
+        }
+
         public static IList<IDeepSkyObjectContainer> GetAllTargets(this ISequenceMediator sequence)
         {
             IList<IDeepSkyObjectContainer> targets = sequence.GetAllTargetsInAdvancedSequence();
@@ -146,7 +151,7 @@ namespace ninaAPI.Utility
             }
             */
 
-            string text = System.Text.Json.JsonSerializer.Serialize(json, options);
+            string text = JsonSerializer.Serialize(json, options);
 
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {

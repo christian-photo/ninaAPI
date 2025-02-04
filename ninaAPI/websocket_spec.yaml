@@ -237,6 +237,34 @@ channels:
                 Type:
                   type: string
                   example: "Socket"
+          - contentType: application/json
+            title: Live stack updated (requires Livestack >= 1.0.0.9)
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      example: STACK-UPDATED
+                    Filter:
+                      type: string
+                      example: RGB
+                    Target:
+                      type: string
+                      example: M31
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
 
   /tppa:
     description: TPPA WebSocket channel. To use this channel, TPPA >= 2.2.0.0 must be installed.

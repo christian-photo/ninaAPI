@@ -16,7 +16,6 @@ using NINA.Core.Utility.Notification;
 using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.WebService.V2;
-using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -66,6 +65,7 @@ namespace ninaAPI.WebService
             Watchers.Add(new WeatherWatcher());
             Watchers.Add(new ImageWatcher());
             Watchers.Add(new NinaLogWatcher());
+            Watchers.Add(new LiveStackWatcher());
 
             foreach (INinaWatcher watcher in Watchers)
             {

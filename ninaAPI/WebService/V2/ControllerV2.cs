@@ -22,7 +22,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/")]
         public string Index()
         {
-            return $"ninaAPI: https://github.com/rennmaus-coder/ninaAPI/, https://bump.sh/christian-photo/doc/advanced-api";
+            return $"ninaAPI: https://github.com/rennmaus-coder/ninaAPI/, https://bump.sh/christian-photo/doc/advanced-api, https://bump.sh/christian-photo/doc/advanced-api-websockets";
         }
 
         [Route(HttpVerbs.Get, "/version")]

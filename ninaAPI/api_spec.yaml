@@ -1,12 +1,42 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.6.*
-  version: 2.1.6
+  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.7.*
+  version: 2.1.7
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
 paths:
+  /version:
+    get:
+      tags:
+        - Application
+      summary: Version
+      description: Returns the installed plugin version.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: 2.1.7.0
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+
   /equipment/camera/info:
     get:
       tags:
@@ -3393,6 +3423,50 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /application/plugins:
+    get:
+      tags:
+        - Application
+      summary: Plugins
+      description: Get a list of installed plugins. This is useful for example
+        if you want to use an integrated plugin like livestack or TPPA
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: array
+                    format: string
+                    example:
+                      [
+                        "Advanced API",
+                        "Livestack",
+                        "Three Point Polar Alignment",
+                        "Touch 'N' Stars",
+                      ]
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /application/screenshot:
     get:
       tags:
@@ -3633,6 +3707,12 @@ paths:
             enum:
               - Center
               - Rotate
+        - in: query
+          name: waitForResult
+          description: Whether to wait for the slew to finish
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
@@ -3643,7 +3723,9 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Slew started
+                    enum:
+                      - Slew started
+                      - Slew finished
                   Error:
                     type: string
                     example: ""
@@ -4621,6 +4703,137 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /livestack/start:
+    get:
+      tags:
+        - Livestack
+      summary: Start Livestack
+      description: Starts Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to start the livestack.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Live stack started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /livestack/stop:
+    get:
+      tags:
+        - Livestack
+      summary: Stop Livestack
+      description: Stops Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to stop the livestack.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Live stack stopped
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /livestack/{target}/{filter}:
+    get:
+      tags:
+        - Livestack
+      summary: Stop Livestack
+      description: Stops Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to stop the livestack.
+      parameters:
+        - in: path
+          name: target
+          required: true
+          schema:
+            type: string
+            example: M31
+        - in: path
+          name: filter
+          required: true
+          schema:
+            type: string
+            example: RGB
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: "<base64 encoded image>"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+            image/png:
+              schema:
+                description: Image in png format, when stream is set to true and the image quality is not specified or set to -1
+                type: array
+                format: binary
+            image/jpg:
+              schema:
+                description: Image in jpg format, when stream is set to true and the image quality is specified
+                type: array
+                format: binary
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
 components:
   schemas:
     CameraInfo:
@@ -4668,7 +4881,16 @@ components:
             IsSubSampleEnabled:
               type: boolean
             CameraState:
-              type: integer
+              type: string
+              enum:
+                - NoState
+                - Idle
+                - Waiting
+                - Exposing
+                - Reading
+                - Download
+                - Error
+                - LoadingFile
             XSize:
               type: integer
             YSize:
@@ -4723,7 +4945,21 @@ components:
             LastDownloadTime:
               type: integer
             SensorType:
-              type: integer
+              type: string
+              enum:
+                - Monochrome
+                - Color
+                - RGGB
+                - CMYG
+                - CMYG2
+                - LRGB
+                - BGGR
+                - GBRG
+                - GRBG
+                - GRGB
+                - GBGR
+                - RGBG
+                - BGRG
             BayerOffsetX:
               type: integer
             BayerOffsetY:
@@ -4791,7 +5027,14 @@ components:
           type: object
           properties:
             ShutterStatus:
-              type: integer
+              type: string
+              enum:
+                - ShutterNone
+                - ShutterOpen
+                - ShutterClosed
+                - ShutterOpening
+                - ShutterClosing
+                - ShutterError
             DriverCanFollow:
               type: boolean
             CanSetShutter:
@@ -5048,8 +5291,14 @@ components:
           type: object
           properties:
             CoverState:
-              type: integer
-              description: 0&#58; Unknown, 1&#58; NeitherOpenNorClosed, 2&#58; Closed, 3&#58; Open, 4&#58; Error, 5&#58; Not present
+              type: string
+              enum:
+                - Unknown
+                - NeitherOpenNorClosed
+                - Closed
+                - Open
+                - Error
+                - NotPresent
             LocalizedCoverState:
               type: string
             LocalizedLightOnState:
@@ -5550,7 +5799,12 @@ components:
                 DecString:
                   type: string
                 Epoch:
-                  type: integer
+                  type: string
+                  enum:
+                    - JNOW
+                    - B1950
+                    - J2000
+                    - J2050
                 DateTime:
                   type: object
                   properties:
@@ -5572,14 +5826,17 @@ components:
             TimeToMeridianFlip:
               type: number
             SideOfPier:
-              type: integer
-              description: 0&#58; East, 1&#58; West, -1&#58; Unknown
+              type: string
+              enum:
+                - pierEast
+                - pierWest
+                - pierUnknown
             Altitude:
               type: number
             AltitudeString:
               type: string
             Azimuth:
-              type: integer
+              type: number
             AzimuthString:
               type: string
             SiderealTimeString:
@@ -5595,8 +5852,14 @@ components:
             TrackingModes:
               type: array
               items:
-                type: integer
-                description: 0 &#58; Siderial, 1 &#58; Lunar, 2 &#58; Solar, 3 &#58; King, 4 &#58; Stopped
+                type: string
+                enum:
+                  - Siderial
+                  - Lunar
+                  - Solar
+                  - King
+                  - Custom
+                  - Stopped
             AtHome:
               type: boolean
             CanFindHome:
@@ -5612,7 +5875,12 @@ components:
             CanSetRightAscensionRate:
               type: boolean
             EquatorialSystem:
-              type: integer
+              type: string
+              enum:
+                - JNOW
+                - B1950
+                - J2000
+                - J2050
             HasUnknownEpoch:
               type: boolean
             TimeToMeridianFlipString:
@@ -5640,7 +5908,11 @@ components:
               items:
                 type: string
             AlignmentMode:
-              type: integer
+              type: string
+              enum:
+                - AltAz
+                - Polar
+                - GermanPolar
             CanPulseGuide:
               type: boolean
             IsPulseGuiding:
@@ -5660,51 +5932,6 @@ components:
             DeviceId:
               type: string
           required:
-            - SiderealTime
-            - RightAscension
-            - Declination
-            - SiteLatitude
-            - SiteLongitude
-            - SiteElevation
-            - RightAscensionString
-            - DeclinationString
-            - Coordinates
-            - TimeToMeridianFlip
-            - SideOfPier
-            - Altitude
-            - AltitudeString
-            - Azimuth
-            - AzimuthString
-            - SiderealTimeString
-            - HoursToMeridianString
-            - AtPark
-            - TrackingRate
-            - TrackingEnabled
-            - TrackingModes
-            - AtHome
-            - CanFindHome
-            - CanPark
-            - CanSetPark
-            - CanSetTrackingEnabled
-            - CanSetDeclinationRate
-            - CanSetRightAscensionRate
-            - EquatorialSystem
-            - HasUnknownEpoch
-            - TimeToMeridianFlipString
-            - Slewing
-            - GuideRateRightAscensionArcsecPerSec
-            - GuideRateDeclinationArcsecPerSec
-            - CanMovePrimaryAxis
-            - CanMoveSecondaryAxis
-            - PrimaryAxisRates
-            - SecondaryAxisRates
-            - SupportedActions
-            - AlignmentMode
-            - CanPulseGuide
-            - IsPulseGuiding
-            - CanSetPierSide
-            - CanSlew
-            - UTCDate
             - Connected
             - Name
             - DisplayName
@@ -6161,7 +6388,13 @@ components:
                 PageSize:
                   type: integer
                 LogLevel:
-                  type: integer
+                  type: string
+                  enum:
+                    - ERROR
+                    - WARNING
+                    - INFO
+                    - DEBUG
+                    - TRACE
             AstrometrySettings:
               type: object
               properties:
@@ -6179,13 +6412,21 @@ components:
                 BitDepth:
                   type: integer
                 BulbMode:
-                  type: integer
+                  type: string
+                  enum:
+                    - NATIVE
+                    - SERIALPORT
+                    - SERIALRELAY
+                    - TELESCOPESNAPPORT
                 Id:
                   type: string
                 PixelSize:
                   type: integer
                 RawConverter:
-                  type: integer
+                  type: string
+                  enum:
+                    - DCRAW
+                    - FREEIMAGE
                 SerialPort:
                   type: string
                 MinFlatExposureTime:
@@ -6205,7 +6446,18 @@ components:
                 FileCameraDownloadDelay:
                   type: integer
                 BayerPattern:
-                  type: integer
+                  type: string
+                  enum:
+                    - None
+                    - Auto
+                    - RGGB
+                    - BGGR
+                    - GBRG
+                    - GRBG
+                    - GRGB
+                    - GBGR
+                    - RGBG
+                    - BGRG
                 FLIEnableFloodFlush:
                   type: boolean
                 FLIEnableSnapshotFloodFlush:
@@ -6319,7 +6571,10 @@ components:
                 ParkDomeBeforeShutterMove:
                   type: boolean
                 MountType:
-                  type: integer
+                  type: string
+                  enum:
+                    - EQUATORIAL
+                    - FORK_ON_WEDGE
                 DecOffsetHorizontal_mm:
                   type: integer
                 SettleTimeSeconds:
@@ -6346,7 +6601,11 @@ components:
                         type: object
                         properties:
                           FlatWizardMode:
-                            type: integer
+                            type: string
+                            enum:
+                              - DYNAMICEXPOSURE
+                              - DYNAMICBRIGHTNESS
+                              - SKYFLAT
                           HistogramMeanTarget:
                             type: number
                           HistogramTolerance:
@@ -6407,7 +6666,11 @@ components:
                 AltitudeSite:
                   type: integer
                 FlatWizardMode:
-                  type: integer
+                  type: string
+                  enum:
+                    - DYNAMICEXPOSURE
+                    - DYNAMICBRIGHTNESS
+                    - SKYFLAT
             FocuserSettings:
               type: object
               properties:
@@ -6442,13 +6705,29 @@ components:
                 AutoFocusBinning:
                   type: integer
                 AutoFocusCurveFitting:
-                  type: integer
+                  type: string
+                  enum:
+                    - TRENDLINES
+                    - PARABOLIC
+                    - TRENDPARABOLIC
+                    - HYPERBOLIC
+                    - TRENDHYPERBOLIC
                 AutoFocusMethod:
-                  type: integer
+                  type: string
+                  enum:
+                    - STARHFR
+                    - CONTRASTDETECTION
                 ContrastDetectionMethod:
-                  type: integer
+                  type: string
+                  enum:
+                    - Sobel
+                    - Laplace
+                    - Statistics
                 BacklashCompensationModel:
-                  type: integer
+                  type: string
+                  enum:
+                    - ABSOLUTE
+                    - OVERSHOOT
                 AutoFocusTimeoutSeconds:
                   type: integer
                 RSquaredThreshold:
@@ -6465,8 +6744,16 @@ components:
                 Opacity:
                   type: number
                 LastSelectedImageSource:
-                  type: integer
-                  description: 0&#58; NASA, 1&#58; SKYSERVER, 2&#58; STSCI, 3&#58; ESO, 4&#58; HIPS2FITS, 5&#58; SKYATLAS, 6&#58; FILE, 7&#58; CACHE
+                  type: string
+                  enum:
+                    - NASA
+                    - SKYSERVER
+                    - STSCI
+                    - ESO
+                    - HIPS2FITS
+                    - SKYATLAS
+                    - FILE
+                    - CACHE
                 LastRotationAngle:
                   type: integer
                 SaveImageInOfflineCache:
@@ -6481,7 +6768,10 @@ components:
                 DitherRAOnly:
                   type: boolean
                 PHD2GuiderScale:
-                  type: integer
+                  type: string
+                  enum:
+                    - PIXELS
+                    - ARCSECONDS
                 MaxY:
                   type: integer
                 PHD2HistorySize:
@@ -6596,17 +6886,47 @@ components:
                 FilePatternFLAT:
                   type: string
                 FileType:
-                  type: integer
+                  type: string
+                  enum:
+                    - TIFF
+                    - FITS
+                    - XISF
+                    - TIFF_ZIP
+                    - TIFF_LZW
+                    - RAW
                 TIFFCompressionType:
-                  type: integer
+                  type: string
+                  enum:
+                    - NONE
+                    - ZIP
+                    - LZW
                 XISFCompressionType:
-                  type: integer
+                  type: string
+                  enum:
+                    - NONE
+                    - LZ4
+                    - LZ4HC
+                    - ZLIB
                 XISFChecksumType:
-                  type: integer
+                  type: string
+                  enum:
+                    - NONE
+                    - SHA1
+                    - SHA256
+                    - SHA512
+                    - SHA3_256
+                    - SHA3_512
                 XISFByteShuffling:
                   type: boolean
                 FITSCompressionType:
-                  type: integer
+                  type: string
+                  enum:
+                    - NONE
+                    - RICE
+                    - GZIP1
+                    - GZIP2
+                    - PLIO
+                    - HCOMPRESS
                 FITSAddFzExtension:
                   type: boolean
                 FITSUseLegacyWriter:
@@ -6629,9 +6949,19 @@ components:
                 BlackClipping:
                   type: number
                 StarSensitivity:
-                  type: integer
+                  type: string
+                  enum:
+                    - Normal
+                    - High
+                    - Highest
                 NoiseReduction:
-                  type: integer
+                  type: string
+                  enum:
+                    - None
+                    - Median
+                    - Normal
+                    - High
+                    - Highest
                 DetectStars:
                   type: boolean
                 AutoStretch:
@@ -6685,7 +7015,14 @@ components:
                 SkytechXPort:
                   type: integer
                 PreferredPlanetarium:
-                  type: integer
+                  type: string
+                  enum:
+                    - CDC
+                    - STELLARIUM
+                    - THESKYX
+                    - HNSKY
+                    - C2A
+                    - SKYTECHX
             PlateSolveSettings:
               type: object
               properties:
@@ -6694,7 +7031,14 @@ components:
                 AstrometryAPIKey:
                   type: string
                 BlindSolverType:
-                  type: integer
+                  type: string
+                  enum:
+                    - ASTROMETRY_NET
+                    - LOCAL
+                    - ASPS
+                    - ASTAP
+                    - PLATESOLVE3
+                    - PINPOINT
                 CygwinLocation:
                   type: string
                 ExposureTime:
@@ -6704,7 +7048,16 @@ components:
                 Binning:
                   type: integer
                 PlateSolverType:
-                  type: integer
+                  type: string
+                  enum:
+                    - ASTROMETRY_NET
+                    - LOCAL
+                    - PLATESOLVE2
+                    - PLATESOLVE3
+                    - ASPS
+                    - ASTAP
+                    - TSX_IMAGELINK
+                    - PINPONT
                 PS2Location:
                   type: string
                 PS3Location:
@@ -6740,7 +7093,16 @@ components:
                 TheSkyXPort:
                   type: integer
                 PinPointCatalogType:
-                  type: integer
+                  type: string
+                  enum:
+                    - ppGSCACT
+                    - ppTycho2
+                    - ppUSNO_A
+                    - ppUCAC2
+                    - ppUSNO_B
+                    - ppUCAC3
+                    - ppUCAC4
+                    - ppAtlas
                 PinPointCatalogRoot:
                   type: string
                 PinPointMaxMagnitude:
@@ -6759,7 +7121,11 @@ components:
                 Reverse2:
                   type: boolean
                 RangeType:
-                  type: integer
+                  type: string
+                  enum:
+                    - FULL
+                    - HALF
+                    - QUARTER
                 RangeStartMechanicalPosition:
                   type: integer
             FlatDeviceSettings:
@@ -6844,7 +7210,12 @@ components:
                 SecondaryReversed:
                   type: boolean
                 TelescopeLocationSyncDirection:
-                  type: integer
+                  type: string
+                  enum:
+                    - PROMPT
+                    - TOAPPLICATION
+                    - TOTELESCOPE
+                    - NOSYNC
             WeatherDataSettings:
               type: object
               properties:
@@ -6897,9 +7268,29 @@ components:
               type: object
               properties:
                 ImageHistoryLeftSelected:
-                  type: integer
+                  type: string
+                  enum:
+                    - NONE
+                    - HFR
+                    - Stars
+                    - Median
+                    - Mean
+                    - StDev
+                    - MAD
+                    - Temperature
+                    - Rms
                 ImageHistoryRightSelected:
-                  type: integer
+                  type: string
+                  enum:
+                    - NONE
+                    - HFR
+                    - Stars
+                    - Median
+                    - Mean
+                    - StDev
+                    - MAD
+                    - Temperature
+                    - Rms
         Error:
           type: string
         StatusCode:

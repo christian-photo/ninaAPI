@@ -9,7 +9,6 @@
 
 #endregion "copyright"
 
-using ninaAPI.WebService.V2.Equipment;
 
 namespace ninaAPI.WebService.V2
 {

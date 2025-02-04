@@ -13,12 +13,12 @@ using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Astrometry;
+using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyTelescope;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
-using ninaAPI.WebService.V2.Equipment;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -361,6 +361,79 @@ namespace ninaAPI.WebService.V2
             }
 
             HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/move-axis")]
+        public void MountMoveAxis([QueryField] string direction, [QueryField] double rate)
+        {
+            return; // TODO :Make this safer
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                if (HttpContext.IsParameterOmitted(nameof(rate)))
+                {
+                    rate = 20;
+                }
+
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
+                }
+                else if (mount.GetInfo().AtPark)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount parked", 409));
+                }
+                else
+                {
+                    switch (direction)
+                    {
+                        case "east":
+                            mount.MoveAxis(TelescopeAxes.Primary, rate);
+                            break;
+
+                        case "west":
+                            mount.MoveAxis(TelescopeAxes.Primary, -rate);
+                            break;
+
+                        case "north":
+                            mount.MoveAxis(TelescopeAxes.Secondary, rate);
+                            break;
+
+                        case "south":
+                            mount.MoveAxis(TelescopeAxes.Secondary, -rate);
+                            break;
+
+                        case "stopAll":
+                            mount.MoveAxis(TelescopeAxes.Primary, 0);
+                            mount.MoveAxis(TelescopeAxes.Secondary, 0);
+                            rate = 0;
+                            break;
+
+                        default:
+                            response = CoreUtility.CreateErrorTable(new Error("Invalid axis", 409));
+                            break;
+                    }
+
+                    if (response.Success)
+                        response.Response = rate == 0 ? "Axis stopped" : "Axis moving";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/move-axis/stop")]
+        public void MountMoveAxisStop([QueryField] string direction)
+        {
+            MountMoveAxis(HttpContext.IsParameterOmitted(nameof(direction)) ? "stopAll" : direction, 0);
         }
     }
 }
