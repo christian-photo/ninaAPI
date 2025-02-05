@@ -21,6 +21,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using NINA.Profile;
 using System.Linq;
+using System.Collections.Specialized;
 
 namespace ninaAPI.WebService.V2
 {
@@ -128,6 +129,35 @@ namespace ninaAPI.WebService.V2
         // public IPluginSettings PluginSettings { get; set; }, only provides methods
         public IAlpacaSettings AlpacaSettings { get; set; }
         public IImageHistorySettings ImageHistorySettings { get; set; }
+    }
+
+    public class ProfileWatcher : INinaWatcher
+    {
+        private readonly EventHandler ProfileChanged = new EventHandler((_, _) => WebSocketV2.SendAndAddEvent("PROFILE-CHANGED"));
+        private readonly NotifyCollectionChangedEventHandler Profiles_CollectionChanged = new((_, list) =>
+        {
+            switch (list.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    WebSocketV2.SendAndAddEvent("PROFILE-ADDED");
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    WebSocketV2.SendAndAddEvent("PROFILE-REMOVED");
+                    break;
+            }
+        });
+
+        public void StartWatchers()
+        {
+            AdvancedAPI.Controls.Profile.Profiles.CollectionChanged += Profiles_CollectionChanged;
+            AdvancedAPI.Controls.Profile.ProfileChanged += ProfileChanged;
+        }
+
+        public void StopWatchers()
+        {
+            AdvancedAPI.Controls.Profile.Profiles.CollectionChanged -= Profiles_CollectionChanged;
+            AdvancedAPI.Controls.Profile.ProfileChanged -= ProfileChanged;
+        }
     }
 
     public partial class ControllerV2

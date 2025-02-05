@@ -64,6 +64,9 @@ channels:
                         - MOUNT-PARKED
                         - MOUNT-UNPARKED
                         - MOUNT-CENTER
+                        - PROFILE-ADDED
+                        - PROFILE-CHANGED
+                        - PROFILE-REMOVED
                         - ROTATOR-CONNECTED
                         - ROTATOR-DISCONNECTED
                         - SAFETY-CONNECTED

@@ -4,6 +4,7 @@ The changes for each individual beta release can be seen [here](https://github.c
 
 - Added `debayer` and `bayerPattern` to `image/{index}` to debayer the image
 - Added a `mount` websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
+- Added `PROFILE-ADDED` and `PROFILE-REMOVED` events to get notified when the collection of profiles changes, `PROFILE-CHANGED` is sent when the active profile changes
 - Added `waitForResult` to `mount/slew` to wait for the slew to finish
 
 ## 2.1.7.1
