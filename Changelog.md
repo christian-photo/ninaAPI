@@ -2,6 +2,7 @@ The changes for each individual beta release can be seen [here](https://github.c
 
 ## 2.1.8.0
 
+- Added `debayer` and `bayerPattern` to `image/{index}` to debayer the image
 - Added a `mount` websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
 - Added `waitForResult` to `mount/slew` to wait for the slew to finish
 

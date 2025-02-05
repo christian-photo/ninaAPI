@@ -91,10 +91,14 @@ namespace ninaAPI.WebService.V2
             [QueryField] double factor,
             [QueryField] double blackClipping,
             [QueryField] bool unlinked,
-            [QueryField] bool stream)
+            [QueryField] bool stream,
+            [QueryField] bool debayer,
+            [QueryField] string bayerPattern)
         {
             HttpResponse response = new HttpResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+
+            SensorType sensor = SensorType.Monochrome;
 
             if (HttpContext.IsParameterOmitted(nameof(factor)))
             {
@@ -107,6 +111,22 @@ namespace ninaAPI.WebService.V2
             if (HttpContext.IsParameterOmitted(nameof(unlinked)))
             {
                 unlinked = profile.ImageSettings.UnlinkedStretch;
+            }
+            if (HttpContext.IsParameterOmitted(nameof(bayerPattern)))
+            {
+                sensor = AdvancedAPI.Controls.Camera.GetInfo().SensorType;
+            }
+            else
+            {
+                try
+                {
+                    sensor = Enum.Parse<SensorType>(bayerPattern);
+                }
+                catch (Exception)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid bayer pattern", 400));
+                    return;
+                }
             }
 
             quality = Math.Clamp(quality, -1, 100);
@@ -144,6 +164,10 @@ namespace ninaAPI.WebService.V2
                     IRenderedImage renderedImage = imageData.RenderImage();
 
                     renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);
+                    if (debayer)
+                    {
+                        renderedImage = renderedImage.Debayer(bayerPattern: sensor);
+                    }
 
                     if (stream)
                     {

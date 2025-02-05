@@ -3930,6 +3930,32 @@ paths:
           required: false
           schema:
             type: boolean
+        - in: query
+          name: debayer
+          description: Indicates if the image should be debayered
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: bayerPattern
+          description: What bayer pattern to use for debayering, if debayer is true
+          required: false
+          schema:
+            type: string
+            enum:
+              - Monochrome
+              - Color
+              - RGGB
+              - CMYG
+              - CMYG2
+              - LRGB
+              - BGGR
+              - GBRG
+              - GRBG
+              - GRGB
+              - GBGR
+              - RGBG
+              - BGRG
       responses:
         "200":
           description: Successful response
