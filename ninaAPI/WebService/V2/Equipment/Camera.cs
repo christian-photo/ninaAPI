@@ -30,7 +30,6 @@ using NINA.Equipment.Equipment.MyCamera;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using System.IO;
-using NINA.Image.FileFormat;
 
 namespace ninaAPI.WebService.V2
 {

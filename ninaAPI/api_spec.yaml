@@ -3938,7 +3938,9 @@ paths:
             type: boolean
         - in: query
           name: bayerPattern
-          description: What bayer pattern to use for debayering, if debayer is true
+          description:
+            What bayer pattern to use for debayering, if debayer is true. If this is not specified, the api will try to use the bayer pattern that is configured in the profile as its first option,
+            if that is set to Auto, the api will try to use the bayer pattern reported by the camera if it is connected. The fallback value is Monochrome.
           required: false
           schema:
             type: string
@@ -3956,6 +3958,12 @@ paths:
               - GBGR
               - RGBG
               - BGRG
+        - in: query
+          name: autoPrepare
+          description: Setting this to true will leave all processing up to NINA and you will recieve exactly the same image as you see in NINA. All other parameters related to image processing will have no effect.
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
@@ -3990,7 +3998,7 @@ paths:
                 type: array
                 format: binary
         "400":
-          description: Invalid image index
+          description: Invalid image index / invalid bayer pattern
           content:
             application/json:
               schema:
@@ -4001,7 +4009,9 @@ paths:
                     example: ""
                   Error:
                     type: string
-                    example: Index out of range
+                    enum:
+                      - Index out of range
+                      - Invalid bayer pattern
                   StatusCode:
                     type: integer
                     example: 400
