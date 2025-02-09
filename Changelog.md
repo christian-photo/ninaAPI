@@ -1,6 +1,25 @@
-The changes for each individual beta release can be seen [here](https://github.com/christian-photo/ninaAPI/releases)
+# Changelog
+
+The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this changelog will be mostly complete.
 
 ## 2.1.8.0
+
+### Flats!
+
+- Added the following methods for capturing flats:
+
+  - `flats/skyflat`
+  - `flats/auto-brightness`
+  - `flats/auto-exposure`
+  - `flats/trained-dark-flat`
+  - `flats/trained-flat`
+
+These methods do exactly the same as their sequence instruction counterparts
+
+- Added `flats/status` to get the status of the flat taking process
+- Added `flats/stop` to stop the flat taking process
+
+---
 
 - Added `debayer` and `bayerPattern` to `image/{index}` to debayer the image
 - Added `autoPrepare` to `image/{index}` to leave all processing up to NINA. Using this will result in the same image as the one you see in NINA

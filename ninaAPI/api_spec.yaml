@@ -4879,6 +4879,758 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /flats/skyflat:
+    get:
+      tags:
+        - Flats
+      summary: Sky flats
+      description: Start capturing sky flats. This requires the camera and mount to be connected. Any omitted parameter will default to the instruction default.
+      parameters:
+        - in: query
+          name: count
+          required: true
+          description: The number of flats to capture
+          example: 1
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: minExposure
+          required: false
+          description: The minimum exposure time to use for the flats, in seconds
+          example: 0
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: maxExposure
+          required: false
+          description: The maximum exposure time to use for the flats, in seconds
+          example: 10
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: histogramMean
+          required: false
+          description: The mean to use for the histogram
+          example: 50
+          schema:
+            type: number
+            minimum: 0
+            maximum: 100
+        - in: query
+          name: meanTolerance
+          required: false
+          description: The tolerance to use for the histogram
+          example: 10
+          schema:
+            type: number
+            minimum: 0
+            maximum: 100
+        - in: query
+          name: dither
+          required: false
+          description: Whether to dither the flats
+          example: false
+          schema:
+            type: boolean
+        - in: query
+          name: filterId
+          required: false
+          description: The filter to use for the flats. The current filter will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: binning
+          required: false
+          description: The binning to use for the flats
+          example: 2x2
+          schema:
+            type: string
+        - in: query
+          name: gain
+          required: false
+          description: The gain to use for the flats. The camera gain will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          required: false
+          description: The offset to use for the flats. The camera offset will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Process started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Could not start the process
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Process already running
+                      - Camera not connected
+                      - Mount not connected
+                      - Filter not available
+                      - Binning not available
+                      - Invalid gain
+                      - Invalid offset
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /flats/auto-brightness:
+    get:
+      tags:
+        - Flats
+      summary: Auto Brightness Flats
+      description: Start capturing auto brightness flats. This requires the camera to be connected. NINA will pick the best flat panel brightness for a fixed exposure time. Any omitted parameter will default to the instruction default.
+      parameters:
+        - in: query
+          name: count
+          required: true
+          description: The number of flats to capture
+          example: 1
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: exposureTime
+          required: true
+          description: The exposure time to use for the flats, in seconds
+          example: 1
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: minBrightness
+          required: false
+          description: The minimum flat panel brightness to use for the flats
+          example: 0
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 99
+        - in: query
+          name: maxBrightness
+          required: false
+          description: The maximum flat panel brightness to use for the flats
+          example: 10
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - in: query
+          name: histogramMean
+          required: false
+          description: The mean to use for the histogram
+          example: 50
+          schema:
+            type: number
+            minimum: 0
+            maximum: 100
+        - in: query
+          name: meanTolerance
+          required: false
+          description: The tolerance to use for the histogram
+          example: 10
+          schema:
+            type: number
+            minimum: 0
+            maximum: 100
+        - in: query
+          name: filterId
+          required: false
+          description: The filter to use for the flats. The current filter will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: binning
+          required: false
+          description: The binning to use for the flats
+          example: 2x2
+          schema:
+            type: string
+        - in: query
+          name: gain
+          required: false
+          description: The gain to use for the flats. The camera gain will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          required: false
+          description: The offset to use for the flats. The camera offset will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: keepClosed
+          required: false
+          description: Whether to keep the flat panel closed after taking the flats
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Process started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Could not start the process
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Process already running
+                      - Camera not connected
+                      - Filter not available
+                      - Binning not available
+                      - Invalid gain
+                      - Invalid offset
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /flats/auto-exposure:
+    get:
+      tags:
+        - Flats
+      summary: Auto Exposure Flats
+      description: Start capturing auto exposure flats. This requires the camera to be connected. NINA will pick the best exposure time for a fixed flat panel brightness. Any omitted parameter will default to the instruction default.
+      parameters:
+        - in: query
+          name: count
+          required: true
+          description: The number of flats to capture
+          example: 1
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: brightness
+          required: true
+          description: The flat panel brightness
+          schema:
+            type: number
+            minimum: 0
+            maximum: 100
+        - in: query
+          name: minExposure
+          required: false
+          description: The minimum exposure time to use for the flats, in seconds
+          example: 0
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: maxExposure
+          required: false
+          description: The maximum exposure time to use for the flats, in seconds
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: histogramMean
+          required: false
+          description: The mean to use for the histogram
+          example: 50
+          schema:
+            type: number
+            minimum: 0
+            maximum: 100
+        - in: query
+          name: meanTolerance
+          required: false
+          description: The tolerance to use for the histogram
+          example: 10
+          schema:
+            type: number
+            minimum: 0
+            maximum: 100
+        - in: query
+          name: filterId
+          required: false
+          description: The filter to use for the flats. The current filter will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: binning
+          required: false
+          description: The binning to use for the flats
+          example: 2x2
+          schema:
+            type: string
+        - in: query
+          name: gain
+          required: false
+          description: The gain to use for the flats. The camera gain will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          required: false
+          description: The offset to use for the flats. The camera offset will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: keepClosed
+          required: false
+          description: Whether to keep the flat panel closed after taking the flats
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Process started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Could not start the process
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Process already running
+                      - Camera not connected
+                      - Filter not available
+                      - Binning not available
+                      - Invalid gain
+                      - Invalid offset
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /flats/trained-dark-flat:
+    get:
+      tags:
+        - Flats
+      summary: Trained Darkflats
+      description: Start capturing darkflats based on previous training in NINA. This requires the camera to be connected. Any omitted parameter will default to the instruction default.
+      parameters:
+        - in: query
+          name: count
+          required: true
+          description: The number of darkflats to capture
+          example: 1
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: filterId
+          required: false
+          description: The filter to use for the darkflats. The current filter will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: binning
+          required: false
+          description: The binning to use for the darkflats
+          example: 2x2
+          schema:
+            type: string
+        - in: query
+          name: gain
+          required: false
+          description: The gain to use for the darkflats. The camera gain will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          required: false
+          description: The offset to use for the darkflats. The camera offset will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: keepClosed
+          required: false
+          description: Whether to keep the flat panel closed after taking the darkflats
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Process started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Could not start the process
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Process already running
+                      - Camera not connected
+                      - Filter not available
+                      - Binning not available
+                      - Invalid gain
+                      - Invalid offset
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /flats/trained-flat:
+    get:
+      tags:
+        - Flats
+      summary: Trained Flats
+      description: Start capturing flats based on previous training done in NINA. This requires the camera to be connected. Any omitted parameter will default to the instruction default.
+      parameters:
+        - in: query
+          name: count
+          required: true
+          description: The number of flats to capture
+          example: 1
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: filterId
+          required: false
+          description: The filter to use for the flats. The current filter will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: binning
+          required: false
+          description: The binning to use for the flats
+          example: 2x2
+          schema:
+            type: string
+        - in: query
+          name: gain
+          required: false
+          description: The gain to use for the flats. The camera gain will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          required: false
+          description: The offset to use for the flats. The camera offset will be used if this is not specified
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: keepClosed
+          required: false
+          description: Whether to keep the flat panel closed after taking the flats
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Process started
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Could not start the process
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Process already running
+                      - Camera not connected
+                      - Filter not available
+                      - Binning not available
+                      - Invalid gain
+                      - Invalid offset
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /flats/status:
+    get:
+      tags:
+        - Flats
+      summary: Status
+      description: Returns the current status of the flat taking process, Running or Finished.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Running
+                      - Finished
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /flats/stop:
+    get:
+      tags:
+        - Flats
+      summary: Stop
+      description: Stop a running flat taking process
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Process stopped
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: No process running
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
 components:
   schemas:
     CameraInfo:

@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using NINA.Astrometry.Interfaces;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Image.Interfaces;
@@ -55,6 +56,7 @@ namespace ninaAPI
         public IApplicationMediator Application;
         public IMessageBroker MessageBroker;
         public IFramingAssistantVM FramingAssistant;
+        public ITwilightCalculator TwilightCalculator;
         #endregion
     }
 }
