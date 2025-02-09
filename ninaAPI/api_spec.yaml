@@ -4918,7 +4918,7 @@ paths:
           schema:
             type: number
             minimum: 0
-            maximum: 100
+            maximum: 1
         - in: query
           name: meanTolerance
           required: false
@@ -4927,7 +4927,7 @@ paths:
           schema:
             type: number
             minimum: 0
-            maximum: 100
+            maximum: 1
         - in: query
           name: dither
           required: false
@@ -4994,18 +4994,22 @@ paths:
                 type: object
                 properties:
                   Response:
-                    type: string
-                    example: ""
+                    oneOf:
+                      - type: string
+                        example: ""
+                      - type: array
+                        items:
+                          type: string
+                          description: A list of issues found during validation
                   Error:
                     type: string
                     enum:
                       - Process already running
-                      - Camera not connected
-                      - Mount not connected
                       - Filter not available
                       - Binning not available
                       - Invalid gain
                       - Invalid offset
+                      - Issues found
                   StatusCode:
                     type: integer
                     example: 400
@@ -5071,7 +5075,7 @@ paths:
           schema:
             type: number
             minimum: 0
-            maximum: 100
+            maximum: 1
         - in: query
           name: meanTolerance
           required: false
@@ -5080,7 +5084,7 @@ paths:
           schema:
             type: number
             minimum: 0
-            maximum: 100
+            maximum: 1
         - in: query
           name: filterId
           required: false
@@ -5146,17 +5150,22 @@ paths:
                 type: object
                 properties:
                   Response:
-                    type: string
-                    example: ""
+                    oneOf:
+                      - type: string
+                        example: ""
+                      - type: array
+                        items:
+                          type: string
+                          description: A list of issues found during validation
                   Error:
                     type: string
                     enum:
                       - Process already running
-                      - Camera not connected
                       - Filter not available
                       - Binning not available
                       - Invalid gain
                       - Invalid offset
+                      - Issues found
                   StatusCode:
                     type: integer
                     example: 400
@@ -5219,7 +5228,7 @@ paths:
           schema:
             type: number
             minimum: 0
-            maximum: 100
+            maximum: 1
         - in: query
           name: meanTolerance
           required: false
@@ -5228,7 +5237,7 @@ paths:
           schema:
             type: number
             minimum: 0
-            maximum: 100
+            maximum: 1
         - in: query
           name: filterId
           required: false
@@ -5294,17 +5303,22 @@ paths:
                 type: object
                 properties:
                   Response:
-                    type: string
-                    example: ""
+                    oneOf:
+                      - type: string
+                        example: ""
+                      - type: array
+                        items:
+                          type: string
+                          description: A list of issues found during validation
                   Error:
                     type: string
                     enum:
                       - Process already running
-                      - Camera not connected
                       - Filter not available
                       - Binning not available
                       - Invalid gain
                       - Invalid offset
+                      - Issues found
                   StatusCode:
                     type: integer
                     example: 400
@@ -5401,17 +5415,22 @@ paths:
                 type: object
                 properties:
                   Response:
-                    type: string
-                    example: ""
+                    oneOf:
+                      - type: string
+                        example: ""
+                      - type: array
+                        items:
+                          type: string
+                          description: A list of issues found during validation
                   Error:
                     type: string
                     enum:
                       - Process already running
-                      - Camera not connected
                       - Filter not available
                       - Binning not available
                       - Invalid gain
                       - Invalid offset
+                      - Issues found
                   StatusCode:
                     type: integer
                     example: 400
@@ -5508,17 +5527,22 @@ paths:
                 type: object
                 properties:
                   Response:
-                    type: string
-                    example: ""
+                    oneOf:
+                      - type: string
+                        example: ""
+                      - type: array
+                        items:
+                          type: string
+                          description: A list of issues found during validation
                   Error:
                     type: string
                     enum:
                       - Process already running
-                      - Camera not connected
                       - Filter not available
                       - Binning not available
                       - Invalid gain
                       - Invalid offset
+                      - Issues found
                   StatusCode:
                     type: integer
                     example: 400

@@ -18,6 +18,8 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Profile.Interfaces;
+using NINA.Sequencer.Conditions;
+using NINA.Sequencer.Container;
 using NINA.Sequencer.SequenceItem.FlatDevice;
 using ninaAPI.Utility;
 
@@ -27,6 +29,7 @@ namespace ninaAPI.WebService.V2
     {
         private static Task flatTask;
         private static CancellationTokenSource flatCancellationToken;
+        private static SequentialContainer container;
 
         [Route(HttpVerbs.Get, "/flats/skyflat")]
         public void SkyFlats([QueryField] int count,
@@ -47,16 +50,6 @@ namespace ninaAPI.WebService.V2
                 if (!flatTask?.IsCompleted ?? false)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Process already running", 400));
-                    HttpContext.WriteToResponse(response);
-                    return;
-                }
-                if (!AdvancedAPI.Controls.Camera.GetInfo().Connected)
-                {
-                    response = CoreUtility.CreateErrorTable(new Error("Camera not connected", 400));
-                }
-                else if (!AdvancedAPI.Controls.Mount.GetInfo().Connected)
-                {
-                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 400));
                 }
                 else
                 {
@@ -121,9 +114,18 @@ namespace ninaAPI.WebService.V2
                         return;
                     }
 
-                    flatCancellationToken = new CancellationTokenSource();
-                    flats.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), flatCancellationToken.Token);
-                    response.Response = "Process started";
+                    if (flats.Validate())
+                    {
+                        container = flats;
+                        flatCancellationToken = new CancellationTokenSource();
+                        flatTask = flats.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), flatCancellationToken.Token);
+                        response.Response = "Process started";
+                    }
+                    else
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Issues found", 400));
+                        response.Response = flats.Issues;
+                    }
                 }
             }
             catch (Exception ex)
@@ -155,12 +157,6 @@ namespace ninaAPI.WebService.V2
                 if (!flatTask?.IsCompleted ?? false)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Process already running", 400));
-                    HttpContext.WriteToResponse(response);
-                    return;
-                }
-                if (!AdvancedAPI.Controls.Camera.GetInfo().Connected)
-                {
-                    response = CoreUtility.CreateErrorTable(new Error("Camera not connected", 400));
                 }
                 else
                 {
@@ -225,9 +221,18 @@ namespace ninaAPI.WebService.V2
                         return;
                     }
 
-                    flatCancellationToken = new CancellationTokenSource();
-                    flats.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), flatCancellationToken.Token);
-                    response.Response = "Process started";
+                    if (flats.Validate())
+                    {
+                        container = flats;
+                        flatCancellationToken = new CancellationTokenSource();
+                        flatTask = flats.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), flatCancellationToken.Token);
+                        response.Response = "Process started";
+                    }
+                    else
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Issues found", 400));
+                        response.Response = flats.Issues;
+                    }
                 }
             }
             catch (Exception ex)
@@ -260,12 +265,6 @@ namespace ninaAPI.WebService.V2
                 if (!flatTask?.IsCompleted ?? false)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Process already running", 400));
-                    HttpContext.WriteToResponse(response);
-                    return;
-                }
-                if (!AdvancedAPI.Controls.Camera.GetInfo().Connected)
-                {
-                    response = CoreUtility.CreateErrorTable(new Error("Camera not connected", 400));
                 }
                 else
                 {
@@ -331,9 +330,18 @@ namespace ninaAPI.WebService.V2
                         return;
                     }
 
-                    flatCancellationToken = new CancellationTokenSource();
-                    flats.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), flatCancellationToken.Token);
-                    response.Response = "Process started";
+                    if (flats.Validate())
+                    {
+                        container = flats;
+                        flatCancellationToken = new CancellationTokenSource();
+                        flatTask = flats.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), flatCancellationToken.Token);
+                        response.Response = "Process started";
+                    }
+                    else
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Issues found", 400));
+                        response.Response = flats.Issues;
+                    }
                 }
             }
             catch (Exception ex)
@@ -360,12 +368,6 @@ namespace ninaAPI.WebService.V2
                 if (!flatTask?.IsCompleted ?? false)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Process already running", 400));
-                    HttpContext.WriteToResponse(response);
-                    return;
-                }
-                if (!AdvancedAPI.Controls.Camera.GetInfo().Connected)
-                {
-                    response = CoreUtility.CreateErrorTable(new Error("Camera not connected", 400));
                 }
                 else
                 {
@@ -425,9 +427,18 @@ namespace ninaAPI.WebService.V2
                         return;
                     }
 
-                    flatCancellationToken = new CancellationTokenSource();
-                    flats.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), flatCancellationToken.Token);
-                    response.Response = "Process started";
+                    if (flats.Validate())
+                    {
+                        container = flats;
+                        flatCancellationToken = new CancellationTokenSource();
+                        flatTask = flats.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), flatCancellationToken.Token);
+                        response.Response = "Process started";
+                    }
+                    else
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Issues found", 400));
+                        response.Response = flats.Issues;
+                    }
                 }
             }
             catch (Exception ex)
@@ -519,9 +530,18 @@ namespace ninaAPI.WebService.V2
                         return;
                     }
 
-                    flatCancellationToken = new CancellationTokenSource();
-                    flats.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), flatCancellationToken.Token);
-                    response.Response = "Process started";
+                    if (flats.Validate())
+                    {
+                        container = flats;
+                        flatCancellationToken = new CancellationTokenSource();
+                        flatTask = flats.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), flatCancellationToken.Token);
+                        response.Response = "Process started";
+                    }
+                    else
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Issues found", 400));
+                        response.Response = flats.Issues;
+                    }
                 }
             }
             catch (Exception ex)
@@ -539,14 +559,7 @@ namespace ninaAPI.WebService.V2
             HttpResponse response = new HttpResponse();
             try
             {
-                if (flatTask is not null)
-                {
-                    response.Response = flatTask.IsCompleted ? "Finished" : "Running";
-                }
-                else
-                {
-                    response.Response = "Finished";
-                }
+                response.Response = new FlatStatusResponse(container, flatTask);
             }
             catch (Exception ex)
             {
@@ -581,6 +594,37 @@ namespace ninaAPI.WebService.V2
             }
 
             HttpContext.WriteToResponse(response);
+        }
+    }
+
+    public struct FlatStatusResponse
+    {
+        public string State { get; }
+        public int TotalIterations { get; }
+        public int CompletedIterations { get; }
+
+        public FlatStatusResponse(SequentialContainer container, Task task)
+        {
+            if (task is not null)
+            {
+                State = task.IsCompleted ? "Finished" : "Running";
+            }
+            else
+            {
+                State = "Finished";
+            }
+
+            if (State.Equals("Running"))
+            {
+                LoopCondition loop = (LoopCondition)container.GetType().GetMethod("GetIterations").Invoke(container, null);
+                TotalIterations = loop.Iterations;
+                CompletedIterations = loop.CompletedIterations;
+            }
+            else
+            {
+                TotalIterations = -1;
+                CompletedIterations = -1;
+            }
         }
     }
 }
