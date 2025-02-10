@@ -1,6 +1,6 @@
 # Changelog
 
-The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this changelog will be mostly complete.
+The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
 ## 2.1.8.0
 
@@ -14,18 +14,19 @@ The changes for each individual (beta) release can be seen [here](https://github
   - `flats/trained-dark-flat`
   - `flats/trained-flat`
 
-These methods do exactly the same as their sequence instruction counterparts
+These methods do exactly the same as their sequence instruction counterparts.
 
-- Added `flats/status` to get the status of the flat taking process
-- Added `flats/stop` to stop the flat taking process
+- Added `flats/status` to get the status of the flat taking process.
+- Added `flats/stop` to stop the flat taking process.
 
 ---
 
-- Added `debayer` and `bayerPattern` to `image/{index}` to debayer the image
+- Added `imageType` to `image/{index}` and `image-history` to filter the images by type.
+- Added `debayer` and `bayerPattern` to `image/{index}` to debayer the image.
 - Added `autoPrepare` to `image/{index}` to leave all processing up to NINA. Using this will result in the same image as the one you see in NINA
 - Added a `mount` websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
-- Added `PROFILE-ADDED` and `PROFILE-REMOVED` events to get notified when the collection of profiles changes, `PROFILE-CHANGED` is sent when the active profile changes
-- Added `waitForResult` to `mount/slew` to wait for the slew to finish
+- Added `PROFILE-ADDED` and `PROFILE-REMOVED` events to get notified when the collection of profiles changes, `PROFILE-CHANGED` is sent when the active profile changes.
+- Added `waitForResult` to `mount/slew` to wait for the slew to finish.
 
 ## 2.1.7.1
 

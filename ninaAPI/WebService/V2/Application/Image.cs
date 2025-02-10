@@ -27,12 +27,63 @@ using NINA.WPF.Base.Interfaces.Mediator;
 using System.Windows.Media.Imaging;
 using System.IO;
 using System.Threading;
+using System.Linq;
 
 namespace ninaAPI.WebService.V2
 {
+    public class ImageResponse
+    {
+        public double ExposureTime { get; set; }
+        public string ImageType { get; set; }
+        public string Filter { get; set; }
+        public string RmsText { get; set; }
+        public double Temperature { get; set; }
+        public string CameraName { get; set; }
+        public int Gain { get; set; }
+        public int Offset { get; set; }
+        public DateTime Date { get; set; }
+        public string TelescopeName { get; set; }
+        public double FocalLength { get; set; }
+        public double StDev { get; set; }
+        public double Mean { get; set; }
+        public double Median { get; set; }
+        public int Stars { get; set; }
+        public double HFR { get; set; }
+
+        private ImageResponse() { }
+
+        public static ImageResponse FromEvent(ImageSavedEventArgs e)
+        {
+            return new ImageResponse()
+            {
+                ExposureTime = e.Duration,
+                ImageType = e.MetaData.Image.ImageType,
+                Filter = e.Filter,
+                RmsText = e.MetaData.Image.RecordedRMS.TotalText,
+                Temperature = e.MetaData.Camera.Temperature,
+                CameraName = e.MetaData.Camera.Name,
+                Gain = e.MetaData.Camera.Gain,
+                Offset = e.MetaData.Camera.Offset,
+                Date = DateTime.Now,
+                TelescopeName = e.MetaData.Telescope.Name,
+                FocalLength = e.MetaData.Telescope.FocalLength,
+                StDev = e.Statistics.StDev,
+                Mean = e.Statistics.Mean,
+                Median = e.Statistics.Median,
+                Stars = e.StarDetectionAnalysis.DetectedStars,
+                HFR = e.StarDetectionAnalysis.HFR
+            };
+        }
+    }
+
+    public class ImageEvent(ImageResponse stats)
+    {
+        public string Event { get; set; } = "IMAGE-SAVE";
+        public ImageResponse ImageStatistics { get; set; } = stats;
+    }
     public class ImageWatcher : INinaWatcher
     {
-        public static List<HttpResponse> Images = new List<HttpResponse>();
+        public static List<ImageResponse> Images = new List<ImageResponse>();
 
         public void StartWatchers()
         {
@@ -48,33 +99,13 @@ namespace ninaAPI.WebService.V2
         {
             HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
 
-            response.Response = new Dictionary<string, object>()
-            {
-                { "Event", "IMAGE-SAVE" },
-                { "ImageStatistics", new Dictionary<string, object>() {
-                    { "ExposureTime", e.Duration },
-                    { "ImageType", e.MetaData.Image.ImageType },
-                    { "Filter", e.Filter },
-                    { "RmsText", e.MetaData.Image.RecordedRMS.TotalText },
-                    { "Temperature", e.MetaData.Camera.Temperature },
-                    { "CameraName", e.MetaData.Camera.Name },
-                    { "Gain", e.MetaData.Camera.Gain },
-                    { "Offset", e.MetaData.Camera.Offset },
-                    { "Date", DateTime.Now },
-                    { "TelescopeName", e.MetaData.Telescope.Name },
-                    { "FocalLength", e.MetaData.Telescope.FocalLength },
-                    { "StDev", e.Statistics.StDev },
-                    { "Mean", e.Statistics.Mean },
-                    { "Median", e.Statistics.Median },
-                    { "Stars", e.StarDetectionAnalysis.DetectedStars },
-                    { "HFR", e.StarDetectionAnalysis.HFR }
-                    }
-                }
-            };
+            var r = ImageResponse.FromEvent(e);
+
+            response.Response = new ImageEvent(r);
 
             HttpResponse imageEvent = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", "IMAGE-SAVE" }, { "Time", DateTime.Now } } };
 
-            Images.Add(response);
+            Images.Add(r);
             WebSocketV2.Events.Add(imageEvent);
 
             WebSocketV2.SendEvent(response);
@@ -85,17 +116,18 @@ namespace ninaAPI.WebService.V2
     {
         [Route(HttpVerbs.Get, "/image/{index}")]
         public async Task GetImage(int index,
-            [QueryField] bool resize,
-            [QueryField] int quality,
-            [QueryField] string size,
-            [QueryField] double scale,
-            [QueryField] double factor,
-            [QueryField] double blackClipping,
-            [QueryField] bool unlinked,
-            [QueryField] bool stream,
-            [QueryField] bool debayer,
-            [QueryField] string bayerPattern,
-            [QueryField] bool autoPrepare)
+                    [QueryField] bool resize,
+                    [QueryField] int quality,
+                    [QueryField] string size,
+                    [QueryField] double scale,
+                    [QueryField] double factor,
+                    [QueryField] double blackClipping,
+                    [QueryField] bool unlinked,
+                    [QueryField] bool stream,
+                    [QueryField] bool debayer,
+                    [QueryField] string bayerPattern,
+                    [QueryField] bool autoPrepare,
+                    [QueryField] string imageType)
         {
             HttpResponse response = new HttpResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
@@ -161,17 +193,18 @@ namespace ninaAPI.WebService.V2
                 }
 
                 IImageHistoryVM hist = AdvancedAPI.Controls.ImageHistory;
-                if (hist.ImageHistory.Count <= 0)
+                var points = hist.ImageHistory.Where(x => x.Type.Equals(imageType));
+                if (!points.Any())
                 {
                     response = CoreUtility.CreateErrorTable(new Error("No images available", 500));
                 }
-                else if (index >= hist.ImageHistory.Count || index < 0)
+                else if (index >= points.Count() || index < 0)
                 {
                     response = CoreUtility.CreateErrorTable(CommonErrors.INDEX_OUT_OF_RANGE);
                 }
                 else
                 {
-                    ImageHistoryPoint p = hist.ImageHistory[index]; // Get the historyPoint at the specified index for the image
+                    ImageHistoryPoint p = points.ElementAt(index); // Get the history point at the specified index for the image
 
                     IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.LocalPath, 16, true, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
                     IRenderedImage renderedImage;
@@ -238,31 +271,27 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/image-history")]
-        public void GetHistoryCount([QueryField] bool all, [QueryField] int index, [QueryField] bool count)
+        public void GetHistoryCount([QueryField] bool all, [QueryField] int index, [QueryField] bool count, [QueryField] string imageType)
         {
             HttpResponse response = new HttpResponse();
 
             try
             {
-                List<object> result = new List<object>();
+                var images = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
                 if (count)
                 {
-                    response.Response = ImageWatcher.Images.Count;
+                    response.Response = images.Count();
                 }
                 else if (all)
                 {
-                    foreach (HttpResponse r in ImageWatcher.Images)
-                    {
-                        result.Add(((Dictionary<string, object>)r.Response)["ImageStatistics"]);
-                    }
-                    response.Response = result;
+                    response.Response = images;
                 }
-                else if (index >= 0 && index < ImageWatcher.Images.Count)
+                else if (index >= 0 && index < images.Count())
                 {
-                    result.Add(((Dictionary<string, object>)ImageWatcher.Images[index].Response)["ImageStatistics"]);
+                    List<object> result = [images.ElementAt(index)]; // TODO: put this directly into the response (maybe)
                     response.Response = result;
                 }
-                else if (index >= ImageWatcher.Images.Count || index < 0)
+                else if (index >= images.Count() || index < 0)
                 {
                     response = CoreUtility.CreateErrorTable(CommonErrors.INDEX_OUT_OF_RANGE);
                 }

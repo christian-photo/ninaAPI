@@ -3964,6 +3964,18 @@ paths:
           required: false
           schema:
             type: boolean
+        - in: query
+          name: imageType
+          description: Filter the image history by image type. This is useful if you got the index of an image using the history with a filter and now want to get the image. E.g. the 3rd flat in the image history is the 3rd flat in the image endpoint.
+          required: false
+          schema:
+            type: string
+            enum:
+              - LIGHT
+              - FLAT
+              - DARK
+              - BIAS
+              - SNAPSHOT
       responses:
         "200":
           description: Successful response
@@ -4054,6 +4066,20 @@ paths:
           required: false
           schema:
             type: boolean
+        - in: query
+          name: imageType
+          description:
+            Filter by image type. This will restrict the result to images of the specified type, meaning that count for example will only count images of the specified type.
+            If this is omitted, all images are included.
+          required: false
+          schema:
+            type: string
+            enum:
+              - LIGHT
+              - FLAT
+              - DARK
+              - BIAS
+              - SNAPSHOT
       responses:
         "200":
           description: Successful response
