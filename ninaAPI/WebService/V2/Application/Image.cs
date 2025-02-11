@@ -51,8 +51,7 @@ namespace ninaAPI.WebService.V2
         public int Stars { get; set; }
         public double HFR { get; set; }
 
-        [JsonIgnore]
-        public Uri Path { get; set; }
+        private Uri Path { get; set; }
 
         private ImageResponse() { }
 
@@ -78,6 +77,11 @@ namespace ninaAPI.WebService.V2
                 HFR = e.StarDetectionAnalysis.HFR,
                 Path = e.PathToImage
             };
+        }
+
+        public string GetPath()
+        {
+            return Path.AbsolutePath;
         }
     }
 
@@ -210,7 +214,7 @@ namespace ninaAPI.WebService.V2
                 {
                     ImageResponse p = points.ElementAt(index); // Get the history point at the specified index for the image
 
-                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.Path.AbsolutePath, 16, true, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
+                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, true, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
                     IRenderedImage renderedImage;
                     if (!autoPrepare)
                     {

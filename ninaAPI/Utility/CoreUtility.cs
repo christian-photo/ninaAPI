@@ -24,7 +24,6 @@ using ninaAPI.WebService;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Net.NetworkInformation;
-using System.Diagnostics;
 using NINA.Core.Utility;
 
 namespace ninaAPI.Utility
