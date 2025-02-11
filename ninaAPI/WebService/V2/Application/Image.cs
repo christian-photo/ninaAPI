@@ -201,7 +201,7 @@ namespace ninaAPI.WebService.V2
                     sz = new Size(width, height);
                 }
 
-                var points = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType)); // TODO: switch between this and image history for compatibility
+                var points = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
                 if (!points.Any())
                 {
                     response = CoreUtility.CreateErrorTable(new Error("No images available", 500));

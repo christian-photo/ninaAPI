@@ -199,10 +199,14 @@ channels:
                     Previous:
                       type: integer
                       example: 0
+                      minimum: 0
+                      maximum: 100
                       description: Brightness in percent
                     New:
                       type: integer
                       example: 100
+                      minimum: 0
+                      maximum: 100
                       description: Brightness in percent
                 Error:
                   type: string

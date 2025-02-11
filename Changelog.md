@@ -10,7 +10,6 @@ The changes for each individual (beta) release can be seen [here](https://github
 ### Flats!
 
 - Added the following methods for capturing flats:
-
   - `flats/skyflat`
   - `flats/auto-brightness`
   - `flats/auto-exposure`
