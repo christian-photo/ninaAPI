@@ -4,6 +4,9 @@ The changes for each individual (beta) release can be seen [here](https://github
 
 ## 2.1.8.0
 
+- ⚠️ **Breaking** `image/{index}` now includes more images. Every image that is recieved from the websocket can now be loaded using this endpoint. This is because the `imageType`
+  parameter was introduced. The endpoint doesn't use NINA's image history anymore, but instead uses the websocket history. This includes more images and will result in a more consistent experience.
+
 ### Flats!
 
 - Added the following methods for capturing flats:

@@ -28,6 +28,7 @@ using System.Windows.Media.Imaging;
 using System.IO;
 using System.Threading;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace ninaAPI.WebService.V2
 {
@@ -50,6 +51,9 @@ namespace ninaAPI.WebService.V2
         public int Stars { get; set; }
         public double HFR { get; set; }
 
+        [JsonIgnore]
+        public Uri Path { get; set; }
+
         private ImageResponse() { }
 
         public static ImageResponse FromEvent(ImageSavedEventArgs e)
@@ -71,7 +75,8 @@ namespace ninaAPI.WebService.V2
                 Mean = e.Statistics.Mean,
                 Median = e.Statistics.Median,
                 Stars = e.StarDetectionAnalysis.DetectedStars,
-                HFR = e.StarDetectionAnalysis.HFR
+                HFR = e.StarDetectionAnalysis.HFR,
+                Path = e.PathToImage
             };
         }
     }
@@ -192,8 +197,7 @@ namespace ninaAPI.WebService.V2
                     sz = new Size(width, height);
                 }
 
-                IImageHistoryVM hist = AdvancedAPI.Controls.ImageHistory;
-                var points = hist.ImageHistory.Where(x => x.Type.Equals(imageType));
+                var points = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType)); // TODO: switch between this and image history for compatibility
                 if (!points.Any())
                 {
                     response = CoreUtility.CreateErrorTable(new Error("No images available", 500));
@@ -204,9 +208,9 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    ImageHistoryPoint p = points.ElementAt(index); // Get the history point at the specified index for the image
+                    ImageResponse p = points.ElementAt(index); // Get the history point at the specified index for the image
 
-                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.LocalPath, 16, true, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
+                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.Path.AbsolutePath, 16, true, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
                     IRenderedImage renderedImage;
                     if (!autoPrepare)
                     {
