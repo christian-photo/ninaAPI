@@ -50,6 +50,7 @@ namespace ninaAPI.WebService.V2
         public double Median { get; set; }
         public int Stars { get; set; }
         public double HFR { get; set; }
+        public bool IsBayered { get; set; }
 
         private Uri Path { get; set; }
 
@@ -214,7 +215,7 @@ namespace ninaAPI.WebService.V2
                 {
                     ImageResponse p = points.ElementAt(index); // Get the history point at the specified index for the image
 
-                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, true, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
+                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, p.IsBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
                     IRenderedImage renderedImage;
                     if (!autoPrepare)
                     {

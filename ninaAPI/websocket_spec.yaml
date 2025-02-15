@@ -136,6 +136,8 @@ channels:
                           type: number
                         HFR:
                           type: number
+                        IsBayered:
+                          type: boolean
                 Error:
                   type: string
                 StatusCode:

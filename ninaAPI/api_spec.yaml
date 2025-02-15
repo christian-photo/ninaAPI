@@ -4133,6 +4133,8 @@ paths:
                               type: integer
                             HFR:
                               type: number
+                            IsBayered:
+                              type: boolean
                       - type: integer
                         description: The number of images
                         example: 1

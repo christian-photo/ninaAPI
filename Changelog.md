@@ -25,6 +25,7 @@ These methods do exactly the same as their sequence instruction counterparts.
 
 - Added `imageType` to `image/{index}` and `image-history` to filter the images by type.
 - Added `debayer` and `bayerPattern` to `image/{index}` to debayer the image.
+- Added `IsBayered` to `IMAGE-SAVE` event (and `image-history`).
 - Added `autoPrepare` to `image/{index}` to leave all processing up to NINA. Using this will result in the same image as the one you see in NINA
 - Added a `mount` websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
 - Added `PROFILE-ADDED` and `PROFILE-REMOVED` events to get notified when the collection of profiles changes, `PROFILE-CHANGED` is sent when the active profile changes.
