@@ -350,7 +350,10 @@ channels:
                 - Success
                 - Type
   /mount:
-    description: A websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
+    description:
+      A websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
+      You will need to resend the command to move the axis periodically about every second,
+      because the server will automatically stop the movement when it hasn't recieved a command for two seconds as a safety measure.
     publish:
       summary: Move mount axis
       message:
@@ -380,7 +383,7 @@ channels:
                 Response:
                   type: string
                   enum:
-                    - Started Move
+                    - Moving
                     - Stopped Move
                 Error:
                   type: string

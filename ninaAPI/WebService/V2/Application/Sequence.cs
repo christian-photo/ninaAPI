@@ -37,6 +37,10 @@ using NINA.Sequencer.SequenceItem.Switch;
 using NINA.Sequencer.SequenceItem.Telescope;
 using System.IO;
 using NINA.Astrometry;
+using System.Reflection;
+using System.Linq;
+using NINA.Sequencer;
+using NINA.Sequencer.Trigger;
 
 namespace ninaAPI.WebService.V2
 {
@@ -137,6 +141,11 @@ namespace ninaAPI.WebService.V2
                     { "Name", trigger.Name + "_Trigger" },
                     { "Status", trigger.Status.ToString() }
                 };
+                // var proper = trigger.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && p.Name != "Name" && p.Name != "Status" && !typeof(SequenceTrigger).GetProperties().Any(x => x.Name == p.Name) && p.PropertyType.IsPrimitive);
+                // foreach (var prop in proper)
+                // {
+                //     triggertable.Add(prop.Name, prop.GetValue(trigger));
+                // }
                 if (trigger is AutofocusAfterExposures t1)
                 {
                     triggertable.Add("Exposures", t1.ProgressExposures);
@@ -189,7 +198,6 @@ namespace ninaAPI.WebService.V2
                 {
                     { "Name", item.Name },
                     { "Status", item.Status.ToString() },
-                    // { "Description", item.Description }
                 };
 
                 if (item is ISequenceContainer container && item is not SmartExposure && item is not TakeManyExposures)

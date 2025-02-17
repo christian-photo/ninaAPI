@@ -25,9 +25,18 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Net.NetworkInformation;
 using NINA.Core.Utility;
+using System.Threading.Tasks;
 
 namespace ninaAPI.Utility
 {
+    public static class DelayedAction
+    {
+        public static void Execute(TimeSpan delay, Action action)
+        {
+            Task.Delay(delay).ContinueWith(t => action());
+        }
+    }
+
     public static class CoreUtility
     {
         static CoreUtility()

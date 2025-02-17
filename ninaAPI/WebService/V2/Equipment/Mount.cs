@@ -378,8 +378,14 @@ namespace ninaAPI.WebService.V2
 
     public class MountAxisMoveSocket : WebSocketModule
     {
+        private static DateTime eastTimer;
+        private static DateTime westTimer;
+        private static DateTime northTimer;
+        private static DateTime southTimer;
+
         public MountAxisMoveSocket(string urlPath) : base(urlPath, true)
         {
+
         }
 
         protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
@@ -409,25 +415,61 @@ namespace ninaAPI.WebService.V2
                     {
                         case "east":
                             mount.MoveAxis(TelescopeAxes.Primary, rate);
+                            eastTimer = DateTime.Now;
+                            DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
+                            {
+                                Logger.Info($"test: {DateTime.Now - eastTimer}");
+                                if (DateTime.Now - eastTimer > TimeSpan.FromSeconds(1.8))
+                                {
+                                    mount.MoveAxis(TelescopeAxes.Primary, 0);
+                                }
+                            });
                             break;
 
                         case "west":
                             mount.MoveAxis(TelescopeAxes.Primary, -rate);
+                            westTimer = DateTime.Now;
+                            DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
+                            {
+                                Logger.Info($"test: {DateTime.Now - eastTimer}");
+                                if (DateTime.Now - westTimer > TimeSpan.FromSeconds(1.8))
+                                {
+                                    mount.MoveAxis(TelescopeAxes.Primary, 0);
+                                }
+                            });
                             break;
 
                         case "north":
                             mount.MoveAxis(TelescopeAxes.Secondary, rate);
+                            northTimer = DateTime.Now;
+                            DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
+                            {
+                                Logger.Info($"test: {DateTime.Now - eastTimer}");
+                                if (DateTime.Now - northTimer > TimeSpan.FromSeconds(1.8))
+                                {
+                                    mount.MoveAxis(TelescopeAxes.Secondary, 0);
+                                }
+                            });
                             break;
 
                         case "south":
                             mount.MoveAxis(TelescopeAxes.Secondary, -rate);
+                            southTimer = DateTime.Now;
+                            DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
+                            {
+                                Logger.Info($"test: {DateTime.Now - eastTimer}");
+                                if (DateTime.Now - southTimer > TimeSpan.FromSeconds(1.8))
+                                {
+                                    mount.MoveAxis(TelescopeAxes.Secondary, 0);
+                                }
+                            });
                             break;
 
                         default:
                             response = CoreUtility.CreateErrorTable(new Error("Invalid direction", 400));
                             break;
                     }
-                    response.Response = rate == 0 ? "Stopped Move" : "Started Move";
+                    response.Response = rate == 0 ? "Stopped Move" : "Moving";
                 }
             }
             catch (Exception ex)
@@ -442,6 +484,13 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Primary, 0);
             AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Secondary, 0);
             return base.OnClientDisconnectedAsync(context);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Primary, 0);
+            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Secondary, 0);
+            base.Dispose(disposing);
         }
     }
 }

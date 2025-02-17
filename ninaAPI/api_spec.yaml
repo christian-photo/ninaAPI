@@ -4216,16 +4216,18 @@ paths:
       parameters:
         - in: query
           name: settingpath
-          description: The path to the setting to change. (eg. CameraSettings-PixelSize)
+          description: The path to the setting to change. (eg. CameraSettings-PixelSize). This refers the the profile structure like it is recieved when using /profile/show?active=true. Seperate each object with a dash (-)
           required: true
           schema:
             type: string
+            example: CameraSettings-PixelSize
         - in: query
           name: newValue
           description: The new value to set
           required: true
           schema:
             type: object
+            example: 3.2
       responses:
         "200":
           description: Successful response
