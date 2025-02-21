@@ -12,6 +12,7 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using EmbedIO.WebSockets;
 using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
@@ -20,6 +21,8 @@ using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -332,7 +335,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/mount/slew")]
-        public void MountSlew([QueryField] double ra, [QueryField] double dec)
+        public async Task MountSlew([QueryField] double ra, [QueryField] double dec, [QueryField] bool waitForResult)
         {
             HttpResponse response = new HttpResponse();
 
@@ -350,8 +353,17 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), new CancellationTokenSource().Token);
-                    response.Response = "Started Slew";
+                    if (waitForResult)
+                    {
+                        bool result = await mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), CancellationToken.None);
+                        response.Success = result;
+                        response.Response = result ? "Slew finished" : "Slew failed";
+                    }
+                    else
+                    {
+                        mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), CancellationToken.None);
+                        response.Response = "Slew started";
+                    }
                 }
             }
             catch (Exception ex)
@@ -363,77 +375,204 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/move-axis")]
-        public void MountMoveAxis([QueryField] string direction, [QueryField] double rate)
+        [Route(HttpVerbs.Get, "/equipment/mount/slew/stop")]
+        public void MountStopSlew()
         {
-            return; // TODO :Make this safer
             HttpResponse response = new HttpResponse();
 
             try
             {
-                if (HttpContext.IsParameterOmitted(nameof(rate)))
-                {
-                    rate = 20;
-                }
-
                 ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
 
                 if (!mount.GetInfo().Connected)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
                 }
+                else if (!mount.GetInfo().Slewing)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not slewing", 409));
+                }
+                else
+                {
+                    mount.StopSlew();
+                    response.Response = "Stopped slew";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+    }
+
+    public class MountAxisMoveSocket : WebSocketModule
+    {
+        private static DateTime eastTimer;
+        private double eastRate;
+        private static DateTime westTimer;
+        private double westRate;
+        private static DateTime northTimer;
+        private double northRate;
+        private static DateTime southTimer;
+        private double southRate;
+
+        private static object _timerLock = new object();
+
+        public MountAxisMoveSocket(string urlPath) : base(urlPath, true)
+        {
+
+        }
+
+        protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
+        {
+            HttpResponse response = new HttpResponse();
+            response.Type = HttpResponse.TypeSocket;
+            try
+            {
+                var message = Encoding.GetString(buffer);
+                var json = JsonSerializer.Deserialize<Dictionary<string, object>>(message);
+                string direction = json["direction"].ToString().ToLower();
+                double rate = double.Parse(json["rate"].ToString());
+
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 400));
+                }
                 else if (mount.GetInfo().AtPark)
                 {
-                    response = CoreUtility.CreateErrorTable(new Error("Mount parked", 409));
+                    response = CoreUtility.CreateErrorTable(new Error("Mount parked", 400));
                 }
                 else
                 {
                     switch (direction)
                     {
                         case "east":
-                            mount.MoveAxis(TelescopeAxes.Primary, rate);
+                            if (eastRate != rate)
+                            {
+                                mount.MoveAxis(TelescopeAxes.Primary, rate);
+                            }
+                            lock (_timerLock)
+                            {
+                                eastTimer = DateTime.Now;
+                                eastRate = rate;
+                            }
+                            DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
+                            {
+                                lock (_timerLock)
+                                {
+                                    Logger.Debug($"Time since last message: {DateTime.Now - eastTimer}");
+                                    if (DateTime.Now - eastTimer > TimeSpan.FromSeconds(1.8)) // This difference is due to the inaccuracy of the cpu scheduler
+                                    {
+                                        mount.MoveAxis(TelescopeAxes.Primary, 0);
+                                        eastRate = 0;
+                                    }
+                                }
+                            });
                             break;
 
                         case "west":
-                            mount.MoveAxis(TelescopeAxes.Primary, -rate);
+                            if (westRate != rate)
+                            {
+                                mount.MoveAxis(TelescopeAxes.Primary, -rate);
+                            }
+                            lock (_timerLock)
+                            {
+                                westTimer = DateTime.Now;
+                                westRate = rate;
+                            }
+                            DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
+                            {
+                                lock (_timerLock)
+                                {
+                                    Logger.Debug($"Time since last message: {DateTime.Now - westTimer}");
+                                    if (DateTime.Now - westTimer > TimeSpan.FromSeconds(1.8))
+                                    {
+                                        mount.MoveAxis(TelescopeAxes.Primary, 0);
+                                        westRate = 0;
+                                    }
+                                }
+                            });
                             break;
 
                         case "north":
-                            mount.MoveAxis(TelescopeAxes.Secondary, rate);
+                            if (northRate != rate)
+                            {
+                                mount.MoveAxis(TelescopeAxes.Secondary, rate);
+                            }
+                            lock (_timerLock)
+                            {
+                                northTimer = DateTime.Now;
+                                northRate = rate;
+                            }
+                            DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
+                            {
+                                lock (_timerLock)
+                                {
+                                    Logger.Debug($"Time since last message: {DateTime.Now - northTimer}");
+                                    if (DateTime.Now - northTimer > TimeSpan.FromSeconds(1.8))
+                                    {
+                                        mount.MoveAxis(TelescopeAxes.Secondary, 0);
+                                        northRate = 0;
+                                    }
+                                }
+                            });
                             break;
 
                         case "south":
-                            mount.MoveAxis(TelescopeAxes.Secondary, -rate);
-                            break;
-
-                        case "stopAll":
-                            mount.MoveAxis(TelescopeAxes.Primary, 0);
-                            mount.MoveAxis(TelescopeAxes.Secondary, 0);
-                            rate = 0;
+                            if (southRate != rate)
+                            {
+                                mount.MoveAxis(TelescopeAxes.Secondary, -rate);
+                            }
+                            lock (_timerLock)
+                            {
+                                southTimer = DateTime.Now;
+                                southRate = rate;
+                            }
+                            DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
+                            {
+                                lock (_timerLock)
+                                {
+                                    Logger.Debug($"Time since last message: {DateTime.Now - southTimer}");
+                                    if (DateTime.Now - southTimer > TimeSpan.FromSeconds(1.8))
+                                    {
+                                        mount.MoveAxis(TelescopeAxes.Secondary, 0);
+                                        southRate = 0;
+                                    }
+                                }
+                            });
                             break;
 
                         default:
-                            response = CoreUtility.CreateErrorTable(new Error("Invalid axis", 409));
+                            response = CoreUtility.CreateErrorTable(new Error("Invalid direction", 400));
                             break;
                     }
-
-                    if (response.Success)
-                        response.Response = rate == 0 ? "Axis stopped" : "Axis moving";
+                    response.Response = rate == 0 ? "Stopped Move" : "Moving";
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+                response = CoreUtility.CreateErrorTable(new Error(ex.Message, 400));
             }
-
-            HttpContext.WriteToResponse(response);
+            await context.WebSocket.SendAsync(Encoding.GetBytes(JsonSerializer.Serialize(response)), true);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/move-axis/stop")]
-        public void MountMoveAxisStop([QueryField] string direction)
+        protected override Task OnClientDisconnectedAsync(IWebSocketContext context)
         {
-            MountMoveAxis(HttpContext.IsParameterOmitted(nameof(direction)) ? "stopAll" : direction, 0);
+            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Primary, 0);
+            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Secondary, 0);
+            return base.OnClientDisconnectedAsync(context);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Primary, 0);
+            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Secondary, 0);
+            base.Dispose(disposing);
         }
     }
 }

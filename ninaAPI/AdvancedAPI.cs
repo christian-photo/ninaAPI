@@ -30,6 +30,7 @@ using NINA.Core.Utility.Notification;
 using System.Windows;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
+using NINA.Astrometry.Interfaces;
 
 namespace ninaAPI
 {
@@ -71,7 +72,8 @@ namespace ninaAPI
                            IPlateSolverFactory platesolver,
                            IMessageBroker broker,
                            IFramingAssistantVM framing,
-                           IDomeFollower domeFollower)
+                           IDomeFollower domeFollower,
+                           ITwilightCalculator twilightCalculator)
         {
 
             PluginId = this.Identifier;
@@ -103,6 +105,7 @@ namespace ninaAPI
                 MessageBroker = broker,
                 FramingAssistant = framing,
                 DomeFollower = domeFollower,
+                TwilightCalculator = twilightCalculator,
             };
 
             if (Settings.Default.UpdateSettings)

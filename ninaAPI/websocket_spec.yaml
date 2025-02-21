@@ -1,7 +1,7 @@
 asyncapi: 2.0.0
 info:
   title: Advanced API
-  version: 2.1.6
+  version: 2.1.8
   description: This is the Websocket documentation for the NINA plugin Advanced API.
 servers:
   production:
@@ -64,6 +64,9 @@ channels:
                         - MOUNT-PARKED
                         - MOUNT-UNPARKED
                         - MOUNT-CENTER
+                        - PROFILE-ADDED
+                        - PROFILE-CHANGED
+                        - PROFILE-REMOVED
                         - ROTATOR-CONNECTED
                         - ROTATOR-DISCONNECTED
                         - SAFETY-CONNECTED
@@ -133,6 +136,8 @@ channels:
                           type: number
                         HFR:
                           type: number
+                        IsBayered:
+                          type: boolean
                 Error:
                   type: string
                 StatusCode:
@@ -196,10 +201,14 @@ channels:
                     Previous:
                       type: integer
                       example: 0
+                      minimum: 0
+                      maximum: 100
                       description: Brightness in percent
                     New:
                       type: integer
                       example: 100
+                      minimum: 0
+                      maximum: 100
                       description: Brightness in percent
                 Error:
                   type: string
@@ -340,3 +349,69 @@ channels:
                 - StatusCode
                 - Success
                 - Type
+  /mount:
+    description:
+      A websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
+      You will need to resend the command to move the axis periodically about every second,
+      because the server will automatically stop the movement when it hasn't recieved a command for two seconds as a safety measure.
+    publish:
+      summary: Move mount axis
+      message:
+        contentType: application/json
+        payload:
+          type: object
+          properties:
+            direction:
+              type: string
+              enum:
+                - east
+                - west
+                - north
+                - south
+            rate:
+              type: number
+              format: double
+    subscribe:
+      summary: Subscribe to mount axis move events
+      message:
+        oneOf:
+          - contentType: application/json
+            title: Mount Axis Move Response
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: string
+                  enum:
+                    - Moving
+                    - Stopped Move
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Error
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: string
+                  example: Some Error
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 400
+                Success:
+                  type: boolean
+                  example: false
+                Type:
+                  type: string
+                  example: "Socket"
