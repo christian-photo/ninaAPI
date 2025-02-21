@@ -17,9 +17,7 @@ using ninaAPI.Utility;
 using NINA.Core.Utility;
 using System.Threading.Tasks;
 using System.Drawing;
-using NINA.WPF.Base.Interfaces.ViewModel;
 using NINA.Profile.Interfaces;
-using NINA.WPF.Base.Model;
 using NINA.Image.Interfaces;
 using NINA.Core.Enum;
 using System.Collections.Generic;
@@ -28,7 +26,6 @@ using System.Windows.Media.Imaging;
 using System.IO;
 using System.Threading;
 using System.Linq;
-using System.Text.Json.Serialization;
 
 namespace ninaAPI.WebService.V2
 {
@@ -82,7 +79,7 @@ namespace ninaAPI.WebService.V2
 
         public string GetPath()
         {
-            return Path.AbsolutePath;
+            return Path.LocalPath;
         }
     }
 
@@ -91,6 +88,7 @@ namespace ninaAPI.WebService.V2
         public string Event { get; set; } = "IMAGE-SAVE";
         public ImageResponse ImageStatistics { get; set; } = stats;
     }
+
     public class ImageWatcher : INinaWatcher
     {
         public static List<ImageResponse> Images = new List<ImageResponse>();

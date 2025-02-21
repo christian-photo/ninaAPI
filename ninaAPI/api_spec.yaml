@@ -2756,6 +2756,68 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /equipment/mount/slew/stop:
+    get:
+      tags:
+        - Mount
+      summary: Stop Slew
+      description:
+        Stops any slew, even if it was not started using the api. However this is mainly useful for slews you issued yourself, since it doesn't completely abort slew&centers.
+        Therefore the recommended use is to stop simple slews without center or rotate.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: "Stopped slew"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Mount not connected / not slewing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Mount not connected
+                      - Mount not slewing
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /equipment/rotator/info:
     get:
       tags:

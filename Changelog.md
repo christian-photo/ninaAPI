@@ -4,10 +4,11 @@ The changes for each individual (beta) release can be seen [here](https://github
 
 ## 2.1.8.0
 
-- ⚠️ **Breaking** `image/{index}` now includes more images. Every image that is recieved from the websocket can now be loaded using this endpoint. This is because the `imageType`
+- ⚠️ **Breaking** `image/{index}` now includes more images. Every image that is recieved as a websocket event can now be loaded using this endpoint. This is because the `imageType`
   parameter was introduced. The endpoint doesn't use NINA's image history anymore, but instead uses the websocket history. This includes more images and will result in a more consistent experience.
+  The issue with NINA's image history is, that it does not necessarily include all images, like calibration frames.
 
-### Flats!
+### Flats
 
 - Added the following methods for capturing flats:
   - `flats/skyflat`
@@ -21,15 +22,22 @@ These methods do exactly the same as their sequence instruction counterparts.
 - Added `flats/status` to get the status of the flat taking process.
 - Added `flats/stop` to stop the flat taking process.
 
----
+### Mount
+
+- Added `waitForResult` to `mount/slew` to wait for the slew to finish.
+- Added `mount/slew/stop` to abort the current slew.
+- Added a `mount` websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
+
+### Image
 
 - Added `imageType` to `image/{index}` and `image-history` to filter the images by type.
 - Added `debayer` and `bayerPattern` to `image/{index}` to debayer the image.
 - Added `IsBayered` to `IMAGE-SAVE` event (and `image-history`).
 - Added `autoPrepare` to `image/{index}` to leave all processing up to NINA. Using this will result in the same image as the one you see in NINA
-- Added a `mount` websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
+
+---
+
 - Added `PROFILE-ADDED` and `PROFILE-REMOVED` events to get notified when the collection of profiles changes, `PROFILE-CHANGED` is sent when the active profile changes.
-- Added `waitForResult` to `mount/slew` to wait for the slew to finish.
 
 ## 2.1.7.1
 

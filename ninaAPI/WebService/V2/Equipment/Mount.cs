@@ -374,14 +374,52 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/slew/stop")]
+        public void MountStopSlew()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
+                }
+                else if (!mount.GetInfo().Slewing)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not slewing", 409));
+                }
+                else
+                {
+                    mount.StopSlew();
+                    response.Response = "Stopped slew";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 
     public class MountAxisMoveSocket : WebSocketModule
     {
         private static DateTime eastTimer;
+        private double eastRate;
         private static DateTime westTimer;
+        private double westRate;
         private static DateTime northTimer;
+        private double northRate;
         private static DateTime southTimer;
+        private double southRate;
+
+        private static object _timerLock = new object();
 
         public MountAxisMoveSocket(string urlPath) : base(urlPath, true)
         {
@@ -414,53 +452,97 @@ namespace ninaAPI.WebService.V2
                     switch (direction)
                     {
                         case "east":
-                            mount.MoveAxis(TelescopeAxes.Primary, rate);
-                            eastTimer = DateTime.Now;
+                            if (eastRate != rate)
+                            {
+                                mount.MoveAxis(TelescopeAxes.Primary, rate);
+                            }
+                            lock (_timerLock)
+                            {
+                                eastTimer = DateTime.Now;
+                                eastRate = rate;
+                            }
                             DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
                             {
-                                Logger.Info($"test: {DateTime.Now - eastTimer}");
-                                if (DateTime.Now - eastTimer > TimeSpan.FromSeconds(1.8))
+                                lock (_timerLock)
                                 {
-                                    mount.MoveAxis(TelescopeAxes.Primary, 0);
+                                    Logger.Debug($"Time since last message: {DateTime.Now - eastTimer}");
+                                    if (DateTime.Now - eastTimer > TimeSpan.FromSeconds(1.8)) // This difference is due to the inaccuracy of the cpu scheduler
+                                    {
+                                        mount.MoveAxis(TelescopeAxes.Primary, 0);
+                                        eastRate = 0;
+                                    }
                                 }
                             });
                             break;
 
                         case "west":
-                            mount.MoveAxis(TelescopeAxes.Primary, -rate);
-                            westTimer = DateTime.Now;
+                            if (westRate != rate)
+                            {
+                                mount.MoveAxis(TelescopeAxes.Primary, -rate);
+                            }
+                            lock (_timerLock)
+                            {
+                                westTimer = DateTime.Now;
+                                westRate = rate;
+                            }
                             DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
                             {
-                                Logger.Info($"test: {DateTime.Now - eastTimer}");
-                                if (DateTime.Now - westTimer > TimeSpan.FromSeconds(1.8))
+                                lock (_timerLock)
                                 {
-                                    mount.MoveAxis(TelescopeAxes.Primary, 0);
+                                    Logger.Debug($"Time since last message: {DateTime.Now - westTimer}");
+                                    if (DateTime.Now - westTimer > TimeSpan.FromSeconds(1.8))
+                                    {
+                                        mount.MoveAxis(TelescopeAxes.Primary, 0);
+                                        westRate = 0;
+                                    }
                                 }
                             });
                             break;
 
                         case "north":
-                            mount.MoveAxis(TelescopeAxes.Secondary, rate);
-                            northTimer = DateTime.Now;
+                            if (northRate != rate)
+                            {
+                                mount.MoveAxis(TelescopeAxes.Secondary, rate);
+                            }
+                            lock (_timerLock)
+                            {
+                                northTimer = DateTime.Now;
+                                northRate = rate;
+                            }
                             DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
                             {
-                                Logger.Info($"test: {DateTime.Now - eastTimer}");
-                                if (DateTime.Now - northTimer > TimeSpan.FromSeconds(1.8))
+                                lock (_timerLock)
                                 {
-                                    mount.MoveAxis(TelescopeAxes.Secondary, 0);
+                                    Logger.Debug($"Time since last message: {DateTime.Now - northTimer}");
+                                    if (DateTime.Now - northTimer > TimeSpan.FromSeconds(1.8))
+                                    {
+                                        mount.MoveAxis(TelescopeAxes.Secondary, 0);
+                                        northRate = 0;
+                                    }
                                 }
                             });
                             break;
 
                         case "south":
-                            mount.MoveAxis(TelescopeAxes.Secondary, -rate);
-                            southTimer = DateTime.Now;
+                            if (southRate != rate)
+                            {
+                                mount.MoveAxis(TelescopeAxes.Secondary, -rate);
+                            }
+                            lock (_timerLock)
+                            {
+                                southTimer = DateTime.Now;
+                                southRate = rate;
+                            }
                             DelayedAction.Execute(TimeSpan.FromMilliseconds(2000), () =>
                             {
-                                Logger.Info($"test: {DateTime.Now - eastTimer}");
-                                if (DateTime.Now - southTimer > TimeSpan.FromSeconds(1.8))
+                                lock (_timerLock)
                                 {
-                                    mount.MoveAxis(TelescopeAxes.Secondary, 0);
+                                    Logger.Debug($"Time since last message: {DateTime.Now - southTimer}");
+                                    if (DateTime.Now - southTimer > TimeSpan.FromSeconds(1.8))
+                                    {
+                                        mount.MoveAxis(TelescopeAxes.Secondary, 0);
+                                        southRate = 0;
+                                    }
                                 }
                             });
                             break;
