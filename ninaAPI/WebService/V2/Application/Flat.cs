@@ -559,7 +559,7 @@ namespace ninaAPI.WebService.V2
             HttpResponse response = new HttpResponse();
             try
             {
-                response.Response = new FlatStatusResponse(flatTask);
+                response.Response = new FlatStatusResponse(container, flatTask);
             }
             catch (Exception ex)
             {
@@ -600,8 +600,10 @@ namespace ninaAPI.WebService.V2
     public struct FlatStatusResponse
     {
         public string State { get; }
+        public int TotalIterations { get; }
+        public int CompletedIterations { get; }
 
-        public FlatStatusResponse(Task task)
+        public FlatStatusResponse(SequentialContainer container, Task task)
         {
             if (task is not null)
             {
@@ -610,6 +612,18 @@ namespace ninaAPI.WebService.V2
             else
             {
                 State = "Finished";
+            }
+
+            if (State.Equals("Running"))
+            {
+                LoopCondition loop = (LoopCondition)container.GetType().GetMethod("GetIterations").Invoke(container, null);
+                TotalIterations = loop.Iterations;
+                CompletedIterations = loop.CompletedIterations;
+            }
+            else
+            {
+                TotalIterations = -1;
+                CompletedIterations = -1;
             }
         }
     }

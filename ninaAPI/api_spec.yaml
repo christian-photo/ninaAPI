@@ -5666,10 +5666,19 @@ paths:
                 type: object
                 properties:
                   Response:
-                    type: string
-                    enum:
-                      - Running
-                      - Finished
+                    type: object
+                    properties:
+                      CompletedIterations:
+                        type: integer
+                        example: 10
+                      TotalIterations:
+                        type: integer
+                        example: 15
+                      State:
+                        type: string
+                        enum:
+                          - Running
+                          - Finished
                   Error:
                     type: string
                     example: ""
