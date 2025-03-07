@@ -45,9 +45,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Weather.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(WeatherDataInfo deviceInfo)
+        public async void UpdateDeviceInfo(WeatherDataInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("WEATHER");
+            await WebSocketV2.SendConsumerEvent("WEATHER");
         }
     }
 

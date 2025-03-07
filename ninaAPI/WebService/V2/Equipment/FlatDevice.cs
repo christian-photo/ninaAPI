@@ -62,9 +62,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.FlatDevice.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(FlatDeviceInfo deviceInfo)
+        public async void UpdateDeviceInfo(FlatDeviceInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("FLATDEVICE");
+            await WebSocketV2.SendConsumerEvent("FLATDEVICE");
         }
     }
 

@@ -67,9 +67,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Mount.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(TelescopeInfo deviceInfo)
+        public async void UpdateDeviceInfo(TelescopeInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("MOUNT");
+            await WebSocketV2.SendConsumerEvent("MOUNT");
         }
     }
 

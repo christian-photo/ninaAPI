@@ -4453,6 +4453,52 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /sequence/state:
+    get:
+      tags:
+        - Sequence
+      summary: Complete Sequence
+      description:
+        Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized! This is similar to the json endpoint, however the
+        returned sequence is much more elaborate and also supports plugins. The returned json from /json is not directly compatible with this endpoint.
+      responses:
+        "200":
+          description: Successful response, best to try it out yourself
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SequenceBaseJson"
+        "409":
+          description: Sequencer not initialized / No DSO container found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Sequencer not initialized
+                      - No DSO container found
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /sequence/start:
     get:
       tags:

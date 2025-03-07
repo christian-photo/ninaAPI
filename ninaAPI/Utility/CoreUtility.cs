@@ -26,6 +26,11 @@ using System.Text.Json.Serialization;
 using System.Net.NetworkInformation;
 using NINA.Core.Utility;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization.Metadata;
+using Swan.Reflection;
+using NINA.Profile.Interfaces;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 
 namespace ninaAPI.Utility
 {
@@ -42,6 +47,7 @@ namespace ninaAPI.Utility
         static CoreUtility()
         {
             options.Converters.Add(new JsonStringEnumConverter());
+            sequenceOptions.TypeInfoResolver = new SequenceIgnoreResolver();
         }
 
         public static IList<IDeepSkyObjectContainer> GetAllTargets(this ISequenceMediator sequence)
@@ -116,16 +122,20 @@ namespace ninaAPI.Utility
 
         private static string GetIPv4Address()
         {
-            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
-
-            foreach (var ip in host.AddressList)
+            string localIP;
+            try
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    return ip.ToString();
-                }
+                using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
+                socket.Connect("8.8.8.8", 65530);
+                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                localIP = endPoint.Address.ToString();
             }
-            return null;
+            catch (Exception)
+            {
+                localIP = "127.0.0.1";
+            }
+
+            return localIP;
         }
 
         public static HttpResponse CreateErrorTable(string message, int code = 500)
@@ -144,6 +154,24 @@ namespace ninaAPI.Utility
             NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
         };
+
+        private static readonly JsonSerializerOptions sequenceOptions = new JsonSerializerOptions()
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles
+        };
+
+        public static void WriteSequenceResponse(this IHttpContext context, object json)
+        {
+            context.Response.ContentType = MimeType.Json;
+
+            string text = JsonSerializer.Serialize(json, sequenceOptions);
+            using (var writer = new StreamWriter(context.Response.OutputStream))
+            {
+                writer.Write(text);
+            }
+        }
 
         public static void WriteToResponse(this IHttpContext context, object json)
         {
@@ -212,5 +240,32 @@ namespace ninaAPI.Utility
         public int StatusCode { get; set; } = 200;
         public bool Success { get; set; } = true;
         public string Type { get; set; } = TypeAPI;
+    }
+
+    public class SequenceIgnoreResolver : DefaultJsonTypeInfoResolver
+    {
+        private static readonly string[] ignoredProperties = { "UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
+            "DateTime", "Expanded", "DateTimeProviders" };
+
+        private static readonly Type[] ignoredTypes = { typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand) };
+
+        public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
+        {
+            JsonTypeInfo typeInfo = base.GetTypeInfo(type, options);
+
+            if (typeInfo.Kind == JsonTypeInfoKind.Object)
+            {
+                foreach (JsonPropertyInfo property in typeInfo.Properties)
+                {
+                    Logger.Debug($"Property {property.Name} is ignored");
+                    if (ignoredProperties.Contains(property.Name) || ignoredTypes.Contains(property.PropertyType))
+                    {
+                        property.ShouldSerialize = (_, _) => false;
+                    }
+                }
+            }
+
+            return typeInfo;
+        }
     }
 }

@@ -41,6 +41,7 @@ using System.Reflection;
 using System.Linq;
 using NINA.Sequencer;
 using NINA.Sequencer.Trigger;
+using NINA.Sequencer.SequenceItem;
 
 namespace ninaAPI.WebService.V2
 {
@@ -89,7 +90,50 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        private static List<Hashtable> getConditions(SequenceContainer sequence)
+        [Route(HttpVerbs.Get, "/sequence/state")]
+        public void SequenceState()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ISequenceMediator Sequence = AdvancedAPI.Controls.Sequence;
+
+                if (!Sequence.Initialized)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence is not initialized", 409));
+                }
+                else
+                {
+                    // Could use reflection as well, however that would be a total of 4 properties to get via reflection
+                    // and that would be a bit too much uncertainty imo. So we have to wait until NINA implements an api for that
+                    IList<IDeepSkyObjectContainer> targets = Sequence.GetAllTargets();
+                    if (targets.Count == 0)
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("No DSO Container found", 409));
+                    }
+                    else
+                    {
+                        ISequenceRootContainer root = ((SequenceContainer)targets[0]).GetRootContainer(targets[0]);
+                        List<Hashtable> json =
+                        [
+                            new Hashtable() { { "GlobalTriggers", getTriggersNew((SequenceContainer)root) } },
+                            .. getSequenceRecursivleyNew(root),
+                        ]; // Global triggers
+                        response.Response = json;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteSequenceResponse(response);
+        }
+
+        private static List<Hashtable> getConditionsNew(SequenceContainer sequence)
         {
             List<Hashtable> conditions = new List<Hashtable>();
             foreach (var condition in sequence.Conditions)
@@ -99,36 +143,84 @@ namespace ninaAPI.WebService.V2
                     { "Name", condition.Name + "_Condition" },
                     { "Status", condition.Status.ToString() }
                 };
-                if (condition is TimeCondition c1)
+                var proper = condition.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceCondition).GetProperties().Any(x => x.Name == p.Name));
+                foreach (var prop in proper)
                 {
-                    ctable.Add("RemainingTime", c1.RemainingTime);
-                    ctable.Add("TargetTime", c1.DateTime.Now + c1.RemainingTime);
-                }
-                else if (condition is LoopForAltitudeBase c2)
-                {
-                    ctable.Add("Altitude", c2.Data.Offset);
-                    ctable.Add("CurrentAltitude", c2.Data.CurrentAltitude);
-                    ctable.Add("ExpectedTime", c2.Data.ExpectedTime);
-                }
-                else if (condition is LoopCondition c3)
-                {
-                    ctable.Add("Iterations", c3.Iterations);
-                    ctable.Add("CompletedIterations", c3.CompletedIterations);
-                }
-                else if (condition is MoonIlluminationCondition c5)
-                {
-                    ctable.Add("TargetIllumination", c5.UserMoonIllumination);
-                    ctable.Add("CurrentIllumination", c5.CurrentMoonIllumination);
-                }
-                else if (condition is TimeSpanCondition c6)
-                {
-                    ctable.Add("RemainingTime", c6.RemainingTime);
-                    ctable.Add("TargetTime", c6.DateTime.Now + c6.RemainingTime);
+                    if (prop.CanWrite && prop.GetSetMethod(true).IsPublic)
+                    {
+                        ctable.Add(prop.Name, prop.GetValue(condition));
+                    }
                 }
                 conditions.Add(ctable);
 
             }
             return conditions;
+        }
+
+        private static List<Hashtable> getTriggersNew(SequenceContainer sequence)
+        {
+            List<Hashtable> triggers = new List<Hashtable>();
+            foreach (var trigger in sequence.Triggers)
+            {
+                Hashtable triggertable = new Hashtable
+                {
+                    { "Name", trigger.Name + "_Trigger" },
+                    { "Status", trigger.Status.ToString() }
+                };
+                var proper = trigger.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceTrigger).GetProperties().Any(x => x.Name == p.Name));
+                foreach (var prop in proper)
+                {
+                    if (prop.CanWrite && prop.GetSetMethod(true).IsPublic)
+                    {
+                        triggertable.Add(prop.Name, prop.GetValue(trigger));
+                    }
+                }
+                triggers.Add(triggertable);
+            }
+            return triggers;
+        }
+
+        private static readonly string[] ignoredProperties = {
+            "Name", "Status", "IsExpanded", "ErrorBehavior", "Attempts", "CoordsFromPlanetariumCommand", "ExposureInfoListExpanded", "CoordsToFramingCommand",
+            "DeleteExposureInfoCommand", "ExposureInfoList", "DateTimeProviders", "ImageTypes", "DropTargetCommand", "DateTime", "ProfileService" };
+
+        private static List<Hashtable> getSequenceRecursivleyNew(ISequenceContainer sequence)
+        {
+            List<Hashtable> result = new List<Hashtable>();
+
+            foreach (var item in sequence.Items)
+            {
+                Hashtable it = new Hashtable
+                {
+                    { "Name", item.Name },
+                    { "Status", item.Status.ToString() },
+                };
+
+                if (item is ISequenceContainer container)
+                {
+                    it["Name"] = item.Name + "_Container";
+                    it.Add("Items", getSequenceRecursivleyNew(container));
+                    if (container is SequenceContainer sc)
+                    {
+                        it.Add("Conditions", getConditionsNew(sc));
+                        it.Add("Triggers", getTriggersNew(sc));
+                    }
+                }
+
+
+                var proper = item.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceItem).GetProperties().Any(x => x.Name == p.Name));
+                foreach (var prop in proper)
+                {
+                    if (prop.CanWrite && prop.GetSetMethod(true).IsPublic)
+                    {
+                        it.Add(prop.Name, prop.GetValue(item));
+                    }
+                }
+
+                result.Add(it);
+            }
+
+            return result;
         }
 
         private static List<Hashtable> getTriggers(SequenceContainer sequence)
@@ -141,11 +233,6 @@ namespace ninaAPI.WebService.V2
                     { "Name", trigger.Name + "_Trigger" },
                     { "Status", trigger.Status.ToString() }
                 };
-                // var proper = trigger.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && p.Name != "Name" && p.Name != "Status" && !typeof(SequenceTrigger).GetProperties().Any(x => x.Name == p.Name) && p.PropertyType.IsPrimitive);
-                // foreach (var prop in proper)
-                // {
-                //     triggertable.Add(prop.Name, prop.GetValue(trigger));
-                // }
                 if (trigger is AutofocusAfterExposures t1)
                 {
                     triggertable.Add("Exposures", t1.ProgressExposures);
@@ -186,6 +273,48 @@ namespace ninaAPI.WebService.V2
                 triggers.Add(triggertable);
             }
             return triggers;
+        }
+
+        private static List<Hashtable> getConditions(SequenceContainer sequence)
+        {
+            List<Hashtable> conditions = new List<Hashtable>();
+            foreach (var condition in sequence.Conditions)
+            {
+                Hashtable ctable = new Hashtable
+                {
+                    { "Name", condition.Name + "_Condition" },
+                    { "Status", condition.Status.ToString() }
+                };
+                if (condition is TimeCondition c1)
+                {
+                    ctable.Add("RemainingTime", c1.RemainingTime);
+                    ctable.Add("TargetTime", c1.DateTime.Now + c1.RemainingTime);
+                }
+                else if (condition is LoopForAltitudeBase c2)
+                {
+                    ctable.Add("Altitude", c2.Data.Offset);
+                    ctable.Add("CurrentAltitude", c2.Data.CurrentAltitude);
+                    ctable.Add("ExpectedTime", c2.Data.ExpectedTime);
+                }
+                else if (condition is LoopCondition c3)
+                {
+                    ctable.Add("Iterations", c3.Iterations);
+                    ctable.Add("CompletedIterations", c3.CompletedIterations);
+                }
+                else if (condition is MoonIlluminationCondition c5)
+                {
+                    ctable.Add("TargetIllumination", c5.UserMoonIllumination);
+                    ctable.Add("CurrentIllumination", c5.CurrentMoonIllumination);
+                }
+                else if (condition is TimeSpanCondition c6)
+                {
+                    ctable.Add("RemainingTime", c6.RemainingTime);
+                    ctable.Add("TargetTime", c6.DateTime.Now + c6.RemainingTime);
+                }
+                conditions.Add(ctable);
+
+            }
+            return conditions;
         }
 
         private static List<Hashtable> getSequenceRecursivley(ISequenceContainer sequence)

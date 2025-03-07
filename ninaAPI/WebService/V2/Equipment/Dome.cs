@@ -70,9 +70,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Dome.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(DomeInfo deviceInfo)
+        public async void UpdateDeviceInfo(DomeInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("DOME");
+            await WebSocketV2.SendConsumerEvent("DOME");
         }
     }
 

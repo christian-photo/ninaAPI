@@ -144,9 +144,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Camera.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(CameraInfo deviceInfo)
+        public async void UpdateDeviceInfo(CameraInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("CAMERA");
+            await WebSocketV2.SendConsumerEvent("CAMERA");
         }
     }
 

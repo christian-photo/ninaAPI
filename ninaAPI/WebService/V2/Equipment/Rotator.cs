@@ -46,9 +46,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Rotator.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(RotatorInfo deviceInfo)
+        public async void UpdateDeviceInfo(RotatorInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("ROTATOR");
+            await WebSocketV2.SendConsumerEvent("ROTATOR");
         }
     }
 

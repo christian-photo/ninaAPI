@@ -46,9 +46,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Switch.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(SwitchInfo deviceInfo)
+        public async void UpdateDeviceInfo(SwitchInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("SWITCH");
+            await WebSocketV2.SendConsumerEvent("SWITCH");
         }
     }
 

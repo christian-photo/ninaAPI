@@ -99,9 +99,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.FilterWheel.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(FilterWheelInfo deviceInfo)
+        public async void UpdateDeviceInfo(FilterWheelInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("FILTERWHEEL");
+            await WebSocketV2.SendConsumerEvent("FILTERWHEEL");
         }
     }
 

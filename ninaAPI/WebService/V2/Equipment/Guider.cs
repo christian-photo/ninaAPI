@@ -116,9 +116,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Guider.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(GuiderInfo deviceInfo)
+        public async void UpdateDeviceInfo(GuiderInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("GUIDER");
+            await WebSocketV2.SendConsumerEvent("GUIDER");
         }
 
         public void Dispose()

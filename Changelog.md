@@ -2,6 +2,11 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.1.9.0
+
+- Fixed an issue where the API would show the wrong ip address
+- Added `sequence/state`, a new sequence endpoint for retrieving information that is much more elaborate and also supports plugins
+
 ## 2.1.8.0
 
 - ⚠️ **Breaking** `image/{index}` now includes more images. Every image that is recieved as a websocket event can now be loaded using this endpoint. This is because the `imageType`
