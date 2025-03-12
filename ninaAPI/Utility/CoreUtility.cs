@@ -224,6 +224,10 @@ namespace ninaAPI.Utility
             }
             if (type.IsEnum)
             {
+                if (int.TryParse(str, out int x))
+                {
+                    return Enum.ToObject(type, x);
+                }
                 return Enum.Parse(type, str);
             }
             return str;
@@ -245,7 +249,7 @@ namespace ninaAPI.Utility
     public class SequenceIgnoreResolver : DefaultJsonTypeInfoResolver
     {
         private static readonly string[] ignoredProperties = { "UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
-            "DateTime", "Expanded", "DateTimeProviders" };
+            "DateTime", "Expanded", "DateTimeProviders", "Horizon" };
 
         private static readonly Type[] ignoredTypes = { typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand) };
 
@@ -257,7 +261,6 @@ namespace ninaAPI.Utility
             {
                 foreach (JsonPropertyInfo property in typeInfo.Properties)
                 {
-                    Logger.Debug($"Property {property.Name} is ignored");
                     if (ignoredProperties.Contains(property.Name) || ignoredTypes.Contains(property.PropertyType))
                     {
                         property.ShouldSerialize = (_, _) => false;

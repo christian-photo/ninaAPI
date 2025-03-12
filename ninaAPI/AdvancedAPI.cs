@@ -31,6 +31,7 @@ using System.Windows;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Astrometry.Interfaces;
+using NINA.Core.Utility.WindowService;
 
 namespace ninaAPI
 {
@@ -73,7 +74,8 @@ namespace ninaAPI
                            IMessageBroker broker,
                            IFramingAssistantVM framing,
                            IDomeFollower domeFollower,
-                           ITwilightCalculator twilightCalculator)
+                           ITwilightCalculator twilightCalculator,
+                           IWindowServiceFactory windowFactory)
         {
 
             PluginId = this.Identifier;
@@ -106,6 +108,7 @@ namespace ninaAPI
                 FramingAssistant = framing,
                 DomeFollower = domeFollower,
                 TwilightCalculator = twilightCalculator,
+                WindowFactory = windowFactory,
             };
 
             if (Settings.Default.UpdateSettings)

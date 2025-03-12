@@ -472,7 +472,8 @@ namespace ninaAPI.WebService.V2
             [QueryField] double scale,
             [QueryField] bool stream,
             [QueryField] bool omitImage,
-            [QueryField] bool waitForResult)
+            [QueryField] bool waitForResult,
+            [QueryField] bool save)
         {
 
             HttpResponse response = new HttpResponse();
@@ -612,13 +613,17 @@ namespace ninaAPI.WebService.V2
                             IImageSolver captureSolver = platesolver.GetImageSolver(platesolver.GetPlateSolver(settings), platesolver.GetBlindSolver(settings));
                             plateSolveResult = await captureSolver.Solve(renderedImage.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCaptureToken.Token);
                         }
+                        if (save)
+                        {
+                            await AdvancedAPI.Controls.ImageSaveMediator.Enqueue(renderedImage.RawImageData, Task.Run(() => renderedImage), AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCaptureToken.Token);
+                        }
                         await WebSocketV2.SendAndAddEvent("API-CAPTURE-FINISHED");
                     }, CameraCaptureToken.Token);
 
                     if (waitForResult)
                     {
                         await CaptureTask;
-                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false);
+                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false);
                         return;
                     }
                     response.Response = "Capture started";

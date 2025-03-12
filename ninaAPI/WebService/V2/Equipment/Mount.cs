@@ -19,6 +19,8 @@ using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyTelescope;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.WPF.Base.Mediator;
+using NINA.WPF.Base.ViewModel.Equipment.Telescope;
 using ninaAPI.Utility;
 using System;
 using System.Collections.Generic;
@@ -396,6 +398,42 @@ namespace ninaAPI.WebService.V2
                 {
                     mount.StopSlew();
                     response.Response = "Stopped slew";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/set-park-position")]
+        public async Task MountSetPark()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 400));
+                }
+                else if (!mount.GetInfo().CanSetPark || mount.GetInfo().AtPark)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount can not set park position", 400));
+                }
+                else
+                {
+                    var vm = typeof(TelescopeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(mount) as TelescopeVM;
+                    bool result = await vm.SetParkPosition();
+                    response.Success = result;
+                    response.Response = result ? "Park position set" : "";
+                    response.Error = result ? "" : "Park position update failed";
+                    response.StatusCode = result ? 200 : 400;
                 }
             }
             catch (Exception ex)

@@ -637,6 +637,12 @@ paths:
           required: false
           schema:
             type: boolean
+        - in: query
+          name: save
+          description: Save the image to the disk. This needs to be set, when capturing the image.
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
@@ -2818,6 +2824,67 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /equipment/mount/set-park-position:
+    get:
+      tags:
+        - Mount
+      summary: Set Park Position
+      description: Sets the current mount position as park position. This requires the mount to be unparked.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: "Park position set"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Can't update park position
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Mount not connected
+                      - Mount can not set park position
+                      - Park position update failed
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /equipment/rotator/info:
     get:
       tags:
@@ -4486,6 +4553,71 @@ paths:
                   StatusCode:
                     type: integer
                     example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /sequence/edit:
+    get:
+      tags:
+        - Sequence
+      summary: Edit a Sequence
+      description: 
+        This which works similary to profile/set-value. Note that this mainly supports fields that expect simple types like strings, numbers etc, 
+        and may not work for things like enums or objects (filter, time source, ...). This is an experimental feature, and it could have unexpected side effects or simply not work for some instructions or fields.
+        If you encounter any bugs (except that it is not working with enums or objects), feel free to create an issue on github or contact me on the NINA discord.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Updated setting
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Faulty state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Sequence is not initialized
+                      - No DSO Container found
+                      - Invalid path
+                      - New value can't be null
+                  StatusCode:
+                    type: integer
+                    example: 400
                   Success:
                     type: boolean
                     example: false

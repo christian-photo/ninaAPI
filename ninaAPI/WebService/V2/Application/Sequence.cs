@@ -39,12 +39,20 @@ using System.IO;
 using NINA.Astrometry;
 using System.Reflection;
 using System.Linq;
-using NINA.Sequencer;
 using NINA.Sequencer.Trigger;
 using NINA.Sequencer.SequenceItem;
+using NINA.ViewModel.Sequencer;
 
 namespace ninaAPI.WebService.V2
 {
+    public class Notifier : BaseINPC
+    {
+        public void Raise(string name)
+        {
+            RaisePropertyChanged(name);
+        }
+    }
+
     public partial class ControllerV2
     {
         [Route(HttpVerbs.Get, "/sequence/json")]
@@ -133,6 +141,81 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteSequenceResponse(response);
         }
 
+        [Route(HttpVerbs.Get, "/sequence/edit")]
+        public void SequenceEdit([QueryField] string path, [QueryField] string value)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
+
+                if (!sequence.Initialized)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence is not initialized", 400));
+                }
+                else if (sequence.GetAllTargets().Count == 0)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("No DSO Container found", 400));
+                }
+                else if (string.IsNullOrEmpty(path))
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid path", 400));
+                }
+                else if (string.IsNullOrEmpty(value))
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("New value can't be null", 400));
+                }
+                else
+                {
+                    ISequenceRootContainer root = ((SequenceContainer)sequence.GetAllTargets()[0]).GetRootContainer(sequence.GetAllTargets()[0]);
+                    string[] pathSplit = path.Split('-'); // e.g. 'CameraSettings-PixelSize' -> CameraSettings, PixelSize
+                    object position = AdvancedAPI.Controls.Profile.ActiveProfile;
+                    switch (pathSplit[0])
+                    {
+                        case "GlobalTriggers":
+                            position = root.Triggers;
+                            break;
+                        case "Start":
+                            position = root.Items[0];
+                            break;
+                        case "Imaging":
+                            position = root.Items[1];
+                            break;
+                        case "End":
+                            position = root.Items[2];
+                            break;
+                    }
+
+
+                    for (int i = 1; i < pathSplit.Length - 1; i++)
+                    {
+                        if (int.TryParse(pathSplit[i], out int x))
+                        {
+                            var enumerable = position as IList;
+                            position = enumerable[x];
+                        }
+                        else
+                        {
+                            position = position.GetType().GetProperty(pathSplit[i]).GetValue(position);
+                        }
+                    }
+                    PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
+                    prop.SetValue(position, value.CastString(prop.PropertyType));
+                    position.GetType().GetMethod("RaisePropertyChanged", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(position, new object[] { pathSplit[^1] });
+
+                    response.Response = "Updated setting";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(new Error(ex.Message, 500));
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         private static List<Hashtable> getConditionsNew(SequenceContainer sequence)
         {
             List<Hashtable> conditions = new List<Hashtable>();
@@ -146,7 +229,7 @@ namespace ninaAPI.WebService.V2
                 var proper = condition.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceCondition).GetProperties().Any(x => x.Name == p.Name));
                 foreach (var prop in proper)
                 {
-                    if (prop.CanWrite && prop.GetSetMethod(true).IsPublic)
+                    if (prop.CanWrite && (prop.GetSetMethod(true)?.IsPublic ?? false) && prop.CanRead && (prop.GetGetMethod(true)?.IsPublic ?? false))
                     {
                         ctable.Add(prop.Name, prop.GetValue(condition));
                     }
@@ -170,7 +253,7 @@ namespace ninaAPI.WebService.V2
                 var proper = trigger.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceTrigger).GetProperties().Any(x => x.Name == p.Name));
                 foreach (var prop in proper)
                 {
-                    if (prop.CanWrite && prop.GetSetMethod(true).IsPublic)
+                    if (prop.CanWrite && (prop.GetSetMethod(true)?.IsPublic ?? false) && prop.CanRead && (prop.GetGetMethod(true)?.IsPublic ?? false))
                     {
                         triggertable.Add(prop.Name, prop.GetValue(trigger));
                     }
@@ -211,7 +294,7 @@ namespace ninaAPI.WebService.V2
                 var proper = item.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceItem).GetProperties().Any(x => x.Name == p.Name));
                 foreach (var prop in proper)
                 {
-                    if (prop.CanWrite && prop.GetSetMethod(true).IsPublic)
+                    if (prop.CanWrite && (prop.GetSetMethod(true)?.IsPublic ?? false) && prop.CanRead && (prop.GetGetMethod(true)?.IsPublic ?? false))
                     {
                         it.Add(prop.Name, prop.GetValue(item));
                     }
@@ -539,6 +622,41 @@ namespace ninaAPI.WebService.V2
                 {
                     sequence.CancelAdvancedSequence();
                     response.Response = "Sequence stopped";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/sequence/running")]
+        public void SequenceStop([QueryField] bool legacy)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
+
+                if (!sequence.Initialized)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence is not initialized", 409));
+                }
+                else
+                {
+                    if (!legacy)
+                    {
+                        response.Response = sequence.IsAdvancedSequenceRunning();
+                    }
+                    else
+                    {
+                        ISequenceNavigationVM navigation = (ISequenceNavigationVM)sequence.GetType().GetProperty("sequenceNavigation").GetValue(sequence);
+                        // navigation.SimpleSequenceVM.Sequencer.MainContainer.Status
+                    }
                 }
             }
             catch (Exception ex)
