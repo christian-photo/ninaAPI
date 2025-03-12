@@ -4,6 +4,14 @@ The changes for each individual (beta) release can be seen [here](https://github
 
 ## 2.1.9.0
 
+Sorry for the breaking changes, but they are worth it!
+
+- ⚠️ **Breaking** Removed `skipRescan` from `{device}/connect`. This is now always true.
+- ⚠️ **Breaking** The response formats of ``{device}/connect` and `{device}/disconnect` have changed. These now only return `Connected` or `Disconnected`.
+- Added `to` to `{device}/connect` to specify which device should be connected. If omitted, the currently selected device will be used. This is the behavior as it was in the previous versions.
+- Added `{device}/rescan` to rescan for new devices.
+- Added `{device}/list-available` to list all available devices.
+
 - Fixed an issue where the API would show the wrong ip address
 - Added the url parameter `save` to the `camera/capture` endpoint. This will save the image to the disk. This needs to be set, when capturing the image.
 - Added `sequence/state`, a new sequence endpoint for retrieving information that is much more elaborate and also supports plugins.

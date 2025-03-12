@@ -78,58 +78,6 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/rotator/connect")]
-        public async Task RotatorConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IRotatorMediator rotator = AdvancedAPI.Controls.Rotator;
-
-                if (!rotator.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await rotator.Rescan();
-                    }
-                    await rotator.Connect();
-                }
-                response.Response = "Rotator connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/rotator/disconnect")]
-        public async Task RotatorDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IRotatorMediator rotator = AdvancedAPI.Controls.Rotator;
-
-                if (rotator.GetInfo().Connected)
-                {
-                    await rotator.Disconnect();
-                }
-                response.Response = "Rotator disconnected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
         [Route(HttpVerbs.Get, "/equipment/rotator/move")]
         public void RotatorMove([QueryField] float position)
         {

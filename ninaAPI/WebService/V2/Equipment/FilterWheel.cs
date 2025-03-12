@@ -131,59 +131,6 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/filterwheel/connect")]
-        public async Task FilterWheelConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
-
-                if (!filterwheel.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await filterwheel.Rescan();
-                    }
-                    await filterwheel.Connect();
-
-                    response.Response = "Filterwheel connected";
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/filterwheel/disconnect")]
-        public async Task FilterWheelDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
-
-                if (filterwheel.GetInfo().Connected)
-                {
-                    await filterwheel.Disconnect();
-                }
-                response.Response = "Filterwheel disconnected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
         [Route(HttpVerbs.Get, "/equipment/filterwheel/change-filter")]
         public void FilterWheelChangeFilter([QueryField] int filterId)
         {

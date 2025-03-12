@@ -154,58 +154,6 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/guider/connect")]
-        public async Task GuiderConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
-
-                if (!guider.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await guider.Rescan();
-                    }
-                    await guider.Connect();
-                }
-                response.Response = "Guider connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/guider/disconnect")]
-        public async Task GuiderDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
-
-                if (guider.GetInfo().Connected)
-                {
-                    await guider.Disconnect();
-                }
-                response.Response = "Guider disconnected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
         [Route(HttpVerbs.Get, "/equipment/guider/start")]
         public async Task GuiderStart([QueryField] bool calibrate)
         {

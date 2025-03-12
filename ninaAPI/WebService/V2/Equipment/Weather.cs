@@ -11,7 +11,6 @@
 
 using EmbedIO;
 using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyWeatherData;
 using NINA.Equipment.Interfaces.Mediator;
@@ -64,58 +63,6 @@ namespace ninaAPI.WebService.V2
 
                 WeatherDataInfo info = Weather.GetInfo();
                 response.Response = info;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/weather/connect")]
-        public async Task WeatherConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IWeatherDataMediator weather = AdvancedAPI.Controls.Weather;
-
-                if (!weather.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await weather.Rescan();
-                    }
-                    await weather.Connect();
-                }
-                response.Response = "Weather connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/weather/disconnect")]
-        public async Task WeatherDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IWeatherDataMediator weather = AdvancedAPI.Controls.Weather;
-
-                if (weather.GetInfo().Connected)
-                {
-                    await weather.Disconnect();
-                }
-                response.Response = "Weather disconnected";
             }
             catch (Exception ex)
             {

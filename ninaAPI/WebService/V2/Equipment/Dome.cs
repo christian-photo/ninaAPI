@@ -103,58 +103,6 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/dome/connect")]
-        public async Task DomeConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IDomeMediator dome = AdvancedAPI.Controls.Dome;
-
-                if (!dome.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await dome.Rescan();
-                    }
-                    await dome.Connect();
-                }
-                response.Response = "Dome connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/dome/disconnect")]
-        public async Task DomeDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IDomeMediator dome = AdvancedAPI.Controls.Dome;
-
-                if (dome.GetInfo().Connected)
-                {
-                    await dome.Disconnect();
-                }
-                response.Response = "Dome disconnected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
         [Route(HttpVerbs.Get, "/equipment/dome/open")]
         public void DomeOpen()
         {

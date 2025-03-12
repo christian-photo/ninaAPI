@@ -77,58 +77,6 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/switch/connect")]
-        public async Task SwitchConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ISwitchMediator sw = AdvancedAPI.Controls.Switch;
-
-                if (!sw.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await sw.Rescan();
-                    }
-                    await sw.Connect();
-                }
-                response.Response = "Switch connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/switch/disconnect")]
-        public async Task SwitchDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ISwitchMediator sw = AdvancedAPI.Controls.Switch;
-
-                if (sw.GetInfo().Connected)
-                {
-                    await sw.Disconnect();
-                }
-                response.Response = "Switch disconnected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
         [Route(HttpVerbs.Get, "/equipment/switch/set")]
         public void SwitchSet([QueryField] short index, [QueryField] double value)
         {

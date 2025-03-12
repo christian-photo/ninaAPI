@@ -29,8 +29,6 @@ using NINA.WPF.Base.ViewModel.Equipment.Telescope;
 using NINA.WPF.Base.ViewModel.Equipment.WeatherData;
 using ninaAPI.Utility;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -38,135 +36,143 @@ namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
-        // [Route(HttpVerbs.Get, "/equipment/{device}/list-devices")]
-        // public void ListDevices(string device)
-        // {
-        //     HttpResponse response = new HttpResponse();
+        [Route(HttpVerbs.Get, "/equipment/{device}/list-devices")]
+        public void ListDevices(string device)
+        {
+            HttpResponse response = new HttpResponse();
 
-        //     try
-        //     {
-        //         var vms = GetDeviceVM(device);
-        //         IDeviceChooserVM chooser = vms.Item1;
+            try
+            {
+                var vms = GetDeviceVM(device);
+                IDeviceChooserVM chooser = vms.Item1;
 
-        //         if (chooser != null)
-        //         {
-        //             response.Response = chooser.Devices;
-        //         }
-        //         else
-        //         {
-        //             response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
-        //         }
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         Logger.Error(ex);
-        //         response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-        //     }
+                if (chooser != null)
+                {
+                    response.Response = chooser.Devices;
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
 
-        //     HttpContext.WriteToResponse(response);
-        // }
+            HttpContext.WriteToResponse(response);
+        }
 
-        // [Route(HttpVerbs.Get, "/equipment/{device}/connect")]
-        // public async Task DeviceConnect(string device, [QueryField] string to)
-        // {
-        //     HttpResponse response = new HttpResponse();
+        [Route(HttpVerbs.Get, "/equipment/{device}/connect")]
+        public async Task DeviceConnect(string device, [QueryField] string to)
+        {
+            HttpResponse response = new HttpResponse();
 
-        //     try
-        //     {
-        //         var vms = GetDeviceVM(device);
-        //         IDeviceChooserVM chooser = vms.Item1;
-        //         object handler = vms.Item2;
+            try
+            {
+                var vms = GetDeviceVM(device);
+                IDeviceChooserVM chooser = vms.Item1;
+                object handler = vms.Item2;
 
-        //         if (chooser != null)
-        //         {
-        //             IDevice d = chooser.Devices.First(x => x.Id == to);
-        //             if (d != null)
-        //             {
-        //                 chooser.SelectedDevice = d;
-        //                 bool success = await (Task<bool>)handler.GetType().GetMethod("Connect").Invoke(handler, []);
-        //                 response.Success = success;
-        //                 response.Response = success ? "Connected" : "";
-        //                 response.Error = success ? "" : "Failed to connect";
-        //                 response.StatusCode = success ? 200 : 400;
-        //             }
-        //             else
-        //             {
-        //                 response = CoreUtility.CreateErrorTable(new Error("Invalid Id", 400));
-        //             }
-        //         }
-        //         else
-        //         {
-        //             response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
-        //         }
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         Logger.Error(ex);
-        //         response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-        //     }
+                if (chooser != null)
+                {
+                    IDevice d;
+                    if (HttpContext.IsParameterOmitted(nameof(to)))
+                    {
+                        d = chooser.SelectedDevice;
+                    }
+                    else
+                    {
+                        d = chooser.Devices.First(x => x.Id == to);
+                    }
+                    if (d != null)
+                    {
+                        chooser.SelectedDevice = d;
+                        bool success = await (Task<bool>)handler.GetType().GetMethod("Connect").Invoke(handler, []);
+                        response.Success = success;
+                        response.Response = success ? "Connected" : "";
+                        response.Error = success ? "" : "Failed to connect";
+                        response.StatusCode = success ? 200 : 400;
+                    }
+                    else
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Invalid Id", 400));
+                    }
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
 
-        //     HttpContext.WriteToResponse(response);
-        // }
+            HttpContext.WriteToResponse(response);
+        }
 
-        // [Route(HttpVerbs.Get, "/equipment/{device}/disconnect")]
-        // public async Task DeviceDisconnect(string device)
-        // {
-        //     HttpResponse response = new HttpResponse();
+        [Route(HttpVerbs.Get, "/equipment/{device}/disconnect")]
+        public async Task DeviceDisconnect(string device)
+        {
+            HttpResponse response = new HttpResponse();
 
-        //     try
-        //     {
-        //         var vms = GetDeviceVM(device);
-        //         object handler = vms.Item2;
+            try
+            {
+                var vms = GetDeviceVM(device);
+                object handler = vms.Item2;
 
-        //         if (handler != null)
-        //         {
-        //             await (Task)handler.GetType().GetMethod("Disconnect").Invoke(handler, []);
-        //             response.Response = "Disconnected";
-        //         }
-        //         else
-        //         {
-        //             response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
-        //         }
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         Logger.Error(ex);
-        //         response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-        //     }
+                if (handler != null)
+                {
+                    await (Task)handler.GetType().GetMethod("Disconnect").Invoke(handler, []);
+                    response.Response = "Disconnected";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
 
-        //     HttpContext.WriteToResponse(response);
-        // }
+            HttpContext.WriteToResponse(response);
+        }
 
-        // [Route(HttpVerbs.Get, "/equipment/{device}/rescan")]
-        // public async Task DeviceRescan(string device)
-        // {
-        //     HttpResponse response = new HttpResponse();
+        [Route(HttpVerbs.Get, "/equipment/{device}/rescan")]
+        public async Task DeviceRescan(string device)
+        {
+            HttpResponse response = new HttpResponse();
 
-        //     try
-        //     {
-        //         var vms = GetDeviceVM(device);
-        //         IDeviceChooserVM chooser = vms.Item1;
-        //         object handler = vms.Item2;
+            try
+            {
+                var vms = GetDeviceVM(device);
+                IDeviceChooserVM chooser = vms.Item1;
+                object handler = vms.Item2;
 
-        //         if (handler != null)
-        //         {
-        //             var command = (AsyncCommand<bool>)handler.GetType().GetProperty("RescanDevicesCommand", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).GetValue(handler);
-        //             await command.ExecuteAsync(null);
-        //             response.Response = chooser.Devices;
-        //         }
-        //         else
-        //         {
-        //             response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
-        //         }
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         Logger.Error(ex);
-        //         response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-        //     }
+                if (handler != null)
+                {
+                    var command = (AsyncCommand<bool>)handler.GetType().GetProperty("RescanDevicesCommand", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).GetValue(handler);
+                    await command.ExecuteAsync(null);
+                    response.Response = chooser.Devices;
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
 
-        //     HttpContext.WriteToResponse(response);
-        // }
+            HttpContext.WriteToResponse(response);
+        }
 
         private (IDeviceChooserVM, object) GetDeviceVM(string device)
         {

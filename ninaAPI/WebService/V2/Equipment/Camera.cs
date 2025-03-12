@@ -180,58 +180,6 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/connect")]
-        public async Task CameraConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ICameraMediator cam = AdvancedAPI.Controls.Camera;
-
-                if (!cam.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await cam.Rescan();
-                    }
-                    await cam.Connect();
-                }
-                response.Response = "Camera connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/camera/disconnect")]
-        public async Task CameraDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ICameraMediator cam = AdvancedAPI.Controls.Camera;
-
-                if (cam.GetInfo().Connected)
-                {
-                    await cam.Disconnect();
-                }
-                response.Response = "Camera disconnected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
         [Route(HttpVerbs.Get, "/equipment/camera/set-readout")]
         public void CameraSetReadout([QueryField] short mode)
         {

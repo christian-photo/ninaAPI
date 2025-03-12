@@ -89,56 +89,6 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/focuser/connect")]
-        public async Task FocuserConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
-                if (!focuser.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await focuser.Rescan();
-                    }
-                    await focuser.Connect();
-                }
-                response.Response = "Focuser connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/focuser/disconnect")]
-        public async Task FocuserDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
-                if (focuser.GetInfo().Connected)
-                {
-                    await focuser.Disconnect();
-                }
-                response.Response = "Focuser disconnected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
         [Route(HttpVerbs.Get, "/equipment/focuser/move")]
         public void FocuserMove([QueryField] int position)
         {

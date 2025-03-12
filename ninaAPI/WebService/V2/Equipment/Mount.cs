@@ -96,58 +96,6 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/connect")]
-        public async Task MountConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
-
-                if (!mount.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await mount.Rescan();
-                    }
-                    await mount.Connect();
-                }
-                response.Response = "Mount connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/mount/disconnect")]
-        public async Task MountDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
-
-                if (mount.GetInfo().Connected)
-                {
-                    await mount.Disconnect();
-                }
-                response.Response = "Mount disconnected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
         [Route(HttpVerbs.Get, "/equipment/mount/home")]
         public void MountHome()
         {
