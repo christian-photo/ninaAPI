@@ -52,7 +52,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid equipment", 400));
                 }
             }
             catch (Exception ex)
@@ -102,7 +102,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid equipment", 400));
                 }
             }
             catch (Exception ex)
@@ -131,7 +131,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid equipment", 400));
                 }
             }
             catch (Exception ex)
@@ -162,7 +162,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    response = CoreUtility.CreateErrorTable(new Error("Invalid device", 400));
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid equipment", 400));
                 }
             }
             catch (Exception ex)

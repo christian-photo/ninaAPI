@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.8.*
-  version: 2.1.8
+  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.1.9.*
+  version: 2.1.9
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -23,7 +23,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: 2.1.8.0
+                    example: 2.1.9.0
                   Error:
                     type: string
                     example: ""
@@ -65,12 +65,11 @@ paths:
       description: Connect to Camera
       parameters:
         - in: query
-          name: skipRescan
+          name: to
           required: false
-          description: Indicates if rescan should be skipped
+          description: The Id of the device that should be connected.
           schema:
-            type: boolean
-            default: false
+            type: string
       responses:
         "200":
           description: Successful response
@@ -81,7 +80,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Camera connected
+                    example: Connected
                   Error:
                     type: string
                     example: ""
@@ -117,7 +116,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Camera disconnected
+                    example: Disconnected
                   Error:
                     type: string
                     example: ""
@@ -130,6 +129,46 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/camera/list-devices:
+    get:
+      tags:
+        - Camera
+      summary: List Devices
+      description: List all devices which can be connected
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/camera/rescan:
+    get:
+      tags:
+        - Camera
+      summary: Rescan Devices
+      description: Rescans for new devices, and returns a list of all available devices
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -780,12 +819,11 @@ paths:
       description: Connect to Dome
       parameters:
         - in: query
-          name: skipRescan
+          name: to
           required: false
-          description: Indicates if rescan should be skipped
+          description: The Id of the device that should be connected.
           schema:
-            type: boolean
-            default: false
+            type: string
       responses:
         "200":
           description: Successful response
@@ -796,7 +834,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Dome connected
+                    example: Connected
                   Error:
                     type: string
                     example: ""
@@ -832,7 +870,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Dome disconnected
+                    example: Disconnected
                   Error:
                     type: string
                     example: ""
@@ -845,6 +883,46 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/dome/list-devices:
+    get:
+      tags:
+        - Dome
+      summary: List Devices
+      description: List all devices which can be connected
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/dome/rescan:
+    get:
+      tags:
+        - Dome
+      summary: Rescan Devices
+      description: Rescans for new devices, and returns a list of all available devices
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -1243,12 +1321,11 @@ paths:
       description: Connect to Filterwheel
       parameters:
         - in: query
-          name: skipRescan
+          name: to
           required: false
-          description: Indicates if rescan should be skipped
+          description: The Id of the device that should be connected.
           schema:
-            type: boolean
-            default: false
+            type: string
       responses:
         "200":
           description: Successful response
@@ -1259,7 +1336,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Filterwheel connected
+                    example: Connected
                   Error:
                     type: string
                     example: ""
@@ -1295,7 +1372,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Filterwheel disconnected
+                    example: Disconnected
                   Error:
                     type: string
                     example: ""
@@ -1308,6 +1385,46 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/filterwheel/list-devices:
+    get:
+      tags:
+        - FilterWheel
+      summary: List Devices
+      description: List all devices which can be connected
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/filterwheel/rescan:
+    get:
+      tags:
+        - FilterWheel
+      summary: Rescan Devices
+      description: Rescans for new devices, and returns a list of all available devices
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -1461,12 +1578,11 @@ paths:
       description: Connect the flat panel
       parameters:
         - in: query
-          name: skipRescan
+          name: to
           required: false
-          description: Indicates if rescan should be skipped
+          description: The Id of the device that should be connected.
           schema:
-            type: boolean
-            default: false
+            type: string
       responses:
         "200":
           description: Successful response
@@ -1477,7 +1593,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Flatdevice connected
+                    example: Connected
                   Error:
                     type: string
                     example: ""
@@ -1513,7 +1629,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Flatdevice disconnected
+                    example: Disconnected
                   Error:
                     type: string
                     example: ""
@@ -1526,6 +1642,46 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/flatdevice/list-devices:
+    get:
+      tags:
+        - Flat Panel
+      summary: List Devices
+      description: List all devices which can be connected
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/flatdevice/rescan:
+    get:
+      tags:
+        - Flat Panel
+      summary: Rescan Devices
+      description: Rescans for new devices, and returns a list of all available devices
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -1762,12 +1918,11 @@ paths:
       description: Connect to Focuser
       parameters:
         - in: query
-          name: skipRescan
+          name: to
           required: false
-          description: Indicates if rescan should be skipped
+          description: The Id of the device that should be connected.
           schema:
-            type: boolean
-            default: false
+            type: string
       responses:
         "200":
           description: Successful response
@@ -1778,7 +1933,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Focuser connected
+                    example: Connected
                   Error:
                     type: string
                     example: ""
@@ -1814,7 +1969,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Focuser disconnected
+                    example: Disconnected
                   Error:
                     type: string
                     example: ""
@@ -1827,6 +1982,46 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/focuser/list-devices:
+    get:
+      tags:
+        - Focuser
+      summary: List Devices
+      description: List all devices which can be connected
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/focuser/rescan:
+    get:
+      tags:
+        - Focuser
+      summary: Rescan Devices
+      description: Rescans for new devices, and returns a list of all available devices
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -1992,12 +2187,11 @@ paths:
       description: Connect to Guider
       parameters:
         - in: query
-          name: skipRescan
+          name: to
           required: false
-          description: Indicates if rescan should be skipped
+          description: The Id of the device that should be connected.
           schema:
-            type: boolean
-            default: false
+            type: string
       responses:
         "200":
           description: Successful response
@@ -2008,7 +2202,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Guider connected
+                    example: Connected
                   Error:
                     type: string
                     example: ""
@@ -2044,7 +2238,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Guider disconnected
+                    example: Disconnected
                   Error:
                     type: string
                     example: ""
@@ -2057,6 +2251,46 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/guider/list-devices:
+    get:
+      tags:
+        - Guider
+      summary: List Devices
+      description: List all devices which can be connected
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/guider/rescan:
+    get:
+      tags:
+        - Guider
+      summary: Rescan Devices
+      description: Rescans for new devices, and returns a list of all available devices
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -2293,12 +2527,11 @@ paths:
       description: Connect to Mount
       parameters:
         - in: query
-          name: skipRescan
+          name: to
           required: false
-          description: Indicates if rescan should be skipped
+          description: The Id of the device that should be connected.
           schema:
-            type: boolean
-            default: false
+            type: string
       responses:
         "200":
           description: Successful response
@@ -2309,7 +2542,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Mount connected
+                    example: Connected
                   Error:
                     type: string
                     example: ""
@@ -2345,7 +2578,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Mount disconnected
+                    example: Disconnected
                   Error:
                     type: string
                     example: ""
@@ -2358,6 +2591,46 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/mount/list-devices:
+    get:
+      tags:
+        - Mount
+      summary: List Devices
+      description: List all devices which can be connected
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/mount/rescan:
+    get:
+      tags:
+        - Mount
+      summary: Rescan Devices
+      description: Rescans for new devices, and returns a list of all available devices
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -2913,12 +3186,11 @@ paths:
       description: Connect to Rotator
       parameters:
         - in: query
-          name: skipRescan
+          name: to
           required: false
-          description: Indicates if rescan should be skipped
+          description: The Id of the device that should be connected.
           schema:
-            type: boolean
-            default: false
+            type: string
       responses:
         "200":
           description: Successful response
@@ -2929,7 +3201,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Rotator connected
+                    example: Connected
                   Error:
                     type: string
                     example: ""
@@ -2965,7 +3237,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Rotator disconnected
+                    example: Disconnected
                   Error:
                     type: string
                     example: ""
@@ -2978,6 +3250,46 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/rotator/list-devices:
+    get:
+      tags:
+        - Rotator
+      summary: List Devices
+      description: List all devices which can be connected
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/rotator/rescan:
+    get:
+      tags:
+        - Rotator
+      summary: Rescan Devices
+      description: Rescans for new devices, and returns a list of all available devices
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -3143,12 +3455,11 @@ paths:
       description: Connect to safety monitor
       parameters:
         - in: query
-          name: skipRescan
+          name: to
           required: false
-          description: Indicates if rescan should be skipped
+          description: The Id of the device that should be connected.
           schema:
-            type: boolean
-            default: false
+            type: string
       responses:
         "200":
           description: Successful response
@@ -3159,7 +3470,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Safetymonitor connected
+                    example: Connected
                   Error:
                     type: string
                     example: ""
@@ -3195,7 +3506,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Safetymonitor disconnected
+                    example: Disconnected
                   Error:
                     type: string
                     example: ""
@@ -3208,6 +3519,46 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/safetymonitor/list-devices:
+    get:
+      tags:
+        - Safety Monitor
+      summary: List Devices
+      description: List all devices which can be connected
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/safetymonitor/rescan:
+    get:
+      tags:
+        - Safety Monitor
+      summary: Rescan Devices
+      description: Rescans for new devices, and returns a list of all available devices
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -3243,12 +3594,11 @@ paths:
       description: Connect to Switch
       parameters:
         - in: query
-          name: skipRescan
+          name: to
           required: false
-          description: Indicates if rescan should be skipped
+          description: The Id of the device that should be connected.
           schema:
-            type: boolean
-            default: false
+            type: string
       responses:
         "200":
           description: Successful response
@@ -3259,7 +3609,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Switch connected
+                    example: Connected
                   Error:
                     type: string
                     example: ""
@@ -3295,7 +3645,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Switch disconnected
+                    example: Disconnected
                   Error:
                     type: string
                     example: ""
@@ -3308,6 +3658,46 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/switch/list-devices:
+    get:
+      tags:
+        - Switch
+      summary: List Devices
+      description: List all devices which can be connected
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/switch/rescan:
+    get:
+      tags:
+        - Switch
+      summary: Rescan Devices
+      description: Rescans for new devices, and returns a list of all available devices
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -3416,12 +3806,11 @@ paths:
       description: Connect to weather source
       parameters:
         - in: query
-          name: skipRescan
+          name: to
           required: false
-          description: Indicates if rescan should be skipped
+          description: The Id of the device that should be connected.
           schema:
-            type: boolean
-            default: false
+            type: string
       responses:
         "200":
           description: Successful response
@@ -3432,7 +3821,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Weather connected
+                    example: Connected
                   Error:
                     type: string
                     example: ""
@@ -3468,7 +3857,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Weather disconnected
+                    example: Disconnected
                   Error:
                     type: string
                     example: ""
@@ -3481,6 +3870,46 @@ paths:
                   Type:
                     type: string
                     example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/weather/list-devices:
+    get:
+      tags:
+        - Weather
+      summary: List Weather Sources
+      description: List all weather sources which can be connected
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/weather/rescan:
+    get:
+      tags:
+        - Weather
+      summary: Rescan Sources
+      description: Rescans for new weather sources, and returns a list of all available sources
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
         "500":
           description: Internal server error, Unknown error
           content:
@@ -4571,8 +5000,8 @@ paths:
       tags:
         - Sequence
       summary: Edit a Sequence
-      description: 
-        This which works similary to profile/set-value. Note that this mainly supports fields that expect simple types like strings, numbers etc, 
+      description:
+        This which works similary to profile/set-value. Note that this mainly supports fields that expect simple types like strings, numbers etc,
         and may not work for things like enums or objects (filter, time source, ...). This is an experimental feature, and it could have unexpected side effects or simply not work for some instructions or fields.
         If you encounter any bugs (except that it is not working with enums or objects), feel free to create an issue on github or contact me on the NINA discord.
       responses:
@@ -8432,6 +8861,48 @@ components:
                     type: array
                     items: {}
 
+        Error:
+          type: string
+          example: ""
+        StatusCode:
+          type: integer
+          example: 200
+        Success:
+          type: boolean
+          example: true
+        Type:
+          type: string
+          example: "API"
+
+    DeviceList:
+      type: object
+      properties:
+        Response:
+          type: array
+          items:
+            type: object
+            properties:
+              HasSetupDialog:
+                type: boolean
+              Id:
+                type: string
+              Name:
+                type: string
+              DisplayName:
+                type: string
+              Category:
+                type: string
+              Connected:
+                type: boolean
+              Description:
+                type: string
+              DriverInfo:
+                type: string
+              DriverVersion:
+                type: string
+              SupportedActions:
+                type: array
+                items: {}
         Error:
           type: string
           example: ""

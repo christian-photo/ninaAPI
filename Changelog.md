@@ -2,8 +2,9 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
-## 2.1.9.0
+## 2.2.0.0
 
+From now on, breaking changes will always increment the minor version number (the second number 2.x.0.0).
 Sorry for the breaking changes, but they are worth it!
 
 - ⚠️ **Breaking** Removed `skipRescan` from `{device}/connect`. This is now always true.
