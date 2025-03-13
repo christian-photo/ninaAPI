@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using CommunityToolkit.Mvvm.Input;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
@@ -156,9 +157,17 @@ namespace ninaAPI.WebService.V2
 
                 if (handler != null)
                 {
-                    var command = (AsyncCommand<bool>)handler.GetType().GetProperty("RescanDevicesCommand", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).GetValue(handler);
-                    await command.ExecuteAsync(null);
-                    response.Response = chooser.Devices;
+                    var command = handler.GetType().GetProperty("RescanDevicesCommand", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).GetValue(handler);
+                    if (command is AsyncCommand<bool> cmd)
+                    {
+                        await cmd.ExecuteAsync(null);
+                        response.Response = chooser.Devices;
+                    }
+                    else
+                    {
+                        await ((AsyncRelayCommand<bool>)command).ExecuteAsync(null);
+                        response.Response = chooser.Devices;
+                    }
                 }
                 else
                 {
