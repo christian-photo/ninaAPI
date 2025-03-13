@@ -4956,7 +4956,7 @@ paths:
       summary: Complete Sequence
       description:
         Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized! This is similar to the json endpoint, however the
-        returned sequence is much more elaborate and also supports plugins. The returned json from /json is not directly compatible with this endpoint.
+        returned sequence is much more elaborate and also supports plugins. The returned json from /json is not directly compatible with this endpoint. Use this endpoint (not json!) as reference for sequence editing!
       responses:
         "200":
           description: Successful response, best to try it out yourself
@@ -5001,9 +5001,28 @@ paths:
         - Sequence
       summary: Edit a Sequence
       description:
-        This which works similary to profile/set-value. Note that this mainly supports fields that expect simple types like strings, numbers etc,
+        This works similary to profile/set-value. Note that this mainly supports fields that expect simple types like strings, numbers etc,
         and may not work for things like enums or objects (filter, time source, ...). This is an experimental feature, and it could have unexpected side effects or simply not work for some instructions or fields.
         If you encounter any bugs (except that it is not working with enums or objects), feel free to create an issue on github or contact me on the NINA discord.
+      parameters:
+        - in: query
+          name: path
+          description:
+            The path to the property that should be updated. Use `GlobalTriggers`, `Start`, `Imaging`, `End` for the sequence root containers.
+            Then use the name of the property or the index of the item in a list, seperated with `-`.
+            The example would set the exposure time of a Take Exposure instruction, contained in a DSO container, to 20s.
+            Use `sequence/state` as reference, not `sequence/json`!
+          required: true
+          schema:
+            type: string
+            example: "Imaging-Items-0-Items-0-ExposureTime"
+        - in: query
+          name: value
+          description: The new value
+          required: true
+          schema:
+            type: string
+            example: "20"
       responses:
         "200":
           description: Successful response
