@@ -32,17 +32,27 @@ namespace ninaAPI.WebService.V2
         {
             string message = Encoding.GetString(rxBuffer); // Do something with it
             string topic;
-            bool started;
+            string response;
 
             if (message.Equals("start-alignment"))
             {
                 topic = "PolarAlignmentPlugin_DockablePolarAlignmentVM_StartAlignment";
-                started = true;
+                response = "started procedure";
             }
             else if (message.Equals("stop-alignment"))
             {
                 topic = "PolarAlignmentPlugin_DockablePolarAlignmentVM_StopAlignment";
-                started = false;
+                response = "stopped procedure";
+            }
+            else if (message.Equals("pause-alignment"))
+            {
+                topic = "PolarAlignmentPlugin_PolarAlignment_PauseAlignment";
+                response = "paused procedure";
+            }
+            else if (message.Equals("resume-alignment"))
+            {
+                topic = "PolarAlignmentPlugin_PolarAlignment_ResumeAlignment";
+                response = "resumed procedure";
             }
             else
             {
@@ -54,7 +64,7 @@ namespace ninaAPI.WebService.V2
             await Send(new HttpResponse()
             {
                 Type = HttpResponse.TypeSocket,
-                Response = started ? "started procedure" : "stopped procedure"
+                Response = response
             });
         }
 
@@ -90,9 +100,9 @@ namespace ninaAPI.WebService.V2
                     Type = HttpResponse.TypeSocket,
                     Response = new Dictionary<string, double>
                     {
-                        { nameof(AzimuthError), AzimuthError },
-                        { nameof(AltitudeError), AltitudeError },
-                        { nameof(TotalError), TotalError },
+                        { "AzimuthError", AzimuthError },
+                        { "AltitudeError", AltitudeError },
+                        { "TotalError", TotalError },
                     }
                 });
             }

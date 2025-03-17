@@ -286,6 +286,8 @@ channels:
           enum:
             - start-alignment
             - stop-alignment
+            - pause-alignment
+            - resume-alignment
     subscribe:
       summary: Subscribe to TPPA WebSocket events
       operationId: onTPPAEvent
@@ -332,6 +334,8 @@ channels:
                   enum:
                     - "started procedure"
                     - "stopped procedure"
+                    - "paused procedure"
+                    - "resumed procedure"
                 Error:
                   type: string
                 StatusCode:
