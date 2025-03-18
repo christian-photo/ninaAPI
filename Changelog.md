@@ -13,6 +13,8 @@ Sorry for the breaking changes, but they are worth it!
 - Added `{device}/rescan` to rescan for new devices.
 - Added `{device}/list-available` to list all available devices.
 
+---
+
 - Fixed an issue where the API would show the wrong ip address
 - Added the url parameter `save` to the `camera/capture` endpoint. This will save the image to the disk. This needs to be set, when capturing the image.
 - Added `sequence/state`, a new sequence endpoint for retrieving information that is much more elaborate and also supports plugins.

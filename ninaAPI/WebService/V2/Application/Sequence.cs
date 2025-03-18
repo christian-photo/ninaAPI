@@ -265,7 +265,7 @@ namespace ninaAPI.WebService.V2
 
         private static readonly string[] ignoredProperties = {
             "Name", "Status", "IsExpanded", "ErrorBehavior", "Attempts", "CoordsFromPlanetariumCommand", "ExposureInfoListExpanded", "CoordsToFramingCommand",
-            "DeleteExposureInfoCommand", "ExposureInfoList", "DateTimeProviders", "ImageTypes", "DropTargetCommand", "DateTime", "ProfileService" };
+            "DeleteExposureInfoCommand", "ExposureInfoList", "DateTimeProviders", "ImageTypes", "DropTargetCommand", "DateTime", "ProfileService", "Parent" };
 
         private static List<Hashtable> getSequenceRecursivleyNew(ISequenceContainer sequence)
         {

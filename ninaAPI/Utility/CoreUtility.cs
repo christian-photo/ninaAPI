@@ -249,7 +249,7 @@ namespace ninaAPI.Utility
     public class SequenceIgnoreResolver : DefaultJsonTypeInfoResolver
     {
         private static readonly string[] ignoredProperties = { "UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
-            "DateTime", "Expanded", "DateTimeProviders", "Horizon" };
+            "DateTime", "Expanded", "DateTimeProviders", "Horizon", "Parent" };
 
         private static readonly Type[] ignoredTypes = { typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand) };
 
