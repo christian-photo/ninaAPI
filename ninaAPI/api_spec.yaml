@@ -791,6 +791,77 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /equipment/camera/capture/statistics:
+    get:
+      tags:
+        - Camera
+      summary: Capture Statistics
+      description: This endpoint returns the image statistics for the last captured image.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    properties:
+                      Stars:
+                        type: integer
+                      HFR:
+                        type: number
+                      Median:
+                        type: number
+                      MedianAbsoluteDeviation:
+                        type: number
+                      Mean:
+                        type: number
+                      Max:
+                        type: integer
+                      Min:
+                        type: integer
+                      StDev:
+                        type: number
+                  Error:
+                    type: string
+                  StatusCode:
+                    type: integer
+                  Success:
+                    type: boolean
+                  Type:
+                    type: string
+
+        "400":
+          description: Capture not available
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: "No image available"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /equipment/dome/info:
     get:
       tags:

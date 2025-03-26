@@ -30,6 +30,8 @@ using NINA.Equipment.Equipment.MyCamera;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using System.IO;
+using System.Collections.Generic;
+using NINA.Image.ImageData;
 
 namespace ninaAPI.WebService.V2
 {
@@ -397,6 +399,45 @@ namespace ninaAPI.WebService.V2
                 else
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Binning must be specified", 409));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/camera/capture/statistics")]
+        public async Task CameraCaptureStats()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                if (renderedImage == null)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("No image available", 400));
+                }
+                else
+                {
+                    var img = await renderedImage.DetectStars(false, NINA.Core.Enum.StarSensitivityEnum.Normal, NINA.Core.Enum.NoiseReductionEnum.None);
+                    var s = ImageStatistics.Create(img.RawImageData);
+
+                    Dictionary<string, object> stats = new Dictionary<string, object>() {
+                    { "Stars", img.RawImageData.StarDetectionAnalysis.DetectedStars },
+                    { "HFR", img.RawImageData.StarDetectionAnalysis.HFR },
+                    { "Median", s.Median },
+                    { "MedianAbsoluteDeviation", s.MedianAbsoluteDeviation },
+                    { "Mean", s.Mean },
+                    { "Max", s.Max },
+                    { "Min", s.Min },
+                    { "StDev", s.StDev },
+                };
+
+                    response.Response = stats;
                 }
             }
             catch (Exception ex)

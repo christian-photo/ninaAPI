@@ -23,6 +23,7 @@ Sorry for the breaking changes, but they are worth it!
 - Added `mount/set-park-position`, which sets the current mount position as park position.
 - Added `pause-alignment` and `resume-alignment` to the TPPA WebSocket.
 - Added an option to create and cache thumbnails for images. This has to be enabled if you want to use the new thumbnail endpoint (`image/thumbnail`).
+- Introduced `camera/capture/statistics` which analyses the captured image and returns stats like HFR, Stars, Median, ...
 
 ## 2.1.8.0
 
