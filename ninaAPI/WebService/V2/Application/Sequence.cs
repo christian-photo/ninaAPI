@@ -131,6 +131,7 @@ namespace ninaAPI.WebService.V2
                         response.Response = json;
                     }
                 }
+                HttpContext.WriteSequenceResponse(response);
             }
             catch (Exception ex)
             {
@@ -138,7 +139,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteSequenceResponse(response);
+
         }
 
         [Route(HttpVerbs.Get, "/sequence/edit")]
@@ -265,7 +266,7 @@ namespace ninaAPI.WebService.V2
 
         private static readonly string[] ignoredProperties = {
             "Name", "Status", "IsExpanded", "ErrorBehavior", "Attempts", "CoordsFromPlanetariumCommand", "ExposureInfoListExpanded", "CoordsToFramingCommand",
-            "DeleteExposureInfoCommand", "ExposureInfoList", "DateTimeProviders", "ImageTypes", "DropTargetCommand", "DateTime", "ProfileService", "Parent" };
+            "DeleteExposureInfoCommand", "ExposureInfoList", "DateTimeProviders", "ImageTypes", "DropTargetCommand", "DateTime", "ProfileService", "Parent", "InfoButtonColor", "Icon" };
 
         private static List<Hashtable> getSequenceRecursivleyNew(ISequenceContainer sequence)
         {

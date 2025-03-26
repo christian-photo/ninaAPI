@@ -21,8 +21,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using ninaAPI.WebService;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Net.NetworkInformation;
 using NINA.Core.Utility;
 using System.Threading.Tasks;
@@ -31,6 +29,11 @@ using Swan.Reflection;
 using NINA.Profile.Interfaces;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using System.Drawing;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json;
+using System.Reflection;
 
 namespace ninaAPI.Utility
 {
@@ -46,8 +49,8 @@ namespace ninaAPI.Utility
     {
         static CoreUtility()
         {
-            options.Converters.Add(new JsonStringEnumConverter());
-            sequenceOptions.TypeInfoResolver = new SequenceIgnoreResolver();
+            options.Converters.Add(new StringEnumConverter());
+            sequenceOptions.ContractResolver = new SequenceIgnoreResolver();
         }
 
         public static IList<IDeepSkyObjectContainer> GetAllTargets(this ISequenceMediator sequence)
@@ -148,25 +151,31 @@ namespace ninaAPI.Utility
             return new HttpResponse() { Error = error.message, Success = false, StatusCode = error.code };
         }
 
-        private static readonly JsonSerializerOptions options = new JsonSerializerOptions()
+        private static readonly JsonSerializerSettings options = new JsonSerializerSettings()
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
-            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
+            {
+                args.ErrorContext.Handled = true;
+            },
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
         };
 
-        private static readonly JsonSerializerOptions sequenceOptions = new JsonSerializerOptions()
+        private static readonly JsonSerializerSettings sequenceOptions = new JsonSerializerSettings()
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
-            ReferenceHandler = ReferenceHandler.IgnoreCycles
+            Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
+            {
+                args.ErrorContext.Handled = true;
+            },
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
         };
 
         public static void WriteSequenceResponse(this IHttpContext context, object json)
         {
             context.Response.ContentType = MimeType.Json;
 
-            string text = JsonSerializer.Serialize(json, sequenceOptions);
+            string text = JsonConvert.SerializeObject(json, sequenceOptions);
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
                 writer.Write(text);
@@ -187,7 +196,7 @@ namespace ninaAPI.Utility
             }
             */
 
-            string text = JsonSerializer.Serialize(json, options);
+            string text = JsonConvert.SerializeObject(json, options);
 
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
@@ -246,29 +255,21 @@ namespace ninaAPI.Utility
         public string Type { get; set; } = TypeAPI;
     }
 
-    public class SequenceIgnoreResolver : DefaultJsonTypeInfoResolver
+    public class SequenceIgnoreResolver : DefaultContractResolver
     {
-        private static readonly string[] ignoredProperties = { "UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
-            "DateTime", "Expanded", "DateTimeProviders", "Horizon", "Parent" };
+        private static readonly string[] ignoredProperties = ["UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
+            "DateTime", "Expanded", "DateTimeProviders", "Horizon", "Parent", "InfoButtonColor", "Icon"];
 
-        private static readonly Type[] ignoredTypes = { typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand) };
+        private static readonly Type[] ignoredTypes = [typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand), typeof(Icon), typeof(Func<>), typeof(Action<>)];
 
-        public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
-            JsonTypeInfo typeInfo = base.GetTypeInfo(type, options);
-
-            if (typeInfo.Kind == JsonTypeInfoKind.Object)
+            JsonProperty property = base.CreateProperty(member, memberSerialization);
+            if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Contains(property.PropertyType))
             {
-                foreach (JsonPropertyInfo property in typeInfo.Properties)
-                {
-                    if (ignoredProperties.Contains(property.Name) || ignoredTypes.Contains(property.PropertyType))
-                    {
-                        property.ShouldSerialize = (_, _) => false;
-                    }
-                }
+                property.ShouldSerialize = _ => false;
             }
-
-            return typeInfo;
+            return property;
         }
     }
 }

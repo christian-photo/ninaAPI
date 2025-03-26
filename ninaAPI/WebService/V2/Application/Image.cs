@@ -26,6 +26,8 @@ using System.Windows.Media.Imaging;
 using System.IO;
 using System.Threading;
 using System.Linq;
+using System.Reflection;
+using NINA.Profile;
 
 namespace ninaAPI.WebService.V2
 {
@@ -92,6 +94,9 @@ namespace ninaAPI.WebService.V2
     public class ImageWatcher : INinaWatcher
     {
         public static List<ImageResponse> Images = new List<ImageResponse>();
+        public static List<KeyValuePair<int, string>> Thumbnails = new List<KeyValuePair<int, string>>();
+
+        public static object imageLock = new object();
 
         public void StartWatchers()
         {
@@ -103,7 +108,31 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.ImageSaveMediator.ImageSaved -= ImageSaved;
         }
 
-        private static void ImageSaved(object sender, ImageSavedEventArgs e)
+        private static void CacheThumbnail(ImageSavedEventArgs e)
+        {
+            if (!Properties.Settings.Default.CreateThumbnails)
+                return;
+            lock (imageLock)
+            {
+                string thumbnailFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "thumbnails");
+                Directory.CreateDirectory(thumbnailFile);
+                thumbnailFile = Path.Combine(thumbnailFile, $"{Images.Count - 1}.jpg");
+                var img = BitmapHelper.ScaleBitmap(e.Image, 256 / e.Image.Width);
+
+                JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+                encoder.QualityLevel = 100;
+                encoder.Frames.Add(BitmapFrame.Create(img));
+
+                using (FileStream fs = new FileStream(thumbnailFile, FileMode.Create))
+                {
+                    encoder.Save(fs);
+                }
+
+                Thumbnails.Add(new KeyValuePair<int, string>(Thumbnails.Count, thumbnailFile));
+            }
+        }
+
+        private static async void ImageSaved(object sender, ImageSavedEventArgs e)
         {
             HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
 
@@ -113,10 +142,16 @@ namespace ninaAPI.WebService.V2
 
             HttpResponse imageEvent = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", "IMAGE-SAVE" }, { "Time", DateTime.Now } } };
 
-            Images.Add(r);
+            lock (imageLock)
+            {
+                Images.Add(r);
+            }
+
             WebSocketV2.Events.Add(imageEvent);
 
-            WebSocketV2.SendEvent(response);
+            CacheThumbnail(e);
+
+            await WebSocketV2.SendEvent(response);
         }
     }
 
@@ -200,7 +235,12 @@ namespace ninaAPI.WebService.V2
                     sz = new Size(width, height);
                 }
 
-                var points = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
+                IEnumerable<ImageResponse> points;
+                lock (ImageWatcher.imageLock)
+                {
+                    points = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
+                }
+
                 if (!points.Any())
                 {
                     response = CoreUtility.CreateErrorTable(new Error("No images available", 500));
@@ -301,6 +341,47 @@ namespace ninaAPI.WebService.V2
                 else if (index >= images.Count() || index < 0)
                 {
                     response = CoreUtility.CreateErrorTable(CommonErrors.INDEX_OUT_OF_RANGE);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/image/thumbnail/{index}")]
+        public async Task GetImage(int index,
+                    [QueryField] string imageType)
+        {
+            HttpResponse response = new HttpResponse();
+            IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+
+            try
+            {
+                if (ImageWatcher.Thumbnails.Count == 0)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("No thumbnails available", 400));
+                }
+                else
+                {
+                    string res;
+                    lock (ImageWatcher.imageLock)
+                    {
+                        var images = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
+
+                        var i = ImageWatcher.Images.IndexOf(images.ElementAt(index));
+                        res = ImageWatcher.Thumbnails.Where(x => x.Key == i).First().Value;
+                        HttpContext.Response.ContentType = "image/jpg";
+                    }
+
+                    using (FileStream fs = File.OpenRead(res))
+                    {
+                        await fs.CopyToAsync(HttpContext.Response.OutputStream);
+                        return;
+                    }
                 }
             }
             catch (Exception ex)

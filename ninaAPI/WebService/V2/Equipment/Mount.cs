@@ -546,19 +546,5 @@ namespace ninaAPI.WebService.V2
             }
             await context.WebSocket.SendAsync(Encoding.GetBytes(JsonSerializer.Serialize(response)), true);
         }
-
-        protected override Task OnClientDisconnectedAsync(IWebSocketContext context)
-        {
-            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Primary, 0);
-            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Secondary, 0);
-            return base.OnClientDisconnectedAsync(context);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Primary, 0);
-            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Secondary, 0);
-            base.Dispose(disposing);
-        }
     }
 }

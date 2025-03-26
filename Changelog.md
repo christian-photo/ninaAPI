@@ -15,12 +15,14 @@ Sorry for the breaking changes, but they are worth it!
 
 ---
 
+- ⚠️ **Breaking** The mount does not automatically stop the movement anymore when disconnecting. This was causing issues with PHD and the 2 second delay should be enough as a safety measure.
 - Fixed an issue where the API would show the wrong ip address
 - Added the url parameter `save` to the `camera/capture` endpoint. This will save the image to the disk. This needs to be set, when capturing the image.
 - Added `sequence/state`, a new sequence endpoint for retrieving information that is much more elaborate and also supports plugins.
 - Added `sequence/edit`, which works similary to `profile/set-value`. Note that this mainly supports fields that expect simple types like strings, numbers etc, and may not work for things like enums or objects (filter, time source, ...). This is an **experimental** feature and may be unreliable or uncomplete.
 - Added `mount/set-park-position`, which sets the current mount position as park position.
 - Added `pause-alignment` and `resume-alignment` to the TPPA WebSocket.
+- Added an option to create and cache thumbnails for images. This has to be enabled if you want to use the new thumbnail endpoint (`image/thumbnail`).
 
 ## 2.1.8.0
 

@@ -130,5 +130,17 @@ namespace ninaAPI.Properties {
                 this["UseAccessControlHeader"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CreateThumbnails {
+            get {
+                return ((bool)(this["CreateThumbnails"]));
+            }
+            set {
+                this["CreateThumbnails"] = value;
+            }
+        }
     }
 }
