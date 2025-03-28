@@ -1,7 +1,7 @@
 asyncapi: 2.0.0
 info:
   title: Advanced API
-  version: 2.1.8
+  version: 2.2.0.0
   description: This is the Websocket documentation for the NINA plugin Advanced API.
 servers:
   production:
@@ -286,6 +286,8 @@ channels:
           enum:
             - start-alignment
             - stop-alignment
+            - pause-alignment
+            - resume-alignment
     subscribe:
       summary: Subscribe to TPPA WebSocket events
       operationId: onTPPAEvent
@@ -332,6 +334,8 @@ channels:
                   enum:
                     - "started procedure"
                     - "stopped procedure"
+                    - "paused procedure"
+                    - "resumed procedure"
                 Error:
                   type: string
                 StatusCode:
@@ -350,8 +354,7 @@ channels:
                 - Success
                 - Type
   /mount:
-    description:
-      A websocket channel to move the mount axis manually. This automatically stops all movement when the client disconnects as a safety measure to prevent any accidents.
+    description: A websocket channel to move the mount axis manually.
       You will need to resend the command to move the axis periodically about every second,
       because the server will automatically stop the movement when it hasn't recieved a command for two seconds as a safety measure.
     publish:

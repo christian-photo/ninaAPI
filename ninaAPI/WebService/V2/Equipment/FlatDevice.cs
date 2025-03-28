@@ -62,9 +62,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.FlatDevice.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(FlatDeviceInfo deviceInfo)
+        public async void UpdateDeviceInfo(FlatDeviceInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("FLATDEVICE");
+            await WebSocketV2.SendConsumerEvent("FLATDEVICE");
         }
     }
 
@@ -81,58 +81,6 @@ namespace ninaAPI.WebService.V2
 
                 FlatDeviceInfo info = flat.GetInfo();
                 response.Response = info;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/flatdevice/connect")]
-        public async Task FlatDeviceConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IFlatDeviceMediator flat = AdvancedAPI.Controls.FlatDevice;
-
-                if (!flat.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await flat.Rescan();
-                    }
-                    await flat.Connect();
-                }
-                response.Response = "Flatdevice connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/flatdevice/disconnect")]
-        public async Task FlatDeviceDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IFlatDeviceMediator flat = AdvancedAPI.Controls.FlatDevice;
-
-                if (flat.GetInfo().Connected)
-                {
-                    await flat.Disconnect();
-                }
-                response.Response = "Flatdevice disconnected";
             }
             catch (Exception ex)
             {

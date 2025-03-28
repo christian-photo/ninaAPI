@@ -30,6 +30,8 @@ using NINA.Equipment.Equipment.MyCamera;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using System.IO;
+using System.Collections.Generic;
+using NINA.Image.ImageData;
 
 namespace ninaAPI.WebService.V2
 {
@@ -144,9 +146,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Camera.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(CameraInfo deviceInfo)
+        public async void UpdateDeviceInfo(CameraInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("CAMERA");
+            await WebSocketV2.SendConsumerEvent("CAMERA");
         }
     }
 
@@ -170,58 +172,6 @@ namespace ninaAPI.WebService.V2
                 ICameraMediator cam = AdvancedAPI.Controls.Camera;
                 CameraInfoResponse info = CameraInfoResponse.FromCam(cam);
                 response.Response = info;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/camera/connect")]
-        public async Task CameraConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ICameraMediator cam = AdvancedAPI.Controls.Camera;
-
-                if (!cam.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await cam.Rescan();
-                    }
-                    await cam.Connect();
-                }
-                response.Response = "Camera connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/camera/disconnect")]
-        public async Task CameraDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ICameraMediator cam = AdvancedAPI.Controls.Camera;
-
-                if (cam.GetInfo().Connected)
-                {
-                    await cam.Disconnect();
-                }
-                response.Response = "Camera disconnected";
             }
             catch (Exception ex)
             {
@@ -460,6 +410,45 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        [Route(HttpVerbs.Get, "/equipment/camera/capture/statistics")]
+        public async Task CameraCaptureStats()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                if (renderedImage == null)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("No image available", 400));
+                }
+                else
+                {
+                    var img = await renderedImage.DetectStars(false, NINA.Core.Enum.StarSensitivityEnum.Normal, NINA.Core.Enum.NoiseReductionEnum.None);
+                    var s = ImageStatistics.Create(img.RawImageData);
+
+                    Dictionary<string, object> stats = new Dictionary<string, object>() {
+                    { "Stars", img.RawImageData.StarDetectionAnalysis.DetectedStars },
+                    { "HFR", img.RawImageData.StarDetectionAnalysis.HFR },
+                    { "Median", s.Median },
+                    { "MedianAbsoluteDeviation", s.MedianAbsoluteDeviation },
+                    { "Mean", s.Mean },
+                    { "Max", s.Max },
+                    { "Min", s.Min },
+                    { "StDev", s.StDev },
+                };
+
+                    response.Response = stats;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/equipment/camera/capture")]
         public async Task CameraCapture(
             [QueryField] bool solve,
@@ -472,7 +461,8 @@ namespace ninaAPI.WebService.V2
             [QueryField] double scale,
             [QueryField] bool stream,
             [QueryField] bool omitImage,
-            [QueryField] bool waitForResult)
+            [QueryField] bool waitForResult,
+            [QueryField] bool save)
         {
 
             HttpResponse response = new HttpResponse();
@@ -612,13 +602,17 @@ namespace ninaAPI.WebService.V2
                             IImageSolver captureSolver = platesolver.GetImageSolver(platesolver.GetPlateSolver(settings), platesolver.GetBlindSolver(settings));
                             plateSolveResult = await captureSolver.Solve(renderedImage.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCaptureToken.Token);
                         }
+                        if (save)
+                        {
+                            await AdvancedAPI.Controls.ImageSaveMediator.Enqueue(renderedImage.RawImageData, Task.Run(() => renderedImage), AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCaptureToken.Token);
+                        }
                         await WebSocketV2.SendAndAddEvent("API-CAPTURE-FINISHED");
                     }, CameraCaptureToken.Token);
 
                     if (waitForResult)
                     {
                         await CaptureTask;
-                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false);
+                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false);
                         return;
                     }
                     response.Response = "Capture started";

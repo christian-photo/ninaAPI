@@ -31,6 +31,9 @@ using System.Windows;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Astrometry.Interfaces;
+using NINA.Core.Utility.WindowService;
+using System.IO;
+using System.Reflection;
 
 namespace ninaAPI
 {
@@ -73,7 +76,8 @@ namespace ninaAPI
                            IMessageBroker broker,
                            IFramingAssistantVM framing,
                            IDomeFollower domeFollower,
-                           ITwilightCalculator twilightCalculator)
+                           ITwilightCalculator twilightCalculator,
+                           IWindowServiceFactory windowFactory)
         {
 
             PluginId = this.Identifier;
@@ -106,6 +110,7 @@ namespace ninaAPI
                 FramingAssistant = framing,
                 DomeFollower = domeFollower,
                 TwilightCalculator = twilightCalculator,
+                WindowFactory = windowFactory,
             };
 
             if (Settings.Default.UpdateSettings)
@@ -133,6 +138,11 @@ namespace ninaAPI
 
             SetHostNames();
             API.StartWatchers();
+
+            if (Directory.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "thumbnails")))
+            {
+                Directory.Delete(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "thumbnails"), true);
+            }
         }
 
         public static int GetCachedPort()
@@ -194,6 +204,16 @@ namespace ninaAPI
                 Settings.Default.Port = value;
                 CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
+            }
+        }
+
+        public bool CreateThumbnails
+        {
+            get => Settings.Default.CreateThumbnails;
+            set
+            {
+                Settings.Default.CreateThumbnails = value;
+                CoreUtil.SaveSettings(Settings.Default);
             }
         }
 

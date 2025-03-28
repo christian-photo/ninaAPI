@@ -50,19 +50,19 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Focuser.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(FocuserInfo deviceInfo)
+        public async void UpdateDeviceInfo(FocuserInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("FOCUSER");
+            await WebSocketV2.SendConsumerEvent("FOCUSER");
         }
 
-        public void UpdateEndAutoFocusRun(AutoFocusInfo info)
+        public async void UpdateEndAutoFocusRun(AutoFocusInfo info)
         {
-            WebSocketV2.SendAndAddEvent("AUTOFOCUS-FINISHED");
+            await WebSocketV2.SendAndAddEvent("AUTOFOCUS-FINISHED");
         }
 
-        public void UpdateUserFocused(FocuserInfo info)
+        public async void UpdateUserFocused(FocuserInfo info)
         {
-            WebSocketV2.SendAndAddEvent("FOCUSER-USER-FOCUSED");
+            await WebSocketV2.SendAndAddEvent("FOCUSER-USER-FOCUSED");
         }
     }
 
@@ -79,56 +79,6 @@ namespace ninaAPI.WebService.V2
             {
                 IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
                 response.Response = focuser.GetInfo();
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/focuser/connect")]
-        public async Task FocuserConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
-                if (!focuser.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await focuser.Rescan();
-                    }
-                    await focuser.Connect();
-                }
-                response.Response = "Focuser connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/focuser/disconnect")]
-        public async Task FocuserDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
-                if (focuser.GetInfo().Connected)
-                {
-                    await focuser.Disconnect();
-                }
-                response.Response = "Focuser disconnected";
             }
             catch (Exception ex)
             {
@@ -204,7 +154,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/focuser/last-af")]
-        public void FocuserLastAF()
+        public async Task FocuserLastAF()
         {
             HttpResponse response = new HttpResponse();
 
@@ -217,7 +167,8 @@ namespace ninaAPI.WebService.V2
                     if (files.Length > 0)
                     {
                         string newest = files.OrderBy(File.GetCreationTime).Last();
-                        response.Response = JsonConvert.DeserializeObject<AutoFocusReport>(File.ReadAllText(newest));
+                        string json = await Retry.Do(() => File.ReadAllText(newest), TimeSpan.FromMilliseconds(100), 5);
+                        response.Response = JsonConvert.DeserializeObject<AutoFocusReport>(json);
                     }
                     else
                     {

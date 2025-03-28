@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
+using NINA.Core.Utility.WindowService;
 
 namespace ninaAPI.WebService.V2
 {

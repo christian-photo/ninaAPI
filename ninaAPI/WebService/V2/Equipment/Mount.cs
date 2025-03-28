@@ -19,6 +19,8 @@ using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyTelescope;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.WPF.Base.Mediator;
+using NINA.WPF.Base.ViewModel.Equipment.Telescope;
 using ninaAPI.Utility;
 using System;
 using System.Collections.Generic;
@@ -67,9 +69,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Mount.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(TelescopeInfo deviceInfo)
+        public async void UpdateDeviceInfo(TelescopeInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("MOUNT");
+            await WebSocketV2.SendConsumerEvent("MOUNT");
         }
     }
 
@@ -84,58 +86,6 @@ namespace ninaAPI.WebService.V2
             {
                 ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
                 response.Response = mount.GetInfo();
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/mount/connect")]
-        public async Task MountConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
-
-                if (!mount.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await mount.Rescan();
-                    }
-                    await mount.Connect();
-                }
-                response.Response = "Mount connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/mount/disconnect")]
-        public async Task MountDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
-
-                if (mount.GetInfo().Connected)
-                {
-                    await mount.Disconnect();
-                }
-                response.Response = "Mount disconnected";
             }
             catch (Exception ex)
             {
@@ -406,6 +356,42 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/set-park-position")]
+        public async Task MountSetPark()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 400));
+                }
+                else if (!mount.GetInfo().CanSetPark || mount.GetInfo().AtPark)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount can not set park position", 400));
+                }
+                else
+                {
+                    var vm = typeof(TelescopeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(mount) as TelescopeVM;
+                    bool result = await vm.SetParkPosition();
+                    response.Success = result;
+                    response.Response = result ? "Park position set" : "";
+                    response.Error = result ? "" : "Park position update failed";
+                    response.StatusCode = result ? 200 : 400;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 
     public class MountAxisMoveSocket : WebSocketModule
@@ -559,20 +545,6 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(new Error(ex.Message, 400));
             }
             await context.WebSocket.SendAsync(Encoding.GetBytes(JsonSerializer.Serialize(response)), true);
-        }
-
-        protected override Task OnClientDisconnectedAsync(IWebSocketContext context)
-        {
-            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Primary, 0);
-            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Secondary, 0);
-            return base.OnClientDisconnectedAsync(context);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Primary, 0);
-            AdvancedAPI.Controls.Mount.MoveAxis(TelescopeAxes.Secondary, 0);
-            base.Dispose(disposing);
         }
     }
 }

@@ -46,9 +46,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Rotator.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(RotatorInfo deviceInfo)
+        public async void UpdateDeviceInfo(RotatorInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("ROTATOR");
+            await WebSocketV2.SendConsumerEvent("ROTATOR");
         }
     }
 
@@ -68,58 +68,6 @@ namespace ninaAPI.WebService.V2
 
                 RotatorInfo info = rotator.GetInfo();
                 response.Response = info;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/rotator/connect")]
-        public async Task RotatorConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IRotatorMediator rotator = AdvancedAPI.Controls.Rotator;
-
-                if (!rotator.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await rotator.Rescan();
-                    }
-                    await rotator.Connect();
-                }
-                response.Response = "Rotator connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/rotator/disconnect")]
-        public async Task RotatorDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IRotatorMediator rotator = AdvancedAPI.Controls.Rotator;
-
-                if (rotator.GetInfo().Connected)
-                {
-                    await rotator.Disconnect();
-                }
-                response.Response = "Rotator disconnected";
             }
             catch (Exception ex)
             {

@@ -46,9 +46,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Switch.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(SwitchInfo deviceInfo)
+        public async void UpdateDeviceInfo(SwitchInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("SWITCH");
+            await WebSocketV2.SendConsumerEvent("SWITCH");
         }
     }
 
@@ -67,58 +67,6 @@ namespace ninaAPI.WebService.V2
 
                 SwitchInfo info = sw.GetInfo();
                 response.Response = info;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/switch/connect")]
-        public async Task SwitchConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ISwitchMediator sw = AdvancedAPI.Controls.Switch;
-
-                if (!sw.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await sw.Rescan();
-                    }
-                    await sw.Connect();
-                }
-                response.Response = "Switch connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/switch/disconnect")]
-        public async Task SwitchDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ISwitchMediator sw = AdvancedAPI.Controls.Switch;
-
-                if (sw.GetInfo().Connected)
-                {
-                    await sw.Disconnect();
-                }
-                response.Response = "Switch disconnected";
             }
             catch (Exception ex)
             {

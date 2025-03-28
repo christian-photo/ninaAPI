@@ -116,9 +116,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.Guider.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(GuiderInfo deviceInfo)
+        public async void UpdateDeviceInfo(GuiderInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("GUIDER");
+            await WebSocketV2.SendConsumerEvent("GUIDER");
         }
 
         public void Dispose()
@@ -144,58 +144,6 @@ namespace ninaAPI.WebService.V2
 
                 GuideInfo info = new GuideInfo(guider.GetInfo(), GuiderWatcher.lastGuideStep, g?.State);
                 response.Response = info;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/guider/connect")]
-        public async Task GuiderConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
-
-                if (!guider.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await guider.Rescan();
-                    }
-                    await guider.Connect();
-                }
-                response.Response = "Guider connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/guider/disconnect")]
-        public async Task GuiderDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
-
-                if (guider.GetInfo().Connected)
-                {
-                    await guider.Disconnect();
-                }
-                response.Response = "Guider disconnected";
             }
             catch (Exception ex)
             {

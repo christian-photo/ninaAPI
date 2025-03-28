@@ -21,11 +21,21 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using ninaAPI.WebService;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Net.NetworkInformation;
 using NINA.Core.Utility;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization.Metadata;
+using Swan.Reflection;
+using NINA.Profile.Interfaces;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
+using System.Drawing;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ninaAPI.Utility
 {
@@ -42,6 +52,7 @@ namespace ninaAPI.Utility
         static CoreUtility()
         {
             options.Converters.Add(new JsonStringEnumConverter());
+            sequenceOptions.ContractResolver = new SequenceIgnoreResolver();
         }
 
         public static IList<IDeepSkyObjectContainer> GetAllTargets(this ISequenceMediator sequence)
@@ -116,16 +127,20 @@ namespace ninaAPI.Utility
 
         private static string GetIPv4Address()
         {
-            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
-
-            foreach (var ip in host.AddressList)
+            string localIP;
+            try
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    return ip.ToString();
-                }
+                using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
+                socket.Connect("8.8.8.8", 65530);
+                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                localIP = endPoint.Address.ToString();
             }
-            return null;
+            catch (Exception)
+            {
+                localIP = "127.0.0.1";
+            }
+
+            return localIP;
         }
 
         public static HttpResponse CreateErrorTable(string message, int code = 500)
@@ -145,6 +160,27 @@ namespace ninaAPI.Utility
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
         };
 
+        private static readonly JsonSerializerSettings sequenceOptions = new JsonSerializerSettings()
+        {
+            Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
+            {
+                args.ErrorContext.Handled = true;
+            },
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
+        };
+
+        public static void WriteSequenceResponse(this IHttpContext context, object json)
+        {
+            context.Response.ContentType = MimeType.Json;
+
+            string text = JsonConvert.SerializeObject(json, sequenceOptions);
+            using (var writer = new StreamWriter(context.Response.OutputStream))
+            {
+                writer.Write(text);
+            }
+        }
+
         public static void WriteToResponse(this IHttpContext context, object json)
         {
             context.Response.ContentType = MimeType.Json;
@@ -159,7 +195,7 @@ namespace ninaAPI.Utility
             }
             */
 
-            string text = JsonSerializer.Serialize(json, options);
+            string text = System.Text.Json.JsonSerializer.Serialize(json, options);
 
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
@@ -196,6 +232,10 @@ namespace ninaAPI.Utility
             }
             if (type.IsEnum)
             {
+                if (int.TryParse(str, out int x))
+                {
+                    return Enum.ToObject(type, x);
+                }
                 return Enum.Parse(type, str);
             }
             return str;
@@ -212,5 +252,23 @@ namespace ninaAPI.Utility
         public int StatusCode { get; set; } = 200;
         public bool Success { get; set; } = true;
         public string Type { get; set; } = TypeAPI;
+    }
+
+    public class SequenceIgnoreResolver : DefaultContractResolver
+    {
+        private static readonly string[] ignoredProperties = ["UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
+            "DateTime", "Expanded", "DateTimeProviders", "Horizon", "Parent", "InfoButtonColor", "Icon"];
+
+        private static readonly Type[] ignoredTypes = [typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand), typeof(Icon), typeof(Func<>), typeof(Action<>)];
+
+        protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            Newtonsoft.Json.Serialization.JsonProperty property = base.CreateProperty(member, memberSerialization);
+            if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Contains(property.PropertyType))
+            {
+                property.ShouldSerialize = _ => false;
+            }
+            return property;
+        }
     }
 }

@@ -68,57 +68,5 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
-
-        [Route(HttpVerbs.Get, "/equipment/safetymonitor/connect")]
-        public async Task SafetyMonitorConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ISafetyMonitorMediator safetymonitor = AdvancedAPI.Controls.SafetyMonitor;
-
-                if (!safetymonitor.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await safetymonitor.Rescan();
-                    }
-                    await safetymonitor.Connect();
-                }
-                response.Response = "Safetymonitor connected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/safetymonitor/disconnect")]
-        public async Task SafetyMonitorDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ISafetyMonitorMediator safetymonitor = AdvancedAPI.Controls.SafetyMonitor;
-
-                if (safetymonitor.GetInfo().Connected)
-                {
-                    await safetymonitor.Disconnect();
-                }
-                response.Response = "Safetymonitor disconnected";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
     }
 }

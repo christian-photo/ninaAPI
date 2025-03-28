@@ -2,6 +2,29 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.0.0
+
+From now on, breaking changes will always increment the minor version number (the second number 2.x.0.0).
+Sorry for the breaking changes, but they are worth it!
+
+- ⚠️ **Breaking** Removed `skipRescan` from `{device}/connect`. This is now always true.
+- ⚠️ **Breaking** The response formats of ``{device}/connect` and `{device}/disconnect` have changed. These now only return `Connected` or `Disconnected`.
+- Added `to` to `{device}/connect` to specify which device should be connected. If omitted, the currently selected device will be used. This is the behavior as it was in the previous versions.
+- Added `{device}/rescan` to rescan for new devices.
+- Added `{device}/list-available` to list all available devices.
+
+---
+
+- ⚠️ **Breaking** The mount does not automatically stop the movement anymore when disconnecting. This was causing issues with PHD and the 2 second delay should be enough as a safety measure.
+- Fixed an issue where the API would show the wrong ip address
+- Added the url parameter `save` to the `camera/capture` endpoint. This will save the image to the disk. This needs to be set, when capturing the image.
+- Added `sequence/state`, a new sequence endpoint for retrieving information that is much more elaborate and also supports plugins.
+- Added `sequence/edit`, which works similary to `profile/set-value`. Note that this mainly supports fields that expect simple types like strings, numbers etc, and may not work for things like enums or objects (filter, time source, ...). This is an **experimental** feature and may be unreliable or uncomplete.
+- Added `mount/set-park-position`, which sets the current mount position as park position.
+- Added `pause-alignment` and `resume-alignment` to the TPPA WebSocket.
+- Added an option to create and cache thumbnails for images. This has to be enabled if you want to use the new thumbnail endpoint (`image/thumbnail`).
+- Introduced `camera/capture/statistics` which analyses the captured image and returns stats like HFR, Stars, Median, ...
+
 ## 2.1.8.0
 
 - ⚠️ **Breaking** `image/{index}` now includes more images. Every image that is recieved as a websocket event can now be loaded using this endpoint. This is because the `imageType`

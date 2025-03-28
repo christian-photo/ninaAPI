@@ -99,9 +99,9 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.FilterWheel.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(FilterWheelInfo deviceInfo)
+        public async void UpdateDeviceInfo(FilterWheelInfo deviceInfo)
         {
-            WebSocketV2.SendConsumerEvent("FILTERWHEEL");
+            await WebSocketV2.SendConsumerEvent("FILTERWHEEL");
         }
     }
 
@@ -121,59 +121,6 @@ namespace ninaAPI.WebService.V2
 
                 FWInfo info = new FWInfo(filterwheel.GetInfo(), filters);
                 response.Response = info;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/filterwheel/connect")]
-        public async Task FilterWheelConnect([QueryField] bool skipRescan)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
-
-                if (!filterwheel.GetInfo().Connected)
-                {
-                    if (!skipRescan)
-                    {
-                        await filterwheel.Rescan();
-                    }
-                    await filterwheel.Connect();
-
-                    response.Response = "Filterwheel connected";
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
-        [Route(HttpVerbs.Get, "/equipment/filterwheel/disconnect")]
-        public async Task FilterWheelDisconnect()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
-
-                if (filterwheel.GetInfo().Connected)
-                {
-                    await filterwheel.Disconnect();
-                }
-                response.Response = "Filterwheel disconnected";
             }
             catch (Exception ex)
             {
