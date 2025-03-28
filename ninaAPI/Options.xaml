@@ -16,14 +16,16 @@
             <StackPanel Orientation="Horizontal">
                 <TextBlock
                     Width="100"
-                    Margin="0,0,5,0"
+                    Margin="0,5,5,0"
                     Text="API Enabled " />
                 <CheckBox IsChecked="{Binding APIEnabled}" />
             </StackPanel>
+            <Separator Margin="30" />
+            <TextBlock Margin="10,5,0,10" Text="Be careful when changing any of the below options! These alter the functionaliy of the API, and can cause apps like Touch 'N' Stars to not work properly." />
             <StackPanel Orientation="Horizontal">
                 <TextBlock
-                    Width="100"
-                    Margin="0,0,5,0"
+                    Width="300"
+                    Margin="0,5,5,0"
                     Text="Create Thumbnails " />
                 <CheckBox IsChecked="{Binding CreateThumbnails}" />
             </StackPanel>
@@ -43,34 +45,30 @@
             </StackPanel>-->
             <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
                 <TextBlock
-                    Width="100"
+                    Width="300"
                     Margin="0,0,5,0"
                     Text="API Port " />
                 <TextBox Width="100" Text="{Binding Port}" />
-                <TextBlock Margin="20,0,0,0" Text="API running on port: " Visibility="{Binding PortVisibility}" />
-                <TextBlock Text="{Binding CachedPort}" Visibility="{Binding PortVisibility}" />
+                <TextBlock Margin="20,5,0,0" Text="API running on port: " Visibility="{Binding PortVisibility}" />
+                <TextBlock Text="{Binding CachedPort}" Visibility="{Binding PortVisibility}" Margin="0,5,0,0" />
                 <Button Margin="10,0,0,0" Content="Update Default Port" Command="{Binding UpdateDefaultPortCommand}" Width="200" Visibility="{Binding PortVisibility}" ToolTip="This updates the port the api is launched on, meaning that the api will always launch on that port"/>
             </StackPanel>
-
-            <Separator Margin="30" />
 
             <StackPanel Orientation="Horizontal">
                 <TextBlock
                     Margin="0,0,5,0"
                     VerticalAlignment="Center"
                     Text="⚠️Use Access-Control-Allow-Origin Header⚠️"
+                    Width="300"
                     ToolTip="This makes it possible to fetch the api using javascript without having to set up a proxy. It is required for some applications like Touch 'N' Stars" />
                 <CheckBox IsChecked="{Binding UseAccessHeader}" />
             </StackPanel>
 
             <TextBlock Margin="0,5,0,0" Text="Access-Control-Allow-Origin is part of the CORS rules and determines which websites are allowed to access a server's data. Without this header, browsers block requests from other domains for security reasons. This is only relevant if the software is accessible via the Internet - in closed networks, such attacks from outside are not possible." />
 
-            <Separator
-                Width="20"
-                Height="10"
-                Background="Transparent" />
+            <Separator Margin="30" />
 
-            <StackPanel Margin="0,10,0,0" Orientation="Vertical">
+            <StackPanel Orientation="Vertical">
                 <TextBlock Margin="0,5,0,5" Text="Network adresses: " />
                 <StackPanel Orientation="Horizontal">
                     <TextBlock

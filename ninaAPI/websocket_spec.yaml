@@ -1,7 +1,7 @@
 asyncapi: 2.0.0
 info:
   title: Advanced API
-  version: 2.1.8
+  version: 2.2.0.0
   description: This is the Websocket documentation for the NINA plugin Advanced API.
 servers:
   production:

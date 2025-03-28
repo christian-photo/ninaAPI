@@ -34,6 +34,8 @@ using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ninaAPI.Utility
 {
@@ -49,7 +51,7 @@ namespace ninaAPI.Utility
     {
         static CoreUtility()
         {
-            options.Converters.Add(new StringEnumConverter());
+            options.Converters.Add(new JsonStringEnumConverter());
             sequenceOptions.ContractResolver = new SequenceIgnoreResolver();
         }
 
@@ -151,14 +153,11 @@ namespace ninaAPI.Utility
             return new HttpResponse() { Error = error.message, Success = false, StatusCode = error.code };
         }
 
-        private static readonly JsonSerializerSettings options = new JsonSerializerSettings()
+        private static readonly JsonSerializerOptions options = new JsonSerializerOptions()
         {
-            Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
-            {
-                args.ErrorContext.Handled = true;
-            },
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-            NullValueHandling = NullValueHandling.Ignore,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
         };
 
         private static readonly JsonSerializerSettings sequenceOptions = new JsonSerializerSettings()
@@ -196,7 +195,7 @@ namespace ninaAPI.Utility
             }
             */
 
-            string text = JsonConvert.SerializeObject(json, options);
+            string text = System.Text.Json.JsonSerializer.Serialize(json, options);
 
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
@@ -262,9 +261,9 @@ namespace ninaAPI.Utility
 
         private static readonly Type[] ignoredTypes = [typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand), typeof(Icon), typeof(Func<>), typeof(Action<>)];
 
-        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
-            JsonProperty property = base.CreateProperty(member, memberSerialization);
+            Newtonsoft.Json.Serialization.JsonProperty property = base.CreateProperty(member, memberSerialization);
             if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Contains(property.PropertyType))
             {
                 property.ShouldSerialize = _ => false;
