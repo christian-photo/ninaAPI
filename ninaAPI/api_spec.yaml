@@ -1185,6 +1185,12 @@ paths:
         - Dome
       summary: Set Dome Follow
       description: Start or stop the dome to follow the telescope
+      parameters:
+        - in: query
+          name: enabled
+          description: Enable or disable dome follow
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response

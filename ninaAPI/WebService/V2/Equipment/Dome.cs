@@ -76,6 +76,31 @@ namespace ninaAPI.WebService.V2
         }
     }
 
+    public class ExtendedDomeInfo : DomeInfo
+    {
+        public ExtendedDomeInfo(DomeInfo info, IDomeFollower follower)
+        {
+            Azimuth = info.Azimuth;
+            CanFindHome = info.CanFindHome;
+            CanPark = info.CanPark;
+            CanSetAzimuth = info.CanSetAzimuth;
+            CanSetPark = info.CanSetPark;
+            CanSetShutter = info.CanSetShutter;
+            CanSyncAzimuth = info.CanSyncAzimuth;
+            DriverCanFollow = info.DriverCanFollow;
+            DriverFollowing = info.DriverFollowing;
+            ShutterStatus = info.ShutterStatus;
+            AtHome = info.AtHome;
+            AtPark = info.AtPark;
+            Slewing = info.Slewing;
+            SupportedActions = info.SupportedActions;
+            IsFollowing = follower.IsFollowing;
+            IsSynchronized = follower.IsSynchronized;
+        }
+        public bool IsFollowing { get; set; }
+        public bool IsSynchronized { get; set; }
+    }
+
     public partial class ControllerV2
     {
         private static CancellationTokenSource DomeToken;
@@ -91,8 +116,7 @@ namespace ninaAPI.WebService.V2
             {
                 IDomeMediator dome = AdvancedAPI.Controls.Dome;
 
-                DomeInfo info = dome.GetInfo();
-                response.Response = info;
+                response.Response = new ExtendedDomeInfo(dome.GetInfo(), AdvancedAPI.Controls.DomeFollower);
             }
             catch (Exception ex)
             {
@@ -217,8 +241,12 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    FollowToken?.Cancel();
-                    FollowToken = new CancellationTokenSource();
+                    if (enabled)
+                    {
+                        FollowToken?.Cancel();
+                        FollowToken = new CancellationTokenSource();
+                    }
+
                     response.Success = enabled ? await dome.EnableFollowing(FollowToken.Token) : await dome.DisableFollowing(FollowToken.Token);
                     response.Response = enabled ? "Following enabled" : "Following disabled";
                 }
@@ -279,7 +307,9 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    dome.SlewToAzimuth(azimuth, new CancellationTokenSource().Token);
+                    DomeToken?.Cancel();
+                    DomeToken = new CancellationTokenSource();
+                    dome.SlewToAzimuth(azimuth, DomeToken.Token);
                     response.Response = "Dome Slew Started";
                 }
             }

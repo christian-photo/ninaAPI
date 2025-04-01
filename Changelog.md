@@ -2,6 +2,11 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.1.0
+
+- `dome/slew` can be stopped too using `dome/stop`
+- Added `IsFollowing` and `IsSynchronized` to `dome/info`
+
 ## 2.2.0.0
 
 From now on, breaking changes will always increment the minor version number (the second number 2.x.0.0).
