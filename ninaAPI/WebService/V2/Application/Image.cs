@@ -288,7 +288,7 @@ namespace ninaAPI.WebService.V2
                             BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
                             encoder = BitmapHelper.GetEncoder(image, quality);
                         }
-                        HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpg";
+                        HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpeg";
                         using (MemoryStream memory = new MemoryStream())
                         {
                             encoder.Save(memory);
@@ -374,7 +374,7 @@ namespace ninaAPI.WebService.V2
 
                         var i = ImageWatcher.Images.IndexOf(images.ElementAt(index));
                         res = ImageWatcher.Thumbnails.Where(x => x.Key == i).First().Value;
-                        HttpContext.Response.ContentType = "image/jpg";
+                        HttpContext.Response.ContentType = "image/jpeg";
                     }
 
                     using (FileStream fs = File.OpenRead(res))

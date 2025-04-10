@@ -1316,6 +1316,11 @@ paths:
           schema:
             type: number
             format: float
+        - in: query
+          name: waitToFinish
+          description: Wait until slew is finished
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
@@ -1326,7 +1331,9 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Dome Slew Started
+                    enum:
+                      - Dome Slew Started
+                      - Dome Slew finished
                   Error:
                     type: string
                     example: ""

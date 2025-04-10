@@ -6,6 +6,10 @@ The changes for each individual (beta) release can be seen [here](https://github
 
 - `dome/slew` can be stopped too using `dome/stop`
 - Added `IsFollowing` and `IsSynchronized` to `dome/info`
+- Added `waitToFinish` to `dome/slew` to wait until the slew is finished
+- Added `dome/set-park-position` to set the park position
+- Added `dome/park` to park the dome
+- Added `dome/home` to find the home position
 
 ## 2.2.0.0
 
