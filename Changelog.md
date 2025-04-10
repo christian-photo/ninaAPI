@@ -10,6 +10,7 @@ The changes for each individual (beta) release can be seen [here](https://github
 - Added `dome/set-park-position` to set the park position
 - Added `dome/park` to park the dome
 - Added `dome/home` to find the home position
+- Fixed the mime type for jpg images (`image/jpg` -> `image/jpeg`)
 
 ## 2.2.0.0
 

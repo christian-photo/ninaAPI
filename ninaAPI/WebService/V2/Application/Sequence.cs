@@ -42,6 +42,7 @@ using System.Linq;
 using NINA.Sequencer.Trigger;
 using NINA.Sequencer.SequenceItem;
 using NINA.ViewModel.Sequencer;
+using System.Windows;
 
 namespace ninaAPI.WebService.V2
 {
@@ -539,7 +540,7 @@ namespace ninaAPI.WebService.V2
                 {
                     it.Add("Text", i21.Text);
                 }
-                else if (item is MessageBox i22)
+                else if (item is NINA.Sequencer.SequenceItem.Utility.MessageBox i22)
                 {
                     it.Add("Text", i22.Text);
                 }
@@ -592,7 +593,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    sequence.StartAdvancedSequence(skipValidation);
+                    Application.Current.Dispatcher.Invoke(() => sequence.StartAdvancedSequence(skipValidation));
                     response.Response = "Sequence started";
                 }
 
@@ -621,7 +622,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    sequence.CancelAdvancedSequence();
+                    Application.Current.Dispatcher.Invoke(sequence.CancelAdvancedSequence);
                     response.Response = "Sequence stopped";
                 }
             }
@@ -691,7 +692,7 @@ namespace ninaAPI.WebService.V2
                     }
                     else
                     {
-                        targets[0].Parent.Parent.ResetAll();
+                        Application.Current.Dispatcher.Invoke(() => targets[0].Parent.Parent.ResetAll());
                         response.Response = "Sequence reset";
                     }
                 }

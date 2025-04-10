@@ -337,38 +337,6 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/dome/slew/stop")]
-        public void DomeStopSlew()
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                IDomeMediator dome = AdvancedAPI.Controls.Dome;
-
-                if (!dome.GetInfo().Connected)
-                {
-                    response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 409));
-                }
-                else if (!dome.GetInfo().Slewing)
-                {
-                    response = CoreUtility.CreateErrorTable(new Error("Dome not slewing", 409));
-                }
-                else
-                {
-                    DomeToken?.Cancel();
-                    response.Response = "Stopped slew";
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
         [Route(HttpVerbs.Get, "/equipment/dome/set-park-position")]
         public void DomeSetPark()
         {
@@ -451,7 +419,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else if (dome.GetInfo().AtHome)
                 {
-                    response.Response = "Mount already homed";
+                    response.Response = "Dome already homed";
                 }
                 else
                 {
