@@ -1125,8 +1125,8 @@ paths:
     get:
       tags:
         - Dome
-      summary: Stop Shutter Movement
-      description: Stop Dome Shutter movement. This only works if the dome movement was started using the API
+      summary: Stop Dome Movement
+      description: Stop Dome movement. This only works if the dome movement was started using the API, namely the open, close, slew, park and home endpoints
       responses:
         "200":
           description: Successful response
@@ -1228,7 +1228,10 @@ paths:
                     example: ""
                   Error:
                     type: string
-                    example: Dome not connected
+                    enum:
+                      - Dome not connected
+                      - Dome shutter not open
+                      - Mount not connected
                   StatusCode:
                     type: integer
                     example: 409
@@ -5238,7 +5241,9 @@ paths:
       tags:
         - Sequence
       summary: JSON
-      description: Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized!
+      description:
+        Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized! This endpoint is generally advised to use over state since it gives
+        more reliable results.
       responses:
         "200":
           description: Successful response, best to try it out yourself
@@ -5285,6 +5290,7 @@ paths:
       description:
         Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized! This is similar to the json endpoint, however the
         returned sequence is much more elaborate and also supports plugins. The returned json from /json is not directly compatible with this endpoint. Use this endpoint (not json!) as reference for sequence editing!
+        In general however I recommend using the json endpoint as it gives more reliable results, so use this if you do not need the extra functionality.
       responses:
         "200":
           description: Successful response, best to try it out yourself

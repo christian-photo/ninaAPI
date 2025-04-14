@@ -224,6 +224,8 @@ namespace ninaAPI.WebService.V2
                 else
                 {
                     DomeToken?.Cancel();
+                    var vm = typeof(DomeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(dome) as DomeVM;
+                    vm.StopCommand.Execute(null);
                     response.Response = "Movement stopped";
                 }
             }
@@ -249,13 +251,18 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 409));
                 }
+                else if (!dome.GetInfo().ShutterStatus.Equals(ShutterState.ShutterOpen))
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Dome shutter not open", 409));
+                }
+                else if (!AdvancedAPI.Controls.Mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
+                }
                 else
                 {
-                    if (enabled)
-                    {
-                        FollowToken?.Cancel();
-                        FollowToken = new CancellationTokenSource();
-                    }
+                    FollowToken?.Cancel();
+                    FollowToken = new CancellationTokenSource();
 
                     response.Success = enabled ? await dome.EnableFollowing(FollowToken.Token) : await dome.DisableFollowing(FollowToken.Token);
                     response.Response = enabled ? "Following enabled" : "Following disabled";
@@ -286,7 +293,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    dome.SyncToScopeCoordinates(mount.GetInfo().Coordinates, mount.GetInfo().SideOfPier, new CancellationTokenSource().Token);
+                    dome.SyncToScopeCoordinates(mount.GetInfo().Coordinates, mount.GetInfo().SideOfPier, CancellationToken.None);
                     response.Response = "Dome Sync Started";
                 }
             }
@@ -315,7 +322,11 @@ namespace ninaAPI.WebService.V2
                 {
                     DomeToken?.Cancel();
                     DomeToken = new CancellationTokenSource();
-                    await dome.DisableFollowing(CancellationToken.None);
+                    if (AdvancedAPI.Controls.DomeFollower.IsFollowing)
+                    {
+                        await dome.DisableFollowing(CancellationToken.None);
+                    }
+
                     if (waitToFinish)
                     {
                         await dome.SlewToAzimuth(azimuth, DomeToken.Token);

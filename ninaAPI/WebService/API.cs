@@ -16,6 +16,7 @@ using NINA.Core.Utility.Notification;
 using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.WebService.V2;
+using ninaAPI.WebService.V2.CustomDrivers;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -48,7 +49,8 @@ namespace ninaAPI.WebService
                 .WithWebApi("/v2/api", m => m.WithController<ControllerV2>())
                 .WithModule(new WebSocketV2("/v2/socket"))
                 .WithModule(new TPPASocket("/v2/tppa"))
-                .WithModule(new MountAxisMoveSocket("/v2/mount"));
+                .WithModule(new MountAxisMoveSocket("/v2/mount"))
+                .WithModule(new NetworkedFilterWheelSocket("/v2/filterwheel"));
         }
 
         public static void StartWatchers()
@@ -68,6 +70,7 @@ namespace ninaAPI.WebService
             Watchers.Add(new NinaLogWatcher());
             Watchers.Add(new LiveStackWatcher());
             Watchers.Add(new ProfileWatcher());
+            Watchers.Add(new TSWatcher());
 
             foreach (INinaWatcher watcher in Watchers)
             {

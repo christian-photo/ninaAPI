@@ -75,7 +75,8 @@ namespace ninaAPI.WebService.V2
                 Median = e.Statistics.Median,
                 Stars = e.StarDetectionAnalysis.DetectedStars,
                 HFR = e.StarDetectionAnalysis.HFR,
-                Path = e.PathToImage
+                Path = e.PathToImage,
+                IsBayered = e.IsBayered,
             };
         }
 
@@ -177,19 +178,19 @@ namespace ninaAPI.WebService.V2
 
             SensorType sensor = SensorType.Monochrome;
 
-            if (HttpContext.IsParameterOmitted(nameof(factor)))
+            if (HttpContext.IsParameterOmitted(nameof(factor)) || autoPrepare)
             {
                 factor = profile.ImageSettings.AutoStretchFactor;
             }
-            if (HttpContext.IsParameterOmitted(nameof(blackClipping)))
+            if (HttpContext.IsParameterOmitted(nameof(blackClipping)) || autoPrepare)
             {
                 blackClipping = profile.ImageSettings.BlackClipping;
             }
-            if (HttpContext.IsParameterOmitted(nameof(unlinked)))
+            if (HttpContext.IsParameterOmitted(nameof(unlinked)) || autoPrepare)
             {
                 unlinked = profile.ImageSettings.UnlinkedStretch;
             }
-            if (HttpContext.IsParameterOmitted(nameof(bayerPattern)))
+            if (HttpContext.IsParameterOmitted(nameof(bayerPattern)) || autoPrepare)
             {
                 if (profile.CameraSettings.BayerPattern != BayerPatternEnum.Auto)
                 {
@@ -254,21 +255,15 @@ namespace ninaAPI.WebService.V2
                     ImageResponse p = points.ElementAt(index); // Get the history point at the specified index for the image
 
                     IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, p.IsBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
-                    IRenderedImage renderedImage;
-                    if (!autoPrepare)
-                    {
-                        renderedImage = imageData.RenderImage();
 
-                        renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);
-                        if (debayer)
-                        {
-                            renderedImage = renderedImage.Debayer(bayerPattern: sensor);
-                        }
-                    }
-                    else
+                    IRenderedImage renderedImage = imageData.RenderImage();
+
+                    if (debayer || (autoPrepare && renderedImage.RawImageData.Properties.IsBayered))
                     {
-                        renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(imageData, new PrepareImageParameters(true, false), CancellationToken.None);
+                        renderedImage = renderedImage.Debayer(bayerPattern: sensor, saveColorChannels: true, saveLumChannel: true);
                     }
+                    renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);
+
 
                     if (stream)
                     {

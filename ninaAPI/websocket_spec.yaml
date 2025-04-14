@@ -91,7 +91,7 @@ channels:
                   type: string
                   example: "Socket"
           - contentType: application/json
-            title: Image Save Response
+            title: Image Save Event
             payload:
               type: object
               properties:
@@ -100,8 +100,7 @@ channels:
                   properties:
                     Event:
                       type: string
-                      enum:
-                        - "IMAGE-SAVE"
+                      example: "IMAGE-SAVE"
                     ImageStatistics:
                       properties:
                         ExposureTime:
@@ -150,7 +149,7 @@ channels:
                   type: string
                   example: "Socket"
           - contentType: application/json
-            title: Filter Changed Response
+            title: Filter Changed Event
             payload:
               type: object
               properties:
@@ -188,7 +187,7 @@ channels:
                   type: string
                   example: "Socket"
           - contentType: application/json
-            title: Flat Brightness Changed Response
+            title: Flat Brightness Changed Event
             payload:
               type: object
               properties:
@@ -222,7 +221,7 @@ channels:
                   type: string
                   example: "Socket"
           - contentType: application/json
-            title: Safety Changed Response
+            title: Safety Changed Event
             payload:
               type: object
               properties:
@@ -263,6 +262,87 @@ channels:
                     Target:
                       type: string
                       example: M31
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: TS Wait Start Event
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      example: "TS-WAITSTART"
+                    WaitStartTime:
+                      type: string
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: TS (New) Target Start Event
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      enum:
+                        - "TS-NEWTARGETSTART"
+                        - "TS-TARGETSTART"
+                    TargetName:
+                      type: string
+                    ProjectName:
+                      type: string
+                    Coordinates:
+                      type: object
+                      properties:
+                        RA:
+                          type: number
+                        RAString:
+                          type: string
+                        RADegrees:
+                          type: number
+                        Dec:
+                          type: number
+                        DecString:
+                          type: string
+                        Epoch:
+                          type: string
+                          enum:
+                            - JNOW
+                            - B1950
+                            - J2000
+                            - J2050
+                        DateTime:
+                          type: object
+                          properties:
+                            Now:
+                              type: string
+                            UtcNow:
+                              type: string
+                    Rotation:
+                      type: number
                 Error:
                   type: string
                 StatusCode:
@@ -418,3 +498,30 @@ channels:
                 Type:
                   type: string
                   example: "Socket"
+
+  /filterwheel:
+    description:
+      A websocket channel to interact with the networked filterwheel. To use this, make sure you connect the networked manual filterwheel, not the normal manual filterwheel.
+      This extends the manual filterwheel with network capabilities, so filter changes can be completed remotely.
+    publish:
+      summary: Interact with the filterwheel. You may need get-target-filter if the client wasn't connected, when the filter change was issued.
+      message:
+        contentType: application/text
+        payload:
+          type: string
+          enum:
+            - get-target-filter
+            - filter-changed
+    subscribe:
+      summary:
+        Subscribe to filter changes. When the filter changes, you will receive a message with the new filter name. If you request the target filter, but there isn't a filter change in progress, N/A will be returned.
+        Once the filter change is completed (either in NINA or via the websocket), Change Complete will be returned.
+      operationId: onFilterEvent
+      message:
+        contentType: application/text
+        payload:
+          type: string
+          enum:
+            - <one of your filters>
+            - N/A
+            - Change Complete
