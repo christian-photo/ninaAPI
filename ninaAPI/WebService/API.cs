@@ -71,6 +71,7 @@ namespace ninaAPI.WebService
             Watchers.Add(new LiveStackWatcher());
             Watchers.Add(new ProfileWatcher());
             Watchers.Add(new TSWatcher());
+            Watchers.Add(new SequenceWatcher());
 
             foreach (INinaWatcher watcher in Watchers)
             {
@@ -80,6 +81,7 @@ namespace ninaAPI.WebService
 
         public static void StopWatchers()
         {
+            Logger.Info("Stopping all event watchers");
             foreach (INinaWatcher watcher in Watchers)
             {
                 watcher.StopWatchers();
@@ -114,6 +116,7 @@ namespace ninaAPI.WebService
                 apiToken?.Cancel();
                 Server?.Dispose();
                 Server = null;
+                WebSocketV2.SetUnavailable();
             }
             catch (Exception ex)
             {

@@ -1126,7 +1126,7 @@ paths:
       tags:
         - Dome
       summary: Stop Dome Movement
-      description: Stop Dome movement. This only works if the dome movement was started using the API, namely the open, close, slew, park and home endpoints
+      description: Stop Dome movement.
       responses:
         "200":
           description: Successful response
@@ -5876,8 +5876,8 @@ paths:
     get:
       tags:
         - Livestack
-      summary: Stop Livestack
-      description: Stops Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to stop the livestack.
+      summary: Get Stacked Image
+      description: Gets the stacked image from the livestack plugin for a given target and filter.
       parameters:
         - in: path
           name: target

@@ -43,14 +43,40 @@ using NINA.Sequencer.Trigger;
 using NINA.Sequencer.SequenceItem;
 using NINA.ViewModel.Sequencer;
 using System.Windows;
+using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
-    public class Notifier : BaseINPC
+    public class SequenceWatcher : INinaWatcher
     {
-        public void Raise(string name)
+        public void StartWatchers()
         {
-            RaisePropertyChanged(name);
+            Task.Run(async () =>
+            {
+                while (!AdvancedAPI.Controls.Sequence?.Initialized ?? true)
+                {
+                    await Task.Delay(50);
+                }
+                Logger.Debug("Finished initializing sequence, subscribing to events");
+                AdvancedAPI.Controls.Sequence.SequenceStarting += SequenceStarting;
+                AdvancedAPI.Controls.Sequence.SequenceFinished += SequenceFinished;
+            });
+        }
+
+        private async Task SequenceFinished(object arg1, EventArgs args)
+        {
+            await WebSocketV2.SendAndAddEvent("SEQUENCE-FINISHED");
+        }
+
+        private async Task SequenceStarting(object arg1, EventArgs args)
+        {
+            await WebSocketV2.SendAndAddEvent("SEQUENCE-STARTING");
+        }
+
+        public void StopWatchers()
+        {
+            AdvancedAPI.Controls.Sequence.SequenceStarting -= SequenceStarting;
+            AdvancedAPI.Controls.Sequence.SequenceFinished -= SequenceFinished;
         }
     }
 

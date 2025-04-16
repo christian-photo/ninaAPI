@@ -88,7 +88,7 @@ namespace ninaAPI
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_CENTER, true, null));
 
             // Error: Auto Focus
-            re = new Regex("^Auto Focus Failed! (?<extra>.+)$", options);
+            re = new Regex("^Autofocus failed to run(?<extra>.+)$", options);
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_ERROR_AF, true, null));
 
             // Error: Plate solve

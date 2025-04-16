@@ -4,6 +4,12 @@ The changes for each individual (beta) release can be seen [here](https://github
 
 ## 2.2.1.0
 
+### Sequence
+
+- The events `ADV-SEQ-START` and `ADV-SEQ-STOP` are now **deprecated**, use `SEQUENCE-STARTING` and `SEQUENCE-FINISHED` instead. These work for both advanced and simple sequences. `ADV-SEQ-START` and `ADV-SEQ-STOP` will be removed in the future.
+- Added a sequence instruction Send WebSocket Event, which sends a text message as an event to the WebSocket
+- Added a sequence trigger Send Error to WebSocket, which sends an error message to the websocket if a sequence item failed
+
 ### Target Scheduler
 
 Added multiple target scheduler events to the websocket ([TS-Docs](https://tcpalmer.github.io/nina-scheduler/adv-topics/pub-sub.html)):
@@ -20,7 +26,6 @@ Added multiple target scheduler events to the websocket ([TS-Docs](https://tcpal
 - Added `dome/set-park-position` to set the park position
 - Added `dome/park` to park the dome
 - Added `dome/home` to find the home position
-- `dome/stop` now stops more movements like slewing and parking, but still only if it was started using the api
 
 ---
 

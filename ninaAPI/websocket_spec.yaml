@@ -71,6 +71,8 @@ channels:
                         - ROTATOR-DISCONNECTED
                         - SAFETY-CONNECTED
                         - SAFETY-DISCONNECTED
+                        - SEQUENCE-STARTING
+                        - SEQUENCE-FINISHED
                         - SWITCH-CONNECTED
                         - SWITCH-DISCONNECTED
                         - WEATHER-CONNECTED
@@ -343,6 +345,55 @@ channels:
                               type: string
                     Rotation:
                       type: number
+                    TargetEndTime:
+                      type: string
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Send WebSocket Event Instruction
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: string
+                  example: "Test event"
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Send Error to WebSocket Trigger
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      example: "SEQUENCE-ENTITY-FAILED"
+                    Entity:
+                      type: string
+                      example: "Dew Heater"
+                    Error:
+                      type: string
+                      example: "Camera not connected"
                 Error:
                   type: string
                 StatusCode:
