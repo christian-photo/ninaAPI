@@ -1125,8 +1125,8 @@ paths:
     get:
       tags:
         - Dome
-      summary: Stop Shutter Movement
-      description: Stop Dome Shutter movement. This only works if the dome movement was started using the API
+      summary: Stop Dome Movement
+      description: Stop Dome movement.
       responses:
         "200":
           description: Successful response
@@ -1185,6 +1185,12 @@ paths:
         - Dome
       summary: Set Dome Follow
       description: Start or stop the dome to follow the telescope
+      parameters:
+        - in: query
+          name: enabled
+          description: Enable or disable dome follow
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
@@ -1222,7 +1228,10 @@ paths:
                     example: ""
                   Error:
                     type: string
-                    example: Dome not connected
+                    enum:
+                      - Dome not connected
+                      - Dome shutter not open
+                      - Mount not connected
                   StatusCode:
                     type: integer
                     example: 409
@@ -1310,6 +1319,11 @@ paths:
           schema:
             type: number
             format: float
+        - in: query
+          name: waitToFinish
+          description: Wait until slew is finished
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
@@ -1320,7 +1334,9 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Dome Slew Started
+                    enum:
+                      - Dome Slew Started
+                      - Dome Slew finished
                   Error:
                     type: string
                     example: ""
@@ -1351,6 +1367,186 @@ paths:
                   StatusCode:
                     type: integer
                     example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/dome/set-park-position:
+    get:
+      tags:
+        - Dome
+      summary: Set Park Position
+      description: Sets the current dome position as park position, if supported
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Park position set
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Dome not connected / parked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Dome not connected
+                      - Dome can not set park position
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/dome/park:
+    get:
+      tags:
+        - Dome
+      summary: Park
+      description: Parks the dome
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Parking
+                      - Dome already parked
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Dome not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Dome not connected
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/dome/home:
+    get:
+      tags:
+        - Dome
+      summary: Home
+      description: Homes the dome
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - Homing
+                      - Dome already homed
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Dome not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Dome not connected
+                  StatusCode:
+                    type: integer
+                    example: 400
                   Success:
                     type: boolean
                     example: false
@@ -5045,7 +5241,9 @@ paths:
       tags:
         - Sequence
       summary: JSON
-      description: Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized!
+      description:
+        Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized! This endpoint is generally advised to use over state since it gives
+        more reliable results.
       responses:
         "200":
           description: Successful response, best to try it out yourself
@@ -5092,6 +5290,7 @@ paths:
       description:
         Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized! This is similar to the json endpoint, however the
         returned sequence is much more elaborate and also supports plugins. The returned json from /json is not directly compatible with this endpoint. Use this endpoint (not json!) as reference for sequence editing!
+        In general however I recommend using the json endpoint as it gives more reliable results, so use this if you do not need the extra functionality.
       responses:
         "200":
           description: Successful response, best to try it out yourself
@@ -5677,8 +5876,8 @@ paths:
     get:
       tags:
         - Livestack
-      summary: Stop Livestack
-      description: Stops Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to stop the livestack.
+      summary: Get Stacked Image
+      description: Gets the stacked image from the livestack plugin for a given target and filter.
       parameters:
         - in: path
           name: target

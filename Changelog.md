@@ -2,6 +2,37 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.1.0
+
+### Sequence
+
+- The events `ADV-SEQ-START` and `ADV-SEQ-STOP` are now **deprecated**, use `SEQUENCE-STARTING` and `SEQUENCE-FINISHED` instead. These work for both advanced and simple sequences. `ADV-SEQ-START` and `ADV-SEQ-STOP` will be removed in the future.
+- Added a sequence instruction Send WebSocket Event, which sends a text message as an event to the WebSocket
+- Added a sequence trigger Send Error to WebSocket, which sends an error message to the websocket if a sequence item failed
+
+### Target Scheduler
+
+Added multiple target scheduler events to the websocket ([TS-Docs](https://tcpalmer.github.io/nina-scheduler/adv-topics/pub-sub.html)):
+
+- `TS-WAITSTART` to get notified when a wait starts
+- `TS-NEWTARGETSTART` to get notified when a new target starts
+- `TS-TARGETSTART` to get notified when a target starts
+
+### Dome
+
+- `dome/slew` can be stopped too using `dome/stop`
+- Added `IsFollowing` and `IsSynchronized` to `dome/info`
+- Added `waitToFinish` to `dome/slew` to wait until the slew is finished
+- Added `dome/set-park-position` to set the park position
+- Added `dome/park` to park the dome
+- Added `dome/home` to find the home position
+
+---
+
+- Added a custom filter wheel driver, available as a websocket, to allow for remote filter change completion
+- Bugfixes for `image/{index}`
+- Fixed the mime type for jpg images (`image/jpg` -> `image/jpeg`)
+
 ## 2.2.0.0
 
 From now on, breaking changes will always increment the minor version number (the second number 2.x.0.0).

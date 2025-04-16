@@ -117,6 +117,10 @@ namespace ninaAPI.WebService.V2
             await SendEvent(response);
         }
 
+        public static bool IsAvailable => instance is not null;
+
+        public static void SetUnavailable() => instance = null;
+
         public static List<HttpResponse> Events = new List<HttpResponse>();
 
         protected override Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult rxResult)

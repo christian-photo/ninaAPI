@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using ASCOM.Com.DriverAccess;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
@@ -16,6 +17,8 @@ using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyDome;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.WPF.Base.Mediator;
+using NINA.WPF.Base.ViewModel.Equipment.Dome;
 using ninaAPI.Utility;
 using System;
 using System.Collections.Generic;
@@ -76,6 +79,38 @@ namespace ninaAPI.WebService.V2
         }
     }
 
+    public class ExtendedDomeInfo : DomeInfo
+    {
+        public ExtendedDomeInfo(DomeInfo info, IDomeFollower follower)
+        {
+            Azimuth = info.Azimuth;
+            CanFindHome = info.CanFindHome;
+            CanPark = info.CanPark;
+            CanSetAzimuth = info.CanSetAzimuth;
+            CanSetPark = info.CanSetPark;
+            CanSetShutter = info.CanSetShutter;
+            CanSyncAzimuth = info.CanSyncAzimuth;
+            DriverCanFollow = info.DriverCanFollow;
+            DriverFollowing = info.DriverFollowing;
+            ShutterStatus = info.ShutterStatus;
+            AtHome = info.AtHome;
+            AtPark = info.AtPark;
+            Slewing = info.Slewing;
+            SupportedActions = info.SupportedActions;
+            IsFollowing = follower.IsFollowing;
+            IsSynchronized = follower.IsSynchronized;
+            DriverInfo = info.DriverInfo;
+            DriverVersion = info.DriverVersion;
+            Name = info.Name;
+            DisplayName = info.DisplayName;
+            Connected = info.Connected;
+            Description = info.Description;
+            DeviceId = info.DeviceId;
+        }
+        public bool IsFollowing { get; set; }
+        public bool IsSynchronized { get; set; }
+    }
+
     public partial class ControllerV2
     {
         private static CancellationTokenSource DomeToken;
@@ -91,8 +126,7 @@ namespace ninaAPI.WebService.V2
             {
                 IDomeMediator dome = AdvancedAPI.Controls.Dome;
 
-                DomeInfo info = dome.GetInfo();
-                response.Response = info;
+                response.Response = new ExtendedDomeInfo(dome.GetInfo(), AdvancedAPI.Controls.DomeFollower);
             }
             catch (Exception ex)
             {
@@ -190,6 +224,8 @@ namespace ninaAPI.WebService.V2
                 else
                 {
                     DomeToken?.Cancel();
+                    var vm = typeof(DomeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(dome) as DomeVM;
+                    vm.StopCommand.Execute(null);
                     response.Response = "Movement stopped";
                 }
             }
@@ -215,10 +251,19 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 409));
                 }
+                else if (!dome.GetInfo().ShutterStatus.Equals(ShutterState.ShutterOpen))
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Dome shutter not open", 409));
+                }
+                else if (!AdvancedAPI.Controls.Mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
+                }
                 else
                 {
                     FollowToken?.Cancel();
                     FollowToken = new CancellationTokenSource();
+
                     response.Success = enabled ? await dome.EnableFollowing(FollowToken.Token) : await dome.DisableFollowing(FollowToken.Token);
                     response.Response = enabled ? "Following enabled" : "Following disabled";
                 }
@@ -248,7 +293,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    dome.SyncToScopeCoordinates(mount.GetInfo().Coordinates, mount.GetInfo().SideOfPier, new CancellationTokenSource().Token);
+                    dome.SyncToScopeCoordinates(mount.GetInfo().Coordinates, mount.GetInfo().SideOfPier, CancellationToken.None);
                     response.Response = "Dome Sync Started";
                 }
             }
@@ -262,7 +307,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/dome/slew")]
-        public void DomeSlew([QueryField] double azimuth)
+        public async Task DomeSlew([QueryField] double azimuth, [QueryField] bool waitToFinish)
         {
             HttpResponse response = new HttpResponse();
 
@@ -273,14 +318,126 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 409));
                 }
-                else if (dome.GetInfo().AtPark)
+                else
                 {
-                    response = CoreUtility.CreateErrorTable(new Error("Dome is parked", 409));
+                    DomeToken?.Cancel();
+                    DomeToken = new CancellationTokenSource();
+                    if (AdvancedAPI.Controls.DomeFollower.IsFollowing)
+                    {
+                        await dome.DisableFollowing(CancellationToken.None);
+                    }
+
+                    if (waitToFinish)
+                    {
+                        await dome.SlewToAzimuth(azimuth, DomeToken.Token);
+                        response.Response = "Dome Slew finished";
+                    }
+                    else
+                    {
+                        dome.SlewToAzimuth(azimuth, DomeToken.Token);
+                        response.Response = "Dome Slew Started";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/dome/set-park-position")]
+        public void DomeSetPark()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IDomeMediator dome = AdvancedAPI.Controls.Dome;
+
+                if (!dome.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 400));
+                }
+                else if (!dome.GetInfo().CanSetPark || dome.GetInfo().AtPark)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Dome can not set park position", 400));
                 }
                 else
                 {
-                    dome.SlewToAzimuth(azimuth, new CancellationTokenSource().Token);
-                    response.Response = "Dome Slew Started";
+                    var vm = typeof(DomeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(dome) as DomeVM;
+                    vm.SetParkPositionCommand.Execute(null);
+                    response.Response = "Park position set";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/dome/park")]
+        public void DomePark()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IDomeMediator dome = AdvancedAPI.Controls.Dome;
+
+                if (!dome.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 400));
+                }
+                else if (dome.GetInfo().AtPark)
+                {
+                    response.Response = "Dome already parked";
+                }
+                else
+                {
+                    DomeToken?.Cancel();
+                    DomeToken = new CancellationTokenSource();
+                    dome.Park(DomeToken.Token);
+                    response.Response = "Parking";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/dome/home")]
+        public void DomeHome()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IDomeMediator dome = AdvancedAPI.Controls.Dome;
+
+                if (!dome.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Dome not connected", 400));
+                }
+                else if (dome.GetInfo().AtHome)
+                {
+                    response.Response = "Dome already homed";
+                }
+                else
+                {
+                    DomeToken?.Cancel();
+                    DomeToken = new CancellationTokenSource();
+                    dome.FindHome(DomeToken.Token);
+                    response.Response = "Homing";
                 }
             }
             catch (Exception ex)

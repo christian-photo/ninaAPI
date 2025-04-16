@@ -42,14 +42,41 @@ using System.Linq;
 using NINA.Sequencer.Trigger;
 using NINA.Sequencer.SequenceItem;
 using NINA.ViewModel.Sequencer;
+using System.Windows;
+using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
-    public class Notifier : BaseINPC
+    public class SequenceWatcher : INinaWatcher
     {
-        public void Raise(string name)
+        public void StartWatchers()
         {
-            RaisePropertyChanged(name);
+            Task.Run(async () =>
+            {
+                while (!AdvancedAPI.Controls.Sequence?.Initialized ?? true)
+                {
+                    await Task.Delay(50);
+                }
+                Logger.Debug("Finished initializing sequence, subscribing to events");
+                AdvancedAPI.Controls.Sequence.SequenceStarting += SequenceStarting;
+                AdvancedAPI.Controls.Sequence.SequenceFinished += SequenceFinished;
+            });
+        }
+
+        private async Task SequenceFinished(object arg1, EventArgs args)
+        {
+            await WebSocketV2.SendAndAddEvent("SEQUENCE-FINISHED");
+        }
+
+        private async Task SequenceStarting(object arg1, EventArgs args)
+        {
+            await WebSocketV2.SendAndAddEvent("SEQUENCE-STARTING");
+        }
+
+        public void StopWatchers()
+        {
+            AdvancedAPI.Controls.Sequence.SequenceStarting -= SequenceStarting;
+            AdvancedAPI.Controls.Sequence.SequenceFinished -= SequenceFinished;
         }
     }
 
@@ -222,20 +249,27 @@ namespace ninaAPI.WebService.V2
             List<Hashtable> conditions = new List<Hashtable>();
             foreach (var condition in sequence.Conditions)
             {
-                Hashtable ctable = new Hashtable
+                try
                 {
-                    { "Name", condition.Name + "_Condition" },
-                    { "Status", condition.Status.ToString() }
-                };
-                var proper = condition.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceCondition).GetProperties().Any(x => x.Name == p.Name));
-                foreach (var prop in proper)
-                {
-                    if (prop.CanWrite && (prop.GetSetMethod(true)?.IsPublic ?? false) && prop.CanRead && (prop.GetGetMethod(true)?.IsPublic ?? false))
+                    Hashtable ctable = new Hashtable
                     {
-                        ctable.Add(prop.Name, prop.GetValue(condition));
+                        { "Name", condition.Name + "_Condition" },
+                        { "Status", condition.Status.ToString() }
+                    };
+                    var proper = condition.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceCondition).GetProperties().Any(x => x.Name == p.Name));
+                    foreach (var prop in proper)
+                    {
+                        if (prop.CanWrite && (prop.GetSetMethod(true)?.IsPublic ?? false) && prop.CanRead && (prop.GetGetMethod(true)?.IsPublic ?? false))
+                        {
+                            ctable.Add(prop.Name, prop.GetValue(condition));
+                        }
                     }
+                    conditions.Add(ctable);
                 }
-                conditions.Add(ctable);
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                }
 
             }
             return conditions;
@@ -246,20 +280,28 @@ namespace ninaAPI.WebService.V2
             List<Hashtable> triggers = new List<Hashtable>();
             foreach (var trigger in sequence.Triggers)
             {
-                Hashtable triggertable = new Hashtable
+                try
+                {
+                    Hashtable triggertable = new Hashtable
                 {
                     { "Name", trigger.Name + "_Trigger" },
                     { "Status", trigger.Status.ToString() }
                 };
-                var proper = trigger.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceTrigger).GetProperties().Any(x => x.Name == p.Name));
-                foreach (var prop in proper)
-                {
-                    if (prop.CanWrite && (prop.GetSetMethod(true)?.IsPublic ?? false) && prop.CanRead && (prop.GetGetMethod(true)?.IsPublic ?? false))
+                    var proper = trigger.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceTrigger).GetProperties().Any(x => x.Name == p.Name));
+                    foreach (var prop in proper)
                     {
-                        triggertable.Add(prop.Name, prop.GetValue(trigger));
+                        if (prop.CanWrite && (prop.GetSetMethod(true)?.IsPublic ?? false) && prop.CanRead && (prop.GetGetMethod(true)?.IsPublic ?? false))
+                        {
+                            triggertable.Add(prop.Name, prop.GetValue(trigger));
+                        }
                     }
+                    triggers.Add(triggertable);
                 }
-                triggers.Add(triggertable);
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                }
+
             }
             return triggers;
         }
@@ -274,34 +316,41 @@ namespace ninaAPI.WebService.V2
 
             foreach (var item in sequence.Items)
             {
-                Hashtable it = new Hashtable
+                try
+                {
+                    Hashtable it = new Hashtable
                 {
                     { "Name", item.Name },
                     { "Status", item.Status.ToString() },
                 };
 
-                if (item is ISequenceContainer container)
-                {
-                    it["Name"] = item.Name + "_Container";
-                    it.Add("Items", getSequenceRecursivleyNew(container));
-                    if (container is SequenceContainer sc)
+                    if (item is ISequenceContainer container)
                     {
-                        it.Add("Conditions", getConditionsNew(sc));
-                        it.Add("Triggers", getTriggersNew(sc));
+                        it["Name"] = item.Name + "_Container";
+                        it.Add("Items", getSequenceRecursivleyNew(container));
+                        if (container is SequenceContainer sc)
+                        {
+                            it.Add("Conditions", getConditionsNew(sc));
+                            it.Add("Triggers", getTriggersNew(sc));
+                        }
                     }
-                }
 
 
-                var proper = item.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceItem).GetProperties().Any(x => x.Name == p.Name));
-                foreach (var prop in proper)
-                {
-                    if (prop.CanWrite && (prop.GetSetMethod(true)?.IsPublic ?? false) && prop.CanRead && (prop.GetGetMethod(true)?.IsPublic ?? false))
+                    var proper = item.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceItem).GetProperties().Any(x => x.Name == p.Name));
+                    foreach (var prop in proper)
                     {
-                        it.Add(prop.Name, prop.GetValue(item));
+                        if (prop.CanWrite && (prop.GetSetMethod(true)?.IsPublic ?? false) && prop.CanRead && (prop.GetGetMethod(true)?.IsPublic ?? false))
+                        {
+                            it.Add(prop.Name, prop.GetValue(item));
+                        }
                     }
-                }
 
-                result.Add(it);
+                    result.Add(it);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                }
             }
 
             return result;
@@ -312,49 +361,57 @@ namespace ninaAPI.WebService.V2
             List<Hashtable> triggers = new List<Hashtable>();
             foreach (var trigger in sequence.Triggers)
             {
-                Hashtable triggertable = new Hashtable
+                try
                 {
-                    { "Name", trigger.Name + "_Trigger" },
-                    { "Status", trigger.Status.ToString() }
-                };
-                if (trigger is AutofocusAfterExposures t1)
-                {
-                    triggertable.Add("Exposures", t1.ProgressExposures);
-                    triggertable.Add("DeltaExposures", t1.AfterExposures);
+                    Hashtable triggertable = new Hashtable
+                    {
+                        { "Name", trigger.Name + "_Trigger" },
+                        { "Status", trigger.Status.ToString() }
+                    };
+                    if (trigger is AutofocusAfterExposures t1)
+                    {
+                        triggertable.Add("Exposures", t1.ProgressExposures);
+                        triggertable.Add("DeltaExposures", t1.AfterExposures);
+                    }
+                    else if (trigger is AutofocusAfterHFRIncreaseTrigger t2)
+                    {
+                        triggertable.Add("HFRTrendPercentage", t2.HFRTrendPercentage);
+                        triggertable.Add("OriginalHFR", t2.OriginalHFR);
+                        triggertable.Add("SampleSize", t2.SampleSize);
+                        triggertable.Add("DeltaHFR", t2.Amount);
+                    }
+                    else if (trigger is AutofocusAfterTemperatureChangeTrigger t3)
+                    {
+                        triggertable.Add("DeltaTemperature", t3.DeltaT);
+                        triggertable.Add("TargetTemperature", t3.Amount);
+                    }
+                    else if (trigger is AutofocusAfterTimeTrigger t4)
+                    {
+                        triggertable.Add("DeltaTime", t4.Amount);
+                        triggertable.Add("ElapsedTime", t4.Elapsed);
+                    }
+                    else if (trigger is DitherAfterExposures t5)
+                    {
+                        triggertable.Add("Exposures", t5.ProgressExposures);
+                        triggertable.Add("TargetExposures", t5.AfterExposures);
+                    }
+                    else if (trigger is MeridianFlipTrigger t6)
+                    {
+                        triggertable.Add("TimeToFlip", t6.TimeToMeridianFlip);
+                    }
+                    else if (trigger is CenterAfterDriftTrigger t7)
+                    {
+                        triggertable.Add("Coordinates", t7.Coordinates);
+                        triggertable.Add("Drift", t7.LastDistanceArcMinutes);
+                        triggertable.Add("TargetDrift", t7.DistanceArcMinutes);
+                    }
+                    triggers.Add(triggertable);
                 }
-                else if (trigger is AutofocusAfterHFRIncreaseTrigger t2)
+                catch (Exception ex)
                 {
-                    triggertable.Add("HFRTrendPercentage", t2.HFRTrendPercentage);
-                    triggertable.Add("OriginalHFR", t2.OriginalHFR);
-                    triggertable.Add("SampleSize", t2.SampleSize);
-                    triggertable.Add("DeltaHFR", t2.Amount);
+                    Logger.Error(ex);
                 }
-                else if (trigger is AutofocusAfterTemperatureChangeTrigger t3)
-                {
-                    triggertable.Add("DeltaTemperature", t3.DeltaT);
-                    triggertable.Add("TargetTemperature", t3.Amount);
-                }
-                else if (trigger is AutofocusAfterTimeTrigger t4)
-                {
-                    triggertable.Add("DeltaTime", t4.Amount);
-                    triggertable.Add("ElapsedTime", t4.Elapsed);
-                }
-                else if (trigger is DitherAfterExposures t5)
-                {
-                    triggertable.Add("Exposures", t5.ProgressExposures);
-                    triggertable.Add("TargetExposures", t5.AfterExposures);
-                }
-                else if (trigger is MeridianFlipTrigger t6)
-                {
-                    triggertable.Add("TimeToFlip", t6.TimeToMeridianFlip);
-                }
-                else if (trigger is CenterAfterDriftTrigger t7)
-                {
-                    triggertable.Add("Coordinates", t7.Coordinates);
-                    triggertable.Add("Drift", t7.LastDistanceArcMinutes);
-                    triggertable.Add("TargetDrift", t7.DistanceArcMinutes);
-                }
-                triggers.Add(triggertable);
+
             }
             return triggers;
         }
@@ -364,39 +421,45 @@ namespace ninaAPI.WebService.V2
             List<Hashtable> conditions = new List<Hashtable>();
             foreach (var condition in sequence.Conditions)
             {
-                Hashtable ctable = new Hashtable
+                try
                 {
-                    { "Name", condition.Name + "_Condition" },
-                    { "Status", condition.Status.ToString() }
-                };
-                if (condition is TimeCondition c1)
-                {
-                    ctable.Add("RemainingTime", c1.RemainingTime);
-                    ctable.Add("TargetTime", c1.DateTime.Now + c1.RemainingTime);
+                    Hashtable ctable = new Hashtable
+                    {
+                        { "Name", condition.Name + "_Condition" },
+                        { "Status", condition.Status.ToString() }
+                    };
+                    if (condition is TimeCondition c1)
+                    {
+                        ctable.Add("RemainingTime", c1.RemainingTime);
+                        ctable.Add("TargetTime", c1.DateTime.Now + c1.RemainingTime);
+                    }
+                    else if (condition is LoopForAltitudeBase c2)
+                    {
+                        ctable.Add("Altitude", c2.Data.Offset);
+                        ctable.Add("CurrentAltitude", c2.Data.CurrentAltitude);
+                        ctable.Add("ExpectedTime", c2.Data.ExpectedTime);
+                    }
+                    else if (condition is LoopCondition c3)
+                    {
+                        ctable.Add("Iterations", c3.Iterations);
+                        ctable.Add("CompletedIterations", c3.CompletedIterations);
+                    }
+                    else if (condition is MoonIlluminationCondition c5)
+                    {
+                        ctable.Add("TargetIllumination", c5.UserMoonIllumination);
+                        ctable.Add("CurrentIllumination", c5.CurrentMoonIllumination);
+                    }
+                    else if (condition is TimeSpanCondition c6)
+                    {
+                        ctable.Add("RemainingTime", c6.RemainingTime);
+                        ctable.Add("TargetTime", c6.DateTime.Now + c6.RemainingTime);
+                    }
+                    conditions.Add(ctable);
                 }
-                else if (condition is LoopForAltitudeBase c2)
+                catch (Exception ex)
                 {
-                    ctable.Add("Altitude", c2.Data.Offset);
-                    ctable.Add("CurrentAltitude", c2.Data.CurrentAltitude);
-                    ctable.Add("ExpectedTime", c2.Data.ExpectedTime);
+                    Logger.Error(ex);
                 }
-                else if (condition is LoopCondition c3)
-                {
-                    ctable.Add("Iterations", c3.Iterations);
-                    ctable.Add("CompletedIterations", c3.CompletedIterations);
-                }
-                else if (condition is MoonIlluminationCondition c5)
-                {
-                    ctable.Add("TargetIllumination", c5.UserMoonIllumination);
-                    ctable.Add("CurrentIllumination", c5.CurrentMoonIllumination);
-                }
-                else if (condition is TimeSpanCondition c6)
-                {
-                    ctable.Add("RemainingTime", c6.RemainingTime);
-                    ctable.Add("TargetTime", c6.DateTime.Now + c6.RemainingTime);
-                }
-                conditions.Add(ctable);
-
             }
             return conditions;
         }
@@ -407,167 +470,174 @@ namespace ninaAPI.WebService.V2
 
             foreach (var item in sequence.Items)
             {
-                Hashtable it = new Hashtable
+                try
+                {
+                    Hashtable it = new Hashtable
                 {
                     { "Name", item.Name },
                     { "Status", item.Status.ToString() },
                 };
 
-                if (item is ISequenceContainer container && item is not SmartExposure && item is not TakeManyExposures)
-                {
-                    it["Name"] = item.Name + "_Container";
-                    it.Add("Items", getSequenceRecursivley(container));
-                    if (container is SequenceContainer sc)
+                    if (item is ISequenceContainer container && item is not SmartExposure && item is not TakeManyExposures)
                     {
-                        it.Add("Conditions", getConditions(sc));
-                        it.Add("Triggers", getTriggers(sc));
+                        it["Name"] = item.Name + "_Container";
+                        it.Add("Items", getSequenceRecursivley(container));
+                        if (container is SequenceContainer sc)
+                        {
+                            it.Add("Conditions", getConditions(sc));
+                            it.Add("Triggers", getTriggers(sc));
+                        }
                     }
-                }
 
-                else if (item is CoolCamera i1)
-                {
-                    it.Add("Temperature", i1.Temperature);
-                    it.Add("MinCoolingTime", i1.Duration);
-                }
-                else if (item is WarmCamera i2)
-                {
-                    it.Add("MinWarmingTime", i2.Duration);
-                }
-                else if (item is DewHeater i3)
-                {
-                    it.Add("DewHeaterOn", i3.OnOff);
-                }
-                else if (item is SmartExposure i4)
-                {
-                    it.Add("ExposureTime", i4.GetTakeExposure().ExposureTime);
-                    it.Add("ExposureCount", i4.GetTakeExposure().ExposureCount);
-                    it.Add("Binning", i4.GetTakeExposure().Binning);
-                    it.Add("Gain", i4.GetTakeExposure().Gain);
-                    it.Add("Offset", i4.GetTakeExposure().Offset);
-                    it.Add("Type", i4.GetTakeExposure().ImageType);
-                    it.Add("DitherProgressExposures", i4.GetDitherAfterExposures().ProgressExposures);
-                    it.Add("DitherTargetExposures", i4.GetDitherAfterExposures().AfterExposures);
-                    it.Add("Iterations", i4.GetLoopCondition().Iterations);
-                    it.Add("Filter", i4.GetSwitchFilter().Filter?.Name ?? "Current");
-                }
-                else if (item is TakeExposure i5)
-                {
-                    it.Add("ExposureTime", i5.ExposureTime);
-                    it.Add("ExposureCount", i5.ExposureCount);
-                    it.Add("Binning", i5.Binning);
-                    it.Add("Gain", i5.Gain);
-                    it.Add("Offset", i5.Offset);
-                    it.Add("Type", i5.ImageType);
-                }
-                else if (item is TakeManyExposures i6)
-                {
-                    it.Add("ExposureTime", i6.GetTakeExposure().ExposureTime);
-                    it.Add("ExposureCount", i6.GetTakeExposure().ExposureCount);
-                    it.Add("Binning", i6.GetTakeExposure().Binning);
-                    it.Add("Gain", i6.GetTakeExposure().Gain);
-                    it.Add("Offset", i6.GetTakeExposure().Offset);
-                    it.Add("Type", i6.GetTakeExposure().ImageType);
-                    it.Add("Iterations", i6.GetLoopCondition().Iterations);
-                }
-                else if (item is TakeSubframeExposure i7)
-                {
-                    it.Add("ExposureTime", i7.ExposureTime);
-                    it.Add("ExposureCount", i7.ExposureCount);
-                    it.Add("Binning", i7.Binning);
-                    it.Add("Gain", i7.Gain);
-                    it.Add("Offset", i7.Offset);
-                    it.Add("Type", i7.ImageType);
-                    it.Add("ROI", i7.ROI);
-                }
-                else if (item is SlewDomeAzimuth i8)
-                {
-                    it.Add("Azimuth", i8.AzimuthDegrees);
-                }
-                else if (item is SwitchFilter i9)
-                {
-                    it.Add("Filter", i9.Filter?.Name ?? "Current");
-                }
-                else if (item is MoveFocuserAbsolute i10)
-                {
-                    it.Add("Position", i10.Position);
-                }
-                else if (item is MoveFocuserRelative i11)
-                {
-                    it.Add("RelativePosition", i11.RelativePosition);
-                }
-                else if (item is MoveFocuserByTemperature i12)
-                {
-                    it.Add("Slope", i12.Slope);
-                    it.Add("Absolute", i12.Absolute);
-                    it.Add("Intercept", i12.Intercept);
-                }
-                else if (item is StartGuiding i13)
-                {
-                    it.Add("ForceCalibration", i13.ForceCalibration);
-                }
-                else if (item is SolveAndRotate i14)
-                {
-                    it.Add("Rotation", i14.PositionAngle);
-                }
-                else if (item is SetSwitchValue i15)
-                {
-                    it.Add("Value", i15.Value);
-                    it.Add("Index", i15.SelectedSwitch.Id);
-                }
-                else if (item is SetTracking i16)
-                {
-                    it.Add("TrackingMode", i16.TrackingMode);
-                }
-                else if (item is Center i17)
-                {
-                    it.Add("Coordinates", i17.Coordinates.Coordinates);
-                }
-                else if (item is SlewScopeToAltAz i18)
-                {
-                    it.Add("Coordinates", i18.Coordinates.Coordinates);
-                }
-                else if (item is SlewScopeToRaDec i19)
-                {
-                    it.Add("Coordinates", i19.Coordinates.Coordinates);
-                }
-                else if (item is CenterAndRotate i20)
-                {
-                    it.Add("Coordinates", i20.Coordinates.Coordinates);
-                    it.Add("Rotation", i20.PositionAngle);
-                }
-                else if (item is Annotation i21)
-                {
-                    it.Add("Text", i21.Text);
-                }
-                else if (item is MessageBox i22)
-                {
-                    it.Add("Text", i22.Text);
-                }
-                else if (item is ExternalScript i23)
-                {
-                    it.Add("Script", i23.Script);
-                }
-                else if (item is SaveSequence i24)
-                {
-                    it.Add("FilePath", i24.FilePath);
-                }
-                else if (item is WaitForAltitudeBase i25)
-                {
-                    it.Add("Altitude", i25.Data.Offset);
-                    it.Add("CurrentAltitude", i25.Data.CurrentAltitude);
-                    it.Add("ExpectedTime", i25.Data.ExpectedTime);
-                }
-                else if (item is WaitForTime i26)
-                {
-                    it.Add("TargetTime", i26.DateTime.Now + i26.GetEstimatedDuration());
-                    it.Add("CalculatedWaitDuration", i26.GetEstimatedDuration());
-                }
-                else if (item is WaitForTimeSpan i27)
-                {
-                    it.Add("Delay", i27.Time);
-                }
+                    else if (item is CoolCamera i1)
+                    {
+                        it.Add("Temperature", i1.Temperature);
+                        it.Add("MinCoolingTime", i1.Duration);
+                    }
+                    else if (item is WarmCamera i2)
+                    {
+                        it.Add("MinWarmingTime", i2.Duration);
+                    }
+                    else if (item is DewHeater i3)
+                    {
+                        it.Add("DewHeaterOn", i3.OnOff);
+                    }
+                    else if (item is SmartExposure i4)
+                    {
+                        it.Add("ExposureTime", i4.GetTakeExposure().ExposureTime);
+                        it.Add("ExposureCount", i4.GetTakeExposure().ExposureCount);
+                        it.Add("Binning", i4.GetTakeExposure().Binning);
+                        it.Add("Gain", i4.GetTakeExposure().Gain);
+                        it.Add("Offset", i4.GetTakeExposure().Offset);
+                        it.Add("Type", i4.GetTakeExposure().ImageType);
+                        it.Add("DitherProgressExposures", i4.GetDitherAfterExposures().ProgressExposures);
+                        it.Add("DitherTargetExposures", i4.GetDitherAfterExposures().AfterExposures);
+                        it.Add("Iterations", i4.GetLoopCondition().Iterations);
+                        it.Add("Filter", i4.GetSwitchFilter().Filter?.Name ?? "Current");
+                    }
+                    else if (item is TakeExposure i5)
+                    {
+                        it.Add("ExposureTime", i5.ExposureTime);
+                        it.Add("ExposureCount", i5.ExposureCount);
+                        it.Add("Binning", i5.Binning);
+                        it.Add("Gain", i5.Gain);
+                        it.Add("Offset", i5.Offset);
+                        it.Add("Type", i5.ImageType);
+                    }
+                    else if (item is TakeManyExposures i6)
+                    {
+                        it.Add("ExposureTime", i6.GetTakeExposure().ExposureTime);
+                        it.Add("ExposureCount", i6.GetTakeExposure().ExposureCount);
+                        it.Add("Binning", i6.GetTakeExposure().Binning);
+                        it.Add("Gain", i6.GetTakeExposure().Gain);
+                        it.Add("Offset", i6.GetTakeExposure().Offset);
+                        it.Add("Type", i6.GetTakeExposure().ImageType);
+                        it.Add("Iterations", i6.GetLoopCondition().Iterations);
+                    }
+                    else if (item is TakeSubframeExposure i7)
+                    {
+                        it.Add("ExposureTime", i7.ExposureTime);
+                        it.Add("ExposureCount", i7.ExposureCount);
+                        it.Add("Binning", i7.Binning);
+                        it.Add("Gain", i7.Gain);
+                        it.Add("Offset", i7.Offset);
+                        it.Add("Type", i7.ImageType);
+                        it.Add("ROI", i7.ROI);
+                    }
+                    else if (item is SlewDomeAzimuth i8)
+                    {
+                        it.Add("Azimuth", i8.AzimuthDegrees);
+                    }
+                    else if (item is SwitchFilter i9)
+                    {
+                        it.Add("Filter", i9.Filter?.Name ?? "Current");
+                    }
+                    else if (item is MoveFocuserAbsolute i10)
+                    {
+                        it.Add("Position", i10.Position);
+                    }
+                    else if (item is MoveFocuserRelative i11)
+                    {
+                        it.Add("RelativePosition", i11.RelativePosition);
+                    }
+                    else if (item is MoveFocuserByTemperature i12)
+                    {
+                        it.Add("Slope", i12.Slope);
+                        it.Add("Absolute", i12.Absolute);
+                        it.Add("Intercept", i12.Intercept);
+                    }
+                    else if (item is StartGuiding i13)
+                    {
+                        it.Add("ForceCalibration", i13.ForceCalibration);
+                    }
+                    else if (item is SolveAndRotate i14)
+                    {
+                        it.Add("Rotation", i14.PositionAngle);
+                    }
+                    else if (item is SetSwitchValue i15)
+                    {
+                        it.Add("Value", i15.Value);
+                        it.Add("Index", i15.SelectedSwitch.Id);
+                    }
+                    else if (item is SetTracking i16)
+                    {
+                        it.Add("TrackingMode", i16.TrackingMode);
+                    }
+                    else if (item is Center i17)
+                    {
+                        it.Add("Coordinates", i17.Coordinates.Coordinates);
+                    }
+                    else if (item is SlewScopeToAltAz i18)
+                    {
+                        it.Add("Coordinates", i18.Coordinates.Coordinates);
+                    }
+                    else if (item is SlewScopeToRaDec i19)
+                    {
+                        it.Add("Coordinates", i19.Coordinates.Coordinates);
+                    }
+                    else if (item is CenterAndRotate i20)
+                    {
+                        it.Add("Coordinates", i20.Coordinates.Coordinates);
+                        it.Add("Rotation", i20.PositionAngle);
+                    }
+                    else if (item is Annotation i21)
+                    {
+                        it.Add("Text", i21.Text);
+                    }
+                    else if (item is NINA.Sequencer.SequenceItem.Utility.MessageBox i22)
+                    {
+                        it.Add("Text", i22.Text);
+                    }
+                    else if (item is ExternalScript i23)
+                    {
+                        it.Add("Script", i23.Script);
+                    }
+                    else if (item is SaveSequence i24)
+                    {
+                        it.Add("FilePath", i24.FilePath);
+                    }
+                    else if (item is WaitForAltitudeBase i25)
+                    {
+                        it.Add("Altitude", i25.Data.Offset);
+                        it.Add("CurrentAltitude", i25.Data.CurrentAltitude);
+                        it.Add("ExpectedTime", i25.Data.ExpectedTime);
+                    }
+                    else if (item is WaitForTime i26)
+                    {
+                        it.Add("TargetTime", i26.DateTime.Now + i26.GetEstimatedDuration());
+                        it.Add("CalculatedWaitDuration", i26.GetEstimatedDuration());
+                    }
+                    else if (item is WaitForTimeSpan i27)
+                    {
+                        it.Add("Delay", i27.Time);
+                    }
 
-                result.Add(it);
+                    result.Add(it);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                }
             }
 
             return result;
@@ -592,7 +662,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    sequence.StartAdvancedSequence(skipValidation);
+                    Application.Current.Dispatcher.Invoke(() => sequence.StartAdvancedSequence(skipValidation));
                     response.Response = "Sequence started";
                 }
 
@@ -621,7 +691,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    sequence.CancelAdvancedSequence();
+                    Application.Current.Dispatcher.Invoke(sequence.CancelAdvancedSequence);
                     response.Response = "Sequence stopped";
                 }
             }
@@ -691,7 +761,7 @@ namespace ninaAPI.WebService.V2
                     }
                     else
                     {
-                        targets[0].Parent.Parent.ResetAll();
+                        Application.Current.Dispatcher.Invoke(() => targets[0].Parent.Parent.ResetAll());
                         response.Response = "Sequence reset";
                     }
                 }
