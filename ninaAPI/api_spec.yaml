@@ -6958,28 +6958,10 @@ components:
               type: string
             DeviceId:
               type: string
-          required:
-            - ShutterStatus
-            - DriverCanFollow
-            - CanSetShutter
-            - CanSetPark
-            - CanSetAzimuth
-            - CanSyncAzimuth
-            - CanPark
-            - CanFindHome
-            - AtPark
-            - AtHome
-            - DriverFollowing
-            - Slewing
-            - Azimuth
-            - SupportedActions
-            - Connected
-            - Name
-            - DisplayName
-            - Description
-            - DriverInfo
-            - DriverVersion
-            - DeviceId
+            IsFollowing:
+              type: boolean
+            IsSynchronized:
+              type: boolean
         Error:
           type: string
         StatusCode:
