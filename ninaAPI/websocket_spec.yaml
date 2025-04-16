@@ -555,7 +555,7 @@ channels:
       A websocket channel to interact with the networked filterwheel. To use this, make sure you connect the networked manual filterwheel, not the normal manual filterwheel.
       This extends the manual filterwheel with network capabilities, so filter changes can be completed remotely.
     publish:
-      summary: Interact with the filterwheel. You may need get-target-filter if the client wasn't connected, when the filter change was issued.
+      description: Interact with the filterwheel. You may need get-target-filter if the client wasn't connected, when the filter change was issued.
       message:
         contentType: application/text
         payload:
@@ -564,7 +564,7 @@ channels:
             - get-target-filter
             - filter-changed
     subscribe:
-      summary:
+      description:
         Subscribe to filter changes. When the filter changes, you will receive a message with the new filter name. If you request the target filter, but there isn't a filter change in progress, N/A will be returned.
         Once the filter change is completed (either in NINA or via the websocket), Change Complete will be returned.
       operationId: onFilterEvent
