@@ -4257,6 +4257,71 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /application/get-tab:
+    get:
+      tags:
+        - Application
+      summary: Get Tab
+      description: Gets the current application tab            
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                    - equipment
+                    - skyatlas
+                    - framing
+                    - flatwizard
+                    - sequencer
+                    - imaging
+                    - options
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Invalid application tab
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Invalid application tab
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /application/plugins:
     get:
       tags:

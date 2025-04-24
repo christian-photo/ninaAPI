@@ -25,6 +25,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using NINA.Core.Utility.WindowService;
+using NINA.WPF.Base.Interfaces.ViewModel;
 
 namespace ninaAPI.WebService.V2
 {
@@ -60,6 +61,52 @@ namespace ninaAPI.WebService.V2
                         break;
                     case "options":
                         AdvancedAPI.Controls.Application.ChangeTab(NINA.Core.Enum.ApplicationTab.OPTIONS);
+                        break;
+                    default:
+                        response = CoreUtility.CreateErrorTable(new Error("Invalid application tab", 400));
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/application/get-tab")]
+        public void ApplicationGetTab()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IApplicationVM vm = (IApplicationVM)AdvancedAPI.Controls.Application.GetType().GetField("handler", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(AdvancedAPI.Controls.Application);
+                int index = vm.TabIndex;
+                switch (index)
+                {
+                    case 0:
+                        response.Response = "equipment";
+                        break;
+                    case 1:
+                        response.Response = "skyatlas";
+                        break;
+                    case 2:
+                        response.Response = "framing";
+                        break;
+                    case 3:
+                        response.Response = "flatwizard";
+                        break;
+                    case 4:
+                        response.Response = "sequencer";
+                        break;
+                    case 5:
+                        response.Response = "imaging";
+                        break;
+                    case 6:
+                        response.Response = "options";
                         break;
                     default:
                         response = CoreUtility.CreateErrorTable(new Error("Invalid application tab", 400));
