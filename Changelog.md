@@ -2,7 +2,7 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
-# 2.2.2.0
+## 2.2.2.0
 
 - Added `ROTATOR-MOVED` and `ROTATOR-MOVED-MECHANICAL` events to the websocket
 - Added `application/get-tab` to get the current application tab
