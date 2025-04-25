@@ -1,7 +1,7 @@
 asyncapi: 2.0.0
 info:
   title: Advanced API
-  version: 2.2.0.0
+  version: 2.2.2.0
   description: This is the Websocket documentation for the NINA plugin Advanced API.
 servers:
   production:
@@ -69,6 +69,7 @@ channels:
                         - PROFILE-REMOVED
                         - ROTATOR-CONNECTED
                         - ROTATOR-DISCONNECTED
+                        - ROTATOR-SYNCED
                         - SAFETY-CONNECTED
                         - SAFETY-DISCONNECTED
                         - SEQUENCE-STARTING
@@ -394,6 +395,62 @@ channels:
                     Error:
                       type: string
                       example: "Camera not connected"
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Rotator moved
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      example: ROTATOR-MOVED
+                    From:
+                      type: number
+                      example: 0
+                    To:
+                      type: number
+                      example: 100
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Rotator moved mechanical
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      example: ROTATOR-MOVED-MECHANICAL
+                    From:
+                      type: number
+                      example: 0
+                    To:
+                      type: number
+                      example: 100
                 Error:
                   type: string
                 StatusCode:

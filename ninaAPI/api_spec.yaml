@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.2.0.*
-  version: 2.2.0
+  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.2.2.*
+  version: 2.2.2
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -23,7 +23,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: 2.2.0.0
+                    example: 2.2.2.0
                   Error:
                     type: string
                     example: ""
@@ -4216,6 +4216,71 @@ paths:
                   Response:
                     type: string
                     example: Switched tab
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Invalid application tab
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Invalid application tab
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /application/get-tab:
+    get:
+      tags:
+        - Application
+      summary: Get Tab
+      description: Gets the current application tab            
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                    - equipment
+                    - skyatlas
+                    - framing
+                    - flatwizard
+                    - sequencer
+                    - imaging
+                    - options
                   Error:
                     type: string
                     example: ""

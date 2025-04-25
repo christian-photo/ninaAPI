@@ -17,6 +17,7 @@ using NINA.Equipment.Equipment.MyRotator;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,13 +37,40 @@ namespace ninaAPI.WebService.V2
         {
             AdvancedAPI.Controls.Rotator.Connected += RotatorConnectedHandler;
             AdvancedAPI.Controls.Rotator.Disconnected += RotatorDisconnectedHandler;
+            AdvancedAPI.Controls.Rotator.Moved += RotatorMovedHandler;
+            AdvancedAPI.Controls.Rotator.MovedMechanical += RotatorMovedMechanicalHandler;
+            AdvancedAPI.Controls.Rotator.Synced += RotatorSyncedHandler;
             AdvancedAPI.Controls.Rotator.RegisterConsumer(this);
+        }
+
+        private async void RotatorSyncedHandler(object sender, RotatorEventArgs e)
+        {
+            await WebSocketV2.SendAndAddEvent("ROTATOR-SYNCED");
+        }
+
+        private async Task RotatorMovedMechanicalHandler(object arg1, RotatorEventArgs args)
+        {
+            await WebSocketV2.SendAndAddEvent("ROTATOR-MOVED-MECHANICAL", DateTime.Now, new Dictionary<string, object>() {
+                { "From", args.From },
+                { "To", args.To }
+            });
+        }
+
+        private async Task RotatorMovedHandler(object arg1, RotatorEventArgs args)
+        {
+            await WebSocketV2.SendAndAddEvent("ROTATOR-MOVED", DateTime.Now, new Dictionary<string, object>() {
+                { "From", args.From },
+                { "To", args.To }
+            });
         }
 
         public void StopWatchers()
         {
             AdvancedAPI.Controls.Rotator.Connected -= RotatorConnectedHandler;
             AdvancedAPI.Controls.Rotator.Disconnected -= RotatorDisconnectedHandler;
+            AdvancedAPI.Controls.Rotator.Moved -= RotatorMovedHandler;
+            AdvancedAPI.Controls.Rotator.MovedMechanical -= RotatorMovedMechanicalHandler;
+            AdvancedAPI.Controls.Rotator.Synced -= RotatorSyncedHandler;
             AdvancedAPI.Controls.Rotator.RemoveConsumer(this);
         }
 
