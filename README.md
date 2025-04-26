@@ -7,6 +7,8 @@ This plugin aims to be an all-around api for building your own custom tools and 
 
 Many thanks to tcpalmer and his [web session plugin](https://github.com/tcpalmer/nina.plugin.web/tree/main), from which I took a lot of inspiration (and a few code snippets). I want to thank everyone for creating issues, reporting bugs to me and requesting new features! It really helps me a lot while trying to continually improve the api. All that to say, feature requests, bug reports and all of these things are highly welcome!
 
+If you want, you can [buy me a pizza](https://buymeacoffee.com/christian.palm), I would really appreciate it!
+
 ### Versioning
 
 The versioning of the api works as follows:
@@ -18,6 +20,7 @@ The versioning of the api works as follows:
 
 ---
 
-Looking for an app? Take a look at these projects:
+Take a look at these projects:
 
 - [Touch'N'Stars: WebApp for Mobile Control of NINA](https://github.com/Touch-N-Stars/Touch-N-Stars)
+- [N.I.N.A Model Context Protocol Server for Advanced API Plugin v2 (MCP)](https://github.com/PaDev1/Nina_advanced_api_mcp)
