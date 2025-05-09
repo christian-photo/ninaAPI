@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Advanced API
   description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.2.2.*
-  version: 2.2.2
+  version: 2.2.3
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -4262,7 +4262,7 @@ paths:
       tags:
         - Application
       summary: Get Tab
-      description: Gets the current application tab            
+      description: Gets the current application tab
       responses:
         "200":
           description: Successful response
@@ -4274,13 +4274,13 @@ paths:
                   Response:
                     type: string
                     enum:
-                    - equipment
-                    - skyatlas
-                    - framing
-                    - flatwizard
-                    - sequencer
-                    - imaging
-                    - options
+                      - equipment
+                      - skyatlas
+                      - framing
+                      - flatwizard
+                      - sequencer
+                      - imaging
+                      - options
                   Error:
                     type: string
                     example: ""
@@ -5291,6 +5291,50 @@ paths:
                   Success:
                     type: boolean
                     example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /profile/horizon:
+    get:
+      tags:
+        - Profile
+      summary: Horizon
+      description: Gets the horizon for the active profile
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    properties:
+                      Altitudes:
+                        type: array
+                        items:
+                          type: number
+                      Azimuths:
+                        type: array
+                        items:
+                          type: number
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
                   Type:
                     type: string
                     example: "API"
