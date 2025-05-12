@@ -4868,7 +4868,7 @@ paths:
               - SNAPSHOT
         - in: query
           name: raw_fits
-          description: Whether to send the raw data if the image is of type FITS.
+          description: Whether to send the image as a raw FITS format.
           required: false
           schema:
             type: boolean
