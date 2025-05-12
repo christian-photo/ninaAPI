@@ -4866,6 +4866,12 @@ paths:
               - DARK
               - BIAS
               - SNAPSHOT
+        - in: query
+          name: raw_fits
+          description: Whether to send the raw data if the image is of type FITS.
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response

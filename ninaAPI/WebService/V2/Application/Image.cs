@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using NINA.Profile.Interfaces;
 using NINA.Image.Interfaces;
+using NINA.Image.FileFormat.FITS;
 using NINA.Core.Enum;
 using System.Collections.Generic;
 using NINA.WPF.Base.Interfaces.Mediator;
@@ -172,7 +173,7 @@ namespace ninaAPI.WebService.V2
                     [QueryField] string bayerPattern,
                     [QueryField] bool autoPrepare,
                     [QueryField] string imageType,
-                    [QueryField] bool path)
+                    [QueryField] bool raw_fits)
         {
             HttpResponse response = new HttpResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
@@ -255,10 +256,10 @@ namespace ninaAPI.WebService.V2
                 {
                     ImageResponse p = points.ElementAt(index); // Get the history point at the specified index for the image
 
-                    if (HttpContext.IsParameterOmitted(nameof(path)))
-                    {
-                        IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, p.IsBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
+                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, p.IsBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
 
+                    if (HttpContext.IsParameterOmitted(nameof(raw_fits)))
+                    {
                         IRenderedImage renderedImage = imageData.RenderImage();
 
                         if (debayer || (autoPrepare && renderedImage.RawImageData.Properties.IsBayered))
@@ -307,7 +308,22 @@ namespace ninaAPI.WebService.V2
                     }
                     else
                     {
-                        response.Response = p.GetPath();
+                        // Create the FITS image.
+                        FITS f = new FITS(
+                            imageData.Data.FlatArray,
+                            imageData.Properties.Width,
+                            imageData.Properties.Height
+                        );
+
+                        f.PopulateHeaderCards(imageData.MetaData);
+
+                        // Populate the stream with the raw byte data of the FITS image.
+                        MemoryStream fits_stream = new MemoryStream();
+
+                        f.Write(fits_stream);
+
+                        // Encode the stream in base64 and send it.
+                        response.Response = Convert.ToBase64String(fits_stream.ToArray());
                     }
                 }
             }
