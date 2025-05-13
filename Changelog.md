@@ -6,6 +6,7 @@ The changes for each individual (beta) release can be seen [here](https://github
 
 - Added `profile/horizon` to get the horizon for the active profile
 - Added `mount/sync`
+- Added the `raw_fits` parameter to `image/{index}` to get the raw fits image, thanks to #31
 
 ## 2.2.2.0
 
