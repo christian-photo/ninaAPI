@@ -3425,6 +3425,81 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /equipment/mount/sync:
+    get:
+      tags:
+        - Mount
+      summary: Sync
+      description: Sync the scope, either by manually supplying the coordinates or by solving and syncing. If the coordinates are omitted, a platesolve will be performed.
+      parameters:
+        - in: query
+          name: ra
+          required: false
+          description: Right ascension in degrees
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: dec
+          required: false
+          description: Declination in degrees
+          schema:
+            type: number
+            format: double
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: "Synced"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Can't sync
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Mount not connected
+                      - Mount is parked
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /equipment/rotator/info:
     get:
       tags:

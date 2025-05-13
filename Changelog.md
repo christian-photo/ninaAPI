@@ -5,6 +5,7 @@ The changes for each individual (beta) release can be seen [here](https://github
 ## 2.2.3.0
 
 - Added `profile/horizon` to get the horizon for the active profile
+- Added `mount/sync`
 
 ## 2.2.2.0
 
