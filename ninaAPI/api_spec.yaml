@@ -4941,6 +4941,12 @@ paths:
               - DARK
               - BIAS
               - SNAPSHOT
+        - in: query
+          name: raw_fits
+          description: Whether to send the image (without streaming) as a raw FITS format. Will return an error if the image is not of type FITS.
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
@@ -4975,7 +4981,7 @@ paths:
                 type: array
                 format: binary
         "400":
-          description: Invalid image index / invalid bayer pattern
+          description: Invalid image index / invalid bayer pattern / image is not a FITS file
           content:
             application/json:
               schema:
@@ -4989,6 +4995,7 @@ paths:
                     enum:
                       - Index out of range
                       - Invalid bayer pattern
+                      - Image is not a FITS file
                   StatusCode:
                     type: integer
                     example: 400
