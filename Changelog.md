@@ -6,7 +6,7 @@ The changes for each individual (beta) release can be seen [here](https://github
 
 - Added `profile/horizon` to get the horizon for the active profile
 - Added `mount/sync`
-- Added the `raw_fits` parameter to `image/{index}` to get the raw fits image, thanks to #31
+- Added the `raw_fits` parameter to `image/{index}` to get the raw fits image, thanks to [#31](https://github.com/christian-photo/ninaAPI/pull/31), @vitopigno
 
 ## 2.2.2.0
 
