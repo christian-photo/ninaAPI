@@ -308,22 +308,30 @@ namespace ninaAPI.WebService.V2
                     }
                     else
                     {
-                        // Create the FITS image.
-                        FITS f = new FITS(
-                            imageData.Data.FlatArray,
-                            imageData.Properties.Width,
-                            imageData.Properties.Height
-                        );
+                        // If the image is not of type FITS return an error.
+                        if (!p.GetPath().EndsWith(".fits", true, null))
+                        {
+                            response = CoreUtility.CreateErrorTable(new Error("Image is not a FITS file", 400));
+                        }
+                        else
+                        {
+                            // Create the FITS image.
+                            FITS f = new FITS(
+                                imageData.Data.FlatArray,
+                                imageData.Properties.Width,
+                                imageData.Properties.Height
+                            );
 
-                        f.PopulateHeaderCards(imageData.MetaData);
+                            f.PopulateHeaderCards(imageData.MetaData);
 
-                        // Populate the stream with the raw byte data of the FITS image.
-                        MemoryStream fits_stream = new MemoryStream();
+                            // Populate the stream with the raw byte data of the FITS image.
+                            MemoryStream fits_stream = new MemoryStream();
 
-                        f.Write(fits_stream);
+                            f.Write(fits_stream);
 
-                        // Encode the stream in base64 and send it.
-                        response.Response = Convert.ToBase64String(fits_stream.ToArray());
+                            // Encode the stream in base64 and send it.
+                            response.Response = Convert.ToBase64String(fits_stream.ToArray());
+                        }
                     }
                 }
             }
