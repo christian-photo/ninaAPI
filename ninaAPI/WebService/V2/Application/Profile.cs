@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using NINA.Profile;
 using System.Linq;
 using System.Collections.Specialized;
+using NINA.Core.Model;
 
 namespace ninaAPI.WebService.V2
 {
@@ -261,6 +262,43 @@ namespace ninaAPI.WebService.V2
                 Logger.Error(ex);
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        class HorizonResponse
+        {
+            public double[] Altitudes { get; set; }
+            public double[] Azimuths { get; set; }
+
+            public HorizonResponse(CustomHorizon horizon)
+            {
+                if (horizon == null)
+                {
+                    Altitudes = [];
+                    Azimuths = [];
+                    return;
+                }
+                Altitudes = horizon.GetType().GetField("altitudes", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(horizon) as double[];
+                Azimuths = horizon.GetType().GetField("azimuths", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(horizon) as double[];
+            }
+        }
+
+        [Route(HttpVerbs.Get, "/profile/horizon")]
+        public void ProfileHorizon()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                response.Response = new HorizonResponse(AdvancedAPI.Controls.Profile.ActiveProfile.AstrometrySettings.Horizon);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
 
             HttpContext.WriteToResponse(response);
         }
