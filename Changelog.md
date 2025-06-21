@@ -2,6 +2,11 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.4.0
+
+- Added TPPA configuration
+- Fixed incorrect urls in plugin options
+
 ## 2.2.3.0
 
 - Added `profile/horizon` to get the horizon for the active profile

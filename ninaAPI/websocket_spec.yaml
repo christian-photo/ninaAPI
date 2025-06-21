@@ -1,7 +1,7 @@
 asyncapi: 2.0.0
 info:
   title: Advanced API
-  version: 2.2.2.0
+  version: 2.2.4.0
   description: This is the Websocket documentation for the NINA plugin Advanced API.
 servers:
   production:
@@ -464,18 +464,98 @@ channels:
                   example: "Socket"
 
   /tppa:
-    description: TPPA WebSocket channel. To use this channel, TPPA >= 2.2.0.0 must be installed.
+    description: TPPA WebSocket channel. To use this channel, TPPA >= 2.2.3.7 must be installed. You can specify the TPPA settings in the json payload.
     publish:
       summary: Start or Stop TPPA
       message:
-        contentType: application/text
-        payload:
-          type: string
-          enum:
-            - start-alignment
-            - stop-alignment
-            - pause-alignment
-            - resume-alignment
+        oneOf:
+          - contentType: application/text
+            description: This is deprecated. Use the json payload instead.
+            payload:
+              type: string
+              enum:
+                - start-alignment
+                - stop-alignment
+                - pause-alignment
+                - resume-alignment
+
+          - contentType: application/json
+            payload:
+              type: object
+              required:
+                - Action
+              properties:
+                Action:
+                  type: string
+                  enum:
+                    - start-alignment
+                    - stop-alignment
+                    - pause-alignment
+                    - resume-alignment
+                ManualMode:
+                  type: boolean
+                  description: Relevant for start-alignment only. If true, the alignment will be started in manual mode.
+                TargetDistance:
+                  type: integer
+                  description: Relevant for start-alignment only.
+                MoveRate:
+                  type: integer
+                  description: Relevant for start-alignment only.
+                EastDirection:
+                  type: boolean
+                  description: Relevant for start-alignment only.
+                StartFromCurrentPosition:
+                  type: boolean
+                  description: Relevant for start-alignment only.
+                AltDegrees:
+                  type: integer
+                  description: Relevant for start-alignment only.
+                AltMinutes:
+                  type: integer
+                  format: int32
+                  description: Relevant for start-alignment only.
+                AltSeconds:
+                  type: number
+                  format: double
+                  description: Relevant for start-alignment only.
+                AzDegrees:
+                  type: integer
+                  description: Relevant for start-alignment only.
+                AzMinutes:
+                  type: integer
+                  format: int32
+                  description: Relevant for start-alignment only.
+                AzSeconds:
+                  type: number
+                  format: double
+                  description: Relevant for start-alignment only.
+                AlignmentTolerance:
+                  type: number
+                  format: double
+                  description: Relevant for start-alignment only.
+                Filter:
+                  type: string
+                  description: Relevant for start-alignment only. The name of the filter to use.
+                ExposureTime:
+                  type: number
+                  format: double
+                  description: Relevant for start-alignment only.
+                Binning:
+                  type: integer
+                  format: int32
+                  description: Relevant for start-alignment only.
+                Gain:
+                  type: integer
+                  format: int32
+                  description: Relevant for start-alignment only.
+                Offset:
+                  type: integer
+                  format: int32
+                  description: Relevant for start-alignment only.
+                SearchRadius:
+                  type: number
+                  format: double
+                  description: Relevant for start-alignment only.
     subscribe:
       summary: Subscribe to TPPA WebSocket events
       operationId: onTPPAEvent
