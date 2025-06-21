@@ -2,6 +2,17 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.4.0
+
+- Added TPPA configuration
+- Fixed incorrect urls in plugin options
+
+## 2.2.3.0
+
+- Added `profile/horizon` to get the horizon for the active profile
+- Added `mount/sync`
+- Added the `raw_fits` parameter to `image/{index}` to get the raw fits image, thanks to [#31](https://github.com/christian-photo/ninaAPI/pull/31), @vitopigno
+
 ## 2.2.2.0
 
 - Added `ROTATOR-MOVED` and `ROTATOR-MOVED-MECHANICAL` events to the websocket

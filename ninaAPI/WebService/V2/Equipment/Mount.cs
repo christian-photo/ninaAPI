@@ -19,6 +19,7 @@ using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyTelescope;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.Sequencer.SequenceItem.Platesolving;
 using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Telescope;
 using ninaAPI.Utility;
@@ -382,6 +383,54 @@ namespace ninaAPI.WebService.V2
                     response.Response = result ? "Park position set" : "";
                     response.Error = result ? "" : "Park position update failed";
                     response.StatusCode = result ? 200 : 400;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/mount/sync")]
+        public async Task MountSync([QueryField] double ra, [QueryField] double dec)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
+
+                if (!mount.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 400));
+                }
+                else if (!mount.GetInfo().CanSetPark || mount.GetInfo().AtPark)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Mount is parked", 400));
+                }
+                else
+                {
+                    if (!HttpContext.IsParameterOmitted(nameof(ra)) && !HttpContext.IsParameterOmitted(nameof(dec)))
+                    {
+                        await mount.Sync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000));
+                        response.Response = "Synced";
+                    }
+                    else
+                    {
+                        SolveAndSync instruction = new SolveAndSync(
+                            AdvancedAPI.Controls.Profile,
+                            mount,
+                            AdvancedAPI.Controls.Rotator,
+                            AdvancedAPI.Controls.Imaging,
+                            AdvancedAPI.Controls.FilterWheel,
+                            AdvancedAPI.Controls.PlateSolver,
+                            AdvancedAPI.Controls.WindowFactory);
+                        await instruction.Run(AdvancedAPI.Controls.StatusMediator.GetStatus(), CancellationToken.None);
+                        response.Response = "Synced";
+                    }
                 }
             }
             catch (Exception ex)

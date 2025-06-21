@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using NINA.Profile.Interfaces;
 using NINA.Image.Interfaces;
+using NINA.Image.FileFormat.FITS;
 using NINA.Core.Enum;
 using System.Collections.Generic;
 using NINA.WPF.Base.Interfaces.Mediator;
@@ -171,7 +172,8 @@ namespace ninaAPI.WebService.V2
                     [QueryField] bool debayer,
                     [QueryField] string bayerPattern,
                     [QueryField] bool autoPrepare,
-                    [QueryField] string imageType)
+                    [QueryField] string imageType,
+                    [QueryField] bool raw_fits)
         {
             HttpResponse response = new HttpResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
@@ -256,50 +258,80 @@ namespace ninaAPI.WebService.V2
 
                     IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, p.IsBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
 
-                    IRenderedImage renderedImage = imageData.RenderImage();
-
-                    if (debayer || (autoPrepare && renderedImage.RawImageData.Properties.IsBayered))
+                    if (HttpContext.IsParameterOmitted(nameof(raw_fits)))
                     {
-                        renderedImage = renderedImage.Debayer(bayerPattern: sensor, saveColorChannels: true, saveLumChannel: true);
-                    }
-                    renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);
+                        IRenderedImage renderedImage = imageData.RenderImage();
+
+                        if (debayer || (autoPrepare && renderedImage.RawImageData.Properties.IsBayered))
+                        {
+                            renderedImage = renderedImage.Debayer(bayerPattern: sensor, saveColorChannels: true, saveLumChannel: true);
+                        }
+                        renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);
 
 
-                    if (stream)
-                    {
-                        BitmapEncoder encoder = null;
-                        if (scale == 0 && resize)
+                        if (stream)
                         {
-                            BitmapSource image = BitmapHelper.ResizeBitmap(renderedImage.Image, sz);
-                            encoder = BitmapHelper.GetEncoder(image, quality);
+                            BitmapEncoder encoder = null;
+                            if (scale == 0 && resize)
+                            {
+                                BitmapSource image = BitmapHelper.ResizeBitmap(renderedImage.Image, sz);
+                                encoder = BitmapHelper.GetEncoder(image, quality);
+                            }
+                            if (scale != 0 && resize)
+                            {
+                                BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, scale);
+                                encoder = BitmapHelper.GetEncoder(image, quality);
+                            }
+                            if (!resize)
+                            {
+                                BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
+                                encoder = BitmapHelper.GetEncoder(image, quality);
+                            }
+                            HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpeg";
+                            using (MemoryStream memory = new MemoryStream())
+                            {
+                                encoder.Save(memory);
+                                await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
+                                return;
+                            }
                         }
-                        if (scale != 0 && resize)
+                        else
                         {
-                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, scale);
-                            encoder = BitmapHelper.GetEncoder(image, quality);
-                        }
-                        if (!resize)
-                        {
-                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
-                            encoder = BitmapHelper.GetEncoder(image, quality);
-                        }
-                        HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpeg";
-                        using (MemoryStream memory = new MemoryStream())
-                        {
-                            encoder.Save(memory);
-                            await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
-                            return;
+
+                            if (scale == 0 && resize)
+                                response.Response = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, sz, quality);
+                            if (scale != 0 && resize)
+                                response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
+                            if (!resize)
+                                response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
                         }
                     }
                     else
                     {
+                        // If the image is not of type FITS return an error.
+                        if (!p.GetPath().EndsWith(".fits", true, null))
+                        {
+                            response = CoreUtility.CreateErrorTable(new Error("Image is not a FITS file", 400));
+                        }
+                        else
+                        {
+                            // Create the FITS image.
+                            FITS f = new FITS(
+                                imageData.Data.FlatArray,
+                                imageData.Properties.Width,
+                                imageData.Properties.Height
+                            );
 
-                        if (scale == 0 && resize)
-                            response.Response = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, sz, quality);
-                        if (scale != 0 && resize)
-                            response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
-                        if (!resize)
-                            response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
+                            f.PopulateHeaderCards(imageData.MetaData);
+
+                            // Populate the stream with the raw byte data of the FITS image.
+                            MemoryStream fits_stream = new MemoryStream();
+
+                            f.Write(fits_stream);
+
+                            // Encode the stream in base64 and send it.
+                            response.Response = Convert.ToBase64String(fits_stream.ToArray());
+                        }
                     }
                 }
             }

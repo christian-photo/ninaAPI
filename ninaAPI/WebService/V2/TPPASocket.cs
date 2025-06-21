@@ -21,6 +21,29 @@ using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
+    public class TPPARequest
+    {
+        public string Action { get; set; }
+        public bool? ManualMode { get; set; }
+        public int? TargetDistance { get; set; }
+        public int? MoveRate { get; set; }
+        public bool? EastDirection { get; set; }
+        public bool? StartFromCurrentPosition { get; set; }
+        public int? AltDegrees { get; set; }
+        public int? AltMinutes { get; set; }
+        public double? AltSeconds { get; set; }
+        public int? AzDegrees { get; set; }
+        public int? AzMinutes { get; set; }
+        public double? AzSeconds { get; set; }
+        public double? AlignmentTolerance { get; set; }
+        public string? Filter { get; set; }
+        public double? ExposureTime { get; set; }
+        public short? Binning { get; set; }
+        public int? Gain { get; set; }
+        public int? Offset { get; set; }
+        public double? SearchRadius { get; set; }
+    }
+
     public class TPPASocket : WebSocketModule, ISubscriber
     {
         public TPPASocket(string urlPath) : base(urlPath, true)
@@ -32,24 +55,37 @@ namespace ninaAPI.WebService.V2
         {
             string message = Encoding.GetString(rxBuffer); // Do something with it
             string topic;
+            object content = null;
             string response;
 
-            if (message.Equals("start-alignment"))
+            try
+            {
+                TPPARequest r = JsonConvert.DeserializeObject<TPPARequest>(message, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Include }); // TODO: Document this
+                topic = r.Action;
+                content = r;
+            }
+            catch
+            {
+                topic = message;
+            }
+
+
+            if (topic.Equals("start-alignment"))
             {
                 topic = "PolarAlignmentPlugin_DockablePolarAlignmentVM_StartAlignment";
                 response = "started procedure";
             }
-            else if (message.Equals("stop-alignment"))
+            else if (topic.Equals("stop-alignment"))
             {
                 topic = "PolarAlignmentPlugin_DockablePolarAlignmentVM_StopAlignment";
                 response = "stopped procedure";
             }
-            else if (message.Equals("pause-alignment"))
+            else if (topic.Equals("pause-alignment"))
             {
                 topic = "PolarAlignmentPlugin_PolarAlignment_PauseAlignment";
                 response = "paused procedure";
             }
-            else if (message.Equals("resume-alignment"))
+            else if (topic.Equals("resume-alignment"))
             {
                 topic = "PolarAlignmentPlugin_PolarAlignment_ResumeAlignment";
                 response = "resumed procedure";
@@ -60,7 +96,7 @@ namespace ninaAPI.WebService.V2
             }
 
             Guid correlatedGuid = Guid.NewGuid();
-            await AdvancedAPI.Controls.MessageBroker.Publish(new TPPAMessage(correlatedGuid, topic, string.Empty));
+            await AdvancedAPI.Controls.MessageBroker.Publish(new TPPAMessage(correlatedGuid, topic, content));
             await Send(new HttpResponse()
             {
                 Type = HttpResponse.TypeSocket,
@@ -109,7 +145,7 @@ namespace ninaAPI.WebService.V2
         }
     }
 
-    public class TPPAMessage(Guid correlatedGuid, string topic, string content) : IMessage
+    public class TPPAMessage(Guid correlatedGuid, string topic, object content) : IMessage
     {
         public Guid SenderId => Guid.Parse(AdvancedAPI.PluginId);
 

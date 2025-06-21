@@ -299,9 +299,9 @@ namespace ninaAPI
         {
             Dictionary<string, string> dict = CoreUtility.GetLocalNames();
 
-            LocalAdress = $"http://{dict["LOCALHOST"]}:{CachedPort}/api";
-            LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{CachedPort}/api";
-            HostAdress = $"http://{dict["HOSTNAME"]}:{CachedPort}/api";
+            LocalAdress = $"http://{dict["LOCALHOST"]}:{CachedPort}/v2/api";
+            LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{CachedPort}/v2/api";
+            HostAdress = $"http://{dict["HOSTNAME"]}:{CachedPort}/v2/api";
         }
     }
 }
