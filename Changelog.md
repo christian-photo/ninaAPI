@@ -2,6 +2,10 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.5.0
+
+- Added `mount/slew-and-center`
+
 ## 2.2.4.0
 
 - Added TPPA configuration

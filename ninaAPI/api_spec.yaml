@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Advanced API
   description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.2.2.*
-  version: 2.2.3
+  version: 2.2.5
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -23,7 +23,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: 2.2.2.0
+                    example: 2.2.5.0
                   Error:
                     type: string
                     example: ""
@@ -3245,6 +3245,12 @@ paths:
           required: false
           schema:
             type: boolean
+        - in: query
+          name: center
+          description: Whether to center the telescope on the target
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
@@ -3308,7 +3314,7 @@ paths:
         - Mount
       summary: Stop Slew
       description:
-        Stops any slew, even if it was not started using the api. However this is mainly useful for slews you issued yourself, since it doesn't completely abort slew&centers.
+        Stops any slew, even if it was not started using the api. However this is mainly useful for slews you issued yourself, since it doesn't completely abort slew&centers started by NINA.
         Therefore the recommended use is to stop simple slews without center or rotate.
       responses:
         "200":

@@ -286,7 +286,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/mount/slew")]
-        public async Task MountSlew([QueryField] double ra, [QueryField] double dec, [QueryField] bool waitForResult)
+        public async Task MountSlew([QueryField] double ra, [QueryField] double dec, [QueryField] bool waitForResult, [QueryField] bool center)
         {
             HttpResponse response = new HttpResponse();
 
@@ -304,16 +304,38 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    if (waitForResult)
+                    if (center)
                     {
-                        bool result = await mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), CancellationToken.None);
-                        response.Success = result;
-                        response.Response = result ? "Slew finished" : "Slew failed";
+                        Center instruction = new Center(AdvancedAPI.Controls.Profile, mount, AdvancedAPI.Controls.Imaging, AdvancedAPI.Controls.FilterWheel, AdvancedAPI.Controls.Guider, AdvancedAPI.Controls.Dome, AdvancedAPI.Controls.DomeFollower, AdvancedAPI.Controls.PlateSolver, AdvancedAPI.Controls.WindowFactory);
+                        instruction.Coordinates = new InputCoordinates(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000));
+
+                        SlewCenterToken?.Cancel();
+                        SlewCenterToken = new CancellationTokenSource();
+                        if (waitForResult)
+                        {
+                            await instruction.Run(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewCenterToken.Token);
+                            response.Success = instruction.Status == SequenceEntityStatus.FINISHED;
+                            response.Response = response.Success ? "Slew finished" : "Slew failed";
+                        }
+                        else
+                        {
+                            mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), SlewCenterToken.Token);
+                            response.Response = "Slew started";
+                        }
                     }
                     else
                     {
-                        mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), CancellationToken.None);
-                        response.Response = "Slew started";
+                        if (waitForResult)
+                        {
+                            bool result = await mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), CancellationToken.None);
+                            response.Success = result;
+                            response.Response = result ? "Slew finished" : "Slew failed";
+                        }
+                        else
+                        {
+                            mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), CancellationToken.None);
+                            response.Response = "Slew started";
+                        }
                     }
                 }
             }
@@ -325,6 +347,8 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        private CancellationTokenSource SlewCenterToken;
 
         [Route(HttpVerbs.Get, "/equipment/mount/slew/stop")]
         public void MountStopSlew()
@@ -346,6 +370,7 @@ namespace ninaAPI.WebService.V2
                 else
                 {
                     mount.StopSlew();
+                    SlewCenterToken?.Cancel();
                     response.Response = "Stopped slew";
                 }
             }
