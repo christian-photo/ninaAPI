@@ -4,7 +4,8 @@ The changes for each individual (beta) release can be seen [here](https://github
 
 ## 2.2.5.0
 
-- Added `mount/slew-and-center`
+- Added center + center and rotate to `mount/slew`, both can be stopped using `mount/slew/stop`
+- Use Access Control Header defaults to true now
 
 ## 2.2.4.0
 

@@ -29,6 +29,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("LicenseURL", "https://www.mozilla.org/en-US/MPL/2.0/")]
 [assembly: AssemblyMetadata("Repository", "https://github.com/christian-photo/ninaAPI")]
 [assembly: AssemblyMetadata("ChangelogURL", "https://github.com/christian-photo/ninaAPI/blob/main/Changelog.md")]
+[assembly: AssemblyMetadata("Homepage", "https://buymeacoffee.com/christian.palm")]
 
 
 // The following attributes are optional for the official manifest meta data

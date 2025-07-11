@@ -18,7 +18,6 @@ using NINA.Core.Utility;
 using NINA.Astrometry;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using System.Threading.Tasks;
-using NINA.WPF.Base.SkySurvey;
 using NINA.Core.Enum;
 using NINA.Equipment.Interfaces.Mediator;
 

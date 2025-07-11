@@ -13,6 +13,7 @@ using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using EmbedIO.WebSockets;
+using Newtonsoft.Json;
 using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
@@ -286,7 +287,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/equipment/mount/slew")]
-        public async Task MountSlew([QueryField] double ra, [QueryField] double dec, [QueryField] bool waitForResult, [QueryField] bool center)
+        public async Task MountSlew([QueryField] double ra, [QueryField] double dec, [QueryField] bool waitForResult, [QueryField] bool center, [QueryField] bool rotate, [QueryField] double rotationAngle)
         {
             HttpResponse response = new HttpResponse();
 
@@ -304,22 +305,43 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    if (center)
+                    if (rotate)
                     {
-                        Center instruction = new Center(AdvancedAPI.Controls.Profile, mount, AdvancedAPI.Controls.Imaging, AdvancedAPI.Controls.FilterWheel, AdvancedAPI.Controls.Guider, AdvancedAPI.Controls.Dome, AdvancedAPI.Controls.DomeFollower, AdvancedAPI.Controls.PlateSolver, AdvancedAPI.Controls.WindowFactory);
-                        instruction.Coordinates = new InputCoordinates(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000));
+                        CenterAndRotate cr = new CenterAndRotate(AdvancedAPI.Controls.Profile, mount, AdvancedAPI.Controls.Imaging, AdvancedAPI.Controls.Rotator, AdvancedAPI.Controls.FilterWheel, AdvancedAPI.Controls.Guider, AdvancedAPI.Controls.Dome, AdvancedAPI.Controls.DomeFollower, AdvancedAPI.Controls.PlateSolver, AdvancedAPI.Controls.WindowFactory);
+                        cr.Coordinates.Coordinates = new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000);
+                        cr.PositionAngle = rotationAngle;
 
                         SlewCenterToken?.Cancel();
                         SlewCenterToken = new CancellationTokenSource();
                         if (waitForResult)
                         {
-                            await instruction.Run(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewCenterToken.Token);
+                            await cr.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewCenterToken.Token);
+                            response.Success = cr.Status == SequenceEntityStatus.FINISHED;
+                            response.Response = response.Success ? "Slew finished" : "Slew failed";
+                        }
+                        else
+                        {
+                            cr.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewCenterToken.Token);
+                            response.Response = "Slew started";
+                        }
+                    }
+                    else if (center)
+                    {
+                        Center instruction = new Center(AdvancedAPI.Controls.Profile, mount, AdvancedAPI.Controls.Imaging, AdvancedAPI.Controls.FilterWheel, AdvancedAPI.Controls.Guider, AdvancedAPI.Controls.Dome, AdvancedAPI.Controls.DomeFollower, AdvancedAPI.Controls.PlateSolver, AdvancedAPI.Controls.WindowFactory);
+                        instruction.Coordinates.Coordinates = new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000);
+
+                        SlewCenterToken?.Cancel();
+                        SlewCenterToken = new CancellationTokenSource();
+                        Logger.Info(JsonConvert.SerializeObject(instruction.Coordinates.Coordinates));
+                        if (waitForResult)
+                        {
+                            await instruction.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewCenterToken.Token);
                             response.Success = instruction.Status == SequenceEntityStatus.FINISHED;
                             response.Response = response.Success ? "Slew finished" : "Slew failed";
                         }
                         else
                         {
-                            mount.SlewToCoordinatesAsync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000), SlewCenterToken.Token);
+                            instruction.Execute(AdvancedAPI.Controls.StatusMediator.GetStatus(), SlewCenterToken.Token);
                             response.Response = "Slew started";
                         }
                     }
@@ -362,10 +384,6 @@ namespace ninaAPI.WebService.V2
                 if (!mount.GetInfo().Connected)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 409));
-                }
-                else if (!mount.GetInfo().Slewing)
-                {
-                    response = CoreUtility.CreateErrorTable(new Error("Mount not slewing", 409));
                 }
                 else
                 {
@@ -493,7 +511,7 @@ namespace ninaAPI.WebService.V2
             try
             {
                 var message = Encoding.GetString(buffer);
-                var json = JsonSerializer.Deserialize<Dictionary<string, object>>(message);
+                var json = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(message);
                 string direction = json["direction"].ToString().ToLower();
                 double rate = double.Parse(json["rate"].ToString());
 
@@ -618,7 +636,7 @@ namespace ninaAPI.WebService.V2
             {
                 response = CoreUtility.CreateErrorTable(new Error(ex.Message, 400));
             }
-            await context.WebSocket.SendAsync(Encoding.GetBytes(JsonSerializer.Serialize(response)), true);
+            await context.WebSocket.SendAsync(Encoding.GetBytes(System.Text.Json.JsonSerializer.Serialize(response)), true);
         }
     }
 }

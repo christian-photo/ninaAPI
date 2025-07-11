@@ -3251,6 +3251,19 @@ paths:
           required: false
           schema:
             type: boolean
+        - in: query
+          name: rotate
+          description: Whether to perform a center and rotate
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: rotationAngle
+          description: The rotation angle in degree
+          required: false
+          schema:
+            type: number
+            format: double
       responses:
         "200":
           description: Successful response
@@ -3315,7 +3328,7 @@ paths:
       summary: Stop Slew
       description:
         Stops any slew, even if it was not started using the api. However this is mainly useful for slews you issued yourself, since it doesn't completely abort slew&centers started by NINA.
-        Therefore the recommended use is to stop simple slews without center or rotate.
+        Therefore the recommended use is to stop simple slews without center or rotate. With center or rotate, this may take a few seconds to complete.
       responses:
         "200":
           description: Successful response
@@ -3340,7 +3353,7 @@ paths:
                     type: string
                     example: "API"
         "409":
-          description: Mount not connected / not slewing
+          description: Mount not connected
           content:
             application/json:
               schema:
@@ -3351,9 +3364,7 @@ paths:
                     example: ""
                   Error:
                     type: string
-                    enum:
-                      - Mount not connected
-                      - Mount not slewing
+                    example: Mount not connected
                   StatusCode:
                     type: integer
                     example: 409

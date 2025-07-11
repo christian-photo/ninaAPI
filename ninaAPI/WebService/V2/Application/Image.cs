@@ -29,6 +29,7 @@ using System.Threading;
 using System.Linq;
 using System.Reflection;
 using NINA.Profile;
+using NINA.WPF.Base.Model;
 
 namespace ninaAPI.WebService.V2
 {
@@ -84,6 +85,11 @@ namespace ninaAPI.WebService.V2
         public string GetPath()
         {
             return Path.LocalPath;
+        }
+
+        public void SetPath(string path)
+        {
+            Path = new Uri(path);
         }
     }
 
@@ -339,6 +345,48 @@ namespace ninaAPI.WebService.V2
             {
                 Logger.Error(ex);
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/image/{index}/prefix")]
+        public void AddPrefix(int index, [QueryField(true)] string prefix, [QueryField] string imageType)
+        {
+            HttpResponse response = new HttpResponse();
+
+            IEnumerable<ImageResponse> points;
+            lock (ImageWatcher.imageLock)
+            {
+                points = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
+            }
+
+            if (!points.Any())
+            {
+                response = CoreUtility.CreateErrorTable(new Error("No images available", 400));
+            }
+            else if (index >= points.Count() || index < 0)
+            {
+                response = CoreUtility.CreateErrorTable(CommonErrors.INDEX_OUT_OF_RANGE);
+            }
+            else
+            {
+                ImageResponse p = points.ElementAt(index);
+                string newPath = Path.Join(Path.GetDirectoryName(p.GetPath()), prefix + Path.GetFileName(p.GetPath()));
+                if (File.Exists(newPath))
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("File already exists", 400));
+                }
+                else if (!File.Exists(p.GetPath()))
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Image file does not exist", 400));
+                }
+                else
+                {
+                    File.Move(p.GetPath(), newPath);
+                    p.SetPath(newPath);
+                    response.Response = "Image renamed with prefix " + prefix;
+                }
             }
 
             HttpContext.WriteToResponse(response);
