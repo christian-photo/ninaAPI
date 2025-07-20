@@ -37,6 +37,76 @@ paths:
                     type: string
                     example: "API"
 
+  /version/nina:
+    get:
+      tags:
+        - Application
+      summary: NINA Version
+      description: Returns the version of NINA.
+      parameters:
+        - in: query
+          name: friendly
+          required: false
+          description: If true, the version will be returned in a friendly format.
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example:
+                      oneOf:
+                        - 3.2.0.1058
+                        - "3.2 NIGHTLY #058"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+
+  /application-start:
+    get:
+      tags:
+        - Application
+      summary: NINA start time
+      description: Returns the time NINA was started.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: 2025-07-20T09:43:44.351798+02:00
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+
   /equipment/camera/info:
     get:
       tags:

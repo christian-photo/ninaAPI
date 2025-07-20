@@ -2,6 +2,12 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.6.0
+
+- Added `api/time` to get the current time, can be used to sync with other systems
+- Added `api/application-start` to get the application start date
+- Added `api/version/nina` to get the version of NINA
+
 ## 2.2.5.0
 
 - Added center + center and rotate to `mount/slew`, both can be stopped using `mount/slew/stop`
