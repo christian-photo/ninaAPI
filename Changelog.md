@@ -7,6 +7,9 @@ The changes for each individual (beta) release can be seen [here](https://github
 - Added `api/time` to get the current time, can be used to sync with other systems
 - Added `api/application-start` to get the application start date
 - Added `api/version/nina` to get the version of NINA
+- Added `sequence/load` to load sequences into the advanced sequence
+  - Use GET to load a sequence from the default sequence folder (you can use the `sequence/list-available` endpoint to get the available sequences)
+  - Use POST to load a sequence from a json string, supplied by the client in the request body
 
 ## 2.2.5.0
 

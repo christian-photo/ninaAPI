@@ -6036,6 +6036,132 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /sequence/load:
+    get:
+      tags:
+        - Sequence
+      summary: Load Sequence from file
+      description: Loads a sequence from a file from the default sequence folders, the names can be retrieved using the `sequence/list-available` endpoint
+      parameters:
+        - name: sequenceName
+          in: query
+          description: The name of the sequence to load
+          required: true
+          schema:
+            type: string
+            example: Orion
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Sequence updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Sequence not initialized or already running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Sequence is not initialized
+                      - Sequence is already running
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal Server Error, Unknown Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+    post:
+      tags:
+        - Sequence
+      summary: Load Sequence from JSON
+      description: Loads a sequence from a JSON supplied by the client in the request body
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Sequence updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Sequence not initialized or already running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Sequence is not initialized
+                      - Sequence is already running
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal Server Error, Unknown Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /event-history:
     get:
       tags:
