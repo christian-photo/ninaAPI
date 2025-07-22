@@ -19,6 +19,7 @@ using ninaAPI.WebService.V2;
 using ninaAPI.WebService.V2.CustomDrivers;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -151,14 +152,21 @@ namespace ninaAPI.WebService
         {
         }
 
-        protected override Task OnRequestAsync(IHttpContext context)
+        protected override async Task OnRequestAsync(IHttpContext context)
         {
             Logger.Trace($"Request: {context.Request.Url.OriginalString}");
             if (Settings.Default.UseAccessControlHeader)
             {
                 context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+                context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+                if (context.Request.HttpVerb == HttpVerbs.Options)
+                {
+                    context.Response.StatusCode = 200;
+                    await context.SendStringAsync(string.Empty, "text/plain", Encoding.UTF8);
+                }
             }
-            return Task.CompletedTask;
         }
 
         public override bool IsFinalHandler => false;

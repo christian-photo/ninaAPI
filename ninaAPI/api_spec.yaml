@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.2.2.*
-  version: 2.2.5
+  description: This is the API documentation for the NINA plugin Advanced API.
+  version: 2.2.6
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -23,7 +23,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: 2.2.5.0
+                    example: 2.2.6.0
                   Error:
                     type: string
                     example: ""
@@ -4509,6 +4509,60 @@ paths:
                         "Three Point Polar Alignment",
                         "Touch 'N' Stars",
                       ]
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /application/logs:
+    get:
+      tags:
+        - Application
+      summary: Logs
+      description: Get a list of the last N log entries, this will ignore the header of the file
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    properties:
+                      Timestamp:
+                        type: string
+                        example: "2025-05-04T14:57:39.5079"
+                      Level:
+                        type: string
+                        example: "INFO"
+                      Source:
+                        type: string
+                        example: "CameraChooserVM.cs"
+                      Member:
+                        type: string
+                        example: "GetEquipment"
+                      Line:
+                        type: string
+                        example: "279"
+                      Message:
+                        type: string
+                        example: "Found 2 ASCOM Cameras"
                   Error:
                     type: string
                     example: ""

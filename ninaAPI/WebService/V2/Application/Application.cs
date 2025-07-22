@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NINA.Core.Utility.WindowService;
 using NINA.WPF.Base.Interfaces.ViewModel;
+using System.Collections;
 
 namespace ninaAPI.WebService.V2
 {
@@ -214,6 +215,80 @@ namespace ninaAPI.WebService.V2
                 string path = Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName;
                 List<string> plugins = [.. Directory.GetDirectories(path).Select(Path.GetFileName)];
                 response.Response = plugins;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/application/logs")]
+        public void GetRecentLogs([QueryField(true)] int lineCount, [QueryField] string level)
+        {
+            HttpResponse response = new HttpResponse();
+
+            List<Hashtable> logs = new List<Hashtable>();
+
+            if (string.IsNullOrEmpty(level))
+            {
+                level = string.Empty;
+            }
+
+            try
+            {
+                string currentLogFile = Directory.GetFiles(Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "Logs")).OrderByDescending(File.GetCreationTime).First();
+
+                string[] logLines = [];
+
+                using (var stream = new FileStream(currentLogFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    using (var reader = new StreamReader(stream))
+                    {
+                        string content = reader.ReadToEnd();
+                        logLines = content.Split('\n');
+                    }
+                }
+
+                List<string> filteredLogLines = new List<string>();
+                foreach (string line in logLines)
+                {
+                    bool valid = true;
+
+                    if (!line.Contains('|' + level + '|') && !string.IsNullOrEmpty(level))
+                    {
+                        valid = false;
+                    }
+                    if (line.Contains("DATE|LEVEL|SOURCE|MEMBER|LINE|MESSAGE"))
+                    {
+                        valid = false;
+                    }
+                    if (valid)
+                    {
+                        filteredLogLines.Add(line);
+                    }
+                }
+                IEnumerable<string> lines = filteredLogLines.TakeLast(lineCount);
+                foreach (string line in lines)
+                {
+                    string[] parts = line.Split('|');
+                    if (parts.Length >= 6)
+                    {
+                        logs.Add(new Hashtable() {
+                            { "Timestamp", parts[0] },
+                            { "Level", parts[1] },
+                            { "Source", parts[2] },
+                            { "Member", parts[3] },
+                            { "Line", parts[4] },
+                            { "Message", string.Join('|', parts.Skip(5)).Trim() }
+                        });
+                    }
+                }
+                logs.Reverse();
+
+                response.Response = logs;
             }
             catch (Exception ex)
             {
