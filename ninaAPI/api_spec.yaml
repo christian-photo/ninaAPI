@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API. This documentation applies to plugin version 2.2.2.*
-  version: 2.2.5
+  description: This is the API documentation for the NINA plugin Advanced API.
+  version: 2.2.6
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -23,7 +23,77 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: 2.2.5.0
+                    example: 2.2.6.0
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+
+  /version/nina:
+    get:
+      tags:
+        - Application
+      summary: NINA Version
+      description: Returns the version of NINA.
+      parameters:
+        - in: query
+          name: friendly
+          required: false
+          description: If true, the version will be returned in a friendly format.
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example:
+                      oneOf:
+                        - 3.2.0.1058
+                        - "3.2 NIGHTLY #058"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+
+  /application-start:
+    get:
+      tags:
+        - Application
+      summary: NINA start time
+      description: Returns the time NINA was started.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: 2025-07-20T09:43:44.351798+02:00
                   Error:
                     type: string
                     example: ""
@@ -4458,6 +4528,60 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /application/logs:
+    get:
+      tags:
+        - Application
+      summary: Logs
+      description: Get a list of the last N log entries, this will ignore the header of the file
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    properties:
+                      Timestamp:
+                        type: string
+                        example: "2025-05-04T14:57:39.5079"
+                      Level:
+                        type: string
+                        example: "INFO"
+                      Source:
+                        type: string
+                        example: "CameraChooserVM.cs"
+                      Member:
+                        type: string
+                        example: "GetEquipment"
+                      Line:
+                        type: string
+                        example: "279"
+                      Message:
+                        type: string
+                        example: "Found 2 ASCOM Cameras"
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /application/screenshot:
     get:
       tags:
@@ -5953,6 +6077,132 @@ paths:
                   StatusCode:
                     type: integer
                     example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal Server Error, Unknown Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /sequence/load:
+    get:
+      tags:
+        - Sequence
+      summary: Load Sequence from file
+      description: Loads a sequence from a file from the default sequence folders, the names can be retrieved using the `sequence/list-available` endpoint
+      parameters:
+        - name: sequenceName
+          in: query
+          description: The name of the sequence to load
+          required: true
+          schema:
+            type: string
+            example: Orion
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Sequence updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Sequence not initialized or already running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Sequence is not initialized
+                      - Sequence is already running
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal Server Error, Unknown Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+    post:
+      tags:
+        - Sequence
+      summary: Load Sequence from JSON
+      description: Loads a sequence from a JSON supplied by the client in the request body
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Sequence updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Sequence not initialized or already running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Sequence is not initialized
+                      - Sequence is already running
+                  StatusCode:
+                    type: integer
+                    example: 400
                   Success:
                     type: boolean
                     example: false

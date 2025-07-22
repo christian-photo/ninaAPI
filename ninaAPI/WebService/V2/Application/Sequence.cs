@@ -44,6 +44,9 @@ using NINA.Sequencer.SequenceItem;
 using NINA.ViewModel.Sequencer;
 using System.Windows;
 using System.Threading.Tasks;
+using NINA.Sequencer.Serialization;
+using NINA.Sequencer.Mediator;
+using NINA.Sequencer;
 
 namespace ninaAPI.WebService.V2
 {
@@ -775,8 +778,8 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/sequence/load")]
-        public void SequenceLoad([QueryField] string sequencename)
+        [Route(HttpVerbs.Post, "/sequence/load")]
+        public async Task SequenceLoad()
         {
             HttpResponse response = new HttpResponse();
 
@@ -784,15 +787,80 @@ namespace ninaAPI.WebService.V2
             {
                 ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
 
-                // Use either a name of a sequence or let the user upload a json file
+                if (!sequence.Initialized)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence is not initialized", 400));
+                }
+                else if (sequence.IsAdvancedSequenceRunning())
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence is already running", 400));
+                }
+                else
+                {
+                    var mediator = (SequenceMediator)sequence;
+                    object nav = mediator.GetType().GetField("sequenceNavigation", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(mediator);
+                    object factory = nav.GetType().GetField("factory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(nav);
 
-                // ISequenceRootContainer container = JsonConvert.DeserializeObject<SequenceRootContainer>(sequenceJson); // Not working
-                // sequence.SetAdvancedSequence(container);
+                    var converter = new SequenceJsonConverter((ISequencerFactory)factory);
 
-                // response.Response = "Sequence updated";
-                response.Response = "Not yet implemented";
-                response.Success = false;
-                response.StatusCode = 501;
+                    ISequenceContainer container = converter.Deserialize(await HttpContext.GetRequestBodyAsStringAsync());
+
+                    Application.Current.Dispatcher.Invoke(() => sequence.SetAdvancedSequence((SequenceRootContainer)container));
+
+                    response.Response = "Sequence updated";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/sequence/load")]
+        public void GetSequenceLoad([QueryField(true)] string sequenceName)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
+
+                if (!sequence.Initialized)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence is not initialized", 400));
+                }
+                else if (sequence.IsAdvancedSequenceRunning())
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence is already running", 400));
+                }
+                else
+                {
+                    var mediator = (SequenceMediator)sequence;
+                    object nav = mediator.GetType().GetField("sequenceNavigation", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(mediator);
+                    object factory = nav.GetType().GetField("factory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(nav);
+
+                    var converter = new SequenceJsonConverter((ISequencerFactory)factory);
+
+                    IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+                    string sequenceFolder = profile.SequenceSettings.DefaultSequenceFolder;
+                    string sequenceFile = Path.Combine(sequenceFolder, sequenceName + ".json");
+
+                    if (!File.Exists(sequenceFile))
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("Sequence not found", 400));
+                    }
+                    else
+                    {
+                        ISequenceContainer container = converter.Deserialize(File.ReadAllText(sequenceFile));
+
+                        Application.Current.Dispatcher.Invoke(() => sequence.SetAdvancedSequence((SequenceRootContainer)container));
+
+                        response.Response = "Sequence updated";
+                    }
+                }
             }
             catch (Exception ex)
             {
