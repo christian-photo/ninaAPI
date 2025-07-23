@@ -2,6 +2,11 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.6.1
+
+- Made the port optionally profile dependent
+- Seperated the cached thumbnails by NINA instance
+
 ## 2.2.6.0
 
 - CORS updates to support all HTTP verbs
