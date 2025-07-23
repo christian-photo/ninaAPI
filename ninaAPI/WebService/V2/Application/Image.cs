@@ -30,6 +30,7 @@ using System.Linq;
 using System.Reflection;
 using NINA.Profile;
 using NINA.WPF.Base.Model;
+using System.Diagnostics;
 
 namespace ninaAPI.WebService.V2
 {
@@ -122,7 +123,7 @@ namespace ninaAPI.WebService.V2
                 return;
             lock (imageLock)
             {
-                string thumbnailFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "thumbnails");
+                string thumbnailFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}");
                 Directory.CreateDirectory(thumbnailFile);
                 thumbnailFile = Path.Combine(thumbnailFile, $"{Images.Count - 1}.jpg");
                 var img = BitmapHelper.ScaleBitmap(e.Image, 256 / e.Image.Width);
