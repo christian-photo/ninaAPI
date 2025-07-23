@@ -2,7 +2,7 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
-## 2.2.6.1
+## 2.2.6.2
 
 - Made the port optionally profile dependent
 - Seperated the cached thumbnails by NINA instance

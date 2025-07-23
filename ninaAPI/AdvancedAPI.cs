@@ -146,7 +146,7 @@ namespace ninaAPI
             SetHostNames();
             API.StartWatchers();
 
-            
+
         }
 
         private void ProfileChanged(object sender, EventArgs e)
@@ -218,6 +218,7 @@ namespace ninaAPI
                 Settings.Default.ProfileDependentPort = value;
                 CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ProfileDependentPort)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
             }
         }
 
