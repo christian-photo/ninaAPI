@@ -34,6 +34,9 @@ using NINA.Astrometry.Interfaces;
 using NINA.Core.Utility.WindowService;
 using System.IO;
 using System.Reflection;
+using NINA.Profile;
+using System;
+using Settings = ninaAPI.Properties.Settings;
 
 namespace ninaAPI
 {
@@ -50,6 +53,7 @@ namespace ninaAPI
 
 
         public event PropertyChangedEventHandler PropertyChanged;
+        private static IPluginOptionsAccessor PluginSettings;
 
         [ImportingConstructor]
         public AdvancedAPI(ICameraMediator camera,
@@ -120,6 +124,9 @@ namespace ninaAPI
                 CoreUtil.SaveSettings(Settings.Default);
             }
 
+            PluginSettings = new PluginOptionsAccessor(Controls.Profile, Guid.Parse(this.Identifier));
+            Controls.Profile.ProfileChanged += ProfileChanged;
+
             UpdateDefaultPortCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
             {
                 Port = CachedPort;
@@ -139,10 +146,13 @@ namespace ninaAPI
             SetHostNames();
             API.StartWatchers();
 
-            if (Directory.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "thumbnails")))
-            {
-                Directory.Delete(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "thumbnails"), true);
-            }
+            
+        }
+
+        private void ProfileChanged(object sender, EventArgs e)
+        {
+            // Raise the event that this profile specific value has been changed due to the profile switch
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
         }
 
         public static int GetCachedPort()
@@ -167,6 +177,10 @@ namespace ninaAPI
             }
             API.StopWatchers();
             communicator.Dispose();
+            if (Directory.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}")))
+            {
+                Directory.Delete(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}"), true);
+            }
             return base.Teardown();
         }
 
@@ -196,13 +210,31 @@ namespace ninaAPI
             }
         }
 
-        public int Port
+        public bool ProfileDependentPort
         {
-            get => Settings.Default.Port;
+            get => Settings.Default.ProfileDependentPort;
             set
             {
-                Settings.Default.Port = value;
+                Settings.Default.ProfileDependentPort = value;
                 CoreUtil.SaveSettings(Settings.Default);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ProfileDependentPort)));
+            }
+        }
+
+        public int Port
+        {
+            get => ProfileDependentPort ? PluginSettings.GetValueInt32("Port", Settings.Default.Port) : Settings.Default.Port;
+            set
+            {
+                if (ProfileDependentPort)
+                {
+                    PluginSettings.SetValueInt32("Port", value);
+                }
+                else
+                {
+                    Settings.Default.Port = value;
+                    CoreUtil.SaveSettings(Settings.Default);
+                }
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
             }
         }

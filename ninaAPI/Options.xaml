@@ -49,17 +49,30 @@
                     Margin="0,0,5,0"
                     Text="API Port " />
                 <TextBox Width="100" Text="{Binding Port}" />
-                <TextBlock Margin="20,5,0,0" Text="API running on port: " Visibility="{Binding PortVisibility}" />
-                <TextBlock Text="{Binding CachedPort}" Visibility="{Binding PortVisibility}" Margin="0,5,0,0" />
-                <Button Margin="10,0,0,0" Content="Update Default Port" Command="{Binding UpdateDefaultPortCommand}" Width="200" Visibility="{Binding PortVisibility}" ToolTip="This updates the port the api is launched on, meaning that the api will always launch on that port"/>
+                <CheckBox Margin="10,0,0,0" IsChecked="{Binding ProfileDependentPort}" />
+                <TextBlock
+                    Margin="20,5,0,0"
+                    Text="API running on port: "
+                    Visibility="{Binding PortVisibility}" />
+                <TextBlock
+                    Margin="0,5,0,0"
+                    Text="{Binding CachedPort}"
+                    Visibility="{Binding PortVisibility}" />
+                <Button
+                    Width="200"
+                    Margin="10,0,0,0"
+                    Command="{Binding UpdateDefaultPortCommand}"
+                    Content="Update Default Port"
+                    ToolTip="This updates the port the api is launched on, meaning that the api will always launch on that port"
+                    Visibility="{Binding PortVisibility}" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
                 <TextBlock
+                    Width="300"
                     Margin="0,0,5,0"
                     VerticalAlignment="Center"
                     Text="⚠️Use Access-Control-Allow-Origin Header⚠️"
-                    Width="300"
                     ToolTip="This makes it possible to fetch the api using javascript without having to set up a proxy. It is required for some applications like Touch 'N' Stars" />
                 <CheckBox IsChecked="{Binding UseAccessHeader}" />
             </StackPanel>
