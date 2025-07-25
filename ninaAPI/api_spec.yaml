@@ -4815,7 +4815,7 @@ paths:
       parameters:
         - in: query
           name: slew_option
-          description: The slew option to use. Possible values&#58; Center, Rotate
+          description: The slew option to use. Possible values&#58; Center, Rotate. If this is omitted, it is a simple slew.
           required: false
           schema:
             type: string
