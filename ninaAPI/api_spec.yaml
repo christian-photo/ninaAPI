@@ -5934,7 +5934,7 @@ paths:
       tags:
         - Sequence
       summary: Available Sequences
-      description: List available sequences. This is currently not really useful as it is not possible to load sequences
+      description: List available sequences.
       responses:
         "200":
           description: Successful response
@@ -5946,15 +5946,7 @@ paths:
                   Response:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        Event:
-                          type: string
-                        Time:
-                          type: string
-                      required:
-                        - Event
-                        - Time
+                      type: string
                   Error:
                     type: string
                     example: ""
