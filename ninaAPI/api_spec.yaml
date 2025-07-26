@@ -4533,7 +4533,27 @@ paths:
       tags:
         - Application
       summary: Logs
-      description: Get a list of the last N log entries, this will ignore the header of the file
+      description: Get a list of the last N log entries, this will ignore the header of the file. The endpoint is limited by the log level set in NINA
+      parameters:
+        - in: query
+          name: lineCount
+          description: Return the last N lines of the log file, with N being the lineCount
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: level
+          description: Filter the log entries by level. This uses the provided level as a minimum level, so level INFO will return INFO, WARNING and ERROR entries
+          required: false
+          schema:
+            type: string
+            enum:
+              - TRACE
+              - DEBUG
+              - INFO
+              - WARNING
+              - ERROR
       responses:
         "200":
           description: Successful response
