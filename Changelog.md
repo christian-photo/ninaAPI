@@ -5,6 +5,9 @@ The changes for each individual (beta) release can be seen [here](https://github
 ## 2.2.x.x
 
 - Fixes an issue with `guider/stop`
+- Fixed a bug in the Livestack endpoint that could return a wrong image
+- Improved memory consumption of the capture endpoint
+- Added `livestack/image/available` to get a list of available images
 
 ## 2.2.6.2
 

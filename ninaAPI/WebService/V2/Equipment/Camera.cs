@@ -32,6 +32,9 @@ using System.Windows.Media.Imaging;
 using System.IO;
 using System.Collections.Generic;
 using NINA.Image.ImageData;
+using NINA.Image.ImageAnalysis;
+using NINA.Core.Enum;
+using System.Reflection;
 
 namespace ninaAPI.WebService.V2
 {
@@ -156,7 +159,7 @@ namespace ninaAPI.WebService.V2
     {
         private static CancellationTokenSource CameraCaptureToken;
         private static PlateSolveResult plateSolveResult;
-        private static IRenderedImage renderedImage;
+        private static bool isBayered;
         private static Task CaptureTask;
 
         private static CancellationTokenSource CameraCoolToken;
@@ -417,24 +420,25 @@ namespace ninaAPI.WebService.V2
 
             try
             {
-                if (renderedImage == null)
+                if (!File.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png")))
                 {
                     response = CoreUtility.CreateErrorTable(new Error("No image available", 400));
                 }
                 else
                 {
-                    var img = await renderedImage.DetectStars(false, NINA.Core.Enum.StarSensitivityEnum.Normal, NINA.Core.Enum.NoiseReductionEnum.None);
+                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"), 16, isBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
+                    var img = await imageData.RenderImage().DetectStars(false, StarSensitivityEnum.Normal, NoiseReductionEnum.None);
                     var s = ImageStatistics.Create(img.RawImageData);
 
                     Dictionary<string, object> stats = new Dictionary<string, object>() {
-                    { "Stars", img.RawImageData.StarDetectionAnalysis.DetectedStars },
-                    { "HFR", img.RawImageData.StarDetectionAnalysis.HFR },
-                    { "Median", s.Median },
-                    { "MedianAbsoluteDeviation", s.MedianAbsoluteDeviation },
-                    { "Mean", s.Mean },
-                    { "Max", s.Max },
-                    { "Min", s.Min },
-                    { "StDev", s.StDev },
+                        { "Stars", img.RawImageData.StarDetectionAnalysis.DetectedStars },
+                        { "HFR", img.RawImageData.StarDetectionAnalysis.HFR },
+                        { "Median", s.Median },
+                        { "MedianAbsoluteDeviation", s.MedianAbsoluteDeviation },
+                        { "Mean", s.Mean },
+                        { "Max", s.Max },
+                        { "Min", s.Min },
+                        { "StDev", s.StDev },
                 };
 
                     response.Response = stats;
@@ -500,22 +504,24 @@ namespace ninaAPI.WebService.V2
                 }
                 else if (getResult && CaptureTask.IsCompleted)
                 {
+                    Bitmap img = new Bitmap(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"));
+                    BitmapSource source = ImageUtility.ConvertBitmap(img);
                     if (stream)
                     {
                         BitmapEncoder encoder = null;
                         if (scale == 0 && resize)
                         {
-                            BitmapSource image = BitmapHelper.ResizeBitmap(renderedImage.Image, resolution);
+                            BitmapSource image = BitmapHelper.ResizeBitmap(source, resolution);
                             encoder = BitmapHelper.GetEncoder(image, quality);
                         }
                         if (scale != 0 && resize)
                         {
-                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, scale);
+                            BitmapSource image = BitmapHelper.ScaleBitmap(source, scale);
                             encoder = BitmapHelper.GetEncoder(image, quality);
                         }
                         if (!resize)
                         {
-                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
+                            BitmapSource image = BitmapHelper.ScaleBitmap(source, 1);
                             encoder = BitmapHelper.GetEncoder(image, quality);
                         }
                         HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpg";
@@ -532,11 +538,11 @@ namespace ninaAPI.WebService.V2
                         {
                             string image = string.Empty;
                             if (scale == 0 && resize)
-                                image = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, resolution, quality);
+                                image = BitmapHelper.ResizeAndConvertBitmap(source, resolution, quality);
                             if (scale != 0 && resize)
-                                image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
+                                image = BitmapHelper.ScaleAndConvertBitmap(source, scale, quality);
                             if (!resize)
-                                image = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
+                                image = BitmapHelper.ScaleAndConvertBitmap(source, 1, quality);
 
                             response.Response = new CaptureResponse() { Image = image, PlateSolveResult = plateSolveResult };
                         }
@@ -561,7 +567,6 @@ namespace ninaAPI.WebService.V2
 
                     CaptureTask = Task.Run(async () =>
                     {
-                        renderedImage = null;
                         plateSolveResult = null;
                         IPlateSolveSettings settings = AdvancedAPI.Controls.Profile.ActiveProfile.PlateSolveSettings;
 
@@ -579,7 +584,16 @@ namespace ninaAPI.WebService.V2
 
                         PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: true);
                         IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(sequence, CameraCaptureToken.Token, AdvancedAPI.Controls.StatusMediator.GetStatus());
-                        renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(exposure, parameters, CameraCaptureToken.Token);
+                        IRenderedImage renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(exposure, parameters, CameraCaptureToken.Token);
+
+                        var encoder = BitmapHelper.GetEncoder(renderedImage.Image, -1);
+                        using (FileStream fs = new FileStream(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"), FileMode.Create))
+                        {
+                            encoder.Save(fs);
+                        }
+                        Logger.Info(Path.Combine(Assembly.GetExecutingAssembly().Location, $"temp.png"));
+                        isBayered = renderedImage.RawImageData.Properties.IsBayered;
+
 
                         if (solve)
                         {

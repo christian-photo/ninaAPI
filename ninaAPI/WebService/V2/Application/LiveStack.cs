@@ -154,6 +154,30 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        [Route(HttpVerbs.Get, "/livestack/image/available")]
+        public void LiveStackImageAvailable()
+        {
+            HttpResponse response = new HttpResponse();
+
+            List<object> images = new List<object>();
+
+            try
+            {
+                foreach (var image in LiveStackWatcher.LiveStackHistory.Images)
+                {
+                    images.Add(new { image.Filter, image.Target });
+                }
+                response.Response = images;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/livestack/image/{target}/{filter}")]
         public async Task LiveStackImage(string filter, string target,
             [QueryField] bool resize,
@@ -217,11 +241,11 @@ namespace ninaAPI.WebService.V2
                     else
                     {
                         if (scale == 0 && resize)
-                            response.Response = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, sz, quality);
+                            response.Response = BitmapHelper.ResizeAndConvertBitmap(image, sz, quality);
                         if (scale != 0 && resize)
-                            response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
+                            response.Response = BitmapHelper.ScaleAndConvertBitmap(image, scale, quality);
                         if (!resize)
-                            response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
+                            response.Response = BitmapHelper.ScaleAndConvertBitmap(image, 1, quality);
                     }
 
                 }
