@@ -4,6 +4,7 @@ The changes for each individual (beta) release can be seen [here](https://github
 
 ## 2.2.7.0
 
+- **Important: Please use streaming instead of the base64 encoding for images, since base64 support will be removed in the near future**
 - Fixes an issue with `guider/stop`
 - Fixed a bug in the Livestack endpoint that could return a wrong image
 - Improved memory consumption of the capture endpoint

@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API.
+  description: This is the API documentation for the NINA plugin Advanced API. Please use streaming instead of the default base64 encoding for images, as base64 support will be removed in the near future!
   version: 2.2.7
 servers:
   - url: http://localhost:1888/v2/api
@@ -6386,7 +6386,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
-  /livestack/{target}/{filter}:
+  /livestack/image/{target}/{filter}:
     get:
       tags:
         - Livestack
@@ -6405,6 +6405,38 @@ paths:
           schema:
             type: string
             example: RGB
+        - in: query
+          name: resize
+          description: Whether to resize the image.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: quality
+          description: The quality of the image, ranging from 1 (worst) to 100 (best). -1 or omitted for png
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: size
+          description: The size of the image ([width]x[height]). Requires resize to be true.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: scale
+          description: The scale of the image. Requires resize to be true.
+          required: false
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: stream
+          description: Stream the image to the client. This will stream the image in image/jpg or image/png format.
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
