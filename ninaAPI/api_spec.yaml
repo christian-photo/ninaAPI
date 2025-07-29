@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Advanced API
   description: This is the API documentation for the NINA plugin Advanced API.
-  version: 2.2.6
+  version: 2.2.7
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server

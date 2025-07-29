@@ -2,7 +2,7 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
-## 2.2.x.x
+## 2.2.7.0
 
 - Fixes an issue with `guider/stop`
 - Fixed a bug in the Livestack endpoint that could return a wrong image
