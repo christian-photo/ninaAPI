@@ -8,6 +8,7 @@ The changes for each individual (beta) release can be seen [here](https://github
 - Fixes an issue with `guider/stop`
 - Fixed a bug in the Livestack endpoint that could return a wrong image
 - Improved memory consumption of the capture endpoint
+- NaN values are now returned as 0
 - Added `livestack/image/available` to get a list of available images
 
 ## 2.2.6.2

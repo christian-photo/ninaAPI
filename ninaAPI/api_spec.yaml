@@ -23,7 +23,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: 2.2.6.0
+                    example: 2.2.7.0
                   Error:
                     type: string
                     example: ""
@@ -4563,26 +4563,28 @@ paths:
                 type: object
                 properties:
                   Response:
-                    type: object
-                    properties:
-                      Timestamp:
-                        type: string
-                        example: "2025-05-04T14:57:39.5079"
-                      Level:
-                        type: string
-                        example: "INFO"
-                      Source:
-                        type: string
-                        example: "CameraChooserVM.cs"
-                      Member:
-                        type: string
-                        example: "GetEquipment"
-                      Line:
-                        type: string
-                        example: "279"
-                      Message:
-                        type: string
-                        example: "Found 2 ASCOM Cameras"
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Timestamp:
+                          type: string
+                          example: "2025-05-04T14:57:39.5079"
+                        Level:
+                          type: string
+                          example: "INFO"
+                        Source:
+                          type: string
+                          example: "CameraChooserVM.cs"
+                        Member:
+                          type: string
+                          example: "GetEquipment"
+                        Line:
+                          type: string
+                          example: "279"
+                        Message:
+                          type: string
+                          example: "Found 2 ASCOM Cameras"
                   Error:
                     type: string
                     example: ""
@@ -7279,13 +7281,13 @@ components:
             HasShutter:
               type: boolean
             Temperature:
-              type: integer
+              type: number
             Gain:
               type: integer
             DefaultGain:
               type: integer
             ElectronsPerADU:
-              type: integer
+              type: number
             BinX:
               type: integer
             BitDepth:
@@ -7324,7 +7326,7 @@ components:
             YSize:
               type: integer
             PixelSize:
-              type: integer
+              type: number
             Battery:
               type: integer
             GainMin:
@@ -7339,7 +7341,7 @@ components:
             CoolerOn:
               type: boolean
             CoolerPower:
-              type: integer
+              type: number
             HasDewHeater:
               type: boolean
             DewHeaterOn:
@@ -7355,7 +7357,7 @@ components:
             SubSampleHeight:
               type: integer
             TemperatureSetPoint:
-              type: integer
+              type: number
             ReadoutModes:
               type: array
               items:
@@ -7371,7 +7373,7 @@ components:
             ExposureEndTime:
               type: string
             LastDownloadTime:
-              type: integer
+              type: number
             SensorType:
               type: string
               enum:
@@ -7408,9 +7410,9 @@ components:
                   - X
                   - "Y"
             ExposureMax:
-              type: integer
+              type: number
             ExposureMin:
-              type: integer
+              type: number
             LiveViewEnabled:
               type: boolean
             CanShowLiveView:
@@ -8298,9 +8300,9 @@ components:
             Slewing:
               type: boolean
             GuideRateRightAscensionArcsecPerSec:
-              type: integer
+              type: number
             GuideRateDeclinationArcsecPerSec:
-              type: integer
+              type: number
             CanMovePrimaryAxis:
               type: boolean
             CanMoveSecondaryAxis:
