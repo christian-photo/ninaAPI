@@ -156,7 +156,7 @@ namespace ninaAPI.Utility
         private static readonly JsonSerializerOptions options = new JsonSerializerOptions()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            Converters = { new SkipNaNDoubleConverter(), new SkipNaNFloatConverter() },
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
         };
 
@@ -269,6 +269,42 @@ namespace ninaAPI.Utility
                 property.ShouldSerialize = _ => false;
             }
             return property;
+        }
+    }
+
+    public class SkipNaNDoubleConverter : System.Text.Json.Serialization.JsonConverter<double>
+    {
+        public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            => reader.GetDouble();
+
+        public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
+        {
+            if (!double.IsNaN(value))
+            {
+                writer.WriteNumberValue(value);
+            }
+            else
+            {
+                writer.WriteNumberValue(0.0);
+            }
+        }
+    }
+
+    public class SkipNaNFloatConverter : System.Text.Json.Serialization.JsonConverter<float>
+    {
+        public override float Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            => reader.GetSingle();
+
+        public override void Write(Utf8JsonWriter writer, float value, JsonSerializerOptions options)
+        {
+            if (!float.IsNaN(value))
+            {
+                writer.WriteNumberValue(value);
+            }
+            else
+            {
+                writer.WriteNumberValue(0.0);
+            }
         }
     }
 }

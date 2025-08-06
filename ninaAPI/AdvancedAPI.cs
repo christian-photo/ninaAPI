@@ -170,16 +170,18 @@ namespace ninaAPI
 
         public override Task Teardown()
         {
-            if (Server != null)
-            {
-                Server.Stop();
-                Server = null;
-            }
+            Server?.Stop();
+            Server = null;
+
             API.StopWatchers();
             communicator.Dispose();
             if (Directory.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}")))
             {
                 Directory.Delete(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}"), true);
+            }
+            if (File.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png")))
+            {
+                File.Delete(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"));
             }
             return base.Teardown();
         }

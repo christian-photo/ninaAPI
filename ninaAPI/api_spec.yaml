@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API.
-  version: 2.2.6
+  description: This is the API documentation for the NINA plugin Advanced API. Please use streaming instead of the default base64 encoding for images, as base64 support will be removed in the near future!
+  version: 2.2.7
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -23,7 +23,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: 2.2.6.0
+                    example: 2.2.7.0
                   Error:
                     type: string
                     example: ""
@@ -4533,7 +4533,27 @@ paths:
       tags:
         - Application
       summary: Logs
-      description: Get a list of the last N log entries, this will ignore the header of the file
+      description: Get a list of the last N log entries, this will ignore the header of the file. The endpoint is limited by the log level set in NINA
+      parameters:
+        - in: query
+          name: lineCount
+          description: Return the last N lines of the log file, with N being the lineCount
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: level
+          description: Filter the log entries by level. This uses the provided level as a minimum level, so level INFO will return INFO, WARNING and ERROR entries
+          required: false
+          schema:
+            type: string
+            enum:
+              - TRACE
+              - DEBUG
+              - INFO
+              - WARNING
+              - ERROR
       responses:
         "200":
           description: Successful response
@@ -4543,26 +4563,28 @@ paths:
                 type: object
                 properties:
                   Response:
-                    type: object
-                    properties:
-                      Timestamp:
-                        type: string
-                        example: "2025-05-04T14:57:39.5079"
-                      Level:
-                        type: string
-                        example: "INFO"
-                      Source:
-                        type: string
-                        example: "CameraChooserVM.cs"
-                      Member:
-                        type: string
-                        example: "GetEquipment"
-                      Line:
-                        type: string
-                        example: "279"
-                      Message:
-                        type: string
-                        example: "Found 2 ASCOM Cameras"
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Timestamp:
+                          type: string
+                          example: "2025-05-04T14:57:39.5079"
+                        Level:
+                          type: string
+                          example: "INFO"
+                        Source:
+                          type: string
+                          example: "CameraChooserVM.cs"
+                        Member:
+                          type: string
+                          example: "GetEquipment"
+                        Line:
+                          type: string
+                          example: "279"
+                        Message:
+                          type: string
+                          example: "Found 2 ASCOM Cameras"
                   Error:
                     type: string
                     example: ""
@@ -4815,7 +4837,7 @@ paths:
       parameters:
         - in: query
           name: slew_option
-          description: The slew option to use. Possible values&#58; Center, Rotate
+          description: The slew option to use. Possible values&#58; Center, Rotate. If this is omitted, it is a simple slew.
           required: false
           schema:
             type: string
@@ -5934,7 +5956,7 @@ paths:
       tags:
         - Sequence
       summary: Available Sequences
-      description: List available sequences. This is currently not really useful as it is not possible to load sequences
+      description: List available sequences.
       responses:
         "200":
           description: Successful response
@@ -5946,15 +5968,7 @@ paths:
                   Response:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        Event:
-                          type: string
-                        Time:
-                          type: string
-                      required:
-                        - Event
-                        - Time
+                      type: string
                   Error:
                     type: string
                     example: ""
@@ -6330,7 +6344,51 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
-  /livestack/{target}/{filter}:
+  /livestack/image/available:
+    get:
+      tags:
+        - Livestack
+      summary: Available Stacks
+      description: Livestack >= v1.0.0.9. Returns a list of available stacks, which can be retrieved
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Filter:
+                          type: string
+                          example: RGB
+                        Target:
+                          type: string
+                          example: M31
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /livestack/image/{target}/{filter}:
     get:
       tags:
         - Livestack
@@ -6349,6 +6407,38 @@ paths:
           schema:
             type: string
             example: RGB
+        - in: query
+          name: resize
+          description: Whether to resize the image.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: quality
+          description: The quality of the image, ranging from 1 (worst) to 100 (best). -1 or omitted for png
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: size
+          description: The size of the image ([width]x[height]). Requires resize to be true.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: scale
+          description: The scale of the image. Requires resize to be true.
+          required: false
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: stream
+          description: Stream the image to the client. This will stream the image in image/jpg or image/png format.
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
@@ -7191,13 +7281,13 @@ components:
             HasShutter:
               type: boolean
             Temperature:
-              type: integer
+              type: number
             Gain:
               type: integer
             DefaultGain:
               type: integer
             ElectronsPerADU:
-              type: integer
+              type: number
             BinX:
               type: integer
             BitDepth:
@@ -7236,7 +7326,7 @@ components:
             YSize:
               type: integer
             PixelSize:
-              type: integer
+              type: number
             Battery:
               type: integer
             GainMin:
@@ -7251,7 +7341,7 @@ components:
             CoolerOn:
               type: boolean
             CoolerPower:
-              type: integer
+              type: number
             HasDewHeater:
               type: boolean
             DewHeaterOn:
@@ -7267,7 +7357,7 @@ components:
             SubSampleHeight:
               type: integer
             TemperatureSetPoint:
-              type: integer
+              type: number
             ReadoutModes:
               type: array
               items:
@@ -7283,7 +7373,7 @@ components:
             ExposureEndTime:
               type: string
             LastDownloadTime:
-              type: integer
+              type: number
             SensorType:
               type: string
               enum:
@@ -7320,9 +7410,9 @@ components:
                   - X
                   - "Y"
             ExposureMax:
-              type: integer
+              type: number
             ExposureMin:
-              type: integer
+              type: number
             LiveViewEnabled:
               type: boolean
             CanShowLiveView:
@@ -8210,9 +8300,9 @@ components:
             Slewing:
               type: boolean
             GuideRateRightAscensionArcsecPerSec:
-              type: integer
+              type: number
             GuideRateDeclinationArcsecPerSec:
-              type: integer
+              type: number
             CanMovePrimaryAxis:
               type: boolean
             CanMoveSecondaryAxis:

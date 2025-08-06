@@ -195,7 +195,7 @@ namespace ninaAPI.WebService.V2
 
                 if (guider.GetInfo().Connected)
                 {
-                    await guider.StopGuiding(GuideToken.Token);
+                    await guider.StopGuiding(CancellationToken.None);
                     response.Response = "Guiding stopped";
                 }
                 else
@@ -223,7 +223,7 @@ namespace ninaAPI.WebService.V2
 
                 if (guider.GetInfo().Connected)
                 {
-                    response.Success = await guider.ClearCalibration(new CancellationTokenSource().Token);
+                    response.Success = await guider.ClearCalibration(CancellationToken.None);
                     response.Response = "Calibration cleared";
                 }
                 else
