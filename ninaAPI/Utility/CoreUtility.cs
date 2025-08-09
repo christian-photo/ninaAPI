@@ -36,6 +36,7 @@ using Newtonsoft.Json;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NINA.ViewModel.Sequencer;
 
 namespace ninaAPI.Utility
 {
@@ -53,6 +54,12 @@ namespace ninaAPI.Utility
         {
             options.Converters.Add(new JsonStringEnumConverter());
             sequenceOptions.ContractResolver = new SequenceIgnoreResolver();
+        }
+
+        public static ISequenceRootContainer GetSequenceRoot(this ISequenceMediator sequence)
+        {
+            var navigation = (ISequenceNavigationVM)sequence.GetType().GetField("sequenceNavigation", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(sequence);
+            return navigation.Sequence2VM.Sequencer.MainContainer;
         }
 
         public static IList<IDeepSkyObjectContainer> GetAllTargets(this ISequenceMediator sequence)
@@ -239,6 +246,16 @@ namespace ninaAPI.Utility
                 return Enum.Parse(type, str);
             }
             return str;
+        }
+
+        public static string[] GetFilesRecursively(string path)
+        {
+            List<string> files = [.. Directory.GetFiles(path)];
+            foreach (string dir in Directory.GetDirectories(path))
+            {
+                files.AddRange(GetFilesRecursively(dir));
+            }
+            return [.. files];
         }
     }
 

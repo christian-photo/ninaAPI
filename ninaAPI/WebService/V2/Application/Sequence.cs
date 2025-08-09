@@ -47,6 +47,8 @@ using System.Threading.Tasks;
 using NINA.Sequencer.Serialization;
 using NINA.Sequencer.Mediator;
 using NINA.Sequencer;
+using NINA.Core.Enum;
+using NINA.Core.Locale;
 
 namespace ninaAPI.WebService.V2
 {
@@ -100,23 +102,13 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    // Could use reflection as well, however that would be a total of 4 properties to get via reflection
-                    // and that would be a bit too much uncertainty imo. So we have to wait until NINA implements an api for that
-                    IList<IDeepSkyObjectContainer> targets = Sequence.GetAllTargets();
-                    if (targets.Count == 0)
-                    {
-                        response = CoreUtility.CreateErrorTable(new Error("No DSO Container found", 409));
-                    }
-                    else
-                    {
-                        ISequenceRootContainer root = ((SequenceContainer)targets[0]).GetRootContainer(targets[0]);
-                        List<Hashtable> json =
-                        [
-                            new Hashtable() { { "GlobalTriggers", getTriggers((SequenceContainer)root) } },
-                            .. getSequenceRecursivley(root),
-                        ]; // Global triggers
-                        response.Response = json;
-                    }
+                    ISequenceRootContainer root = Sequence.GetSequenceRoot();
+                    List<Hashtable> json =
+                    [
+                        new Hashtable() { { "GlobalTriggers", getTriggers((SequenceContainer)root) } },
+                        .. getSequenceRecursivley(root),
+                    ]; // Global triggers
+                    response.Response = json;
                 }
             }
             catch (Exception ex)
@@ -143,23 +135,13 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    // Could use reflection as well, however that would be a total of 4 properties to get via reflection
-                    // and that would be a bit too much uncertainty imo. So we have to wait until NINA implements an api for that
-                    IList<IDeepSkyObjectContainer> targets = Sequence.GetAllTargets();
-                    if (targets.Count == 0)
-                    {
-                        response = CoreUtility.CreateErrorTable(new Error("No DSO Container found", 409));
-                    }
-                    else
-                    {
-                        ISequenceRootContainer root = ((SequenceContainer)targets[0]).GetRootContainer(targets[0]);
-                        List<Hashtable> json =
-                        [
-                            new Hashtable() { { "GlobalTriggers", getTriggersNew((SequenceContainer)root) } },
-                            .. getSequenceRecursivleyNew(root),
-                        ]; // Global triggers
-                        response.Response = json;
-                    }
+                    ISequenceRootContainer root = Sequence.GetSequenceRoot();
+                    List<Hashtable> json =
+                    [
+                        new Hashtable() { { "GlobalTriggers", getTriggersNew((SequenceContainer)root) } },
+                        .. getSequenceRecursivleyNew(root),
+                    ]; // Global triggers
+                    response.Response = json;
                 }
                 HttpContext.WriteSequenceResponse(response);
             }
@@ -185,10 +167,6 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Sequence is not initialized", 400));
                 }
-                else if (sequence.GetAllTargets().Count == 0)
-                {
-                    response = CoreUtility.CreateErrorTable(new Error("No DSO Container found", 400));
-                }
                 else if (string.IsNullOrEmpty(path))
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Invalid path", 400));
@@ -199,7 +177,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    ISequenceRootContainer root = ((SequenceContainer)sequence.GetAllTargets()[0]).GetRootContainer(sequence.GetAllTargets()[0]);
+                    ISequenceRootContainer root = sequence.GetSequenceRoot();
                     string[] pathSplit = path.Split('-'); // e.g. 'CameraSettings-PixelSize' -> CameraSettings, PixelSize
                     object position = AdvancedAPI.Controls.Profile.ActiveProfile;
                     switch (pathSplit[0])
@@ -707,41 +685,6 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/sequence/running")]
-        public void SequenceStop([QueryField] bool legacy)
-        {
-            HttpResponse response = new HttpResponse();
-
-            try
-            {
-                ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
-
-                if (!sequence.Initialized)
-                {
-                    response = CoreUtility.CreateErrorTable(new Error("Sequence is not initialized", 409));
-                }
-                else
-                {
-                    if (!legacy)
-                    {
-                        response.Response = sequence.IsAdvancedSequenceRunning();
-                    }
-                    else
-                    {
-                        ISequenceNavigationVM navigation = (ISequenceNavigationVM)sequence.GetType().GetProperty("sequenceNavigation").GetValue(sequence);
-                        // navigation.SimpleSequenceVM.Sequencer.MainContainer.Status
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
-
-            HttpContext.WriteToResponse(response);
-        }
-
         [Route(HttpVerbs.Get, "/sequence/reset")]
         public void SequenceReset()
         {
@@ -757,16 +700,9 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    IList<IDeepSkyObjectContainer> targets = sequence.GetAllTargets();
-                    if (targets.Count == 0)
-                    {
-                        response = CoreUtility.CreateErrorTable(new Error("No DSO Container found", 409));
-                    }
-                    else
-                    {
-                        Application.Current.Dispatcher.Invoke(() => targets[0].Parent.Parent.ResetAll());
-                        response.Response = "Sequence reset";
-                    }
+                    ISequenceRootContainer root = sequence.GetSequenceRoot();
+                    Application.Current.Dispatcher.Invoke(root.ResetAll);
+                    response.Response = "Sequence reset";
                 }
             }
             catch (Exception ex)
@@ -840,9 +776,9 @@ namespace ninaAPI.WebService.V2
                 {
                     var mediator = (SequenceMediator)sequence;
                     object nav = mediator.GetType().GetField("sequenceNavigation", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(mediator);
-                    object factory = nav.GetType().GetField("factory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(nav);
+                    ISequencerFactory factory = (ISequencerFactory)nav.GetType().GetField("factory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(nav);
 
-                    var converter = new SequenceJsonConverter((ISequencerFactory)factory);
+                    var converter = new SequenceJsonConverter(factory);
 
                     IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
                     string sequenceFolder = profile.SequenceSettings.DefaultSequenceFolder;
@@ -856,7 +792,24 @@ namespace ninaAPI.WebService.V2
                     {
                         ISequenceContainer container = converter.Deserialize(File.ReadAllText(sequenceFile));
 
-                        Application.Current.Dispatcher.Invoke(() => sequence.SetAdvancedSequence((SequenceRootContainer)container));
+                        SequenceRootContainer root;
+
+                        if (container is DeepSkyObjectContainer dso)
+                        {
+                            root = factory.GetContainer<SequenceRootContainer>();
+                            root.Name = Loc.Instance["LblAdvancedSequenceTitle"];
+                            root.Add(factory.GetContainer<StartAreaContainer>());
+                            var target = factory.GetContainer<TargetAreaContainer>();
+                            target.Add(dso);
+                            root.Add(target);
+                            root.Add(factory.GetContainer<EndAreaContainer>());
+                        }
+                        else
+                        {
+                            root = (SequenceRootContainer)container;
+                        }
+
+                        Application.Current.Dispatcher.Invoke(() => sequence.SetAdvancedSequence(root));
 
                         response.Response = "Sequence updated";
                     }
@@ -881,14 +834,19 @@ namespace ninaAPI.WebService.V2
                 IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
                 string sequenceFolder = profile.SequenceSettings.DefaultSequenceFolder;
 
-                List<string> f = new List<string>();
+                List<string> f = [];
 
-                string[] files = Directory.GetFiles(sequenceFolder);
+                string[] files = CoreUtility.GetFilesRecursively(sequenceFolder);
                 foreach (string file in files)
                 {
                     if (file.EndsWith(".json"))
                     {
-                        f.Add(Path.GetFileNameWithoutExtension(file));
+                        string cleaned = file.Replace(sequenceFolder, "").Replace("\\", "/").Replace(".json", "");
+                        if (cleaned.StartsWith('/'))
+                        {
+                            cleaned = cleaned[1..];
+                        }
+                        f.Add(cleaned);
                     }
                 }
 

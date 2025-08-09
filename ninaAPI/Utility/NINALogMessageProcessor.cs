@@ -71,16 +71,8 @@ namespace ninaAPI
 
             RegexOptions options = RegexOptions.Compiled | RegexOptions.IgnoreCase;
 
-            // Advanced sequence start
-            Regex re = new Regex("^Advanced Sequence starting$", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_ADV_SEQ_START, false, null));
-
-            // Advanced sequence finished
-            re = new Regex("^Advanced Sequence finished$", options);
-            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_ADV_SEQ_STOP, false, null));
-
             // Dome stopped
-            re = new Regex("^Stopping all dome movement$", options);
+            Regex re = new Regex("^Stopping all dome movement$", options);
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_DOME_STOPPED, false, null));
 
             // Center / Plate solve in Sequence
