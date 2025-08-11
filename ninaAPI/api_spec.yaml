@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Advanced API
   description: This is the API documentation for the NINA plugin Advanced API. Please use streaming instead of the default base64 encoding for images, as base64 support will be removed in the near future!
-  version: 2.2.7
+  version: 2.2.8
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -23,7 +23,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: 2.2.7.0
+                    example: 2.2.8.0
                   Error:
                     type: string
                     example: ""
@@ -5595,9 +5595,7 @@ paths:
       tags:
         - Sequence
       summary: JSON
-      description:
-        Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized! This endpoint is generally advised to use over state since it gives
-        more reliable results.
+      description: Get sequence as json. This endpoint is generally advised to use over state since it gives more reliable results.
       responses:
         "200":
           description: Successful response, best to try it out yourself
@@ -5606,7 +5604,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SequenceBaseJson"
         "409":
-          description: Sequencer not initialized / No DSO container found
+          description: Sequencer not initialized
           content:
             application/json:
               schema:
@@ -5619,7 +5617,6 @@ paths:
                     type: string
                     enum:
                       - Sequencer not initialized
-                      - No DSO container found
                   StatusCode:
                     type: integer
                     example: 409
@@ -5642,8 +5639,8 @@ paths:
         - Sequence
       summary: Complete Sequence
       description:
-        Get sequence as json. For this to work, there needs to be a deep sky object container present and the sequencer view has to be initalized! This is similar to the json endpoint, however the
-        returned sequence is much more elaborate and also supports plugins. The returned json from /json is not directly compatible with this endpoint. Use this endpoint (not json!) as reference for sequence editing!
+        Get sequence as json. This is similar to the json endpoint, however the returned sequence is much more elaborate and also supports plugins.
+        The returned json from /json is not directly compatible with this endpoint. Use this endpoint (not json!) as reference for sequence editing!
         In general however I recommend using the json endpoint as it gives more reliable results, so use this if you do not need the extra functionality.
       responses:
         "200":
@@ -5653,7 +5650,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SequenceBaseJson"
         "409":
-          description: Sequencer not initialized / No DSO container found
+          description: Sequencer not initialized
           content:
             application/json:
               schema:
@@ -5666,7 +5663,6 @@ paths:
                     type: string
                     enum:
                       - Sequencer not initialized
-                      - No DSO container found
                   StatusCode:
                     type: integer
                     example: 409
@@ -5748,7 +5744,6 @@ paths:
                     type: string
                     enum:
                       - Sequence is not initialized
-                      - No DSO Container found
                       - Invalid path
                       - New value can't be null
                   StatusCode:
@@ -5772,7 +5767,7 @@ paths:
       tags:
         - Sequence
       summary: Start
-      description: Start sequence. This requires the sequencer to be initalized, which can be achieved by opening the tab once.
+      description: Start Advanced Sequence.
       parameters:
         - in: query
           name: skipValidation
@@ -5838,7 +5833,7 @@ paths:
       tags:
         - Sequence
       summary: Stop
-      description: Stop sequence. This requires the sequencer to be initalized, which can be achieved by opening the tab once.
+      description: Stop Advanced Sequence.
       responses:
         "200":
           description: Successful response
@@ -5896,7 +5891,7 @@ paths:
       tags:
         - Sequence
       summary: Reset Sequence
-      description: Reset sequence. This requires the sequencer to be initalized, which can be achieved by opening the tab once.
+      description: Reset Advanced Sequence.
       responses:
         "200":
           description: Successful response
@@ -5921,7 +5916,7 @@ paths:
                     type: string
                     example: "API"
         "409":
-          description: Sequence not initialized / No DSO Container found
+          description: Sequence not initialized
           content:
             application/json:
               schema:
@@ -5934,7 +5929,6 @@ paths:
                     type: string
                     enum:
                       - Sequence is not initialized
-                      - No DSO Container found
                   StatusCode:
                     type: integer
                     example: 409
@@ -6156,6 +6150,7 @@ paths:
                     enum:
                       - Sequence is not initialized
                       - Sequence is already running
+                      - Sequence not found
                   StatusCode:
                     type: integer
                     example: 400
