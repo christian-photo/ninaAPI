@@ -24,14 +24,11 @@ using ninaAPI.WebService;
 using System.Net.NetworkInformation;
 using NINA.Core.Utility;
 using System.Threading.Tasks;
-using System.Text.Json.Serialization.Metadata;
-using Swan.Reflection;
 using NINA.Profile.Interfaces;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using System.Drawing;
 using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json.Converters;
 using Newtonsoft.Json;
 using System.Reflection;
 using System.Text.Json;
@@ -163,7 +160,7 @@ namespace ninaAPI.Utility
         private static readonly JsonSerializerOptions options = new JsonSerializerOptions()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new SkipNaNDoubleConverter(), new SkipNaNFloatConverter() },
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
         };
 
@@ -182,6 +179,7 @@ namespace ninaAPI.Utility
             context.Response.ContentType = MimeType.Json;
 
             string text = JsonConvert.SerializeObject(json, sequenceOptions);
+
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
                 writer.Write(text);
@@ -203,7 +201,6 @@ namespace ninaAPI.Utility
             */
 
             string text = System.Text.Json.JsonSerializer.Serialize(json, options);
-
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
                 writer.Write(text);
@@ -286,42 +283,6 @@ namespace ninaAPI.Utility
                 property.ShouldSerialize = _ => false;
             }
             return property;
-        }
-    }
-
-    public class SkipNaNDoubleConverter : System.Text.Json.Serialization.JsonConverter<double>
-    {
-        public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            => reader.GetDouble();
-
-        public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
-        {
-            if (!double.IsNaN(value))
-            {
-                writer.WriteNumberValue(value);
-            }
-            else
-            {
-                writer.WriteNumberValue(0.0);
-            }
-        }
-    }
-
-    public class SkipNaNFloatConverter : System.Text.Json.Serialization.JsonConverter<float>
-    {
-        public override float Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            => reader.GetSingle();
-
-        public override void Write(Utf8JsonWriter writer, float value, JsonSerializerOptions options)
-        {
-            if (!float.IsNaN(value))
-            {
-                writer.WriteNumberValue(value);
-            }
-            else
-            {
-                writer.WriteNumberValue(0.0);
-            }
         }
     }
 }

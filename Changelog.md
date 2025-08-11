@@ -7,6 +7,7 @@ The changes for each individual (beta) release can be seen [here](https://github
 - Sequence endpoints don't require a DSO Container to be present anymore
 - `sequence/list-available` now includes sequences and targets in subfolders
 - Removed the `ADV-SEQ-START` and `ADV-SEQ-STOP` events from the websocket. Not considered a breaking change, because they were deprecated in version 2.2.1.0. Use `SEQUENCE-STARTING` and `SEQUENCE-FINISHED` instead.
+- Revert fix that NaN values are now returned as 0
 
 ## 2.2.7.0
 
