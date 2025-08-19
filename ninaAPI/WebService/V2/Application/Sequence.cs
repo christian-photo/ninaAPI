@@ -836,7 +836,7 @@ namespace ninaAPI.WebService.V2
 
                 List<string> f = [];
 
-                string[] files = CoreUtility.GetFilesRecursively(sequenceFolder);
+                List<string> files = FileSystemHelper.GetFilesRecursively(sequenceFolder);
                 foreach (string file in files)
                 {
                     if (file.EndsWith(".json"))

@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2025 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,18 +9,22 @@
 
 #endregion "copyright"
 
+
+using System.Collections.Generic;
 using System.IO;
 
-public static class FileSystemHelper
+namespace ninaAPI.Utility
 {
-    public static string[] GetFilesRecursively(string path)
+    public static class FileSystemHelper
     {
-        string[] files = Directory.GetFiles(path);
-        foreach (string dirPath in Directory.GetDirectories(path))
+        public static List<string> GetFilesRecursively(string path)
         {
-            files = [.. files, .. GetFilesRecursively(dirPath)];
+            List<string> files = [.. Directory.GetFiles(path)];
+            foreach (string dir in Directory.GetDirectories(path))
+            {
+                files.AddRange(GetFilesRecursively(dir));
+            }
+            return files;
         }
-
-        return files;
     }
 }

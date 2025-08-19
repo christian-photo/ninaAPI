@@ -10,13 +10,12 @@
 #endregion "copyright"
 
 using EmbedIO;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
 using ninaAPI.Properties;
 using ninaAPI.Utility;
+using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2;
-using ninaAPI.WebService.V2.CustomDrivers;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,7 +24,7 @@ using System.Threading.Tasks;
 
 namespace ninaAPI.WebService
 {
-    public class API
+    public class WebApiServer : IWebApiServer
     {
         public WebServer Server;
 
@@ -36,22 +35,17 @@ namespace ninaAPI.WebService
 
         private static List<INinaWatcher> Watchers { get; set; } = new List<INinaWatcher>();
 
-        public API(int port)
+        public WebApiServer(int port)
         {
             Port = port;
         }
 
-        public void CreateServer()
+        private void CreateServer()
         {
             Server = new WebServer(o => o
                 .WithUrlPrefix($"http://*:{Port}")
                 .WithMode(HttpListenerMode.EmbedIO))
-                .WithModule(new PreprocessRequestModule())
-                .WithWebApi("/v2/api", m => m.WithController<ControllerV2>())
-                .WithModule(new WebSocketV2("/v2/socket"))
-                .WithModule(new TPPASocket("/v2/tppa"))
-                .WithModule(new MountAxisMoveSocket("/v2/mount"))
-                .WithModule(new NetworkedFilterWheelSocket("/v2/filterwheel"));
+                .WithModule(new PreprocessRequestModule());
         }
 
         public static void StartWatchers()
@@ -89,24 +83,29 @@ namespace ninaAPI.WebService
             }
         }
 
-        public void Start()
+        public void Start(params IHttpApi[] apis)
         {
             try
             {
-                Logger.Debug("Creating Webserver");
                 CreateServer();
-                Logger.Info("Starting Webserver");
+                foreach (IHttpApi api in apis)
+                {
+                    Server = api.ConfigureServer(Server);
+                }
+
+                Logger.Info("Starting web server");
                 if (Server != null)
                 {
                     serverThread = new Thread(() => APITask(Server));
                     serverThread.Name = "API Thread";
                     serverThread.SetApartmentState(ApartmentState.STA);
                     serverThread.Start();
+                    Started?.Invoke(this, EventArgs.Empty); // Raise Started event
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error($"failed to start web server: {ex}");
+                Logger.Error($"Failed to start web server: {ex}");
             }
         }
 
@@ -117,19 +116,19 @@ namespace ninaAPI.WebService
                 apiToken?.Cancel();
                 Server?.Dispose();
                 Server = null;
+                Stopped?.Invoke(this, EventArgs.Empty); // Raise Stopped event
                 WebSocketV2.SetUnavailable();
             }
             catch (Exception ex)
             {
-                Logger.Error($"failed to stop API: {ex}");
+                Logger.Error($"Failed to stop web server: {ex}");
             }
         }
 
         [STAThread]
         private void APITask(WebServer server)
         {
-            string ipAdress = CoreUtility.GetLocalNames()["IPADRESS"];
-            Logger.Info($"starting web server, listening at {ipAdress}:{Port}");
+            Logger.Info($"Starting web server, listening at {LocalAddresses.IPAddress}:{Port}");
 
             try
             {
@@ -140,10 +139,13 @@ namespace ninaAPI.WebService
             {
                 Logger.Error($"failed to start web server: {ex}");
                 Notification.ShowError($"Failed to start web server, see NINA log for details");
-
-                Logger.Debug("aborting web server thread");
             }
         }
+
+        public bool IsRunning() => apiToken?.Token.IsCancellationRequested ?? false;
+
+        public event EventHandler<EventArgs> Started;
+        public event EventHandler<EventArgs> Stopped;
     }
 
     public class PreprocessRequestModule : WebModuleBase
