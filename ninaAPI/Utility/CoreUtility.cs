@@ -50,7 +50,6 @@ namespace ninaAPI.Utility
         static CoreUtility()
         {
             options.Converters.Add(new JsonStringEnumConverter());
-            serializerSettings.ContractResolver = new SequenceIgnoreResolver();
         }
 
         public static ISequenceRootContainer GetSequenceRoot(this ISequenceMediator sequence)
@@ -89,6 +88,19 @@ namespace ninaAPI.Utility
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
         };
 
+        private static readonly JsonSerializerSettings sequenceSerializerSettings = new JsonSerializerSettings()
+        {
+            Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
+            {
+                args.ErrorContext.Handled = true;
+            },
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
+            Converters = { new StringEnumConverter() },
+            ContractResolver = new SequenceIgnoreResolver(),
+            FloatFormatHandling = FloatFormatHandling.String,
+        };
+
         private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
         {
             Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
@@ -105,8 +117,20 @@ namespace ninaAPI.Utility
         {
             context.Response.ContentType = MimeType.Json;
 
-            string text = JsonConvert.SerializeObject(json, serializerSettings);
+            string text = JsonConvert.SerializeObject(json, sequenceSerializerSettings);
 
+            using (var writer = new StreamWriter(context.Response.OutputStream))
+            {
+                writer.Write(text);
+            }
+        }
+
+        public static void WriteResponse(this IHttpContext context, object json, int statusCode = 200)
+        {
+            context.Response.ContentType = MimeType.Json;
+            context.Response.StatusCode = statusCode;
+
+            string text = JsonConvert.SerializeObject(json, serializerSettings);
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
                 writer.Write(text);

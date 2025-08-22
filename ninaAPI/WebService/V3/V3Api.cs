@@ -9,9 +9,13 @@
 
 #endregion "copyright"
 
+using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.WebApi;
+using NINA.Core.Utility;
+using ninaAPI.Utility;
 using ninaAPI.WebService.Interfaces;
+using ninaAPI.WebService.V3.Equipment;
 
 namespace ninaAPI.WebService.V3
 {
@@ -19,7 +23,14 @@ namespace ninaAPI.WebService.V3
     {
         public WebServer ConfigureServer(WebServer server)
         {
-            return server.WithWebApi("/v3/api", m => m.WithController<ControllerV3>());
+            return server.WithWebApi("/v3/api", m => m.WithController<ControllerV3>())
+                .WithWebApi("/v3/api/equipment/camera", m => m.WithController<CameraController>())
+                .HandleHttpException((context, exception) =>
+                {
+                    Logger.Trace($"Handling HttpException, status code: {exception.StatusCode}");
+                    context.WriteResponse(new { Error = exception.Message }, 404);
+                    return Task.CompletedTask;
+                });
         }
 
         public bool SupportsSSL() => true;
