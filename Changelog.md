@@ -2,6 +2,11 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.9.0
+
+- Added `prepared-image` endpoint to get the current image in the image dockable.
+- Added `IMAGE-PREPARED` event to the websocket. This event is sent when a new image is shown in the image dockable.
+
 ## 2.2.8.0
 
 - Sequence endpoints don't require a DSO Container to be present anymore

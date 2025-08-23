@@ -5175,6 +5175,136 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /prepared-image:
+    get:
+      tags:
+        - Image
+      summary: Get Prepared Image
+      description: Get the last prepared image. This is the image that is shown in NINA in the image dockable.
+      parameters:
+        - in: query
+          name: resize
+          description: Whether to resize the image.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: quality
+          description: The quality of the image, ranging from 1 (worst) to 100 (best). -1 or omitted for png
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: size
+          description: The size of the image ([width]x[height]). Requires resize to be true.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: scale
+          description: The scale of the image. Requires resize to be true.
+          required: false
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: factor
+          description: The stretch factor to apply, between 0 and 1. Defaults to what is configured in the profile.
+          required: false
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: blackClipping
+          description: The black clipping to apply. Defaults to what is configured in the profile.
+          required: false
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: unlinked
+          description: Indicates if the stretch should be unlinked. Defaults to what is configured in the profile.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: debayer
+          description: Indicates if the image should be debayered
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: bayerPattern
+          description:
+            What bayer pattern to use for debayering, if debayer is true. If this is not specified, the api will try to use the bayer pattern that is configured in the profile as its first option,
+            if that is set to Auto, the api will try to use the bayer pattern reported by the camera if it is connected. The fallback value is Monochrome.
+          required: false
+          schema:
+            type: string
+            enum:
+              - Monochrome
+              - Color
+              - RGGB
+              - CMYG
+              - CMYG2
+              - LRGB
+              - BGGR
+              - GBRG
+              - GRBG
+              - GRGB
+              - GBGR
+              - RGBG
+              - BGRG
+        - in: query
+          name: autoPrepare
+          description: Setting this to true will leave all processing up to NINA and you will recieve exactly the same image as you see in NINA. All other parameters related to image processing will have no effect.
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+          content:
+            image/png:
+              schema:
+                description: Image in png format, when stream is set to true and the image quality is not specified or set to -1
+                type: array
+                format: binary
+            image/jpg:
+              schema:
+                description: Image in jpg format, when stream is set to true and the image quality is specified
+                type: array
+                format: binary
+        "400":
+          description: Invalid image index / invalid bayer pattern / image is not a FITS file
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Invalid bayer pattern
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /image-history:
     get:
       tags:
