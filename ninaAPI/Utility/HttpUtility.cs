@@ -11,9 +11,14 @@
 
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using EmbedIO;
+using NINA.Core.Enum;
+using NINA.Profile.Interfaces;
 using ninaAPI.WebService;
 using ninaAPI.WebService.Interfaces;
 
@@ -23,13 +28,55 @@ namespace ninaAPI.Utility
     {
         public static bool IsParameterOmitted(this IHttpContext context, string parameter)
         {
-            return !context.Request.QueryString.AllKeys.Contains(parameter);
+            var keys = context?.Request?.QueryString?.AllKeys;
+            if (keys == null || keys.Length == 0) return true;
+            return !keys.Any(k => string.Equals(k, parameter, StringComparison.OrdinalIgnoreCase));
         }
 
         public static bool IsParameterOmitted<T>(this IHttpContext context, IQueryParameter<T> parameter)
         {
-            return !context.Request.QueryString.AllKeys.Contains(parameter.ParameterName);
+            return context.IsParameterOmitted(parameter.ParameterName);
         }
+
+        public static readonly Dictionary<int, string> StatusCodeMessages = new Dictionary<int, string>()
+        {
+            { 400, "Bad Request" },
+            { 401, "Unauthorized" },
+            { 403, "Forbidden" },
+            { 404, "Not Found" },
+            { 405, "Method Not Allowed" },
+            { 406, "Not Acceptable" },
+            { 407, "Proxy Authentication Required" },
+            { 408, "Request Timeout" },
+            { 409, "Conflict" },
+            { 410, "Gone" },
+            { 411, "Length Required" },
+            { 412, "Precondition Failed" },
+            { 413, "Payload Too Large" },
+            { 414, "URI Too Long" },
+            { 415, "Unsupported Media Type" },
+            { 416, "Range Not Satisfiable" },
+            { 417, "Expectation Failed" },
+            { 422, "Unprocessable Entity" },
+            { 423, "Locked" },
+            { 424, "Failed Dependency" },
+            { 426, "Upgrade Required" },
+            { 428, "Precondition Required" },
+            { 429, "Too Many Requests" },
+            { 431, "Request Header Fields Too Large" },
+            { 451, "Unavailable For Legal Reasons" },
+            { 500, "Internal Server Error" },
+            { 501, "Not Implemented" },
+            { 502, "Bad Gateway" },
+            { 503, "Service Unavailable" },
+            { 504, "Gateway Timeout" },
+            { 505, "HTTP Version Not Supported" },
+            { 506, "Variant Also Negotiates" },
+            { 507, "Insufficient Storage" },
+            { 508, "Loop Detected" },
+            { 510, "Not Extended" },
+            { 511, "Network Authentication Required" },
+        };
     }
 
     public class QueryParameter<T> : IQueryParameter<T>
@@ -37,56 +84,85 @@ namespace ninaAPI.Utility
         public string ParameterName { get; }
         public T DefaultValue { get; }
         public bool Required { get; }
+        private Func<T, bool> Validate;
 
         public bool WasProvided { get; set; }
         public T Value { get; set; }
 
-        public T Get(IHttpContext context)
+        private T Evaluate(IHttpContext context)
         {
             if (context.IsParameterOmitted(this))
             {
                 WasProvided = false;
                 if (Required)
-                {
                     throw CommonErrors.ParameterMissing(ParameterName);
-                }
-                Value = DefaultValue;
-                return Value;
+                return DefaultValue;
             }
 
-            var value = context.Request.QueryString.Get(ParameterName);
-            if (string.IsNullOrWhiteSpace(value))
+            var raw = context.Request.QueryString.Get(ParameterName);
+            if (string.IsNullOrWhiteSpace(raw))
             {
                 WasProvided = false;
                 if (Required)
-                {
                     throw CommonErrors.ParameterMissing(ParameterName);
-                }
-                Value = DefaultValue;
-                return Value;
+                return DefaultValue;
             }
 
             WasProvided = true;
 
-            object result = value.CastString(typeof(T));
-            if (result is T t)
+            // determine target (handle Nullable<T>)
+            var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+
+            try
             {
-                Value = t;
+                object converted;
+
+                // prefer existing helper if it reliably converts simple types
+                // fallback to robust conversion logic:
+                if (targetType.IsEnum)
+                {
+                    converted = Enum.Parse(targetType, raw, ignoreCase: true);
+                }
+                else if (targetType == typeof(Guid))
+                {
+                    converted = Guid.Parse(raw);
+                }
+                else
+                {
+                    var converter = TypeDescriptor.GetConverter(targetType);
+                    if (converter != null && converter.CanConvertFrom(typeof(string)))
+                        converted = converter.ConvertFromInvariantString(raw);
+                    else
+                        converted = Convert.ChangeType(raw, targetType, CultureInfo.InvariantCulture);
+                }
+
+                return (T)converted;
+            }
+            catch
+            {
+                throw CommonErrors.ParameterInvalid(ParameterName);
+            }
+        }
+
+        public T Get(IHttpContext context)
+        {
+            Value = Evaluate(context);
+            if (Validate(Value))
+            {
+                return Value;
             }
             else
             {
-                // Try to convert if CastString didn't return the right type
-                Value = (T)Convert.ChangeType(result, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+                throw CommonErrors.ParameterInvalid(ParameterName);
             }
-
-            return Value;
         }
 
-        public QueryParameter(string parameterName, T defaultValue, bool required = false)
+        public QueryParameter(string parameterName, T defaultValue, bool required = false, Func<T, bool> validate = null)
         {
             ParameterName = parameterName;
             DefaultValue = defaultValue;
             Required = required;
+            Validate = validate is null ? (v => true) : validate;
         }
     }
 
@@ -105,10 +181,10 @@ namespace ninaAPI.Utility
         private QueryParameter<int> widthParam;
         private QueryParameter<int> heightParam;
 
-        public SizeQueryParameter(Size size, bool required) : base("CONTAINER_PARAM", new Size(0, 0), false)
+        public SizeQueryParameter(Size size, bool required, string widthName = "width", string heightName = "height") : base("CONTAINER_PARAM", new Size(0, 0), false)
         {
-            widthParam = new QueryParameter<int>("width", size.Width, required);
-            heightParam = new QueryParameter<int>("height", size.Height, required);
+            widthParam = new QueryParameter<int>(widthName, size.Width, required, (width) => width > 0);
+            heightParam = new QueryParameter<int>(heightName, size.Height, required, (height) => height > 0);
         }
     }
 
@@ -118,8 +194,13 @@ namespace ninaAPI.Utility
         public QueryParameter<bool> Resize { get; set; }
         public QueryParameter<float> Scale { get; set; }
         public QueryParameter<int> Quality { get; set; }
-        public QueryParameter<float> ROI { get; set; }
-        public QueryParameter<float> StretchFactor { get; set; }
+        public QueryParameter<double> StretchFactor { get; set; }
+        public QueryParameter<bool> Debayer { get; set; }
+        public QueryParameter<SensorType> BayerPattern { get; set; }
+        public QueryParameter<bool> UnlinkedStretch { get; set; }
+        public QueryParameter<double> BlackClipping { get; set; }
+        public QueryParameter<RawConverterEnum> RawConverter { get; set; }
+
 
         private ImageQueryParameterSet()
         {
@@ -131,11 +212,26 @@ namespace ninaAPI.Utility
             {
                 Size = new SizeQueryParameter(new Size(1500, 1000), false),
                 Resize = new QueryParameter<bool>("resize", false, false),
-                Scale = new QueryParameter<float>("scale", 0.5f, false),
-                Quality = new QueryParameter<int>("quality", -1, false),
-                ROI = new QueryParameter<float>("roi", 1.0f, false),
-                StretchFactor = new QueryParameter<float>("stretchFactor", 1.0f, false),
+                Scale = new QueryParameter<float>("scale", 0.5f, false, (scale) => scale > 0 && scale <= 1),
+                Quality = new QueryParameter<int>("quality", -1, false, (quality) => quality >= -1 && quality <= 100),
+                StretchFactor = new QueryParameter<double>("stretch-factor", 1.0f, false),
+                Debayer = new QueryParameter<bool>("debayer", false, false),
+                BayerPattern = new QueryParameter<SensorType>("bayer-pattern", SensorType.Monochrome, false),
+                UnlinkedStretch = new QueryParameter<bool>("unlinked-stretch", false, false),
+                BlackClipping = new QueryParameter<double>("black-clipping", 0.0, false),
+                RawConverter = new QueryParameter<RawConverterEnum>("raw-converter", RawConverterEnum.FREEIMAGE, false),
             };
+        }
+
+        public static ImageQueryParameterSet ByProfile(IProfile profile)
+        {
+            var set = Default();
+            set.StretchFactor = new QueryParameter<double>("stretch-factor", profile.ImageSettings.AutoStretchFactor, false);
+            set.Debayer = new QueryParameter<bool>("debayer", profile.ImageSettings.DebayerImage, false);
+            set.BlackClipping = new QueryParameter<double>("black-clipping", profile.ImageSettings.BlackClipping, false);
+            set.UnlinkedStretch = new QueryParameter<bool>("unlinked-stretch", profile.ImageSettings.UnlinkedStretch, false);
+            set.RawConverter = new QueryParameter<RawConverterEnum>("raw-converter", profile.CameraSettings.RawConverter, false);
+            return set;
         }
 
         public void Evaluate(IHttpContext context)
@@ -144,8 +240,12 @@ namespace ninaAPI.Utility
             Resize.Get(context);
             Scale.Get(context);
             Quality.Get(context);
-            ROI.Get(context);
             StretchFactor.Get(context);
+            RawConverter.Get(context);
+            Debayer.Get(context);
+            BayerPattern.Get(context);
+            UnlinkedStretch.Get(context);
+            BlackClipping.Get(context);
         }
     }
 }

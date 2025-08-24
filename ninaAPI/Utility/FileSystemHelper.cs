@@ -10,8 +10,10 @@
 #endregion "copyright"
 
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace ninaAPI.Utility
 {
@@ -26,5 +28,8 @@ namespace ninaAPI.Utility
             }
             return files;
         }
+
+        public static string GetCapturePngPath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png");
+        public static string GetThumbnailFolder() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}");
     }
 }

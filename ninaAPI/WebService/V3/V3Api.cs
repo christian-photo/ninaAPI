@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.WebApi;
@@ -23,16 +24,32 @@ namespace ninaAPI.WebService.V3
     {
         public WebServer ConfigureServer(WebServer server)
         {
-            return server.WithWebApi("/v3/api", m => m.WithController<ControllerV3>())
-                .WithWebApi("/v3/api/equipment/camera", m => m.WithController<CameraController>())
-                .HandleHttpException((context, exception) =>
-                {
-                    Logger.Trace($"Handling HttpException, status code: {exception.StatusCode}");
-                    context.WriteResponse(new { Error = exception.Message }, 404);
-                    return Task.CompletedTask;
-                });
+            return server.WithWebApi("/v3/api/equipment/camera", m => m.WithController<CameraController>())
+                .WithWebApi("/v3/api", m => m.WithController<ControllerV3>())
+                .HandleHttpException(HandleHttpException);
         }
 
         public bool SupportsSSL() => true;
+
+        public async Task HandleHttpException(IHttpContext context, IHttpException exception)
+        {
+            Logger.Trace($"Handling HttpException, status code: {exception.StatusCode}, Message: {exception.Message}");
+            exception.PrepareResponse(context);
+
+            string error = HttpUtility.StatusCodeMessages.GetValueOrDefault(exception.StatusCode, "Unknown Error");
+
+            string msg = exception.Message;
+            object response = null;
+
+            if (string.IsNullOrEmpty(msg))
+            {
+                response = new { Error = error };
+            }
+            else
+            {
+                response = new { Error = error, Message = msg };
+            }
+            await context.WriteResponse(response, exception.StatusCode);
+        }
     }
 }

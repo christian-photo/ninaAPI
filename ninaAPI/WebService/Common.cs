@@ -30,6 +30,7 @@ namespace ninaAPI.WebService
         public static HttpException ProcessAlreadyRunning() => new(HttpStatusCode.Conflict, "Process already running");
         public static HttpException ParameterMissing(string parameter) => new(HttpStatusCode.BadRequest, $"Parameter {parameter} is missing");
         public static HttpException ParameterInvalid(string parameter) => new(HttpStatusCode.BadRequest, $"Parameter {parameter} is invalid");
+        public static HttpException ParameterOutOfRange(string parameter, int min, int max) => new(HttpStatusCode.BadRequest, $"Parameter {parameter} is out of range, expected {min} - {max}");
         public static HttpException ParameterFormatInvalid(string parameter, string format) => new(HttpStatusCode.BadRequest, $"Parameter {parameter} is in an invalid format, expected {format}");
         public static HttpException UnknwonError() => new(HttpStatusCode.InternalServerError, "Unknown error");
     }

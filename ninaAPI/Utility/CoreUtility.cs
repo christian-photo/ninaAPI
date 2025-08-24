@@ -34,6 +34,7 @@ using Newtonsoft.Json.Converters;
 using System.Configuration;
 using Swan;
 using System.Globalization;
+using NINA.Core.Utility;
 
 namespace ninaAPI.Utility
 {
@@ -110,6 +111,7 @@ namespace ninaAPI.Utility
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             NullValueHandling = NullValueHandling.Ignore,
             Converters = { new StringEnumConverter() },
+            ContractResolver = new FieldIgnoreResolver(),
             FloatFormatHandling = FloatFormatHandling.String,
         };
 
@@ -125,7 +127,7 @@ namespace ninaAPI.Utility
             }
         }
 
-        public static void WriteResponse(this IHttpContext context, object json, int statusCode = 200)
+        public static async Task WriteResponse(this IHttpContext context, object json, int statusCode = 200)
         {
             context.Response.ContentType = MimeType.Json;
             context.Response.StatusCode = statusCode;
@@ -133,7 +135,7 @@ namespace ninaAPI.Utility
             string text = JsonConvert.SerializeObject(json, serializerSettings);
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
-                writer.Write(text);
+                await writer.WriteAsync(text);
             }
         }
 
@@ -202,6 +204,11 @@ namespace ninaAPI.Utility
         public string Type { get; set; } = TypeAPI;
     }
 
+    public class StringResponse
+    {
+        public string Message { get; set; }
+    }
+
     public class SequenceIgnoreResolver : DefaultContractResolver
     {
         private static readonly string[] ignoredProperties = ["UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
@@ -213,6 +220,19 @@ namespace ninaAPI.Utility
         {
             Newtonsoft.Json.Serialization.JsonProperty property = base.CreateProperty(member, memberSerialization);
             if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Contains(property.PropertyType))
+            {
+                property.ShouldSerialize = _ => false;
+            }
+            return property;
+        }
+    }
+
+    public class FieldIgnoreResolver : DefaultContractResolver
+    {
+        protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            Newtonsoft.Json.Serialization.JsonProperty property = base.CreateProperty(member, memberSerialization);
+            if (member is FieldInfo)
             {
                 property.ShouldSerialize = _ => false;
             }
