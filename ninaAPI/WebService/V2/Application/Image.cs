@@ -264,7 +264,14 @@ namespace ninaAPI.WebService.V2
 
                 if (debayer || (autoPrepare && renderedImage.RawImageData.Properties.IsBayered))
                 {
-                    renderedImage = renderedImage.Debayer(bayerPattern: sensor, saveColorChannels: true, saveLumChannel: true);
+                    try
+                    {
+                        renderedImage = renderedImage.Debayer(bayerPattern: sensor, saveColorChannels: true, saveLumChannel: true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex);
+                    }
                 }
                 renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);
 
