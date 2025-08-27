@@ -36,84 +36,8 @@ using System.Windows.Media.Imaging;
 using NINA.PlateSolving.Interfaces;
 using NINA.Astrometry;
 
-namespace ninaAPI.WebService.V3.Equipment
+namespace ninaAPI.WebService.V3.Equipment.Camera
 {
-    class CameraInfoResponse : CameraInfo
-    {
-        public static CameraInfoResponse FromCam(ICameraMediator cam)
-        {
-            return new CameraInfoResponse()
-            {
-                Connected = cam.GetInfo().Connected,
-                CanSetTemperature = cam.GetInfo().CanSetTemperature,
-                HasDewHeater = cam.GetInfo().HasDewHeater,
-                IsExposing = cam.GetInfo().IsExposing,
-                PixelSize = cam.GetInfo().PixelSize,
-                BinX = cam.GetInfo().BinX,
-                BinY = cam.GetInfo().BinY,
-                Battery = cam.GetInfo().Battery,
-                Offset = cam.GetInfo().Offset,
-                OffsetMin = cam.GetInfo().OffsetMin,
-                OffsetMax = cam.GetInfo().OffsetMax,
-                DefaultOffset = cam.GetInfo().DefaultOffset,
-                USBLimit = cam.GetInfo().USBLimit,
-                USBLimitMin = cam.GetInfo().USBLimitMin,
-                USBLimitMax = cam.GetInfo().USBLimitMax,
-                DefaultGain = cam.GetInfo().DefaultGain,
-                GainMin = cam.GetInfo().GainMin,
-                GainMax = cam.GetInfo().GainMax,
-                CanSetGain = cam.GetInfo().CanSetGain,
-                Gains = cam.GetInfo().Gains,
-                CoolerOn = cam.GetInfo().CoolerOn,
-                CoolerPower = cam.GetInfo().CoolerPower,
-                HasShutter = cam.GetInfo().HasShutter,
-                Temperature = cam.GetInfo().Temperature,
-                TemperatureSetPoint = cam.GetInfo().TemperatureSetPoint,
-                ReadoutModes = cam.GetInfo().ReadoutModes,
-                ReadoutMode = cam.GetInfo().ReadoutMode,
-                ReadoutModeForSnapImages = cam.GetInfo().ReadoutModeForSnapImages,
-                ReadoutModeForNormalImages = cam.GetInfo().ReadoutModeForNormalImages,
-                IsSubSampleEnabled = cam.GetInfo().IsSubSampleEnabled,
-                SubSampleX = cam.GetInfo().SubSampleX,
-                SubSampleY = cam.GetInfo().SubSampleY,
-                SubSampleWidth = cam.GetInfo().SubSampleWidth,
-                SubSampleHeight = cam.GetInfo().SubSampleHeight,
-                ExposureMax = cam.GetInfo().ExposureMax,
-                ExposureMin = cam.GetInfo().ExposureMin,
-                LiveViewEnabled = cam.GetInfo().LiveViewEnabled,
-                CanShowLiveView = cam.GetInfo().CanShowLiveView,
-                SupportedActions = cam.GetInfo().SupportedActions,
-                CanSetUSBLimit = cam.GetInfo().CanSetUSBLimit,
-                Name = cam.GetInfo().Name,
-                DisplayName = cam.GetInfo().DisplayName,
-                DeviceId = cam.GetInfo().DeviceId,
-                BayerOffsetX = cam.GetInfo().BayerOffsetX,
-                BayerOffsetY = cam.GetInfo().BayerOffsetY,
-                BinningModes = cam.GetInfo().BinningModes,
-                BitDepth = cam.GetInfo().BitDepth,
-                CameraState = cam.GetInfo().CameraState,
-                XSize = cam.GetInfo().XSize,
-                YSize = cam.GetInfo().YSize,
-                CanGetGain = cam.GetInfo().CanGetGain,
-                CanSetOffset = cam.GetInfo().CanSetOffset,
-                CanSubSample = cam.GetInfo().CanSubSample,
-                Description = cam.GetInfo().Description,
-                DewHeaterOn = cam.GetInfo().DewHeaterOn,
-                DriverInfo = cam.GetInfo().DriverInfo,
-                DriverVersion = cam.GetInfo().DriverVersion,
-                ElectronsPerADU = cam.GetInfo().ElectronsPerADU,
-                ExposureEndTime = cam.GetInfo().ExposureEndTime,
-                LastDownloadTime = cam.GetInfo().LastDownloadTime,
-                SensorType = cam.GetInfo().SensorType,
-                Gain = cam.GetInfo().Gain,
-                TargetTemp = cam.TargetTemp,
-                AtTargetTemp = cam.AtTargetTemp,
-            };
-        }
-        public double TargetTemp { get; set; }
-        public bool AtTargetTemp { get; set; }
-    }
-
     public class CameraController : WebApiController
     {
         [Route(HttpVerbs.Get, "/info")]
@@ -140,7 +64,7 @@ namespace ninaAPI.WebService.V3.Equipment
             await HttpContext.WriteResponse(response);
         }
 
-        [Route(HttpVerbs.Put, "/set-readout")]
+        [Route(HttpVerbs.Put, "/settings/readout")]
         public async Task CameraSetReadout()
         {
             StringResponse response = new StringResponse();
@@ -391,7 +315,7 @@ namespace ninaAPI.WebService.V3.Equipment
             await HttpContext.WriteResponse(response);
         }
 
-        [Route(HttpVerbs.Put, "/dew-heater")]
+        [Route(HttpVerbs.Put, "/settings/dew-heater")]
         public async Task CameraDewHeater()
         {
             StringResponse response = new StringResponse();
@@ -431,7 +355,7 @@ namespace ninaAPI.WebService.V3.Equipment
             await HttpContext.WriteResponse(response);
         }
 
-        [Route(HttpVerbs.Put, "/set-binning")]
+        [Route(HttpVerbs.Put, "/settings/binning")]
         public async Task CameraSetBinning()
         {
             StringResponse response = new StringResponse();
@@ -477,7 +401,7 @@ namespace ninaAPI.WebService.V3.Equipment
         private volatile bool isCaptureBayered = false;
         private volatile int bitDepth = 16;
         private double pixelSize;
-        private volatile Task CaptureTask;
+        private volatile bool isCapturing = false;
         private CancellationTokenSource CameraCaptureToken;
         private volatile PlateSolveResult plateSolveResult;
 
@@ -498,15 +422,9 @@ namespace ninaAPI.WebService.V3.Equipment
             QueryParameter<bool> saveParameter = new QueryParameter<bool>("save", false, false);
             QueryParameter<double> roiParameter = new QueryParameter<double>("roi", 1.0, false, (roi) => roi > 0 && roi <= 1);
 
-            bool taskCompleted = false;
-            lock (captureLock)
-            {
-                taskCompleted = CaptureTask?.IsCompleted ?? true;
-            }
-
             try
             {
-                if (!taskCompleted)
+                if (isCapturing)
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "Capture in progress");
                 }
@@ -526,10 +444,13 @@ namespace ninaAPI.WebService.V3.Equipment
                     roiParameter.Get(HttpContext);
 
                     CameraCaptureToken?.Cancel();
+                    CameraCaptureToken?.Dispose();
                     CameraCaptureToken = new CancellationTokenSource();
 
-                    CaptureTask = Task.Run(async () =>
+                    Task.Run(async () =>
                     {
+                        isCapturing = true;
+
                         CaptureSequence sequence = new CaptureSequence(
                             durationParameter.Value,
                             CaptureSequence.ImageTypes.SNAPSHOT,
@@ -581,12 +502,45 @@ namespace ninaAPI.WebService.V3.Equipment
                         {
                             await AdvancedAPI.Controls.ImageSaveMediator.Enqueue(renderedImage.RawImageData, Task.Run(() => renderedImage), AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCaptureToken.Token);
                         }
+
+                        isCapturing = false;
                         // TODO: Should we use IMAGE-PREPARED or API-CAPTURE-FINISHED? await WebSocketV2.SendAndAddEvent("API-CAPTURE-FINISHED");
                     }, CameraCaptureToken.Token);
 
-                    CaptureTask.ContinueWith(t => { if (t.IsFaulted) Logger.Error(t.Exception); }, TaskContinuationOptions.OnlyOnFaulted);
-
                     response.Message = "Capture started";
+                }
+            }
+            catch (HttpException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                throw CommonErrors.UnknwonError();
+            }
+
+            await HttpContext.WriteResponse(response);
+        }
+
+        [Route(HttpVerbs.Post, "/capture/abort")]
+        public async Task CameraCaptureAbort()
+        {
+            StringResponse response = new StringResponse();
+
+            try
+            {
+                ICameraMediator cam = AdvancedAPI.Controls.Camera;
+
+                if (!isCapturing)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, "No capture in progress");
+                }
+                else
+                {
+                    CameraCaptureToken?.Cancel();
+                    CameraCaptureToken?.Dispose();
+                    response.Message = "Capture aborted";
                 }
             }
             catch (HttpException)
@@ -605,18 +559,43 @@ namespace ninaAPI.WebService.V3.Equipment
         [Route(HttpVerbs.Get, "/capture/image")]
         public async Task CameraCaptureImage()
         {
-            ImageQueryParameterSet imageQuery = ImageQueryParameterSet.Default();
+            SensorType sensor = SensorType.Monochrome;
+            IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+
+            if (profile.CameraSettings.BayerPattern != BayerPatternEnum.Auto)
+            {
+                sensor = (SensorType)profile.CameraSettings.BayerPattern;
+            }
+            else if (AdvancedAPI.Controls.Camera.GetInfo().Connected)
+            {
+                sensor = AdvancedAPI.Controls.Camera.GetInfo().SensorType;
+            }
+
+            ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile);
+            imageQuery.BayerPattern = new QueryParameter<SensorType>("bayer-pattern", SensorType.Monochrome, false);
+
             imageQuery.Evaluate(HttpContext);
 
             try
             {
-                BitmapEncoder encoder = await ImageHandler.PrepareImage(FileSystemHelper.GetCapturePngPath(), isCaptureBayered, imageQuery, bitDepth);
-                HttpContext.Response.ContentType = encoder.CodecInfo.MimeTypes;
-                using (MemoryStream memory = new MemoryStream())
+                if (!File.Exists(FileSystemHelper.GetCapturePngPath()))
                 {
-                    encoder.Save(memory);
-                    await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
-                    return;
+                    throw new HttpException(HttpStatusCode.Conflict, "No image available");
+                }
+                else if (isCapturing)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, "Capture in progress");
+                }
+                else
+                {
+                    BitmapEncoder encoder = await ImageHandler.ProcessAndPrepareImage(FileSystemHelper.GetCapturePngPath(), isCaptureBayered, imageQuery, bitDepth);
+                    HttpContext.Response.ContentType = encoder.CodecInfo.MimeTypes;
+                    using (MemoryStream memory = new MemoryStream())
+                    {
+                        encoder.Save(memory);
+                        await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
+                        return;
+                    }
                 }
             }
             catch (HttpException)
@@ -642,6 +621,10 @@ namespace ninaAPI.WebService.V3.Equipment
                 if (!File.Exists(FileSystemHelper.GetCapturePngPath()))
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "No image available");
+                }
+                else if (isCapturing)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, "Capture in progress");
                 }
                 else
                 {
@@ -707,7 +690,7 @@ namespace ninaAPI.WebService.V3.Equipment
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "No image available");
                 }
-                else if (!(CaptureTask?.IsCompleted ?? false))
+                else if (isCapturing)
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "Capture in progress");
                 }

@@ -45,7 +45,8 @@ namespace ninaAPI.WebService
             Server = new WebServer(o => o
                 .WithUrlPrefix($"http://*:{Port}")
                 .WithMode(HttpListenerMode.EmbedIO))
-                .WithModule(new PreprocessRequestModule());
+                .WithModule(new PreprocessRequestModule())
+                .HandleHttpException(HandleHttpException);
         }
 
         public static void StartWatchers()
@@ -146,6 +147,27 @@ namespace ninaAPI.WebService
 
         public event EventHandler<EventArgs> Started;
         public event EventHandler<EventArgs> Stopped;
+
+        private async Task HandleHttpException(IHttpContext context, IHttpException exception)
+        {
+            Logger.Trace($"Handling HttpException, status code: {exception.StatusCode}, Message: {exception.Message}");
+            exception.PrepareResponse(context);
+
+            string error = HttpUtility.StatusCodeMessages.GetValueOrDefault(exception.StatusCode, "Unknown Error");
+
+            string msg = exception.Message;
+            object response = null;
+
+            if (string.IsNullOrEmpty(msg))
+            {
+                response = new { Error = error };
+            }
+            else
+            {
+                response = new { Error = error, Message = msg };
+            }
+            await context.WriteResponse(response, exception.StatusCode);
+        }
     }
 
     public class PreprocessRequestModule : WebModuleBase

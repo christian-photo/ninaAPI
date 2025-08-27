@@ -17,6 +17,7 @@ using NINA.Core.Utility;
 using ninaAPI.Utility;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Equipment;
+using ninaAPI.WebService.V3.Equipment.Camera;
 
 namespace ninaAPI.WebService.V3
 {
@@ -25,31 +26,9 @@ namespace ninaAPI.WebService.V3
         public WebServer ConfigureServer(WebServer server)
         {
             return server.WithWebApi("/v3/api/equipment/camera", m => m.WithController<CameraController>())
-                .WithWebApi("/v3/api", m => m.WithController<ControllerV3>())
-                .HandleHttpException(HandleHttpException);
+                .WithWebApi("/v3/api", m => m.WithController<ControllerV3>());
         }
 
         public bool SupportsSSL() => true;
-
-        public async Task HandleHttpException(IHttpContext context, IHttpException exception)
-        {
-            Logger.Trace($"Handling HttpException, status code: {exception.StatusCode}, Message: {exception.Message}");
-            exception.PrepareResponse(context);
-
-            string error = HttpUtility.StatusCodeMessages.GetValueOrDefault(exception.StatusCode, "Unknown Error");
-
-            string msg = exception.Message;
-            object response = null;
-
-            if (string.IsNullOrEmpty(msg))
-            {
-                response = new { Error = error };
-            }
-            else
-            {
-                response = new { Error = error, Message = msg };
-            }
-            await context.WriteResponse(response, exception.StatusCode);
-        }
     }
 }

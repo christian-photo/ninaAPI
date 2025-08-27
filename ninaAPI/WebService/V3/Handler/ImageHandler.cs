@@ -23,43 +23,48 @@ namespace ninaAPI.WebService.V3.Handler
     {
         public static async Task<BitmapEncoder> ProcessAndPrepareImage(IRenderedImage image, ImageQueryParameterSet parameters)
         {
-            if (parameters.Debayer.Value)
-            {
-                image = image.Debayer(bayerPattern: parameters.BayerPattern.Value, saveColorChannels: true, saveLumChannel: true);
-            }
-            image = await image.Stretch(parameters.StretchFactor.Value, parameters.BlackClipping.Value, parameters.UnlinkedStretch.Value);
+            image = await StretchAndDebayer(image, parameters);
 
-            BitmapEncoder encoder = null;
-            BitmapSource bitmap = null;
-
-            // TODO: Add ROI
-
-            if (parameters.Resize.Value)
-            {
-                if (parameters.Scale.WasProvided)
-                {
-                    bitmap = BitmapHelper.ScaleBitmap(image.Image, parameters.Scale.Value);
-                }
-                else
-                {
-                    bitmap = BitmapHelper.ResizeBitmap(image.Image, parameters.Size.Value);
-                }
-            }
-            else
-            {
-                bitmap = BitmapHelper.ScaleBitmap(image.Image, 1);
-            }
-
-            encoder = BitmapHelper.GetEncoder(bitmap, parameters.Quality.Value);
+            BitmapSource bitmap = ResizeBitmap(image.Image, parameters);
+            BitmapEncoder encoder = BitmapHelper.GetEncoder(bitmap, parameters.Quality.Value);
 
             return encoder;
         }
 
-        public static async Task<BitmapEncoder> PrepareImage(string path, bool isBayered, ImageQueryParameterSet parameters, int bitDepth = 16, int delay = 200, int retries = 10)
+        public static async Task<BitmapEncoder> ProcessAndPrepareImage(string path, bool isBayered, ImageQueryParameterSet parameters, int bitDepth = 16, int delay = 200, int retries = 10)
         {
             IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(path, bitDepth, isBayered, parameters.RawConverter.Value), TimeSpan.FromMilliseconds(delay), retries);
             IRenderedImage image = imageData.RenderImage();
             return await ProcessAndPrepareImage(image, parameters);
+        }
+
+        public static BitmapSource ResizeBitmap(BitmapSource image, ImageQueryParameterSet parameters)
+        {
+            if (parameters.Resize.Value)
+            {
+                if (parameters.Scale.WasProvided)
+                {
+                    image = BitmapHelper.ScaleBitmap(image, parameters.Scale.Value);
+                }
+                else
+                {
+                    image = BitmapHelper.ResizeBitmap(image, parameters.Size.Value);
+                }
+            }
+            else
+            {
+                image = BitmapHelper.ScaleBitmap(image, 1);
+            }
+            return image;
+        }
+
+        public static async Task<IRenderedImage> StretchAndDebayer(IRenderedImage image, ImageQueryParameterSet parameters)
+        {
+            if (parameters.Debayer.Value)
+            {
+                image = image.Debayer(bayerPattern: parameters.BayerPattern.Value, saveColorChannels: true, saveLumChannel: true);
+            }
+            return await image.Stretch(parameters.StretchFactor.Value, parameters.BlackClipping.Value, parameters.UnlinkedStretch.Value);
         }
     }
 }
