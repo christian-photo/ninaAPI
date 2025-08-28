@@ -22,10 +22,7 @@ public class Tests
     public void TestQueryParameters()
     {
         NameValueCollection query = new NameValueCollection();
-        query.Add("test", "1");
-        query.Add("enum", "dcraw");
-        query.Add("width", "200");
-        query.Add("height", "300");
+        query.Add("Test", "1");
 
         ContextMock context = new ContextMock(new RequestMock(query));
 
@@ -37,6 +34,9 @@ public class Tests
             Assert.That(p.Value, Is.EqualTo(1));
         });
 
+
+        query.Add("width", "200");
+        query.Add("height", "300");
         SizeQueryParameter sp = new SizeQueryParameter(new Size(200, 300), false);
         sp.Get(context);
         Assert.Multiple(() =>
@@ -45,6 +45,25 @@ public class Tests
             Assert.That(sp.Value, Is.EqualTo(new Size(200, 300)));
         });
 
+        query.Set("width", "200");
+        query.Remove("height");
+        SizeQueryParameter sp2 = new SizeQueryParameter(new Size(200, 300), true, true);
+        sp2.Get(context);
+        Assert.Multiple(() =>
+        {
+            Assert.That(sp2.WasProvided, Is.True);
+            Assert.That(sp2.Value, Is.EqualTo(new Size(200, 0)));
+        });
+
+        SizeQueryParameter sp3 = new SizeQueryParameter(new Size(200, 300), false, false);
+        sp3.Get(context);
+        Assert.Multiple(() =>
+        {
+            Assert.That(sp3.WasProvided, Is.False);
+            Assert.That(sp3.Value, Is.EqualTo(new Size(200, 300)));
+        });
+
+        query.Add("enum", "dcraw");
         QueryParameter<RawConverterEnum> raw = new QueryParameter<RawConverterEnum>("enum", RawConverterEnum.DCRAW, false);
         raw.Get(context);
         Assert.Multiple(() =>

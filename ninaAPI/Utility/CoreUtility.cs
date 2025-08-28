@@ -20,21 +20,14 @@ using System.IO;
 using System.Linq;
 using ninaAPI.WebService;
 using System.Threading.Tasks;
-using NINA.Profile.Interfaces;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.Input;
-using System.Drawing;
-using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NINA.ViewModel.Sequencer;
 using Newtonsoft.Json.Converters;
-using System.Configuration;
-using Swan;
 using System.Globalization;
-using NINA.Core.Utility;
+using ninaApi.Utility.Serialization;
 
 namespace ninaAPI.Utility
 {
@@ -102,19 +95,6 @@ namespace ninaAPI.Utility
             FloatFormatHandling = FloatFormatHandling.String,
         };
 
-        private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
-        {
-            Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
-            {
-                args.ErrorContext.Handled = true;
-            },
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-            NullValueHandling = NullValueHandling.Ignore,
-            Converters = { new StringEnumConverter() },
-            ContractResolver = new FieldIgnoreResolver(),
-            FloatFormatHandling = FloatFormatHandling.String,
-        };
-
         public static void WriteSequenceResponse(this IHttpContext context, object json)
         {
             context.Response.ContentType = MimeType.Json;
@@ -124,18 +104,6 @@ namespace ninaAPI.Utility
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
                 writer.Write(text);
-            }
-        }
-
-        public static async Task WriteResponse(this IHttpContext context, object json, int statusCode = 200)
-        {
-            context.Response.ContentType = MimeType.Json;
-            context.Response.StatusCode = statusCode;
-
-            string text = JsonConvert.SerializeObject(json, serializerSettings);
-            using (var writer = new StreamWriter(context.Response.OutputStream))
-            {
-                await writer.WriteAsync(text);
             }
         }
 
@@ -207,37 +175,6 @@ namespace ninaAPI.Utility
     public class StringResponse
     {
         public string Message { get; set; }
-    }
-
-    public class SequenceIgnoreResolver : DefaultContractResolver
-    {
-        private static readonly string[] ignoredProperties = ["UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
-            "DateTime", "Expanded", "DateTimeProviders", "Horizon", "Parent", "InfoButtonColor", "Icon"];
-
-        private static readonly Type[] ignoredTypes = [typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand), typeof(Icon), typeof(Func<>), typeof(Action<>)];
-
-        protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-        {
-            Newtonsoft.Json.Serialization.JsonProperty property = base.CreateProperty(member, memberSerialization);
-            if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Contains(property.PropertyType))
-            {
-                property.ShouldSerialize = _ => false;
-            }
-            return property;
-        }
-    }
-
-    public class FieldIgnoreResolver : DefaultContractResolver
-    {
-        protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-        {
-            Newtonsoft.Json.Serialization.JsonProperty property = base.CreateProperty(member, memberSerialization);
-            if (member is FieldInfo)
-            {
-                property.ShouldSerialize = _ => false;
-            }
-            return property;
-        }
     }
 
     public enum Device

@@ -22,7 +22,7 @@ using NINA.Profile.Interfaces;
 using ninaAPI.WebService;
 using ninaAPI.WebService.Interfaces;
 
-namespace ninaAPI.Utility
+namespace ninaAPI.Utility.Http
 {
     public static class HttpUtility
     {
@@ -30,7 +30,7 @@ namespace ninaAPI.Utility
         {
             var keys = context?.Request?.QueryString?.AllKeys;
             if (keys == null || keys.Length == 0) return true;
-            return !keys.Any(k => string.Equals(k, parameter, StringComparison.OrdinalIgnoreCase));
+            return !keys.Any(k => string.Equals(k, parameter, StringComparison.CurrentCultureIgnoreCase));
         }
 
         public static bool IsParameterOmitted<T>(this IHttpContext context, IQueryParameter<T> parameter)
@@ -173,18 +173,64 @@ namespace ninaAPI.Utility
             int width = widthParam.Get(context);
             int height = heightParam.Get(context);
 
-            Value = new Size(width, height);
-            WasProvided = widthParam.WasProvided && heightParam.WasProvided;
-            return Value;
+            if (widthParam.WasProvided ^ heightParam.WasProvided)
+            {
+                // One of both was set, but not both
+                if (allowOneSide)
+                {
+                    Value = new Size(
+                        widthParam.WasProvided ? width : 0,
+                        heightParam.WasProvided ? height : 0
+                    );
+                    WasProvided = true;
+                    return Value;
+                }
+                else if (!required)
+                {
+                    Value = DefaultValue;
+                    WasProvided = false;
+                    return Value;
+                }
+                else
+                {
+                    throw CommonErrors.ParameterMissing("height or width");
+                }
+            }
+            else if (!(widthParam.WasProvided && heightParam.WasProvided))
+            {
+                // None were set
+                if (required)
+                {
+                    throw CommonErrors.ParameterMissing("width and height");
+                }
+                else
+                {
+                    Value = DefaultValue;
+                    WasProvided = false;
+                    return Value;
+                }
+            }
+            else
+            {
+                Value = new Size(width, height);
+                WasProvided = true;
+                return Value;
+            }
         }
 
         private QueryParameter<int> widthParam;
         private QueryParameter<int> heightParam;
 
-        public SizeQueryParameter(Size size, bool required, string widthName = "width", string heightName = "height") : base("CONTAINER_PARAM", new Size(0, 0), false)
+        private bool allowOneSide;
+        private bool required;
+
+        public SizeQueryParameter(Size size, bool required, bool allowOneSide = true, string widthName = "width", string heightName = "height") : base("CONTAINER_PARAM", size, false)
         {
-            widthParam = new QueryParameter<int>(widthName, size.Width, required, (width) => width > 0);
-            heightParam = new QueryParameter<int>(heightName, size.Height, required, (height) => height > 0);
+            widthParam = new QueryParameter<int>(widthName, size.Width, false, (width) => width > 0);
+            heightParam = new QueryParameter<int>(heightName, size.Height, false, (height) => height > 0);
+
+            this.allowOneSide = allowOneSide;
+            this.required = required;
         }
     }
 

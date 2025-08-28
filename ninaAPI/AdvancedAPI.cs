@@ -191,13 +191,15 @@ namespace ninaAPI
 
             WebApiServer.StopWatchers();
             communicator.Dispose();
-            if (Directory.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}")))
+
+            // TODO: Extract to FileSystemHelper
+            if (Directory.Exists(FileSystemHelper.GetThumbnailFolder()))
             {
-                Retry.Do(() => Directory.Delete(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}"), true), TimeSpan.FromMilliseconds(50), 3);
+                Retry.Do(() => Directory.Delete(FileSystemHelper.GetThumbnailFolder(), true), TimeSpan.FromMilliseconds(50), 3);
             }
-            if (File.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png")))
+            if (File.Exists(FileSystemHelper.GetCapturePngPath()))
             {
-                Retry.Do(() => File.Delete(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png")), TimeSpan.FromMilliseconds(50), 3);
+                Retry.Do(() => File.Delete(FileSystemHelper.GetCapturePngPath()), TimeSpan.FromMilliseconds(50), 3);
             }
             return base.Teardown();
         }

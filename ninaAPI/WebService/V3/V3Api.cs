@@ -9,23 +9,38 @@
 
 #endregion "copyright"
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.WebApi;
-using NINA.Core.Utility;
-using ninaAPI.Utility;
+using ninaApi.Utility.Serialization;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.Interfaces;
-using ninaAPI.WebService.V3.Equipment;
 using ninaAPI.WebService.V3.Equipment.Camera;
 
 namespace ninaAPI.WebService.V3
 {
     public class V3Api : IHttpApi
     {
+        private readonly ResponseHandler responseHandler;
+
+        public V3Api()
+        {
+            responseHandler = new ResponseHandler(new NewtonsoftSerializer());
+        }
+
         public WebServer ConfigureServer(WebServer server)
         {
-            return server.WithWebApi("/v3/api/equipment/camera", m => m.WithController<CameraController>())
+            return server.WithWebApi("/v3/api/equipment/camera", m => m.WithController(() => new CameraController(
+                AdvancedAPI.Controls.Camera,
+                AdvancedAPI.Controls.Profile,
+                AdvancedAPI.Controls.Imaging,
+                AdvancedAPI.Controls.ImageSaveMediator,
+                AdvancedAPI.Controls.StatusMediator,
+                AdvancedAPI.Controls.ImageDataFactory,
+                AdvancedAPI.Controls.PlateSolver,
+                AdvancedAPI.Controls.Mount,
+                AdvancedAPI.Controls.FilterWheel,
+                responseHandler
+            )))
                 .WithWebApi("/v3/api", m => m.WithController<ControllerV3>());
         }
 

@@ -29,7 +29,7 @@ namespace ninaAPI.Utility
             return files;
         }
 
-        public static string GetCapturePngPath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png");
+        public static string GetCapturePngPath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp-{Environment.ProcessId}.png");
         public static string GetThumbnailFolder() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}");
     }
 }

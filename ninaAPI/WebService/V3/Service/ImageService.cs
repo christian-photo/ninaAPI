@@ -16,10 +16,11 @@ using System.Windows.Media.Imaging;
 using NINA.Core.Utility;
 using NINA.Image.Interfaces;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 
-namespace ninaAPI.WebService.V3.Handler
+namespace ninaAPI.WebService.V3.Service
 {
-    public static class ImageHandler
+    public static class ImageService
     {
         public static async Task<BitmapEncoder> ProcessAndPrepareImage(IRenderedImage image, ImageQueryParameterSet parameters)
         {
@@ -50,10 +51,6 @@ namespace ninaAPI.WebService.V3.Handler
                 {
                     image = BitmapHelper.ResizeBitmap(image, parameters.Size.Value);
                 }
-            }
-            else
-            {
-                image = BitmapHelper.ScaleBitmap(image, 1);
             }
             return image;
         }
