@@ -37,7 +37,6 @@ using NINA.Astrometry;
 using ninaAPI.WebService.V3.Service;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility.Http;
-using Accord;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {

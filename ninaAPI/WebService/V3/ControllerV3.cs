@@ -11,15 +11,24 @@
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
-using ninaAPI.Utility;
+using NINA.Core.Utility;
+using ninaAPI.Utility.Http;
 
 namespace ninaAPI.WebService.V3
 {
-    public partial class ControllerV3 : WebApiController
+    public class ControllerV3 : WebApiController
     {
+        private readonly ResponseHandler responseHandler;
+
+        public ControllerV3(ResponseHandler responseHandler)
+        {
+            this.responseHandler = responseHandler;
+        }
+
         [Route(HttpVerbs.Get, "/")]
         public string Index()
         {
@@ -27,27 +36,39 @@ namespace ninaAPI.WebService.V3
         }
 
         [Route(HttpVerbs.Get, "/version")]
-        public void GetVersion()
+        public async Task GetVersion()
         {
-            HttpContext.WriteToResponse(new HttpResponse() { Response = Assembly.GetAssembly(typeof(AdvancedAPI)).GetName().Version.ToString() });
+            await responseHandler.SendObject(
+                HttpContext,
+                new { Version = Assembly.GetAssembly(typeof(AdvancedAPI)).GetName().Version.ToString() }
+            );
         }
 
         [Route(HttpVerbs.Get, "/time")]
-        public void GetTime()
+        public async Task GetTime()
         {
-            HttpContext.WriteToResponse(new HttpResponse() { Response = DateTime.Now });
+            await responseHandler.SendObject(
+                HttpContext,
+                new { Time = DateTime.Now }
+            );
         }
 
         [Route(HttpVerbs.Get, "/application-start")]
-        public void GetApplicationStart()
+        public async Task GetApplicationStart()
         {
-            HttpContext.WriteToResponse(new HttpResponse() { Response = NINA.Core.Utility.CoreUtil.ApplicationStartDate });
+            await responseHandler.SendObject(
+                HttpContext,
+                new { Time = CoreUtil.ApplicationStartDate }
+            );
         }
 
         [Route(HttpVerbs.Get, "/version/nina")]
-        public void GetNINAVersion([QueryField] bool friendly)
+        public async Task GetNINAVersion([QueryField] bool friendly)
         {
-            HttpContext.WriteToResponse(new HttpResponse() { Response = friendly ? NINA.Core.Utility.CoreUtil.VersionFriendlyName : NINA.Core.Utility.CoreUtil.Version });
+            await responseHandler.SendObject(
+                HttpContext,
+                new { Version = friendly ? CoreUtil.VersionFriendlyName : CoreUtil.Version }
+            );
         }
     }
 }

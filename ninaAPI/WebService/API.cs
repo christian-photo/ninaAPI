@@ -10,10 +10,13 @@
 #endregion "copyright"
 
 using EmbedIO;
+using EmbedIO.Routing;
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
+using ninaApi.Utility.Serialization;
 using ninaAPI.Properties;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2;
 using System;
@@ -35,6 +38,8 @@ namespace ninaAPI.WebService
 
         private static List<INinaWatcher> Watchers { get; set; } = new List<INinaWatcher>();
 
+        private ResponseHandler responseHandler;
+
         public WebApiServer(int port)
         {
             Port = port;
@@ -42,6 +47,7 @@ namespace ninaAPI.WebService
 
         private void CreateServer()
         {
+            responseHandler = new ResponseHandler(new NewtonsoftSerializer());
             Server = new WebServer(o => o
                 .WithUrlPrefix($"http://*:{Port}")
                 .WithMode(HttpListenerMode.EmbedIO))
@@ -150,6 +156,13 @@ namespace ninaAPI.WebService
 
         private async Task HandleHttpException(IHttpContext context, IHttpException exception)
         {
+            if (!context.RequestedPath.Contains("v3"))
+            {
+                // Only use the new exception handler for v3 requests
+                // TODO: Remove when v2 is no longer supported
+                await HttpExceptionHandler.Default(context, exception);
+                return;
+            }
             Logger.Trace($"Handling HttpException, status code: {exception.StatusCode}, Message: {exception.Message}");
             exception.PrepareResponse(context);
 
@@ -166,7 +179,7 @@ namespace ninaAPI.WebService
             {
                 response = new { Error = error, Message = msg };
             }
-            await context.WriteResponse(response, exception.StatusCode);
+            await responseHandler.SendObject(context, response, exception.StatusCode);
         }
     }
 

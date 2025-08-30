@@ -24,6 +24,7 @@ using NINA.Sequencer.SequenceItem.Platesolving;
 using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Telescope;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;

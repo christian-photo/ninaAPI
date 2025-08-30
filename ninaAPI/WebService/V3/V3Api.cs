@@ -13,35 +13,44 @@ using EmbedIO;
 using EmbedIO.WebApi;
 using ninaApi.Utility.Serialization;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Equipment.Camera;
+using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3
 {
     public class V3Api : IHttpApi
     {
         private readonly ResponseHandler responseHandler;
+        private readonly ISerializerService serializer;
+
+        private EventWebSocket eventSocket;
 
         public V3Api()
         {
-            responseHandler = new ResponseHandler(new NewtonsoftSerializer());
+            serializer = SerializerFactory.GetSerializer();
+            responseHandler = new ResponseHandler(serializer);
         }
 
         public WebServer ConfigureServer(WebServer server)
         {
-            return server.WithWebApi("/v3/api/equipment/camera", m => m.WithController(() => new CameraController(
-                AdvancedAPI.Controls.Camera,
-                AdvancedAPI.Controls.Profile,
-                AdvancedAPI.Controls.Imaging,
-                AdvancedAPI.Controls.ImageSaveMediator,
-                AdvancedAPI.Controls.StatusMediator,
-                AdvancedAPI.Controls.ImageDataFactory,
-                AdvancedAPI.Controls.PlateSolver,
-                AdvancedAPI.Controls.Mount,
-                AdvancedAPI.Controls.FilterWheel,
-                responseHandler
-            )))
-                .WithWebApi("/v3/api", m => m.WithController<ControllerV3>());
+            eventSocket = new EventWebSocket("/v3/ws/events", serializer);
+
+            return server.WithModule(eventSocket)
+                .WithWebApi("/v3/api/equipment/camera", m => m.WithController(() => new CameraController(
+                    AdvancedAPI.Controls.Camera,
+                    AdvancedAPI.Controls.Profile,
+                    AdvancedAPI.Controls.Imaging,
+                    AdvancedAPI.Controls.ImageSaveMediator,
+                    AdvancedAPI.Controls.StatusMediator,
+                    AdvancedAPI.Controls.ImageDataFactory,
+                    AdvancedAPI.Controls.PlateSolver,
+                    AdvancedAPI.Controls.Mount,
+                    AdvancedAPI.Controls.FilterWheel,
+                    responseHandler
+                )))
+                .WithWebApi("/v3/api", m => m.WithController(() => new ControllerV3(responseHandler)));
         }
 
         public bool SupportsSSL() => true;

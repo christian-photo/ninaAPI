@@ -22,6 +22,7 @@ using NINA.Sequencer.Conditions;
 using NINA.Sequencer.Container;
 using NINA.Sequencer.SequenceItem.FlatDevice;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 
 namespace ninaAPI.WebService.V2
 {
