@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using NINA.Core.Utility;
 
 namespace ninaAPI.Utility
 {
@@ -31,5 +32,23 @@ namespace ninaAPI.Utility
 
         public static string GetCapturePngPath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp-{Environment.ProcessId}.png");
         public static string GetThumbnailFolder() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}");
+        public static string GetAutofocusFolder() => Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "AutoFocus");
+
+        public static void Cleanup(TimeSpan retryDelay, int retires)
+        {
+            if (Directory.Exists(GetThumbnailFolder()))
+            {
+                Retry.Do(() => Directory.Delete(GetThumbnailFolder(), true), retryDelay, retires);
+            }
+            if (File.Exists(GetCapturePngPath()))
+            {
+                Retry.Do(() => File.Delete(GetCapturePngPath()), retryDelay, retires);
+            }
+        }
+
+        public static void Cleanup()
+        {
+            Cleanup(TimeSpan.FromMilliseconds(50), 3);
+        }
     }
 }

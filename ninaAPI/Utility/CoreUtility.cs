@@ -177,6 +177,11 @@ namespace ninaAPI.Utility
         public string Message { get; set; }
     }
 
+    public class StatusResponse
+    {
+        public string Status { get; set; }
+    }
+
     public enum Device
     {
         Camera,

@@ -18,18 +18,39 @@ namespace ninaAPI.WebService.V3.Websocket.Event
 {
     public abstract class EventWatcher : INinaWatcher
     {
+        public WebSocketChannel Channel { get; protected set; } = WebSocketChannel.Equipment;
+
         private readonly IEventSocket eventSocket;
         public EventWatcher(IEventSocket eventSocket)
         {
             this.eventSocket = eventSocket;
         }
 
-        public async Task SubmitEvent(string eventName, object data = null)
+        public async Task SubmitAndStoreEvent(string eventName, object data = null, WebSocketChannel? onChannel = null)
+        {
+            await SubmitAndStoreEvent(new WebSocketEvent()
+            {
+                Event = eventName,
+                Channel = onChannel ?? Channel,
+                Data = data
+            });
+        }
+
+        public async Task SubmitAndStoreEvent(WebSocketEvent e)
+        {
+            eventSocket.EventHistoryManager.AddEventToHistory(e);
+            if (eventSocket.IsActive)
+            {
+                await eventSocket.SendEvent(e);
+            }
+        }
+
+        public async Task SubmitEvent(string eventName, object data = null, WebSocketChannel? onChannel = null)
         {
             await SubmitEvent(new WebSocketEvent()
             {
                 Event = eventName,
-                Channel = WebSocketChannel.Equipment,
+                Channel = onChannel ?? Channel,
                 Data = data
             });
         }
@@ -38,7 +59,6 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         {
             if (eventSocket.IsActive)
             {
-                eventSocket.EventHistoryManager.AddEventToHistory(e);
                 await eventSocket.SendEvent(e);
             }
         }

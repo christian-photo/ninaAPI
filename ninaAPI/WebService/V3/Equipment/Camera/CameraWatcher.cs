@@ -12,13 +12,14 @@
 
 using System;
 using System.Threading.Tasks;
+using NINA.Equipment.Equipment.MyCamera;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {
-    public class CameraWatcher : EventWatcher
+    public class CameraWatcher : EventWatcher, ICameraConsumer
     {
         private readonly ICameraMediator camera;
         public CameraWatcher(IEventSocket eventSocket, ICameraMediator camera) : base(eventSocket)
@@ -26,8 +27,14 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             this.camera = camera;
         }
 
+        public void Dispose()
+        {
+            StopWatchers();
+        }
+
         public override void StartWatchers()
         {
+            camera.RegisterConsumer(this);
             camera.Connected += CameraConnected;
             camera.Disconnected += CameraDisconnected;
             camera.DownloadTimeout += CameraDownloadTimeout;
@@ -35,24 +42,16 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
         public override void StopWatchers()
         {
+            camera.RemoveConsumer(this);
             camera.Connected -= CameraConnected;
             camera.Disconnected -= CameraDisconnected;
             camera.DownloadTimeout -= CameraDownloadTimeout;
         }
 
-        private async Task CameraConnected(object sender, EventArgs e)
-        {
-            await SubmitEvent("CAMERA-CONNECTED");
-        }
+        public void UpdateDeviceInfo(CameraInfo deviceInfo) { }
 
-        private async Task CameraDisconnected(object sender, EventArgs e)
-        {
-            await SubmitEvent("CAMERA-DISCONNECTED");
-        }
-
-        private async Task CameraDownloadTimeout(object sender, EventArgs e)
-        {
-            await SubmitEvent("CAMERA-DOWNLOAD-TIMEOUT");
-        }
+        private async Task CameraConnected(object sender, EventArgs e) => await SubmitAndStoreEvent("CAMERA-CONNECTED");
+        private async Task CameraDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent("CAMERA-DISCONNECTED");
+        private async Task CameraDownloadTimeout(object sender, EventArgs e) => await SubmitAndStoreEvent("CAMERA-DOWNLOAD-TIMEOUT");
     }
 }

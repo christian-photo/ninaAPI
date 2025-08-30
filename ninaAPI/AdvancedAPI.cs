@@ -31,13 +31,10 @@ using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Astrometry.Interfaces;
 using NINA.Core.Utility.WindowService;
-using System.IO;
-using System.Reflection;
 using NINA.Profile;
 using System;
 using Settings = ninaAPI.Properties.Settings;
 using ninaAPI.WebService.V2;
-using System.Windows.Documents;
 using ninaAPI.WebService.V3;
 
 namespace ninaAPI
@@ -171,7 +168,7 @@ namespace ninaAPI
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PreferredPort)));
         }
 
-        public static int GetCachedPort()
+        public static int GetActualPort()
         {
             return instance.ActualPort;
         }
@@ -192,15 +189,7 @@ namespace ninaAPI
             WebApiServer.StopWatchers();
             communicator.Dispose();
 
-            // TODO: Extract to FileSystemHelper
-            if (Directory.Exists(FileSystemHelper.GetThumbnailFolder()))
-            {
-                Retry.Do(() => Directory.Delete(FileSystemHelper.GetThumbnailFolder(), true), TimeSpan.FromMilliseconds(50), 3);
-            }
-            if (File.Exists(FileSystemHelper.GetCapturePngPath()))
-            {
-                Retry.Do(() => File.Delete(FileSystemHelper.GetCapturePngPath()), TimeSpan.FromMilliseconds(50), 3);
-            }
+            FileSystemHelper.Cleanup();
             return base.Teardown();
         }
 
@@ -315,38 +304,9 @@ namespace ninaAPI
             }
         }
 
-        private string localAddress = "";
-        public string LocalAddress
-        {
-            get => localAddress;
-            set
-            {
-                localAddress = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalAddress)));
-            }
-        }
-
-        private string localNetworkAddress = "";
-        public string LocalNetworkAddress
-        {
-            get => localNetworkAddress;
-            set
-            {
-                localNetworkAddress = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalNetworkAddress)));
-            }
-        }
-
-        private string hostAddress = "";
-        public string HostAddress
-        {
-            get => hostAddress;
-            set
-            {
-                hostAddress = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HostAddress)));
-            }
-        }
+        public string LocalAddress { get; set; }
+        public string LocalNetworkAddress { get; set; }
+        public string HostAddress { get; set; }
 
         private void SetHostNames()
         {
@@ -354,6 +314,10 @@ namespace ninaAPI
             LocalAddress = $"http://{LocalAddresses.LocalHostName}:{ActualPort}{api}";
             LocalNetworkAddress = $"http://{LocalAddresses.IPAddress}:{ActualPort}{api}";
             HostAddress = $"http://{LocalAddresses.HostName}:{ActualPort}{api}";
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalAddress)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalNetworkAddress)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HostAddress)));
         }
     }
 }

@@ -87,6 +87,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 LastDownloadTime = info.LastDownloadTime,
                 SensorType = info.SensorType,
                 Gain = info.Gain,
+                HasBattery = info.HasBattery,
                 TargetTemp = cam.TargetTemp,
                 AtTargetTemp = cam.AtTargetTemp,
             };

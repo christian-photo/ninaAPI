@@ -41,6 +41,7 @@ namespace ninaAPI.Utility.Http
     {
         Equipment,
         Capture,
-        Livestack
+        Livestack,
+        Autofocus
     }
 }

@@ -24,7 +24,6 @@ using System.Net;
 using System.Threading;
 using System.Drawing;
 using NINA.Core.Model.Equipment;
-using System.IO;
 using NINA.Image.Interfaces;
 using NINA.Core.Enum;
 using NINA.Image.ImageData;
@@ -37,6 +36,7 @@ using NINA.Astrometry;
 using ninaAPI.WebService.V3.Service;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility.Http;
+using System.IO;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {
@@ -147,7 +147,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             await responseHandler.SendObject(HttpContext, response);
         }
 
-
+        // TODO: Use ApiProcess for all these
         private CancellationTokenSource CameraCoolingToken;
 
         [Route(HttpVerbs.Post, "/cool")]
@@ -165,7 +165,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 }
                 else if (!cam.GetInfo().CanSetTemperature)
                 {
-                    throw new HttpException(HttpStatusCode.BadRequest, "Camera has no temperature control");
+                    throw new HttpException(HttpStatusCode.Conflict, "Camera has no temperature control");
                 }
                 else
                 {
@@ -227,7 +227,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             await responseHandler.SendObject(HttpContext, response);
         }
 
-        [Route(HttpVerbs.Get, "/warm")]
+        [Route(HttpVerbs.Post, "/warm")]
         public async Task CameraWarm()
         {
             StringResponse response = new StringResponse();
@@ -242,7 +242,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 }
                 else if (!cam.GetInfo().CanSetTemperature)
                 {
-                    throw new HttpException(HttpStatusCode.BadRequest, "Camera has no temperature control");
+                    throw new HttpException(HttpStatusCode.Conflict, "Camera has no temperature control");
                 }
                 else if (minutesParameter.Value < 0)
                 {
@@ -428,7 +428,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         private object captureLock = new object();
 
 
-        [Route(HttpVerbs.Post, "/capture")]
+        [Route(HttpVerbs.Post, "/capture/start")]
         public async Task CameraCapture()
         {
             StringResponse response = new StringResponse();
@@ -454,6 +454,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 else if (info.IsExposing)
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "Camera currently exposing");
+                }
+                else if (roiParameter.WasProvided && !cam.GetInfo().CanSubSample)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, "Camera does not support sub-sampling");
                 }
                 else
                 {
@@ -481,22 +485,15 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
                         if (roiParameter.WasProvided)
                         {
-                            if (cam.GetInfo().CanSubSample)
-                            {
-                                var centerX = info.XSize / 2d;
-                                var centerY = info.YSize / 2d;
-                                var subWidth = info.XSize * roiParameter.Value;
-                                var subHeight = info.YSize * roiParameter.Value;
-                                var startX = centerX - subWidth / 2d;
-                                var startY = centerY - subHeight / 2d;
-                                var rect = new ObservableRectangle(startX, startY, subWidth, subHeight);
-                                sequence.EnableSubSample = true;
-                                sequence.SubSambleRectangle = rect;
-                            }
-                            else
-                            {
-                                throw new HttpException(HttpStatusCode.Conflict, "Camera does not support sub-sampling");
-                            }
+                            var centerX = info.XSize / 2d;
+                            var centerY = info.YSize / 2d;
+                            var subWidth = info.XSize * roiParameter.Value;
+                            var subHeight = info.YSize * roiParameter.Value;
+                            var startX = centerX - subWidth / 2d;
+                            var startY = centerY - subHeight / 2d;
+                            var rect = new ObservableRectangle(startX, startY, subWidth, subHeight);
+                            sequence.EnableSubSample = true;
+                            sequence.SubSambleRectangle = rect;
                         }
 
                         PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: true);
@@ -574,7 +571,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             await responseHandler.SendObject(HttpContext, response);
         }
 
-        [Route(HttpVerbs.Get, "/capture/image")]
+        [Route(HttpVerbs.Get, "/capture/get-image")]
         public async Task CameraCaptureImage()
         {
             SensorType sensor = SensorType.Monochrome;
@@ -704,7 +701,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 if (!File.Exists(FileSystemHelper.GetCapturePngPath()))
                 {
-                    throw new HttpException(HttpStatusCode.Conflict, "No image available");
+                    throw new HttpException(HttpStatusCode.NotFound, "No image available");
                 }
                 else if (isCapturing)
                 {

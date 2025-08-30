@@ -11,6 +11,7 @@
 
 using EmbedIO;
 using EmbedIO.Routing;
+using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
 using ninaApi.Utility.Serialization;
@@ -21,6 +22,7 @@ using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -98,6 +100,11 @@ namespace ninaAPI.WebService
                 foreach (IHttpApi api in apis)
                 {
                     Server = api.ConfigureServer(Server);
+                }
+
+                foreach (var module in Server.Modules.OfType<WebApiModule>())
+                {
+                    Logger.Info("Registered WebApi Controller: " + module.BaseRoute);
                 }
 
                 Logger.Info("Starting web server");

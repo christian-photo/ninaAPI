@@ -16,6 +16,7 @@ using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Equipment.Camera;
+using ninaAPI.WebService.V3.Equipment.Focuser;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3
@@ -48,6 +49,10 @@ namespace ninaAPI.WebService.V3
                     AdvancedAPI.Controls.PlateSolver,
                     AdvancedAPI.Controls.Mount,
                     AdvancedAPI.Controls.FilterWheel,
+                    responseHandler
+                )))
+                .WithWebApi("/v3/api/equipment/focuser", m => m.WithController(() => new FocuserController(
+                    AdvancedAPI.Controls.Focuser,
                     responseHandler
                 )))
                 .WithWebApi("/v3/api", m => m.WithController(() => new ControllerV3(responseHandler)));
