@@ -31,6 +31,7 @@ using System.Reflection;
 using NINA.Profile;
 using NINA.WPF.Base.Model;
 using System.Diagnostics;
+using NINA.Equipment.Interfaces.Mediator;
 
 namespace ninaAPI.WebService.V2
 {
@@ -104,17 +105,34 @@ namespace ninaAPI.WebService.V2
     {
         public static List<ImageResponse> Images = new List<ImageResponse>();
         public static List<KeyValuePair<int, string>> Thumbnails = new List<KeyValuePair<int, string>>();
+        public static IRenderedImage PreparedImage { get; private set; }
 
         public static object imageLock = new object();
 
         public void StartWatchers()
         {
             AdvancedAPI.Controls.ImageSaveMediator.ImageSaved += ImageSaved;
+            AdvancedAPI.Controls.Imaging.ImagePrepared += ImagePrepared;
         }
 
         public void StopWatchers()
         {
             AdvancedAPI.Controls.ImageSaveMediator.ImageSaved -= ImageSaved;
+            AdvancedAPI.Controls.Imaging.ImagePrepared -= ImagePrepared;
+        }
+
+        private static async void ImagePrepared(object sender, ImagePreparedEventArgs e)
+        {
+            lock (imageLock)
+            {
+                PreparedImage = e.RenderedImage;
+            }
+
+            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+
+            response.Response = new Dictionary<string, object>() { { "Event", "IMAGE-PREPARED" } };
+
+            await WebSocketV2.SendEvent(response);
         }
 
         private static void CacheThumbnail(ImageSavedEventArgs e)
@@ -166,6 +184,130 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
+        [Route(HttpVerbs.Get, "/prepared-image")]
+        public async Task GetPreparedImage([QueryField] bool resize,
+                    [QueryField] int quality,
+                    [QueryField] string size,
+                    [QueryField] double scale,
+                    [QueryField] double factor,
+                    [QueryField] double blackClipping,
+                    [QueryField] bool unlinked,
+                    [QueryField] bool debayer,
+                    [QueryField] bool autoPrepare,
+                    [QueryField] string bayerPattern)
+        {
+            HttpResponse response = new HttpResponse();
+            IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+
+            SensorType sensor = SensorType.Monochrome;
+
+            if (HttpContext.IsParameterOmitted(nameof(factor)) || autoPrepare)
+            {
+                factor = profile.ImageSettings.AutoStretchFactor;
+            }
+            if (HttpContext.IsParameterOmitted(nameof(blackClipping)) || autoPrepare)
+            {
+                blackClipping = profile.ImageSettings.BlackClipping;
+            }
+            if (HttpContext.IsParameterOmitted(nameof(unlinked)) || autoPrepare)
+            {
+                unlinked = profile.ImageSettings.UnlinkedStretch;
+            }
+            if (HttpContext.IsParameterOmitted(nameof(bayerPattern)) || autoPrepare)
+            {
+                if (profile.CameraSettings.BayerPattern != BayerPatternEnum.Auto)
+                {
+                    sensor = (SensorType)profile.CameraSettings.BayerPattern;
+                }
+                else if (AdvancedAPI.Controls.Camera.GetInfo().Connected)
+                {
+                    sensor = AdvancedAPI.Controls.Camera.GetInfo().SensorType;
+                }
+                else
+                {
+                    sensor = SensorType.Monochrome;
+                }
+            }
+            else
+            {
+                try
+                {
+                    sensor = Enum.Parse<SensorType>(bayerPattern);
+                }
+                catch (Exception)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid bayer pattern", 400));
+                    HttpContext.WriteToResponse(response);
+                    return;
+                }
+            }
+
+            quality = Math.Clamp(quality, -1, 100);
+            if (quality == 0)
+                quality = -1; // quality should be set to -1 for png if omitted
+
+            if (resize && string.IsNullOrWhiteSpace(size)) // workaround as default parameters are not working
+                size = "640x480";
+
+            try
+            {
+                Size sz = Size.Empty;
+                if (resize)
+                {
+                    string[] s = size.Split('x');
+                    int width = int.Parse(s[0]);
+                    int height = int.Parse(s[1]);
+                    sz = new Size(width, height);
+                }
+
+                IRenderedImage renderedImage = ImageWatcher.PreparedImage;
+
+                if (debayer || (autoPrepare && renderedImage.RawImageData.Properties.IsBayered))
+                {
+                    try
+                    {
+                        renderedImage = renderedImage.Debayer(bayerPattern: sensor, saveColorChannels: true, saveLumChannel: true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex);
+                    }
+                }
+                renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);
+
+                BitmapEncoder encoder = null;
+                if (scale == 0 && resize)
+                {
+                    BitmapSource image = BitmapHelper.ResizeBitmap(renderedImage.Image, sz);
+                    encoder = BitmapHelper.GetEncoder(image, quality);
+                }
+                if (scale != 0 && resize)
+                {
+                    BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, scale);
+                    encoder = BitmapHelper.GetEncoder(image, quality);
+                }
+                if (!resize)
+                {
+                    BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
+                    encoder = BitmapHelper.GetEncoder(image, quality);
+                }
+                HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpeg";
+                using (MemoryStream memory = new MemoryStream())
+                {
+                    encoder.Save(memory);
+                    await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/image/{index}")]
         public async Task GetImage(int index,
                     [QueryField] bool resize,
@@ -223,6 +365,7 @@ namespace ninaAPI.WebService.V2
                 catch (Exception)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Invalid bayer pattern", 400));
+                    HttpContext.WriteToResponse(response);
                     return;
                 }
             }
