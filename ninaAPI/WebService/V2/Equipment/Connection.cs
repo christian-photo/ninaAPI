@@ -29,6 +29,7 @@ using NINA.WPF.Base.ViewModel.Equipment.Switch;
 using NINA.WPF.Base.ViewModel.Equipment.Telescope;
 using NINA.WPF.Base.ViewModel.Equipment.WeatherData;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

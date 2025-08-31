@@ -16,7 +16,6 @@ using NINA.WPF.Base.Interfaces.ViewModel;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
-using ninaAPI.Properties;
 using ninaAPI.WebService;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
@@ -32,11 +31,11 @@ using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Astrometry.Interfaces;
 using NINA.Core.Utility.WindowService;
-using System.IO;
-using System.Reflection;
 using NINA.Profile;
 using System;
 using Settings = ninaAPI.Properties.Settings;
+using ninaAPI.WebService.V2;
+using ninaAPI.WebService.V3;
 
 namespace ninaAPI
 {
@@ -44,7 +43,7 @@ namespace ninaAPI
     public class AdvancedAPI : PluginBase, INotifyPropertyChanged
     {
         public static NINAControls Controls;
-        public static API Server;
+        public static WebApiServer Server;
 
         public static string PluginId { get; private set; }
         private static AdvancedAPI instance;
@@ -129,42 +128,56 @@ namespace ninaAPI
 
             UpdateDefaultPortCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
             {
-                Port = CachedPort;
-                CachedPort = Port; // This may look useless, but that way the visibility only changes when cachedPort changes and not when the user enters a new port
+                PreferredPort = ActualPort;
+                ActualPort = PreferredPort; // This may look useless, but that way the visibility only changes when cachedPort changes and not when the user enters a new port
             });
 
             if (APIEnabled)
             {
-                CachedPort = CoreUtility.GetNearestAvailablePort(Port);
-                Server = new API(CachedPort);
-                Server.Start();
+                RunApi();
                 ShowNotificationIfPortChanged();
             }
 
             communicator = new Communicator();
 
             SetHostNames();
-            API.StartWatchers();
+            WebApiServer.StartWatchers();
+        }
 
-
+        private void RunApi()
+        {
+            ActualPort = NetworkUtility.GetNearestAvailablePort(PreferredPort);
+            Server = new WebApiServer(ActualPort);
+            if (SelectedApiOption == "V3")
+            {
+                Server.Start(new V3Api());
+            }
+            else if (SelectedApiOption == "V2")
+            {
+                Server.Start(new V2Api());
+            }
+            else if (SelectedApiOption == "Both")
+            {
+                Server.Start(new V2Api(), new V3Api());
+            }
         }
 
         private void ProfileChanged(object sender, EventArgs e)
         {
             // Raise the event that this profile specific value has been changed due to the profile switch
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PreferredPort)));
         }
 
-        public static int GetCachedPort()
+        public static int GetActualPort()
         {
-            return instance.CachedPort;
+            return instance.ActualPort;
         }
 
         private void ShowNotificationIfPortChanged()
         {
-            if (CachedPort != Port)
+            if (ActualPort != PreferredPort)
             {
-                Notification.ShowInformation("Advanced API launched on a different port: " + CachedPort);
+                Notification.ShowInformation("Advanced API launched on a different port: " + ActualPort);
             }
         }
 
@@ -173,30 +186,24 @@ namespace ninaAPI
             Server?.Stop();
             Server = null;
 
-            API.StopWatchers();
+            WebApiServer.StopWatchers();
             communicator.Dispose();
-            if (Directory.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}")))
-            {
-                Retry.Do(() => Directory.Delete(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}"), true), TimeSpan.FromMilliseconds(50), 3);
-            }
-            if (File.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png")))
-            {
-                Retry.Do(() => File.Delete(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png")), TimeSpan.FromMilliseconds(50), 3);
-            }
+
+            FileSystemHelper.Cleanup();
             return base.Teardown();
         }
 
         public CommunityToolkit.Mvvm.Input.RelayCommand UpdateDefaultPortCommand { get; set; }
 
-        private int cachedPort = -1;
-        public int CachedPort
+        private int actualPort = -1;
+        public int ActualPort
         {
-            get => cachedPort;
+            get => actualPort;
             set
             {
-                cachedPort = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CachedPort)));
-                PortVisibility = ((CachedPort != Port) && APIEnabled) ? Visibility.Visible : Visibility.Hidden;
+                actualPort = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ActualPort)));
+                PortVisibility = ((ActualPort != PreferredPort) && APIEnabled) ? Visibility.Visible : Visibility.Hidden;
                 SetHostNames();
             }
         }
@@ -220,11 +227,11 @@ namespace ninaAPI
                 Settings.Default.ProfileDependentPort = value;
                 CoreUtil.SaveSettings(Settings.Default);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ProfileDependentPort)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PreferredPort)));
             }
         }
 
-        public int Port
+        public int PreferredPort
         {
             get => ProfileDependentPort ? PluginSettings.GetValueInt32("Port", Settings.Default.Port) : Settings.Default.Port;
             set
@@ -238,7 +245,7 @@ namespace ninaAPI
                     Settings.Default.Port = value;
                     CoreUtil.SaveSettings(Settings.Default);
                 }
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PreferredPort)));
             }
         }
 
@@ -261,9 +268,7 @@ namespace ninaAPI
                 CoreUtil.SaveSettings(Settings.Default);
                 if (value)
                 {
-                    CachedPort = CoreUtility.GetNearestAvailablePort(Port);
-                    Server = new API(CachedPort);
-                    Server.Start();
+                    RunApi();
                     Notification.ShowSuccess("API successfully started");
                     ShowNotificationIfPortChanged();
                 }
@@ -271,19 +276,21 @@ namespace ninaAPI
                 {
                     Server.Stop();
                     Server = null;
-                    CachedPort = -1;
+                    ActualPort = -1;
                     Notification.ShowSuccess("API successfully stopped");
                 }
             }
         }
 
-        public bool UseV2
+        public List<string> ApiOptions { get; } = ["Both", "V2", "V3"];
+        public string SelectedApiOption
         {
-            get => Settings.Default.StartV2;
+            get => Settings.Default.SelectedApiOption;
             set
             {
-                Settings.Default.StartV2 = value;
+                Settings.Default.SelectedApiOption = value;
                 CoreUtil.SaveSettings(Settings.Default);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedApiOption)));
             }
         }
 
@@ -297,46 +304,20 @@ namespace ninaAPI
             }
         }
 
-        public string LocalAdress
-        {
-            get => Settings.Default.LocalAdress;
-            set
-            {
-                Settings.Default.LocalAdress = value;
-                CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalAdress)));
-            }
-        }
-
-        public string LocalNetworkAdress
-        {
-            get => Settings.Default.LocalNetworkAdress;
-            set
-            {
-                Settings.Default.LocalNetworkAdress = value;
-                CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalNetworkAdress)));
-            }
-        }
-
-        public string HostAdress
-        {
-            get => Settings.Default.HostAdress;
-            set
-            {
-                Settings.Default.HostAdress = value;
-                CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HostAdress)));
-            }
-        }
+        public string LocalAddress { get; set; }
+        public string LocalNetworkAddress { get; set; }
+        public string HostAddress { get; set; }
 
         private void SetHostNames()
         {
-            Dictionary<string, string> dict = CoreUtility.GetLocalNames();
+            string api = SelectedApiOption == "Both" || SelectedApiOption == "V3" ? "/v3/api" : "/v2/api";
+            LocalAddress = $"http://{LocalAddresses.LocalHostName}:{ActualPort}{api}";
+            LocalNetworkAddress = $"http://{LocalAddresses.IPAddress}:{ActualPort}{api}";
+            HostAddress = $"http://{LocalAddresses.HostName}:{ActualPort}{api}";
 
-            LocalAdress = $"http://{dict["LOCALHOST"]}:{CachedPort}/v2/api";
-            LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{CachedPort}/v2/api";
-            HostAdress = $"http://{dict["HOSTNAME"]}:{CachedPort}/v2/api";
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalAddress)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalNetworkAddress)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HostAddress)));
         }
     }
 }

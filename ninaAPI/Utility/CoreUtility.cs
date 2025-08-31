@@ -18,22 +18,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using ninaAPI.WebService;
-using System.Net.NetworkInformation;
-using NINA.Core.Utility;
 using System.Threading.Tasks;
-using NINA.Profile.Interfaces;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.Input;
-using System.Drawing;
-using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NINA.ViewModel.Sequencer;
+using Newtonsoft.Json.Converters;
+using System.Globalization;
+using ninaApi.Utility.Serialization;
 
 namespace ninaAPI.Utility
 {
@@ -50,7 +44,6 @@ namespace ninaAPI.Utility
         static CoreUtility()
         {
             options.Converters.Add(new JsonStringEnumConverter());
-            sequenceOptions.ContractResolver = new SequenceIgnoreResolver();
         }
 
         public static ISequenceRootContainer GetSequenceRoot(this ISequenceMediator sequence)
@@ -72,81 +65,6 @@ namespace ninaAPI.Utility
             return new Progress<ApplicationStatus>(p => Status = p);
         }
 
-        private static readonly Lazy<Dictionary<string, string>> lazyNames = new Lazy<Dictionary<string, string>>(() =>
-        {
-            var names = new Dictionary<string, string>()
-            {
-                { "LOCALHOST", "localhost" }
-            };
-
-            string hostName = Dns.GetHostName();
-            if (!string.IsNullOrEmpty(hostName))
-            {
-                names.Add("HOSTNAME", hostName);
-            }
-
-            string ipv4 = GetIPv4Address();
-            if (!string.IsNullOrEmpty(ipv4))
-            {
-                names.Add("IPADRESS", ipv4);
-            }
-
-            return names;
-        });
-
-        public static Dictionary<string, string> GetLocalNames()
-        {
-            return lazyNames.Value;
-        }
-
-        public static bool IsPortAvailable(int port)
-        {
-            bool isPortAvailable = true;
-
-            IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
-            IPEndPoint[] ipEndPoints = ipGlobalProperties.GetActiveTcpListeners();
-
-            foreach (IPEndPoint endPoint in ipEndPoints)
-            {
-                if (endPoint.Port == port)
-                {
-                    isPortAvailable = false;
-                    break;
-                }
-            }
-
-            return isPortAvailable;
-        }
-
-        public static int GetNearestAvailablePort(int startPort)
-        {
-            using var watch = MyStopWatch.Measure();
-            int port = startPort;
-            while (!IsPortAvailable(port))
-            {
-                port++;
-            }
-            return port;
-        }
-
-        private static string GetIPv4Address()
-        {
-            string localIP;
-            try
-            {
-                using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
-                socket.Connect("8.8.8.8", 65530);
-                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                localIP = endPoint.Address.ToString();
-            }
-            catch (Exception)
-            {
-                localIP = "127.0.0.1";
-            }
-
-            return localIP;
-        }
-
         public static HttpResponse CreateErrorTable(string message, int code = 500)
         {
             return CreateErrorTable(new Error(message, code));
@@ -164,7 +82,7 @@ namespace ninaAPI.Utility
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
         };
 
-        private static readonly JsonSerializerSettings sequenceOptions = new JsonSerializerSettings()
+        private static readonly JsonSerializerSettings sequenceSerializerSettings = new JsonSerializerSettings()
         {
             Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
             {
@@ -172,13 +90,16 @@ namespace ninaAPI.Utility
             },
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             NullValueHandling = NullValueHandling.Ignore,
+            Converters = { new StringEnumConverter() },
+            ContractResolver = new SequenceIgnoreResolver(),
+            FloatFormatHandling = FloatFormatHandling.String,
         };
 
         public static void WriteSequenceResponse(this IHttpContext context, object json)
         {
             context.Response.ContentType = MimeType.Json;
 
-            string text = JsonConvert.SerializeObject(json, sequenceOptions);
+            string text = JsonConvert.SerializeObject(json, sequenceSerializerSettings);
 
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
@@ -190,16 +111,6 @@ namespace ninaAPI.Utility
         {
             context.Response.ContentType = MimeType.Json;
 
-            /*
-            HttpResponse response = (HttpResponse)json;
-            context.Response.StatusCode = response.StatusCode;
-            response.StatusCode = null;
-            if (!string.IsNullOrEmpty(response.Error)) {
-                response.Response = response.Error;
-                response.Error = null;
-            }
-            */
-
             string text = System.Text.Json.JsonSerializer.Serialize(json, options);
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
@@ -207,52 +118,45 @@ namespace ninaAPI.Utility
             }
         }
 
-        public static bool IsParameterOmitted(this IHttpContext context, string parameter)
-        {
-            return !context.Request.QueryString.AllKeys.Contains(parameter);
-        }
-
         public static object CastString(this string str, Type type)
         {
-            if (type == typeof(int) || type == typeof(int?))
+            if (string.IsNullOrWhiteSpace(str))
             {
-                return int.Parse(str);
+                return null;
             }
-            if (type == typeof(double) || type == typeof(double?))
-            {
-                return double.Parse(str);
-            }
-            if (type == typeof(bool) || type == typeof(bool?))
-            {
-                return bool.Parse(str);
-            }
-            if (type == typeof(long) || type == typeof(long?))
-            {
-                return long.Parse(str);
-            }
-            if (type == typeof(short) || type == typeof(short?))
-            {
-                return short.Parse(str);
-            }
-            if (type.IsEnum)
+
+            str = str.Trim();
+
+            Type underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+
+            if (underlyingType == typeof(int))
+                return int.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var i) ? i : 0;
+            if (underlyingType == typeof(double))
+                return double.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var d) ? d : 0.0;
+            if (underlyingType == typeof(bool))
+                return bool.TryParse(str, out var b) ? b : false;
+            if (underlyingType == typeof(long))
+                return long.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var l) ? l : 0L;
+            if (underlyingType == typeof(short))
+                return short.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var s) ? s : (short)0;
+            if (underlyingType == typeof(float))
+                return float.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var f) ? f : 0f;
+            if (underlyingType == typeof(decimal))
+                return decimal.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var m) ? m : 0m;
+            if (underlyingType == typeof(byte))
+                return byte.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var by) ? by : (byte)0;
+            if (underlyingType == typeof(DateTime))
+                return DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt) ? dt : DateTime.MinValue;
+            if (underlyingType == typeof(string))
+                return str;
+            if (underlyingType.IsEnum)
             {
                 if (int.TryParse(str, out int x))
-                {
-                    return Enum.ToObject(type, x);
-                }
-                return Enum.Parse(type, str);
+                    return Enum.ToObject(underlyingType, x);
+                return Enum.TryParse(underlyingType, str, true, out var result) ? result : Activator.CreateInstance(underlyingType);
             }
-            return str;
-        }
 
-        public static string[] GetFilesRecursively(string path)
-        {
-            List<string> files = [.. Directory.GetFiles(path)];
-            foreach (string dir in Directory.GetDirectories(path))
-            {
-                files.AddRange(GetFilesRecursively(dir));
-            }
-            return [.. files];
+            return str;
         }
     }
 
@@ -268,21 +172,27 @@ namespace ninaAPI.Utility
         public string Type { get; set; } = TypeAPI;
     }
 
-    public class SequenceIgnoreResolver : DefaultContractResolver
+    public class StringResponse
     {
-        private static readonly string[] ignoredProperties = ["UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
-            "DateTime", "Expanded", "DateTimeProviders", "Horizon", "Parent", "InfoButtonColor", "Icon"];
+        public string Message { get; set; }
+    }
 
-        private static readonly Type[] ignoredTypes = [typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand), typeof(Icon), typeof(Func<>), typeof(Action<>)];
+    public class StatusResponse
+    {
+        public string Status { get; set; }
+    }
 
-        protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-        {
-            Newtonsoft.Json.Serialization.JsonProperty property = base.CreateProperty(member, memberSerialization);
-            if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Contains(property.PropertyType))
-            {
-                property.ShouldSerialize = _ => false;
-            }
-            return property;
-        }
+    public enum Device
+    {
+        Camera,
+        Dome,
+        Filterwheel,
+        Focuser,
+        Guider,
+        Mount,
+        Rotator,
+        Safetymonitor,
+        Switch,
+        Weather,
     }
 }

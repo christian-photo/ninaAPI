@@ -61,66 +61,6 @@ namespace ninaAPI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LocalAdress {
-            get {
-                return ((string)(this["LocalAdress"]));
-            }
-            set {
-                this["LocalAdress"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LocalNetworkAdress {
-            get {
-                return ((string)(this["LocalNetworkAdress"]));
-            }
-            set {
-                this["LocalNetworkAdress"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string HostAdress {
-            get {
-                return ((string)(this["HostAdress"]));
-            }
-            set {
-                this["HostAdress"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool StartV1 {
-            get {
-                return ((bool)(this["StartV1"]));
-            }
-            set {
-                this["StartV1"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool StartV2 {
-            get {
-                return ((bool)(this["StartV2"]));
-            }
-            set {
-                this["StartV2"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool CreateThumbnails {
             get {
@@ -152,6 +92,18 @@ namespace ninaAPI.Properties {
             }
             set {
                 this["ProfileDependentPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Both")]
+        public string SelectedApiOption {
+            get {
+                return ((string)(this["SelectedApiOption"]));
+            }
+            set {
+                this["SelectedApiOption"] = value;
             }
         }
     }
