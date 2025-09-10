@@ -37,6 +37,7 @@ using ninaAPI.WebService.V3.Service;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility.Http;
 using System.IO;
+using ninaAPI.WebService.V3.Model;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {
@@ -148,7 +149,8 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // TODO: Use ApiProcess for all these
-        private CancellationTokenSource CameraCoolingToken;
+        private ApiProcess cameraCoolProcess;
+        private ApiProcess cameraWarmProcess;
 
         [Route(HttpVerbs.Post, "/cool")]
         public async Task CameraCool()
@@ -167,20 +169,23 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "Camera has no temperature control");
                 }
+                else if (cameraCoolProcess != null && cameraCoolProcess.Status == ApiProcessStatus.Running)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, "Cooling already running");
+                }
                 else
                 {
                     temperatureParameter.Get(HttpContext);
                     minutesParameter.Get(HttpContext);
 
-
-                    CameraCoolingToken?.Cancel();
-                    CameraCoolingToken = new CancellationTokenSource();
-                    cam.CoolCamera(
-                        temperatureParameter.Value,
-                        TimeSpan.FromMinutes(minutesParameter.Value),
-                        statusMediator.GetStatus(),
-                        CameraCoolingToken.Token
-                    );
+                    cameraCoolProcess = new ApiProcess((token) =>
+                        cam.CoolCamera(
+                            temperatureParameter.Value,
+                            TimeSpan.FromMinutes(minutesParameter.Value),
+                            statusMediator.GetStatus(),
+                            token
+                        ));
+                    cameraCoolProcess.Start();
                     response.Message = "Cooling started";
                 }
             }
@@ -208,10 +213,18 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 {
                     throw CommonErrors.DeviceNotConnected(Device.Camera);
                 }
+                else if (cameraCoolProcess == null)
+                {
+                    response.Message = "Cooling not running";
+                }
+                else if (cameraCoolProcess.Status == ApiProcessStatus.Running || cameraCoolProcess.Status == ApiProcessStatus.Pending)
+                {
+                    cameraCoolProcess.Stop();
+                    response.Message = "Cooling aborted";
+                }
                 else
                 {
-                    CameraCoolingToken?.Cancel();
-                    response.Message = "Cooling aborted";
+                    response.Message = "Cooling not running";
                 }
             }
             catch (HttpException)
@@ -232,7 +245,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         {
             StringResponse response = new StringResponse();
 
-            QueryParameter<double> minutesParameter = new QueryParameter<double>("minutes", profile.ActiveProfile.CameraSettings.WarmingDuration, false);
+            QueryParameter<double> minutesParameter = new QueryParameter<double>("minutes", profile.ActiveProfile.CameraSettings.WarmingDuration, false, (minutes) => minutes >= 0);
 
             try
             {
@@ -244,21 +257,21 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "Camera has no temperature control");
                 }
-                else if (minutesParameter.Value < 0)
+                else if (cameraWarmProcess != null && cameraWarmProcess.Status == ApiProcessStatus.Running)
                 {
-                    throw CommonErrors.ParameterInvalid("minutes");
+                    throw new HttpException(HttpStatusCode.Conflict, "Cooling or warming already running");
                 }
                 else
                 {
                     minutesParameter.Get(HttpContext);
 
-                    CameraCoolingToken?.Cancel();
-                    CameraCoolingToken = new CancellationTokenSource();
-                    cam.WarmCamera(
-                        TimeSpan.FromMinutes(minutesParameter.Value),
-                        statusMediator.GetStatus(),
-                        CameraCoolingToken.Token
-                    );
+                    cameraWarmProcess = new ApiProcess((token) =>
+                        cam.WarmCamera(
+                            TimeSpan.FromMinutes(minutesParameter.Value),
+                            statusMediator.GetStatus(),
+                            token
+                        ));
+                    cameraWarmProcess.Start();
                     response.Message = "Warming started";
                 }
             }
@@ -286,10 +299,18 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 {
                     throw CommonErrors.DeviceNotConnected(Device.Camera);
                 }
+                else if (cameraWarmProcess == null)
+                {
+                    response.Message = "Warming not running";
+                }
+                else if (cameraWarmProcess.Status == ApiProcessStatus.Running || cameraWarmProcess.Status == ApiProcessStatus.Pending)
+                {
+                    cameraWarmProcess.Stop();
+                    response.Message = "Warming aborted";
+                }
                 else
                 {
-                    CameraCoolingToken?.Cancel();
-                    response.Message = "Warming aborted";
+                    response.Message = "Warming not running";
                 }
             }
             catch (HttpException)
@@ -421,9 +442,8 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         private volatile bool isCaptureBayered = false;
         private volatile int bitDepth = 16;
         private double pixelSize;
-        private volatile bool isCapturing = false;
-        private CancellationTokenSource CameraCaptureToken;
         private volatile PlateSolveResult plateSolveResult;
+        private ApiProcess cameraCaptureProcess;
 
         private object captureLock = new object();
 
@@ -443,11 +463,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
             try
             {
-                if (isCapturing)
-                {
-                    throw new HttpException(HttpStatusCode.Conflict, "Capture in progress");
-                }
-                else if (!info.Connected)
+                if (!info.Connected)
                 {
                     throw CommonErrors.DeviceNotConnected(Device.Camera);
                 }
@@ -459,6 +475,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "Camera does not support sub-sampling");
                 }
+                else if (cameraCaptureProcess != null && cameraCaptureProcess.Status == ApiProcessStatus.Running)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, "Capture already running");
+                }
                 else
                 {
                     durationParameter.Get(HttpContext);
@@ -466,14 +486,8 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                     saveParameter.Get(HttpContext);
                     roiParameter.Get(HttpContext);
 
-                    CameraCaptureToken?.Cancel();
-                    CameraCaptureToken?.Dispose();
-                    CameraCaptureToken = new CancellationTokenSource();
-
-                    _ = Task.Run(async () =>
+                    cameraCaptureProcess = new ApiProcess(async (token) =>
                     {
-                        isCapturing = true;
-
                         CaptureSequence sequence = new CaptureSequence(
                             durationParameter.Value,
                             CaptureSequence.ImageTypes.SNAPSHOT,
@@ -497,8 +511,8 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                         }
 
                         PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: true);
-                        IExposureData exposure = await imagingMediator.CaptureImage(sequence, CameraCaptureToken.Token, statusMediator.GetStatus());
-                        IRenderedImage renderedImage = await imagingMediator.PrepareImage(exposure, parameters, CameraCaptureToken.Token);
+                        IExposureData exposure = await imagingMediator.CaptureImage(sequence, token, statusMediator.GetStatus());
+                        IRenderedImage renderedImage = await imagingMediator.PrepareImage(exposure, parameters, token);
 
                         lock (captureLock)
                         {
@@ -516,12 +530,11 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
                         if (saveParameter.Value)
                         {
-                            await imageSaveMediator.Enqueue(renderedImage.RawImageData, Task.Run(() => renderedImage), statusMediator.GetStatus(), CameraCaptureToken.Token);
+                            await imageSaveMediator.Enqueue(renderedImage.RawImageData, Task.Run(() => renderedImage), statusMediator.GetStatus(), token);
                         }
-
-                        isCapturing = false;
                         // TODO: Should we use IMAGE-PREPARED or API-CAPTURE-FINISHED? await WebSocketV2.SendAndAddEvent("API-CAPTURE-FINISHED");
-                    }, CameraCaptureToken.Token);
+                    });
+                    cameraCaptureProcess.Start();
 
                     response.Message = "Capture started";
                 }
@@ -546,16 +559,19 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
             try
             {
-                if (!isCapturing)
+                if (cameraCaptureProcess == null)
                 {
-                    throw new HttpException(HttpStatusCode.Conflict, "No capture in progress");
+                    response.Message = "Capture not running";
+                }
+                else if (cameraCaptureProcess.Status == ApiProcessStatus.Running || cameraCaptureProcess.Status == ApiProcessStatus.Pending)
+                {
+                    cam.AbortExposure();
+                    cameraCaptureProcess.Stop();
+                    response.Message = "Capture aborted";
                 }
                 else
                 {
-                    cam.AbortExposure();
-                    CameraCaptureToken?.Cancel();
-                    CameraCaptureToken?.Dispose();
-                    response.Message = "Capture aborted";
+                    response.Message = "Capture not running";
                 }
             }
             catch (HttpException)
@@ -596,7 +612,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "No image available");
                 }
-                else if (isCapturing)
+                else if ((cameraCaptureProcess?.Status ?? ApiProcessStatus.Finished) == ApiProcessStatus.Running)
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "Capture in progress");
                 }
@@ -635,7 +651,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "No image available");
                 }
-                else if (isCapturing)
+                else if ((cameraCaptureProcess?.Status ?? ApiProcessStatus.Finished) == ApiProcessStatus.Running)
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "Capture in progress");
                 }
@@ -688,14 +704,9 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         [Route(HttpVerbs.Post, "/capture/platesolve")]
-        public async Task CameraCaptureSolve()
+        public async Task CameraCaptureSolve([JsonData] PlatesolveConfig config)
         {
             IPlateSolveSettings settings = profile.ActiveProfile.PlateSolveSettings;
-
-            QueryParameter<RawConverterEnum> rawConverterParameter = new QueryParameter<RawConverterEnum>("raw-converter", RawConverterEnum.FREEIMAGE, false);
-            QueryParameter<bool> blindFailoverParameter = new QueryParameter<bool>("blind-failover", settings.BlindFailoverEnabled, false);
-            QueryParameter<int> downsampleFactorParameter = new QueryParameter<int>("downsample-factor", settings.DownSampleFactor, false, (downsampleFactor) => downsampleFactor >= 1);
-            QueryParameter<double> searchRadiusParameter = new QueryParameter<double>("search-radius", settings.SearchRadius, false, (searchRadius) => searchRadius >= 0);
 
             try
             {
@@ -703,7 +714,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 {
                     throw new HttpException(HttpStatusCode.NotFound, "No image available");
                 }
-                else if (isCapturing)
+                else if ((cameraCaptureProcess?.Status ?? ApiProcessStatus.Finished) == ApiProcessStatus.Running)
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "Capture in progress");
                 }
@@ -711,20 +722,6 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 {
                     if (plateSolveResult is null)
                     {
-                        rawConverterParameter.Get(HttpContext);
-                        blindFailoverParameter.Get(HttpContext);
-                        downsampleFactorParameter.Get(HttpContext);
-
-                        IImageData imageData = await Retry.Do(
-                            async () => await imageDataFactory.CreateFromFile(
-                                FileSystemHelper.GetCapturePngPath(),
-                                bitDepth,
-                                isCaptureBayered,
-                                rawConverterParameter.Value
-                            ),
-                            TimeSpan.FromMilliseconds(200), 10
-                        );
-
                         Coordinates coordinates = mount.GetCurrentPosition();
                         double focalLength = profile.ActiveProfile.TelescopeSettings.FocalLength;
                         CaptureSolverParameter solverParameter = new CaptureSolverParameter()

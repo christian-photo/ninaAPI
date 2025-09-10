@@ -163,7 +163,7 @@ namespace ninaAPI.WebService
 
         private async Task HandleHttpException(IHttpContext context, IHttpException exception)
         {
-            if (!context.RequestedPath.Contains("v3"))
+            if (!context.Request.RawUrl.Contains("v3"))
             {
                 // Only use the new exception handler for v3 requests
                 // TODO: Remove when v2 is no longer supported

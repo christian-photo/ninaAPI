@@ -171,6 +171,10 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
                 {
                     throw new HttpException(HttpStatusCode.Conflict, "Focuser is moving");
                 }
+                else if (autoFocusProcess != null && autoFocusProcess.Status == ApiProcessStatus.Running)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, "Autofocus is running");
+                }
 
                 autoFocusVM = AdvancedAPI.Controls.AutoFocusFactory.Create();
 
