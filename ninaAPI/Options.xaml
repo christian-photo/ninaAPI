@@ -97,7 +97,7 @@
                         Width="100"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
-                        Text="IP Adress" />
+                        Text="IP Address" />
                     <TextBlock Margin="0,5,0,5" VerticalAlignment="Center">
                         <Hyperlink NavigateUri="{Binding LocalNetworkAddress}" RequestNavigate="Hyperlink_RequestNavigate">
                             <TextBlock VerticalAlignment="Center" Text="{Binding LocalNetworkAddress}" />
