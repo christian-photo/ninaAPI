@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 using EmbedIO.WebSockets;
+using Grpc.Core;
 using Newtonsoft.Json;
 using NINA.Core.Utility;
 using NINA.Plugin.Interfaces;
@@ -49,6 +50,7 @@ namespace ninaAPI.WebService.V2
         public TPPASocket(string urlPath) : base(urlPath, true)
         {
             AdvancedAPI.Controls.MessageBroker.Subscribe("PolarAlignmentPlugin_PolarAlignment_AlignmentError", this);
+            AdvancedAPI.Controls.MessageBroker.Subscribe("PolarAlignmentPlugin_PolarAlignment_Progress", this);
         }
 
         protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult rxResult)
@@ -139,6 +141,21 @@ namespace ninaAPI.WebService.V2
                         { "AzimuthError", AzimuthError },
                         { "AltitudeError", AltitudeError },
                         { "TotalError", TotalError },
+                    }
+                });
+            }
+            else if (message.Topic == "PolarAlignmentPlugin_PolarAlignment_Progress")
+            {
+                double progress = (double)message.Content.GetType().GetProperty("Progress").GetValue(message.Content, null);
+                double maxProgress = (double)message.Content.GetType().GetProperty("MaxProgress").GetValue(message.Content, null);
+
+                await Send(new HttpResponse()
+                {
+                    Type = HttpResponse.TypeSocket,
+                    Response = new
+                    {
+                        Status = message.Content.GetType().GetProperty("Status").GetValue(message.Content, null),
+                        Progress = progress / maxProgress,
                     }
                 });
             }
