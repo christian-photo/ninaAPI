@@ -118,7 +118,6 @@ namespace ninaAPI.WebService.V2
             Logger.Trace("Sending " + payload.Response + " to TPPA WebSocket");
             foreach (IWebSocketContext context in ActiveContexts)
             {
-                Logger.Trace("Sending to " + context.RemoteEndPoint.ToString());
                 await SendAsync(context, JsonConvert.SerializeObject(payload));
             }
         }
