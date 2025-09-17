@@ -11,6 +11,7 @@
 
 
 using NINA.Core.Enum;
+using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using Swan.Validators;
 
@@ -40,16 +41,24 @@ namespace ninaAPI.WebService.V3.Model
 
         public RawConverterEnum? RawConverter { get; set; }
 
-        public void UpdateWithProfile(IProfile profile)
+        [Range(-180, 180)]
+        public double? RA { get; set; }
+
+        [Range(-90, 90)]
+        public double? Dec { get; set; }
+
+        public void UpdateDefaults(IProfile profile, ITelescopeMediator mount)
         {
-            Attempts = this.Attempts ?? profile.PlateSolveSettings.NumberOfAttempts;
-            DownSampleFactor = this.DownSampleFactor ?? profile.PlateSolveSettings.DownSampleFactor;
-            BlindFailoverEnabled = this.BlindFailoverEnabled ?? profile.PlateSolveSettings.BlindFailoverEnabled;
-            SearchRadius = this.SearchRadius ?? profile.PlateSolveSettings.SearchRadius;
-            MaxObjects = this.MaxObjects ?? profile.PlateSolveSettings.MaxObjects;
-            Binning = this.Binning ?? profile.PlateSolveSettings.Binning;
-            Regions = this.Regions ?? profile.PlateSolveSettings.Regions;
-            RawConverter = this.RawConverter ?? profile.CameraSettings.RawConverter;
+            Attempts ??= profile.PlateSolveSettings.NumberOfAttempts;
+            DownSampleFactor ??= profile.PlateSolveSettings.DownSampleFactor;
+            BlindFailoverEnabled ??= profile.PlateSolveSettings.BlindFailoverEnabled;
+            SearchRadius ??= profile.PlateSolveSettings.SearchRadius;
+            MaxObjects ??= profile.PlateSolveSettings.MaxObjects;
+            Binning ??= profile.PlateSolveSettings.Binning;
+            Regions ??= profile.PlateSolveSettings.Regions;
+            RawConverter ??= profile.CameraSettings.RawConverter;
+            RA ??= mount.GetCurrentPosition().RA;
+            Dec ??= mount.GetCurrentPosition().Dec;
         }
     }
 }

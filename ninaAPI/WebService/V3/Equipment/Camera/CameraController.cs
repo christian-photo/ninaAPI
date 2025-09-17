@@ -722,19 +722,27 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 {
                     if (plateSolveResult is null)
                     {
-                        Coordinates coordinates = mount.GetCurrentPosition();
+                        IImageData imageData = await Retry.Do(
+                            async () => await imageDataFactory.CreateFromFile(
+                                FileSystemHelper.GetCapturePngPath(),
+                                bitDepth,
+                                isCaptureBayered,
+                                (RawConverterEnum)config.RawConverter
+                            ),
+                            TimeSpan.FromMilliseconds(200), 10
+                        );
                         double focalLength = profile.ActiveProfile.TelescopeSettings.FocalLength;
                         CaptureSolverParameter solverParameter = new CaptureSolverParameter()
                         {
-                            Attempts = 1,
-                            Binning = settings.Binning,
-                            BlindFailoverEnabled = blindFailoverParameter.Value,
-                            Coordinates = coordinates,
-                            DownSampleFactor = downsampleFactorParameter.Value,
+                            Attempts = (int)config.Attempts,
+                            Binning = (short)config.Binning,
+                            BlindFailoverEnabled = (bool)config.BlindFailoverEnabled,
+                            Coordinates = new Coordinates(Angle.ByDegree((double)config.RA), Angle.ByDegree((double)config.Dec), Epoch.J2000),
+                            DownSampleFactor = (int)config.DownSampleFactor,
                             FocalLength = focalLength,
-                            MaxObjects = settings.MaxObjects,
-                            Regions = settings.Regions,
-                            SearchRadius = searchRadiusParameter.Value,
+                            MaxObjects = (int)config.MaxObjects,
+                            Regions = (int)config.Regions,
+                            SearchRadius = (double)config.SearchRadius,
                             PixelSize = pixelSize
                         };
                         IImageSolver captureSolver = plateSolverFactory.GetImageSolver(
