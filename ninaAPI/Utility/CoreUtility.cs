@@ -180,10 +180,10 @@ namespace ninaAPI.Utility
 
             string text = JsonConvert.SerializeObject(json, sequenceOptions);
 
-            using (var writer = new StreamWriter(context.Response.OutputStream))
-            {
-                writer.Write(text);
-            }
+            var bytes = System.Text.Encoding.UTF8.GetBytes(text);
+
+            context.Response.ContentLength64 = bytes.Length;
+            context.Response.OutputStream.Write(bytes, 0, bytes.Length);
         }
 
         public static void WriteToResponse(this IHttpContext context, object json)
@@ -201,10 +201,10 @@ namespace ninaAPI.Utility
             */
 
             string text = System.Text.Json.JsonSerializer.Serialize(json, options);
-            using (var writer = new StreamWriter(context.Response.OutputStream))
-            {
-                writer.Write(text);
-            }
+            var bytes = System.Text.Encoding.UTF8.GetBytes(text);
+
+            context.Response.ContentLength64 = bytes.Length;
+            context.Response.OutputStream.Write(bytes, 0, bytes.Length);
         }
 
         public static bool IsParameterOmitted(this IHttpContext context, string parameter)
