@@ -494,6 +494,7 @@ namespace ninaAPI.WebService.V2
                         it.Add("DitherProgressExposures", i4.GetDitherAfterExposures().ProgressExposures);
                         it.Add("DitherTargetExposures", i4.GetDitherAfterExposures().AfterExposures);
                         it.Add("Iterations", i4.GetLoopCondition().Iterations);
+                        it.Add("CompletedIterations", i4.GetLoopCondition().CompletedIterations);
                         it.Add("Filter", i4.GetSwitchFilter().Filter?.Name ?? "Current");
                     }
                     else if (item is TakeExposure i5)
