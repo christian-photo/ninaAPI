@@ -463,7 +463,7 @@ channels:
                   example: "Socket"
 
   /tppa:
-    description: TPPA WebSocket channel. To use this channel, TPPA >= 2.2.3.7 must be installed. You can specify the TPPA settings in the json payload.
+    description: TPPA WebSocket channel. To use this channel, TPPA >= 2.2.4.1 must be installed. You can specify the TPPA settings in the json payload.
     publish:
       summary: Start or Stop TPPA
       message:
@@ -603,6 +603,38 @@ channels:
                     - "stopped procedure"
                     - "paused procedure"
                     - "resumed procedure"
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+              required:
+                - Response
+                - Error
+                - StatusCode
+                - Success
+                - Type
+          - contentType: application/json
+            title: Progress Response
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Status:
+                      type: string
+                      example: "Moving to next point"
+                    Progress:
+                      type: number
+                      format: double
+                      example: 0.75
                 Error:
                   type: string
                 StatusCode:

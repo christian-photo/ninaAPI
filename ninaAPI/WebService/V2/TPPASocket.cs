@@ -10,7 +10,9 @@
 #endregion "copyright"
 
 using EmbedIO.WebSockets;
+using Grpc.Core;
 using Newtonsoft.Json;
+using NINA.Core.Model;
 using NINA.Core.Utility;
 using NINA.Plugin.Interfaces;
 using ninaAPI.Utility;
@@ -49,6 +51,7 @@ namespace ninaAPI.WebService.V2
         public TPPASocket(string urlPath) : base(urlPath, true)
         {
             AdvancedAPI.Controls.MessageBroker.Subscribe("PolarAlignmentPlugin_PolarAlignment_AlignmentError", this);
+            AdvancedAPI.Controls.MessageBroker.Subscribe("PolarAlignmentPlugin_PolarAlignment_Progress", this);
         }
 
         protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult rxResult)
@@ -115,7 +118,6 @@ namespace ninaAPI.WebService.V2
             Logger.Trace("Sending " + payload.Response + " to TPPA WebSocket");
             foreach (IWebSocketContext context in ActiveContexts)
             {
-                Logger.Trace("Sending to " + context.RemoteEndPoint.ToString());
                 await SendAsync(context, JsonConvert.SerializeObject(payload));
             }
         }
@@ -123,24 +125,45 @@ namespace ninaAPI.WebService.V2
         // From ISubscriber
         public async Task OnMessageReceived(IMessage message)
         {
-            if (message.Topic == "PolarAlignmentPlugin_PolarAlignment_AlignmentError" && message.Version == 1)
+            try
             {
-                Type t = message.Content.GetType();
-
-                double AzimuthError = (double)t.GetProperty("AzimuthError").GetValue(message.Content, null);
-                double AltitudeError = (double)t.GetProperty("AltitudeError").GetValue(message.Content, null);
-                double TotalError = (double)t.GetProperty("TotalError").GetValue(message.Content, null);
-
-                await Send(new HttpResponse()
+                if (message.Topic == "PolarAlignmentPlugin_PolarAlignment_AlignmentError" && message.Version == 1)
                 {
-                    Type = HttpResponse.TypeSocket,
-                    Response = new Dictionary<string, double>
+                    Type t = message.Content.GetType();
+
+                    double AzimuthError = (double)t.GetProperty("AzimuthError").GetValue(message.Content, null);
+                    double AltitudeError = (double)t.GetProperty("AltitudeError").GetValue(message.Content, null);
+                    double TotalError = (double)t.GetProperty("TotalError").GetValue(message.Content, null);
+
+                    await Send(new HttpResponse()
+                    {
+                        Type = HttpResponse.TypeSocket,
+                        Response = new Dictionary<string, double>
                     {
                         { "AzimuthError", AzimuthError },
                         { "AltitudeError", AltitudeError },
                         { "TotalError", TotalError },
                     }
-                });
+                    });
+                }
+                else if (message.Topic == "PolarAlignmentPlugin_PolarAlignment_Progress")
+                {
+                    ApplicationStatus status = (ApplicationStatus)message.Content;
+
+                    await Send(new HttpResponse()
+                    {
+                        Type = HttpResponse.TypeSocket,
+                        Response = new
+                        {
+                            Status = status.Status,
+                            Progress = status.Progress / status.MaxProgress,
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error while processing TPPA message");
             }
         }
     }

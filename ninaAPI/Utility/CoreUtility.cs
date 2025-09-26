@@ -180,6 +180,10 @@ namespace ninaAPI.Utility
 
             string text = JsonConvert.SerializeObject(json, sequenceOptions);
 
+            var bytes = System.Text.Encoding.UTF8.GetBytes(text);
+
+            context.Response.ContentLength64 = bytes.Length;
+
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
                 writer.Write(text);
@@ -201,6 +205,9 @@ namespace ninaAPI.Utility
             */
 
             string text = System.Text.Json.JsonSerializer.Serialize(json, options);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(text);
+
+            context.Response.ContentLength64 = bytes.Length;
             using (var writer = new StreamWriter(context.Response.OutputStream))
             {
                 writer.Write(text);

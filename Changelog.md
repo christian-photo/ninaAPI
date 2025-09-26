@@ -2,6 +2,13 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.10.0
+
+- Updated TPPA Socket to support progress updates (TPPA >= 2.2.4.1)
+- Added `CompletedIterations` to `Smart Exposure` instruction for `sequence/json`
+- `AtTargetTemp` will now correctly check if `Temperature` is equal to `TemperatureSetPoint`
+- Added Content-Length header to the response
+
 ## 2.2.9.0
 
 - Added `prepared-image` endpoint to get the current image in the image dockable.
