@@ -115,7 +115,7 @@ namespace ninaAPI.WebService.V2
                 offsetMax = cam.GetInfo().offsetMax,
                 offsetMin = cam.GetInfo().offsetMin,
                 TargetTemp = cam.TargetTemp,
-                AtTargetTemp = cam.AtTargetTemp,
+                AtTargetTemp = cam.GetInfo().Temperature == cam.GetInfo().TemperatureSetPoint,
             };
         }
         public double TargetTemp { get; set; }

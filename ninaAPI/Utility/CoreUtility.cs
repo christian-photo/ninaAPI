@@ -183,7 +183,11 @@ namespace ninaAPI.Utility
             var bytes = System.Text.Encoding.UTF8.GetBytes(text);
 
             context.Response.ContentLength64 = bytes.Length;
-            context.Response.OutputStream.Write(bytes, 0, bytes.Length);
+
+            using (var writer = new StreamWriter(context.Response.OutputStream))
+            {
+                writer.Write(text);
+            }
         }
 
         public static void WriteToResponse(this IHttpContext context, object json)
@@ -204,7 +208,10 @@ namespace ninaAPI.Utility
             var bytes = System.Text.Encoding.UTF8.GetBytes(text);
 
             context.Response.ContentLength64 = bytes.Length;
-            context.Response.OutputStream.Write(bytes, 0, bytes.Length);
+            using (var writer = new StreamWriter(context.Response.OutputStream))
+            {
+                writer.Write(text);
+            }
         }
 
         public static bool IsParameterOmitted(this IHttpContext context, string parameter)
