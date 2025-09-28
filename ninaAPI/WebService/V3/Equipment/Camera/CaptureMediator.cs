@@ -62,6 +62,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return captures.TryGetValue(id, out var capture) ? capture : null;
         }
 
+        /// <summary>
+        /// Removes a capture from the mediator and cleans up the storage (deletes the image file). This does not stop the capture process!
+        /// </summary>
+        /// <param name="id">The id of the capture to remove</param>
         public void RemoveCapture(Guid id)
         {
             captures.TryRemove(id, out var capture);

@@ -108,16 +108,14 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             {
                 throw new HttpException(HttpStatusCode.Conflict, "Focuser is moving");
             }
-            // TODO: Check if an autofocus is running when it gets added in NINA
+            else if (FocuserWatcher.IsAutoFocusRunning)
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "An autofocus is already running");
+            }
 
             autoFocusVM = autofocusFactory.Create();
 
-            var processId = processMediator.AddProcess(async (token) => await autoFocusVM.StartAutoFocus(
-                    filterWheel.GetInfo().SelectedFilter,
-                    token,
-                    statusMediator.GetStatus()
-                ), ApiProcessType.FocuserAutofocus
-            );
+            var processId = processMediator.AddProcess(AutoFocusProcess.Create(autoFocusVM, filterWheel, statusMediator));
             var result = processMediator.Start(processId);
 
             if (result == ApiProcessStartResult.Conflict)
@@ -131,39 +129,6 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             }
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
-        }
-
-        [Route(HttpVerbs.Get, "/auto-focus/status")]
-        public async Task AutoFocusStatus()
-        {
-            object response;
-
-            // TODO: Find a solution for this. The process should be retrievable from the process mediator but how do we get the additional information?
-            ApiProcessStatus status = ApiProcessStatus.Finished;
-            if ((status == ApiProcessStatus.Running || status == ApiProcessStatus.Finished) && autoFocusVM != null)
-            {
-                response = new
-                {
-                    Status = status,
-                    Duration = autoFocusVM.AutoFocusDuration,
-                    AcquiredPoints = autoFocusVM.FocusPoints,
-                    LastPoint = autoFocusVM.LastAutoFocusPoint,
-                    FinalPoint = autoFocusVM.FinalFocusPoint,
-                    GaussianFitting = autoFocusVM.GaussianFitting,
-                    HyperbolicFitting = autoFocusVM.HyperbolicFitting,
-                    TrendlineFitting = autoFocusVM.TrendlineFitting,
-                    QuadraticFitting = autoFocusVM.QuadraticFitting,
-                };
-            }
-            else
-            {
-                response = new StatusResponse
-                {
-                    Status = status.ToString(),
-                };
-            }
-
-            await responseHandler.SendObject(HttpContext, response);
         }
 
         [Route(HttpVerbs.Get, "/auto-focus/list-reports")]

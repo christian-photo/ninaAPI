@@ -91,7 +91,7 @@ namespace ninaAPI.WebService.V3
             processMediator.Stop(id);
             await responseHandler.SendObject(
                 HttpContext,
-                new StatusResponse { Status = processMediator.GetStatus(id).ToString() }
+                new StatusResponse(processMediator.GetStatus(id).ToString())
             );
         }
 
@@ -106,7 +106,7 @@ namespace ninaAPI.WebService.V3
             await process.WaitForExit();
             await responseHandler.SendObject(
                 HttpContext,
-                new StatusResponse { Status = process.Status.ToString() }
+                new StatusResponse(process.Status.ToString())
             );
         }
     }

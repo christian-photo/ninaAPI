@@ -7,7 +7,6 @@ using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.Sessions;
 using NINA.Core.Enum;
-using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using Swan;
 

@@ -183,18 +183,7 @@ namespace ninaAPI.WebService
 
             string error = HttpUtility.StatusCodeMessages.GetValueOrDefault(exception.StatusCode, "Unknown Error");
 
-            string msg = exception.Message;
-            object response = null;
-
-            if (string.IsNullOrEmpty(msg))
-            {
-                response = new { Error = error };
-            }
-            else
-            {
-                response = new { Error = error, Message = msg };
-            }
-            await responseHandler.SendObject(context, response, exception.StatusCode);
+            await responseHandler.SendObject(context, new { Error = error, Message = exception.Message }, exception.StatusCode);
         }
     }
 

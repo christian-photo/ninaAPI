@@ -181,14 +181,14 @@ namespace ninaAPI.Utility
         public string Type { get; set; } = TypeAPI;
     }
 
-    public class StringResponse
+    public class StringResponse(string message)
     {
-        public string Message { get; set; }
+        public string Message { get; set; } = message;
     }
 
-    public class StatusResponse
+    public class StatusResponse(string status)
     {
-        public string Status { get; set; }
+        public string Status { get; set; } = status;
     }
 
     public class ResponseFactory

@@ -94,9 +94,8 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             int mode = modeParameter.Get(HttpContext);
 
             cam.SetReadoutMode((short)mode);
-            var response = new StringResponse { Message = "Readout mode updated" };
 
-            await responseHandler.SendObject(HttpContext, response);
+            await responseHandler.SendObject(HttpContext, new StringResponse("Readout mode updated"));
         }
 
 
@@ -190,9 +189,8 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             }
 
             cam.AbortExposure();
-            var response = new StringResponse { Message = "Exposure aborted" };
 
-            await responseHandler.SendObject(HttpContext, response);
+            await responseHandler.SendObject(HttpContext, new StringResponse("Exposure aborted"));
         }
 
         [Route(HttpVerbs.Put, "/settings/dew-heater")]
@@ -212,48 +210,36 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             powerParameter.Get(HttpContext);
 
             cam.SetDewHeater(powerParameter.Value);
-            var response = new StringResponse { Message = "Dew heater updated" };
 
-            await responseHandler.SendObject(HttpContext, response);
+            await responseHandler.SendObject(HttpContext, new StringResponse("Dew heater updated"));
         }
 
         [Route(HttpVerbs.Put, "/settings/binning")]
         public async Task CameraSetBinning()
         {
-            StringResponse response = new StringResponse();
-
             SizeQueryParameter binningParameter = new SizeQueryParameter(new Size(1, 1), true, false, "x", "y");
 
             if (!cam.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Camera);
             }
-            else
-            {
-                Size binning = binningParameter.Get(HttpContext);
-                BinningMode mode = cam.GetInfo().BinningModes.FirstOrDefault(b => b.X == binning.Width && b.Y == binning.Height, null);
-                if (mode == null)
-                {
-                    throw new HttpException(HttpStatusCode.BadRequest, "Invalid binning mode");
-                }
-                else
-                {
-                    cam.SetBinning(mode.X, mode.Y);
-                    response.Message = "Binning set";
-                }
-            }
 
-            await responseHandler.SendObject(HttpContext, response);
+            Size binning = binningParameter.Get(HttpContext);
+            BinningMode mode = cam.GetInfo().BinningModes.FirstOrDefault(b => b.X == binning.Width && b.Y == binning.Height, null);
+            if (mode == null)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "Invalid binning mode");
+            }
+            cam.SetBinning(mode.X, mode.Y);
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("Binning set"));
         }
 
 
         [Route(HttpVerbs.Post, "/capture/start")]
         public async Task CameraCapture([JsonData] CaptureConfig config)
         {
-            object response;
-            int statusCode = 200;
             CameraInfo info = cam.GetInfo();
-
             IPlateSolveSettings settings = profile.ActiveProfile.PlateSolveSettings;
 
             if (!info.Connected)
@@ -272,22 +258,23 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 throw new HttpException(HttpStatusCode.Conflict, $"Gain is outside of range: {cam.GetInfo().GainMin} - {cam.GetInfo().GainMax}");
             }
+
+            config.UpdateDefaults(settings, cam.GetInfo());
+
+            var capture = captureMediator.AddCapture();
+            var result = capture.Start(config);
+
+            object response;
+            int statusCode = 200;
+
+            if (result == ApiProcessStartResult.Conflict)
+            {
+                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(capture.CaptureId, out var process) ? process : null);
+                statusCode = 409;
+            }
             else
             {
-                config.UpdateDefaults(settings, cam.GetInfo());
-
-                var capture = captureMediator.AddCapture();
-                var result = capture.Start(config);
-
-                if (result == ApiProcessStartResult.Conflict)
-                {
-                    response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(capture.CaptureId, out var process) ? process : null);
-                    statusCode = 409;
-                }
-                else
-                {
-                    response = ResponseFactory.CreateProcessResponse(result, capture.CaptureId);
-                }
+                response = ResponseFactory.CreateProcessResponse(result, capture.CaptureId);
             }
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
@@ -325,15 +312,12 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 throw new HttpException(HttpStatusCode.NotFound, "No image available");
             }
-            else
+
+            BitmapEncoder encoder = await ImageService.ProcessAndPrepareImage(capture.GetCapturePath(), capture.IsCaptureBayered, imageQuery, capture.BitDepth);
+            using (MemoryStream memory = new MemoryStream())
             {
-                BitmapEncoder encoder = await ImageService.ProcessAndPrepareImage(capture.GetCapturePath(), capture.IsCaptureBayered, imageQuery, capture.BitDepth);
-                using (MemoryStream memory = new MemoryStream())
-                {
-                    encoder.Save(memory);
-                    await responseHandler.SendBytes(HttpContext, memory.ToArray(), encoder.CodecInfo.MimeTypes);
-                    return;
-                }
+                encoder.Save(memory);
+                await responseHandler.SendBytes(HttpContext, memory.ToArray(), encoder.CodecInfo.MimeTypes);
             }
         }
 
@@ -357,16 +341,14 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 throw new HttpException(HttpStatusCode.NotFound, "No image available");
             }
-            else
-            {
-                rawConverterParameter.Get(HttpContext);
-                starSensitivityParameter.Get(HttpContext);
-                noiseReductionParameter.Get(HttpContext);
 
-                var stats = capture.Analyze(imageDataFactory, starSensitivityParameter.Value, noiseReductionParameter.Value, rawConverterParameter.Value, HttpContext.CancellationToken);
+            rawConverterParameter.Get(HttpContext);
+            starSensitivityParameter.Get(HttpContext);
+            noiseReductionParameter.Get(HttpContext);
 
-                await responseHandler.SendObject(HttpContext, stats);
-            }
+            var stats = capture.Analyze(imageDataFactory, starSensitivityParameter.Value, noiseReductionParameter.Value, rawConverterParameter.Value, HttpContext.CancellationToken);
+
+            await responseHandler.SendObject(HttpContext, stats);
         }
 
         [Route(HttpVerbs.Post, "/capture/{id}/platesolve")]
@@ -385,12 +367,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 throw new HttpException(HttpStatusCode.NotFound, "No image available");
             }
-            else
-            {
-                var result = await capture.GetPlateSolve(imageDataFactory, plateSolverFactory, config, HttpContext.CancellationToken);
 
-                await responseHandler.SendObject(HttpContext, result);
-            }
+            var result = await capture.GetPlateSolve(imageDataFactory, plateSolverFactory, config, HttpContext.CancellationToken);
+
+            await responseHandler.SendObject(HttpContext, result);
         }
 
         /// <summary>
@@ -402,20 +382,12 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         [Route(HttpVerbs.Delete, "/capture/{id}/remove")]
         public async Task CameraRemoveCapture(Guid id)
         {
-            var capture = captureMediator.GetCapture(id);
-            if (capture == null)
-            {
-                throw new HttpException(HttpStatusCode.NotFound, "Capture not found");
-            }
-            else
-            {
-                capture.Stop();
-                captureMediator.RemoveCapture(id);
+            var capture = captureMediator.GetCapture(id) ?? throw new HttpException(HttpStatusCode.NotFound, "Capture not found");
 
-                var response = new StringResponse { Message = "Capture removed" };
+            capture.Stop();
+            captureMediator.RemoveCapture(id);
 
-                await responseHandler.SendObject(HttpContext, response);
-            }
+            await responseHandler.SendObject(HttpContext, new StringResponse("Capture removed"));
         }
     }
 }

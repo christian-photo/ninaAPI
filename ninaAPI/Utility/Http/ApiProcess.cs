@@ -27,7 +27,6 @@ namespace ninaAPI.Utility.Http
         public Guid ProcessId { get; }
         public ApiProcessType ProcessType { get; }
 
-        // TODO: Instead of a simple action, this could be a class that implements the IProgess interface
         public ApiProcess(Func<CancellationToken, Task> action, ApiProcessType type)
         {
             this.action = action;
@@ -71,7 +70,7 @@ namespace ninaAPI.Utility.Http
         /// <returns></returns>
         public virtual object GetProgress()
         {
-            return new StatusResponse { Status = Status.ToString() };
+            return new StatusResponse(Status.ToString());
         }
 
         public ApiProcessStatus Status
