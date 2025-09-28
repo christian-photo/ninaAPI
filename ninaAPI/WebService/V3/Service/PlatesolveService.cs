@@ -11,6 +11,7 @@
 
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using NINA.Astrometry;
 using NINA.Core.Utility;
@@ -18,24 +19,28 @@ using NINA.Image.Interfaces;
 using NINA.PlateSolving;
 using NINA.PlateSolving.Interfaces;
 using NINA.Profile.Interfaces;
+using NINA.WPF.Base.Interfaces.Mediator;
+using ninaAPI.Utility;
 using ninaAPI.WebService.V3.Model;
 
 namespace ninaAPI.WebService.V3.Service
 {
     public class PlateSolveService
     {
-        public PlateSolveService(IImageDataFactory imageDataFactory, IPlateSolverFactory plateSolverFactory, IPlateSolveSettings settings)
+        public PlateSolveService(IImageDataFactory imageDataFactory, IPlateSolverFactory plateSolverFactory, IPlateSolveSettings settings, IApplicationStatusMediator statusMediator)
         {
             this.imageDataFactory = imageDataFactory;
             this.plateSolverFactory = plateSolverFactory;
             this.settings = settings;
+            this.statusMediator = statusMediator;
         }
 
         private readonly IImageDataFactory imageDataFactory;
         private readonly IPlateSolverFactory plateSolverFactory;
         private readonly IPlateSolveSettings settings;
+        private readonly IApplicationStatusMediator statusMediator;
 
-        public async Task<PlateSolveResult> PlateSolve(string imagePath, PlatesolveConfig config, double pixelSize, Coordinates coordinates, int bitDepth = 16, bool isBayered = false)
+        public async Task<PlateSolveResult> PlateSolve(string imagePath, PlatesolveConfig config, double pixelSize, Coordinates coordinates, CancellationToken cts, int bitDepth = 16, bool isBayered = false)
         {
             IImageData imageData = await Retry.Do(
                 async () => await imageDataFactory.CreateFromFile(
@@ -46,11 +51,7 @@ namespace ninaAPI.WebService.V3.Service
                 ),
                 TimeSpan.FromMilliseconds(200), 10
             );
-            return PlateSolve(imageData, config, pixelSize, coordinates);
-        }
 
-        public PlateSolveResult PlateSolve(IImageData imageData, PlatesolveConfig config, double pixelSize, Coordinates coordinates)
-        {
             CaptureSolverParameter solverParameter = new CaptureSolverParameter()
             {
                 Attempts = config.Attempts ?? 1,
@@ -65,16 +66,18 @@ namespace ninaAPI.WebService.V3.Service
                 PixelSize = pixelSize
             };
 
-            return PlateSolve(imageData, solverParameter);
+            return await PlateSolve(imageData, solverParameter, cts);
         }
 
-        public async Task<PlateSolveResult> PlateSolve(IImageData imageData, CaptureSolverParameter parameter)
+        public async Task<PlateSolveResult> PlateSolve(IImageData imageData, CaptureSolverParameter parameter, CancellationToken cts)
         {
             IImageSolver captureSolver = plateSolverFactory.GetImageSolver(
                 plateSolverFactory.GetPlateSolver(settings),
                 plateSolverFactory.GetBlindSolver(settings)
             );
-            var result = await captureSolver.Solve(imageData, parameter, statusMediator.GetStatus(), HttpContext.CancellationToken);
+            var result = await captureSolver.Solve(imageData, parameter, statusMediator.GetStatus(), cts);
+
+            return result;
         }
     }
 }

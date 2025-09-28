@@ -9,9 +9,12 @@
 
 #endregion "copyright"
 
+using System.IO;
 using EmbedIO;
 using EmbedIO.WebApi;
+using Microsoft.VisualBasic;
 using ninaApi.Utility.Serialization;
+using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
@@ -25,6 +28,10 @@ namespace ninaAPI.WebService.V3
     {
         private readonly ResponseHandler responseHandler;
         private readonly ISerializerService serializer;
+        private readonly CameraController cameraController;
+        private readonly FocuserController focuserController;
+        private readonly ControllerV3 controller;
+        private readonly ApiProcessMediator processMediator;
 
         private EventWebSocket eventSocket;
 
@@ -32,14 +39,9 @@ namespace ninaAPI.WebService.V3
         {
             serializer = SerializerFactory.GetSerializer();
             responseHandler = new ResponseHandler(serializer);
-        }
+            processMediator = new ApiProcessMediator();
 
-        public WebServer ConfigureServer(WebServer server)
-        {
-            eventSocket = new EventWebSocket("/v3/ws/events", serializer);
-
-            return server.WithModule(eventSocket)
-                .WithWebApi("/v3/api/equipment/camera", m => m.WithController(() => new CameraController(
+            cameraController = new CameraController(
                     AdvancedAPI.Controls.Camera,
                     AdvancedAPI.Controls.Profile,
                     AdvancedAPI.Controls.Imaging,
@@ -49,13 +51,33 @@ namespace ninaAPI.WebService.V3
                     AdvancedAPI.Controls.PlateSolver,
                     AdvancedAPI.Controls.Mount,
                     AdvancedAPI.Controls.FilterWheel,
-                    responseHandler
-                )))
-                .WithWebApi("/v3/api/equipment/focuser", m => m.WithController(() => new FocuserController(
+                    responseHandler,
+                    processMediator
+                );
+
+            focuserController = new FocuserController(
                     AdvancedAPI.Controls.Focuser,
-                    responseHandler
-                )))
-                .WithWebApi("/v3/api", m => m.WithController(() => new ControllerV3(responseHandler)));
+                    AdvancedAPI.Controls.FilterWheel,
+                    AdvancedAPI.Controls.StatusMediator,
+                    AdvancedAPI.Controls.AutoFocusFactory,
+                    responseHandler,
+                    processMediator
+                );
+
+            controller = new ControllerV3(responseHandler, processMediator);
+        }
+
+        public WebServer ConfigureServer(WebServer server)
+        {
+            eventSocket = new EventWebSocket("/v3/ws/events", serializer);
+
+            Directory.CreateDirectory(FileSystemHelper.GetProcessTempFolder());
+
+            // EMBEDIO WOULD CREATE A NEW INSTANCE OF THE CONTROLLER FOR EACH REQUEST
+            return server.WithModule(eventSocket)
+                .WithWebApi("/v3/api/equipment/camera", m => m.WithController(() => cameraController))
+                .WithWebApi("/v3/api/equipment/focuser", m => m.WithController(() => focuserController))
+                .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 
         public bool SupportsSSL() => true;

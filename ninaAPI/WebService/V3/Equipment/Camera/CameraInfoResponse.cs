@@ -17,9 +17,6 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 {
     public class CameraInfoResponse : CameraInfo
     {
-        public double TargetTemp { get; set; }
-        public bool AtTargetTemp { get; set; }
-
         public static CameraInfoResponse FromCam(ICameraMediator cam)
         {
             var info = cam.GetInfo();
@@ -88,8 +85,6 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 SensorType = info.SensorType,
                 Gain = info.Gain,
                 HasBattery = info.HasBattery,
-                TargetTemp = cam.TargetTemp,
-                AtTargetTemp = cam.AtTargetTemp,
             };
         }
     }

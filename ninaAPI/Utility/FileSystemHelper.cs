@@ -30,19 +30,16 @@ namespace ninaAPI.Utility
             return files;
         }
 
-        public static string GetCapturePngPath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp-{Environment.ProcessId}.png");
-        public static string GetThumbnailFolder() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}");
+        public static string GetProcessTempFolder() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"{Environment.ProcessId}");
+        public static string GetCapturePngPath(Guid id) => Path.Combine(GetProcessTempFolder(), $"capture-{id}.png");
+        public static string GetThumbnailFolder() => Path.Combine(GetProcessTempFolder(), "thumbnails");
         public static string GetAutofocusFolder() => Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "AutoFocus");
 
         public static void Cleanup(TimeSpan retryDelay, int retires)
         {
-            if (Directory.Exists(GetThumbnailFolder()))
+            if (Directory.Exists(GetProcessTempFolder()))
             {
-                Retry.Do(() => Directory.Delete(GetThumbnailFolder(), true), retryDelay, retires);
-            }
-            if (File.Exists(GetCapturePngPath()))
-            {
-                Retry.Do(() => File.Delete(GetCapturePngPath()), retryDelay, retires);
+                Retry.Do(() => Directory.Delete(GetProcessTempFolder(), true), retryDelay, retires);
             }
         }
 

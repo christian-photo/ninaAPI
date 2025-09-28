@@ -28,6 +28,8 @@ using NINA.ViewModel.Sequencer;
 using Newtonsoft.Json.Converters;
 using System.Globalization;
 using ninaApi.Utility.Serialization;
+using ninaAPI.Utility.Http;
+using System.Net;
 
 namespace ninaAPI.Utility
 {
@@ -187,6 +189,25 @@ namespace ninaAPI.Utility
     public class StatusResponse
     {
         public string Status { get; set; }
+    }
+
+    public class ResponseFactory
+    {
+        public static object CreateProcessResponse(ApiProcessStartResult result, Guid id)
+        {
+            return new { Status = result.ToString(), ProcessId = id };
+        }
+
+        public static object CreateProcessConflictsResponse(ApiProcessMediator mediator, ApiProcess process)
+        {
+            var conflicts = mediator.CheckForConflicts(process.ProcessType, process.ProcessId);
+            return new
+            {
+                Error = HttpUtility.StatusCodeMessages[(int)HttpStatusCode.Conflict],
+                Message = $"Process {process.ProcessId} ({process.ProcessType}) could not be started because other processes conflict with it",
+                Conflicts = conflicts
+            };
+        }
     }
 
     public enum Device

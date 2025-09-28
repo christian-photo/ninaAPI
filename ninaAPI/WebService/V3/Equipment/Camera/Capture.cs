@@ -10,29 +10,32 @@
 #endregion "copyright"
 
 
+using System;
 using System.IO;
-using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
-using EmbedIO;
-using NINA.Core.Model.Equipment;
+using NINA.Astrometry;
+using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Model;
+using NINA.Image.ImageData;
 using NINA.Image.Interfaces;
 using NINA.PlateSolving;
+using NINA.PlateSolving.Interfaces;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
-using NINA.WPF.Base.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Model;
+using ninaAPI.WebService.V3.Service;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {
     public class Capture
     {
         public CaptureConfig Config { get; private set; }
-        public ApiProcess CameraCaptureProcess { get; private set; }
+        public Guid CaptureId { get; private set; }
 
         private readonly ICameraMediator camera;
         private readonly IProfileService profile;
@@ -40,8 +43,9 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         private readonly IImageSaveMediator imageSaveMediator;
         private readonly IFilterWheelMediator filterWheel;
         private readonly IApplicationStatusMediator statusMediator;
+        private readonly ApiProcessMediator processMediator;
 
-        public Capture(ICameraMediator camera, FilterWheelMediator filterWheel, IProfileService profile, IImagingMediator imagingMediator, IImageSaveMediator imageSaveMediator, IApplicationStatusMediator statusMediator)
+        public Capture(ICameraMediator camera, IFilterWheelMediator filterWheel, IProfileService profile, IImagingMediator imagingMediator, IImageSaveMediator imageSaveMediator, IApplicationStatusMediator statusMediator, ApiProcessMediator processMediator)
         {
             this.camera = camera;
             this.filterWheel = filterWheel;
@@ -49,39 +53,26 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             this.imagingMediator = imagingMediator;
             this.imageSaveMediator = imageSaveMediator;
             this.statusMediator = statusMediator;
-        }
+            this.processMediator = processMediator;
 
-        private volatile bool isCaptureBayered = false;
-        private volatile int bitDepth = 16;
-        private double pixelSize;
-        private volatile PlateSolveResult plateSolveResult;
-
-        private object captureLock = new object();
-
-        public async Task Start(CaptureConfig config)
-        {
-            if (CameraCaptureProcess != null && CameraCaptureProcess.Status == ApiProcessStatus.Running)
-            {
-                throw new HttpException(HttpStatusCode.Conflict, "Capture already running");
-            }
-            CameraCaptureProcess = new ApiProcess(async (token) =>
+            CaptureId = processMediator.AddProcess(async (token) =>
             {
                 CaptureSequence sequence = new CaptureSequence(
-                    (double)config.Duration,
+                    (double)Config.Duration,
                     CaptureSequence.ImageTypes.SNAPSHOT,
                     filterWheel.GetInfo().SelectedFilter,
-                    config.Binning,
+                    Config.Binning,
                     1);
 
-                sequence.Gain = (int)config.Gain;
+                sequence.Gain = (int)Config.Gain;
 
-                if (config.ROI < 1)
+                if (Config.ROI < 1)
                 {
                     var info = camera.GetInfo();
                     var centerX = info.XSize / 2d;
                     var centerY = info.YSize / 2d;
-                    double subWidth = info.XSize * (double)config.ROI;
-                    double subHeight = info.YSize * (double)config.ROI;
+                    double subWidth = info.XSize * (double)Config.ROI;
+                    double subHeight = info.YSize * (double)Config.ROI;
                     var startX = centerX - subWidth / 2d;
                     var startY = centerY - subHeight / 2d;
                     var rect = new ObservableRectangle(startX, startY, subWidth, subHeight);
@@ -95,25 +86,147 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
                 lock (captureLock)
                 {
-                    bitDepth = renderedImage.RawImageData.Properties.BitDepth;
-                    pixelSize = renderedImage.RawImageData.MetaData.Camera.PixelSize;
-                    isCaptureBayered = renderedImage.RawImageData.Properties.IsBayered;
+                    BitDepth = renderedImage.RawImageData.Properties.BitDepth;
+                    PixelSize = renderedImage.RawImageData.MetaData.Camera.PixelSize;
+                    IsCaptureBayered = renderedImage.RawImageData.Properties.IsBayered;
                     plateSolveResult = null;
                 }
 
                 var encoder = BitmapHelper.GetEncoder(renderedImage.Image, -1);
-                using (FileStream fs = new FileStream(FileSystemHelper.GetCapturePngPath(), FileMode.Create))
+                using (FileStream fs = new FileStream(GetCapturePath(), FileMode.Create))
                 {
                     encoder.Save(fs);
                 }
 
-                if (config.Save ?? false)
+                if (Config.Save ?? false)
                 {
                     await imageSaveMediator.Enqueue(renderedImage.RawImageData, Task.Run(() => renderedImage), statusMediator.GetStatus(), token);
                 }
-                // TODO: Should we use IMAGE-PREPARED or API-CAPTURE-FINISHED? await WebSocketV2.SendAndAddEvent("API-CAPTURE-FINISHED");
-            });
-            CameraCaptureProcess.Start();
+            }, ApiProcessType.CameraCapture);
         }
+
+        public bool IsCaptureBayered { get; private set; } = false;
+        public int BitDepth { get; private set; } = 16;
+        public double PixelSize { get; private set; }
+
+        private volatile PlateSolveResult plateSolveResult;
+        private volatile CaptureAnalysis captureAnalysis;
+
+        private readonly object captureLock = new();
+
+        public ApiProcessStartResult Start(CaptureConfig config)
+        {
+            Config = config;
+            return processMediator.Start(CaptureId);
+        }
+
+        public bool Stop()
+        {
+            return processMediator.Stop(CaptureId);
+        }
+
+        public async Task<PlateSolveResult> GetPlateSolve(IImageDataFactory imageFactory, IPlateSolverFactory plateSolverFactory, PlatesolveConfig config, CancellationToken token)
+        {
+            if (plateSolveResult is not null)
+            {
+                return plateSolveResult;
+            }
+            Coordinates coordinates = new Coordinates(Angle.ByDegree((double)config.RA), Angle.ByDegree((double)config.Dec), Epoch.J2000);
+            var result = await new PlateSolveService(
+                imageFactory,
+                plateSolverFactory,
+                profile.ActiveProfile.PlateSolveSettings,
+                statusMediator)
+                .PlateSolve(
+                    GetCapturePath(),
+                    config,
+                    PixelSize,
+                    coordinates,
+                    token,
+                    BitDepth,
+                    IsCaptureBayered);
+
+            lock (captureLock)
+            {
+                plateSolveResult = result;
+            }
+
+            return plateSolveResult;
+        }
+
+        public async Task<object> Analyze(IImageDataFactory imageFactory, StarSensitivityEnum starSensitivity, NoiseReductionEnum noiseReduction, RawConverterEnum rawConverter, CancellationToken cts)
+        {
+            if (captureAnalysis is not null)
+            {
+                return captureAnalysis;
+            }
+            IImageData imageData = await Retry.Do(
+                async () => await imageFactory.CreateFromFile(
+                    GetCapturePath(),
+                    BitDepth,
+                    IsCaptureBayered,
+                    rawConverter
+                ),
+                TimeSpan.FromMilliseconds(200), 10
+            );
+
+            var img = await imageData.RenderImage().DetectStars(false, starSensitivity, noiseReduction, cts);
+            var s = ImageStatistics.Create(img.RawImageData);
+
+            lock (captureLock)
+            {
+                captureAnalysis = new CaptureAnalysis()
+                {
+                    Stars = img.RawImageData.StarDetectionAnalysis.DetectedStars,
+                    HFR = img.RawImageData.StarDetectionAnalysis.HFR,
+                    Median = s.Median,
+                    MedianAbsoluteDeviation = s.MedianAbsoluteDeviation,
+                    Mean = s.Mean,
+                    Max = s.Max,
+                    Min = s.Min,
+                    StDev = s.StDev,
+                    PixelSize = PixelSize,
+                    BitDepth = img.RawImageData.Properties.BitDepth,
+                    Width = img.RawImageData.Properties.Width,
+                    Height = img.RawImageData.Properties.Height,
+                };
+            }
+
+            return captureAnalysis;
+        }
+
+        public ApiProcess GetCaptureProcess()
+        {
+            return processMediator.GetProcess(CaptureId, out var process) ? process : null;
+        }
+
+        public string GetCapturePath()
+        {
+            return FileSystemHelper.GetCapturePngPath(CaptureId);
+        }
+
+        public void Cleanup()
+        {
+            if (File.Exists(GetCapturePath()))
+            {
+                File.Delete(GetCapturePath());
+            }
+        }
+    }
+
+    public class CaptureAnalysis
+    {
+        public double Stars { get; set; }
+        public double HFR { get; set; }
+        public double Median { get; set; }
+        public double MedianAbsoluteDeviation { get; set; }
+        public double Mean { get; set; }
+        public double Max { get; set; }
+        public double Min { get; set; }
+        public double StDev { get; set; }
+        public double PixelSize { get; set; }
+        public int BitDepth { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
     }
 }

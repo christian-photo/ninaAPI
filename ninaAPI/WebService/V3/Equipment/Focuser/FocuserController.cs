@@ -20,6 +20,8 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces;
+using NINA.WPF.Base.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
@@ -29,175 +31,106 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
     public class FocuserController : WebApiController
     {
         private readonly IFocuserMediator focuser;
+        private readonly IFilterWheelMediator filterWheel;
+        private readonly IApplicationStatusMediator statusMediator;
+        private readonly IAutoFocusVMFactory autofocusFactory;
         private readonly ResponseHandler responseHandler;
+        private readonly ApiProcessMediator processMediator;
 
         public FocuserController(
             IFocuserMediator focuser,
-            ResponseHandler responseHandler)
+            IFilterWheelMediator filterWheel,
+            IApplicationStatusMediator statusMediator,
+            IAutoFocusVMFactory autofocusFactory,
+            ResponseHandler responseHandler,
+            ApiProcessMediator processMediator)
         {
             this.focuser = focuser;
+            this.filterWheel = filterWheel;
+            this.statusMediator = statusMediator;
             this.responseHandler = responseHandler;
+            this.processMediator = processMediator;
+            this.autofocusFactory = autofocusFactory;
         }
 
         [Route(HttpVerbs.Get, "/info")]
         public async Task FocuserInfo()
         {
-            object response;
+            var info = focuser.GetInfo();
 
-            try
-            {
-                IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
-                response = focuser.GetInfo();
-            }
-            catch (HttpException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                throw CommonErrors.UnknwonError(ex);
-            }
-
-            await responseHandler.SendObject(HttpContext, response);
+            await responseHandler.SendObject(HttpContext, info);
         }
 
-        private ApiProcess focuserMoveProcess;
 
         [Route(HttpVerbs.Post, "/move/start")]
         public async Task FocuserMove([QueryField] int position)
         {
-            StringResponse response = new StringResponse();
+            object response;
+            int statusCode = 200;
 
-            try
+            if (!focuser.GetInfo().Connected)
             {
-                IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
-                if (!focuser.GetInfo().Connected)
-                {
-                    throw CommonErrors.DeviceNotConnected(Device.Focuser);
-                }
-                else if (focuser.GetInfo().IsMoving || focuser.GetInfo().IsSettling)
-                {
-                    throw new HttpException(HttpStatusCode.Conflict, "Focuser is moving");
-                }
-                focuserMoveProcess = new ApiProcess((token) => focuser.MoveFocuser(position, token));
-                focuserMoveProcess.Start();
+                throw CommonErrors.DeviceNotConnected(Device.Focuser);
             }
-            catch (HttpException)
+            else if (focuser.GetInfo().IsMoving || focuser.GetInfo().IsSettling)
             {
-                throw;
+                throw new HttpException(HttpStatusCode.Conflict, "Focuser is moving");
             }
-            catch (Exception ex)
+            var processId = processMediator.AddProcess(async (token) => await focuser.MoveFocuser(position, token), ApiProcessType.FocuserMove);
+            var result = processMediator.Start(processId);
+
+            if (result == ApiProcessStartResult.Conflict)
             {
-                Logger.Error(ex);
-                throw CommonErrors.UnknwonError(ex);
+                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
+                statusCode = (int)HttpStatusCode.Conflict;
+            }
+            else
+            {
+                response = ResponseFactory.CreateProcessResponse(result, processId);
             }
 
-            await responseHandler.SendObject(HttpContext, response);
+            await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Get, "/move/status")]
-        public async Task FocuserMoveStatus()
-        {
-            StatusResponse response = new StatusResponse();
-
-            try
-            {
-                response.Status = focuserMoveProcess?.Status.ToString() ?? ApiProcessStatus.Finished.ToString();
-            }
-            catch (HttpException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                throw CommonErrors.UnknwonError(ex);
-            }
-
-            await responseHandler.SendObject(HttpContext, response);
-        }
-
-        [Route(HttpVerbs.Post, "/move/abort")]
-        public async Task FocuserMoveAbort()
-        {
-            StringResponse response = new StringResponse();
-
-            try
-            {
-                if (focuserMoveProcess is null)
-                {
-                    response.Message = "Focuser move not running";
-                }
-                else if (focuserMoveProcess.Status == ApiProcessStatus.Running || focuserMoveProcess.Status == ApiProcessStatus.Pending)
-                {
-                    focuserMoveProcess.Stop();
-                    response.Message = "Focuser move aborted";
-                }
-                else
-                {
-                    response.Message = "Focuser move not running";
-                }
-            }
-            catch (HttpException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                throw CommonErrors.UnknwonError(ex);
-            }
-
-            await responseHandler.SendObject(HttpContext, response);
-        }
-
-
-        private ApiProcess autoFocusProcess;
         private IAutoFocusVM autoFocusVM;
 
         [Route(HttpVerbs.Post, "/auto-focus/start")]
         public async Task StartAutoFocus()
         {
-            StringResponse response = new StringResponse();
+            object response;
+            int statusCode = 200;
 
-            try
+            if (!focuser.GetInfo().Connected)
             {
-                if (!focuser.GetInfo().Connected)
-                {
-                    throw CommonErrors.DeviceNotConnected(Device.Focuser);
-                }
-                else if (focuser.GetInfo().IsMoving || focuser.GetInfo().IsSettling)
-                {
-                    throw new HttpException(HttpStatusCode.Conflict, "Focuser is moving");
-                }
-                else if (autoFocusProcess != null && autoFocusProcess.Status == ApiProcessStatus.Running)
-                {
-                    throw new HttpException(HttpStatusCode.Conflict, "Autofocus is running");
-                }
-
-                autoFocusVM = AdvancedAPI.Controls.AutoFocusFactory.Create();
-
-                autoFocusProcess = new ApiProcess(
-                    (token) => autoFocusVM.StartAutoFocus(
-                        AdvancedAPI.Controls.FilterWheel.GetInfo().SelectedFilter,
-                        token,
-                        AdvancedAPI.Controls.StatusMediator.GetStatus()
-                    )
-                );
-                autoFocusProcess.Start();
+                throw CommonErrors.DeviceNotConnected(Device.Focuser);
             }
-            catch (HttpException)
+            else if (focuser.GetInfo().IsMoving || focuser.GetInfo().IsSettling)
             {
-                throw;
+                throw new HttpException(HttpStatusCode.Conflict, "Focuser is moving");
             }
-            catch (Exception ex)
+            // TODO: Check if an autofocus is running when it gets added in NINA
+
+            autoFocusVM = autofocusFactory.Create();
+
+            var processId = processMediator.AddProcess(async (token) => await autoFocusVM.StartAutoFocus(
+                    filterWheel.GetInfo().SelectedFilter,
+                    token,
+                    statusMediator.GetStatus()
+                ), ApiProcessType.FocuserAutofocus
+            );
+            var result = processMediator.Start(processId);
+
+            if (result == ApiProcessStartResult.Conflict)
             {
-                Logger.Error(ex);
-                throw CommonErrors.UnknwonError(ex);
+                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
+                statusCode = (int)HttpStatusCode.Conflict;
+            }
+            else
+            {
+                response = ResponseFactory.CreateProcessResponse(result, processId);
             }
 
-            await responseHandler.SendObject(HttpContext, response);
+            await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
         [Route(HttpVerbs.Get, "/auto-focus/status")]
@@ -205,74 +138,29 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
         {
             object response;
 
-            try
+            // TODO: Find a solution for this. The process should be retrievable from the process mediator but how do we get the additional information?
+            ApiProcessStatus status = ApiProcessStatus.Finished;
+            if ((status == ApiProcessStatus.Running || status == ApiProcessStatus.Finished) && autoFocusVM != null)
             {
-                ApiProcessStatus status = autoFocusProcess?.Status ?? ApiProcessStatus.Finished;
-                if ((status == ApiProcessStatus.Running || status == ApiProcessStatus.Finished) && autoFocusVM != null)
+                response = new
                 {
-                    response = new
-                    {
-                        Status = status,
-                        Duration = autoFocusVM.AutoFocusDuration,
-                        AcquiredPoints = autoFocusVM.FocusPoints,
-                        LastPoint = autoFocusVM.LastAutoFocusPoint,
-                        FinalPoint = autoFocusVM.FinalFocusPoint,
-                        GaussianFitting = autoFocusVM.GaussianFitting,
-                        HyperbolicFitting = autoFocusVM.HyperbolicFitting,
-                        TrendlineFitting = autoFocusVM.TrendlineFitting,
-                        QuadraticFitting = autoFocusVM.QuadraticFitting,
-                    };
-                }
-                else
+                    Status = status,
+                    Duration = autoFocusVM.AutoFocusDuration,
+                    AcquiredPoints = autoFocusVM.FocusPoints,
+                    LastPoint = autoFocusVM.LastAutoFocusPoint,
+                    FinalPoint = autoFocusVM.FinalFocusPoint,
+                    GaussianFitting = autoFocusVM.GaussianFitting,
+                    HyperbolicFitting = autoFocusVM.HyperbolicFitting,
+                    TrendlineFitting = autoFocusVM.TrendlineFitting,
+                    QuadraticFitting = autoFocusVM.QuadraticFitting,
+                };
+            }
+            else
+            {
+                response = new StatusResponse
                 {
-                    response = new StatusResponse
-                    {
-                        Status = status.ToString(),
-                    };
-                }
-            }
-            catch (HttpException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                throw CommonErrors.UnknwonError(ex);
-            }
-
-            await responseHandler.SendObject(HttpContext, response);
-        }
-
-        [Route(HttpVerbs.Post, "/auto-focus/abort")]
-        public async Task AutoFocusAbort()
-        {
-            StringResponse response = new StringResponse();
-
-            try
-            {
-                if (autoFocusProcess is null)
-                {
-                    response.Message = "Autofocus not running";
-                }
-                else if (autoFocusProcess.Status == ApiProcessStatus.Running || autoFocusProcess.Status == ApiProcessStatus.Pending)
-                {
-                    autoFocusProcess.Stop();
-                    response.Message = "Autofocus aborted";
-                }
-                else
-                {
-                    response.Message = "Autofocus not running";
-                }
-            }
-            catch (HttpException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                throw CommonErrors.UnknwonError(ex);
+                    Status = status.ToString(),
+                };
             }
 
             await responseHandler.SendObject(HttpContext, response);
@@ -281,25 +169,12 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
         [Route(HttpVerbs.Get, "/auto-focus/list-reports")]
         public async Task AutoFocusListReports()
         {
-            object response;
-            try
+            var files = FileSystemHelper.GetFilesRecursively(FileSystemHelper.GetAutofocusFolder());
+            object response = files.Select(f => new
             {
-                var files = FileSystemHelper.GetFilesRecursively(FileSystemHelper.GetAutofocusFolder());
-                response = files.Select(f => new
-                {
-                    Filename = Path.GetFileNameWithoutExtension(f),
-                    Date = File.GetCreationTime(f),
-                });
-            }
-            catch (HttpException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                throw CommonErrors.UnknwonError(ex);
-            }
+                Filename = Path.GetFileNameWithoutExtension(f),
+                Date = File.GetCreationTime(f),
+            });
 
             await responseHandler.SendObject(HttpContext, response);
         }
@@ -309,28 +184,16 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
         {
             QueryParameter<string> filenameParameter = new QueryParameter<string>("filename", string.Empty, true);
 
-            try
+            string filename = filenameParameter.Get(HttpContext);
+            string file = Path.Combine(FileSystemHelper.GetAutofocusFolder(), $"{filename}.json");
+            if (File.Exists(file))
             {
-                string filename = filenameParameter.Get(HttpContext);
-                string file = Path.Combine(FileSystemHelper.GetAutofocusFolder(), $"{filename}.json");
-                if (File.Exists(file))
-                {
-                    string json = await Retry.Do(() => File.ReadAllText(file), TimeSpan.FromMilliseconds(50), 5);
-                    await responseHandler.SendString(HttpContext, json);
-                }
-                else
-                {
-                    throw new HttpException(HttpStatusCode.NotFound, "Report not found");
-                }
+                string json = await Retry.Do(() => File.ReadAllText(file), TimeSpan.FromMilliseconds(50), 5);
+                await responseHandler.SendString(HttpContext, json);
             }
-            catch (HttpException)
+            else
             {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                throw CommonErrors.UnknwonError(ex);
+                throw new HttpException(HttpStatusCode.NotFound, "Report not found");
             }
         }
     }

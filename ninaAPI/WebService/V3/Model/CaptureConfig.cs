@@ -10,16 +10,33 @@
 #endregion "copyright"
 
 
+using System.ComponentModel.DataAnnotations;
 using NINA.Core.Model.Equipment;
+using NINA.Equipment.Equipment.MyCamera;
+using NINA.Profile.Interfaces;
 
 namespace ninaAPI.WebService.V3.Model
 {
     public class CaptureConfig
     {
+        [Range(0, double.MaxValue)]
         public double? Duration { get; set; }
+
+        [Range(0, int.MaxValue)]
         public int? Gain { get; set; }
         public bool? Save { get; set; }
-        public double? ROI { get; set; }
+
+        [Range(0, 1)]
+        public double? ROI { get; set; } = 1;
         public BinningMode Binning { get; set; }
+
+        public void UpdateDefaults(IPlateSolveSettings solveSettings, CameraInfo info)
+        {
+            Duration ??= solveSettings.ExposureTime;
+            Gain ??= info.Gain;
+            Save ??= false;
+            ROI ??= 1;
+            Binning ??= new BinningMode(info.BinX, info.BinY);
+        }
     }
 }

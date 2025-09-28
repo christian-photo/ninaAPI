@@ -23,6 +23,7 @@ using ninaAPI.WebService.V2;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,7 +55,8 @@ namespace ninaAPI.WebService
                 .WithUrlPrefix($"http://*:{Port}")
                 .WithMode(HttpListenerMode.EmbedIO))
                 .WithModule(new PreprocessRequestModule())
-                .HandleHttpException(HandleHttpException);
+                .HandleHttpException(HandleHttpException)
+                .HandleUnhandledException(HandleUnhandledException);
         }
 
         public static void StartWatchers()
@@ -160,6 +162,12 @@ namespace ninaAPI.WebService
 
         public event EventHandler<EventArgs> Started;
         public event EventHandler<EventArgs> Stopped;
+
+        private async Task HandleUnhandledException(IHttpContext context, Exception exception)
+        {
+            Logger.Error(exception);
+            await HandleHttpException(context, CommonErrors.UnknwonError(exception));
+        }
 
         private async Task HandleHttpException(IHttpContext context, IHttpException exception)
         {

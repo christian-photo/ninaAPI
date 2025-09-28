@@ -8,6 +8,8 @@ using EmbedIO.Routing;
 using EmbedIO.Sessions;
 using NINA.Core.Enum;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using Swan;
 
 namespace ninaAPI.Test;
 
@@ -16,6 +18,20 @@ public class Tests
     [SetUp]
     public void Setup()
     {
+    }
+
+    [Test]
+    public void TestInBetween()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(0.IsBetween(0, 1), Is.True);
+            Assert.That(1.IsBetween(0, 1), Is.True);
+            Assert.That(0.IsBetween(1, 2), Is.False);
+            Assert.That(2.IsBetween(1, 2), Is.True); // Inclusive
+            Assert.That(1.IsBetween(0, 2), Is.True);
+            Assert.That(2.IsBetween(0, 2), Is.True);
+        });
     }
 
     [Test]
