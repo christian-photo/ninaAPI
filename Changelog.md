@@ -2,6 +2,11 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.11.0
+
+- Added a networked manual rotator (just like the already existing networked filter wheel)
+- Added the url parameter `onlyAwaitCaptureCompletion` to the `camera/capture` endpoint for faster capture. This can be used to only await the capture completion and not the image preparation.
+
 ## 2.2.10.0
 
 - Updated TPPA Socket to support progress updates (TPPA >= 2.2.4.1)

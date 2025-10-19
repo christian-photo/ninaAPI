@@ -752,6 +752,12 @@ paths:
           required: false
           schema:
             type: boolean
+        - in: query
+          name: onlyAwaitCaptureCompletion
+          description: Use this if you want to capture images at a high rate, the endpoint will return immediately once the camera is ready to take a picture again. The image preparation, platesolve and save will continue to run in the background, so the image wont be available until these have completed as well.
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
