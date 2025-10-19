@@ -744,3 +744,44 @@ channels:
             - <one of your filters>
             - N/A
             - Change Complete
+
+  /rotator:
+    description:
+      A websocket channel to interact with the networked rotator. To use this, make sure you connect the networked manual rotator, not the normal manual rotator.
+      This extends the manual rotator with network capabilities, so rotations can be completed remotely.
+    publish:
+      description: Interact with the rotator. You may need get-target-position if the client wasn't connected, when the rotation was issued.
+      message:
+        contentType: application/text
+        payload:
+          type: string
+          enum:
+            - get-target-position
+            - rotation-completed
+    subscribe:
+      description:
+        Subscribe to rotation changes. When the rotation changes, you will receive a message containing relevant information, like target position and current position. If you request the target position, but there isn't a rotation in progress, N/A will be returned.
+        Once the rotation is completed (either in NINA or via the websocket), Rotation completed will be returned.
+      operationId: onRotationEvent
+      message:
+        contentType: application/json
+        payload:
+          oneOf:
+            - type: object
+              properties:
+                Position:
+                  type: number
+                  format: double
+                TargetPosition:
+                  type: number
+                  format: double
+                Rotation:
+                  type: number
+                  format: double
+            - type: object
+              properties:
+                Message:
+                  type: string
+                  enum:
+                    - Rotation completed
+                    - N/A

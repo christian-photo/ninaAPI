@@ -157,7 +157,6 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
-        private static CancellationTokenSource CameraCaptureToken;
         private static PlateSolveResult plateSolveResult;
         private static bool isBayered;
         private static Task CaptureTask;
@@ -466,7 +465,8 @@ namespace ninaAPI.WebService.V2
             [QueryField] bool stream,
             [QueryField] bool omitImage,
             [QueryField] bool waitForResult,
-            [QueryField] bool save)
+            [QueryField] bool save,
+            [QueryField] bool onlyAwaitCaptureCompletion)
         {
 
             HttpResponse response = new HttpResponse();
@@ -562,9 +562,6 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    CameraCaptureToken?.Cancel();
-                    CameraCaptureToken = new CancellationTokenSource();
-
                     CaptureTask = Task.Run(async () =>
                     {
                         plateSolveResult = null;
@@ -583,8 +580,8 @@ namespace ninaAPI.WebService.V2
                         }
 
                         PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: true);
-                        IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(sequence, CameraCaptureToken.Token, AdvancedAPI.Controls.StatusMediator.GetStatus());
-                        IRenderedImage renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(exposure, parameters, CameraCaptureToken.Token);
+                        IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(sequence, CancellationToken.None, AdvancedAPI.Controls.StatusMediator.GetStatus());
+                        IRenderedImage renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(exposure, parameters, CancellationToken.None);
 
                         var encoder = BitmapHelper.GetEncoder(renderedImage.Image, -1);
                         using (FileStream fs = new FileStream(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"), FileMode.Create))
@@ -614,22 +611,39 @@ namespace ninaAPI.WebService.V2
                                 PixelSize = exposure.MetaData.Camera.PixelSize
                             };
                             IImageSolver captureSolver = platesolver.GetImageSolver(platesolver.GetPlateSolver(settings), platesolver.GetBlindSolver(settings));
-                            plateSolveResult = await captureSolver.Solve(renderedImage.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCaptureToken.Token);
+
+                            plateSolveResult = await captureSolver.Solve(renderedImage.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), CancellationToken.None);
                         }
                         if (save)
                         {
-                            await AdvancedAPI.Controls.ImageSaveMediator.Enqueue(renderedImage.RawImageData, Task.Run(() => renderedImage), AdvancedAPI.Controls.StatusMediator.GetStatus(), CameraCaptureToken.Token);
+                            await AdvancedAPI.Controls.ImageSaveMediator.Enqueue(renderedImage.RawImageData, Task.Run(() => renderedImage), AdvancedAPI.Controls.StatusMediator.GetStatus(), CancellationToken.None);
                         }
                         await WebSocketV2.SendAndAddEvent("API-CAPTURE-FINISHED");
-                    }, CameraCaptureToken.Token);
+                    }, CancellationToken.None);
+
+                    response.Response = "Capture started";
+
+                    if (onlyAwaitCaptureCompletion)
+                    {
+                        while (!CaptureTask.IsCompleted && !cam.GetInfo().IsExposing)
+                        {
+                            await Task.Delay(10);
+                        }
+                        while (!CaptureTask.IsCompleted && cam.GetInfo().IsExposing)
+                        {
+                            await Task.Delay(10);
+                        }
+                        response.Response = "Capture finished";
+                    }
 
                     if (waitForResult)
                     {
                         await CaptureTask;
-                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false);
+                        // Return the captured image
+                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false, false);
                         return;
                     }
-                    response.Response = "Capture started";
+
                 }
             }
             catch (Exception ex)

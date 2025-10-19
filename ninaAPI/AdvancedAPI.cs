@@ -82,7 +82,7 @@ namespace ninaAPI
                            ITwilightCalculator twilightCalculator,
                            IWindowServiceFactory windowFactory)
         {
-
+            Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri("pack://application:,,,/ninaAPI;component/WebService/V2/CustomDrivers/RotatorDataTemplate.xaml") });
             PluginId = this.Identifier;
             instance = this;
 

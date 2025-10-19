@@ -320,7 +320,7 @@ namespace ninaAPI.WebService.V2
                     var proper = item.GetType().GetProperties().Where(p => p.MemberType == MemberTypes.Property && !ignoredProperties.Contains(p.Name) && !typeof(SequenceItem).GetProperties().Any(x => x.Name == p.Name));
                     foreach (var prop in proper)
                     {
-                        if (prop.CanWrite && (prop.GetSetMethod(true)?.IsPublic ?? false) && prop.CanRead && (prop.GetGetMethod(true)?.IsPublic ?? false))
+                        if ((prop.GetSetMethod(true)?.IsPublic ?? false) && prop.CanRead && (prop.GetGetMethod(true)?.IsPublic ?? false))
                         {
                             it.Add(prop.Name, prop.GetValue(item));
                         }
@@ -419,6 +419,7 @@ namespace ninaAPI.WebService.V2
                         ctable.Add("Altitude", c2.Data.Offset);
                         ctable.Add("CurrentAltitude", c2.Data.CurrentAltitude);
                         ctable.Add("ExpectedTime", c2.Data.ExpectedTime);
+                        ctable.Add("ExpectedDateTime", c2.Data.ExpectedDateTime);
                     }
                     else if (condition is LoopCondition c3)
                     {
