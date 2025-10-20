@@ -19,6 +19,7 @@ using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Model;
+using NINA.Image.FileFormat;
 using NINA.Image.ImageData;
 using NINA.Image.Interfaces;
 using NINA.PlateSolving;
@@ -36,6 +37,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
     {
         public CaptureConfig Config { get; private set; }
         public Guid CaptureId { get; private set; }
+        public Guid CaptureFinalizeProcessId { get; private set; }
 
         private readonly ICameraMediator camera;
         private readonly IProfileService profile;
@@ -54,6 +56,8 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             this.imageSaveMediator = imageSaveMediator;
             this.statusMediator = statusMediator;
             this.processMediator = processMediator;
+
+            IExposureData exposure = null;
 
             CaptureId = processMediator.AddProcess(async (token) =>
             {
@@ -80,34 +84,30 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                     sequence.SubSambleRectangle = rect;
                 }
 
-                PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: true);
-                IExposureData exposure = await imagingMediator.CaptureImage(sequence, token, statusMediator.GetStatus());
-                IRenderedImage renderedImage = await imagingMediator.PrepareImage(exposure, parameters, token);
+                exposure = await imagingMediator.CaptureImage(sequence, token, statusMediator.GetStatus());
 
+                processMediator.Start(CaptureFinalizeProcessId);
+            }, ApiProcessType.CameraCapture);
+
+            CaptureFinalizeProcessId = processMediator.AddProcess(async (token) =>
+            {
+                IImageData imageData = await exposure.ToImageData(statusMediator.GetStatus(), token);
                 lock (captureLock)
                 {
-                    BitDepth = renderedImage.RawImageData.Properties.BitDepth;
-                    PixelSize = renderedImage.RawImageData.MetaData.Camera.PixelSize;
-                    IsCaptureBayered = renderedImage.RawImageData.Properties.IsBayered;
-                    plateSolveResult = null;
+                    BitDepth = exposure.BitDepth;
+                    PixelSize = exposure.MetaData.Camera.PixelSize;
+                    IsCaptureBayered = imageData.Properties.IsBayered;
+                    RecordedRMS = exposure.MetaData.Image.RecordedRMS.Total;
                 }
 
-                var encoder = BitmapHelper.GetEncoder(renderedImage.Image, -1);
-                using (FileStream fs = new FileStream(GetCapturePath(), FileMode.Create))
-                {
-                    encoder.Save(fs);
-                }
-
-                if (Config.Save ?? false)
-                {
-                    await imageSaveMediator.Enqueue(renderedImage.RawImageData, Task.Run(() => renderedImage), statusMediator.GetStatus(), token);
-                }
-            }, ApiProcessType.CameraCapture);
+                capturePath = await imageData.SaveToDisk(new FileSaveInfo(profile), token);
+            }, ApiProcessType.CapturePrepare);
         }
 
         public bool IsCaptureBayered { get; private set; } = false;
         public int BitDepth { get; private set; } = 16;
         public double PixelSize { get; private set; }
+        public double RecordedRMS { get; private set; }
 
         private volatile PlateSolveResult plateSolveResult;
         private volatile CaptureAnalysis captureAnalysis;
@@ -186,6 +186,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                     Min = s.Min,
                     StDev = s.StDev,
                     PixelSize = PixelSize,
+                    RMS = RecordedRMS,
                     BitDepth = img.RawImageData.Properties.BitDepth,
                     Width = img.RawImageData.Properties.Width,
                     Height = img.RawImageData.Properties.Height,
@@ -200,9 +201,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return processMediator.GetProcess(CaptureId, out var process) ? process : null;
         }
 
+        private string capturePath;
         public string GetCapturePath()
         {
-            return FileSystemHelper.GetCapturePngPath(CaptureId);
+            return capturePath;
         }
 
         public void Cleanup()
@@ -224,6 +226,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         public double Max { get; set; }
         public double Min { get; set; }
         public double StDev { get; set; }
+        public double RMS { get; set; }
         public double PixelSize { get; set; }
         public int BitDepth { get; set; }
         public int Width { get; set; }

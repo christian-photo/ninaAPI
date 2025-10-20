@@ -274,7 +274,11 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             }
             else
             {
-                response = ResponseFactory.CreateProcessResponse(result, capture.CaptureId);
+                response = new
+                {
+                    CaptureId = capture.CaptureId,
+                    FinalizeCaptureProcessId = capture.CaptureFinalizeProcessId,
+                };
             }
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
@@ -346,7 +350,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             starSensitivityParameter.Get(HttpContext);
             noiseReductionParameter.Get(HttpContext);
 
-            var stats = capture.Analyze(imageDataFactory, starSensitivityParameter.Value, noiseReductionParameter.Value, rawConverterParameter.Value, HttpContext.CancellationToken);
+            var stats = await capture.Analyze(imageDataFactory, starSensitivityParameter.Value, noiseReductionParameter.Value, rawConverterParameter.Value, HttpContext.CancellationToken);
 
             await responseHandler.SendObject(HttpContext, stats);
         }

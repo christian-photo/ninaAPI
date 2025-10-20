@@ -61,6 +61,10 @@ namespace ninaAPI.Utility.Http
         /// <returns>A task that completes when the process has finished</returns>
         public async Task WaitForExit()
         {
+            while (Status == ApiProcessStatus.Pending)
+            {
+                await Task.Delay(10);
+            }
             await process;
         }
 
@@ -135,9 +139,11 @@ namespace ninaAPI.Utility.Http
 
         public bool ConflictsWith(ApiProcessType type) => Conflicts.Contains(type) && !AllowMultiple;
 
-        public static readonly ApiProcessType CameraCool = new("CamerCool", false, CameraWarm);
-        public static readonly ApiProcessType CameraWarm = new("CamerWarm", false, CameraCool);
-        public static readonly ApiProcessType CameraCapture = new("CamerCapture", false, FocuserAutofocus);
+        public static readonly ApiProcessType CameraCool = new("CameraCool", false, CameraWarm);
+        public static readonly ApiProcessType CameraWarm = new("CameraWarm", false, CameraCool);
+        public static readonly ApiProcessType CameraCapture = new("CameraCapture", false, FocuserAutofocus);
+        public static readonly ApiProcessType CaptureSave = new("CaptureSave", true);
+        public static readonly ApiProcessType CapturePrepare = new("CapturePrepare", true);
         public static readonly ApiProcessType FocuserMove = new("FocuserMove", false, FocuserAutofocus);
         public static readonly ApiProcessType FocuserAutofocus = new("AutoFocus", false, FocuserMove, CameraCapture);
     }
