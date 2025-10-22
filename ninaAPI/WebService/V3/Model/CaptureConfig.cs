@@ -24,7 +24,6 @@ namespace ninaAPI.WebService.V3.Model
 
         [Range(0, int.MaxValue)]
         public int? Gain { get; set; }
-        public bool? Save { get; set; }
 
         [Range(0, 1)]
         public double? ROI { get; set; } = 1;
@@ -34,7 +33,6 @@ namespace ninaAPI.WebService.V3.Model
         {
             Duration ??= solveSettings.ExposureTime;
             Gain ??= info.Gain;
-            Save ??= false;
             ROI ??= 1;
             Binning ??= new BinningMode(info.BinX, info.BinY);
         }

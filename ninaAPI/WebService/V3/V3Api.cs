@@ -12,12 +12,12 @@
 using System.IO;
 using EmbedIO;
 using EmbedIO.WebApi;
-using Microsoft.VisualBasic;
 using ninaApi.Utility.Serialization;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
+using ninaAPI.WebService.V3.Equipment;
 using ninaAPI.WebService.V3.Equipment.Camera;
 using ninaAPI.WebService.V3.Equipment.Focuser;
 using ninaAPI.WebService.V3.Websocket.Event;
@@ -75,8 +75,8 @@ namespace ninaAPI.WebService.V3
 
             // EMBEDIO WOULD CREATE A NEW INSTANCE OF THE CONTROLLER FOR EACH REQUEST
             return server.WithModule(eventSocket)
-                .WithWebApi("/v3/api/equipment/camera", m => m.WithController(() => cameraController))
-                .WithWebApi("/v3/api/equipment/focuser", m => m.WithController(() => focuserController))
+                .WithWebApi($"/v3/api/equipment/{EquipmentConstants.CameraUrlName}", m => m.WithController(() => cameraController))
+                .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}", m => m.WithController(() => focuserController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 

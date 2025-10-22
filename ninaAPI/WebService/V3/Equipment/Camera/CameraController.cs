@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 using System.Linq;
 using Swan;
 using System.Net;
-using System.Drawing;
 using NINA.Core.Model.Equipment;
 using NINA.Image.Interfaces;
 using NINA.Core.Enum;
@@ -215,22 +214,18 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         [Route(HttpVerbs.Put, "/settings/binning")]
-        public async Task CameraSetBinning()
+        public async Task CameraSetBinning([JsonData] BinningMode binning)
         {
-            SizeQueryParameter binningParameter = new SizeQueryParameter(new Size(1, 1), true, false, "x", "y");
-
             if (!cam.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Camera);
             }
-
-            Size binning = binningParameter.Get(HttpContext);
-            BinningMode mode = cam.GetInfo().BinningModes.FirstOrDefault(b => b.X == binning.Width && b.Y == binning.Height, null);
-            if (mode == null)
+            else if (!cam.GetInfo().BinningModes.Any(b => b.X == binning.X && b.Y == binning.Y))
             {
                 throw new HttpException(HttpStatusCode.BadRequest, "Invalid binning mode");
             }
-            cam.SetBinning(mode.X, mode.Y);
+
+            cam.SetBinning(binning.X, binning.Y);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Binning set"));
         }
@@ -308,7 +303,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 throw new HttpException(HttpStatusCode.NotFound, "Capture not found");
             }
-            else if (capture.GetCaptureProcess().Status != ApiProcessStatus.Finished)
+            else if (capture.GetCaptureFinalizeProcess().Status != ApiProcessStatus.Finished)
             {
                 throw new HttpException(HttpStatusCode.Conflict, "Capture in progress");
             }
@@ -337,13 +332,13 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 throw new HttpException(HttpStatusCode.NotFound, "Capture not found");
             }
-            else if (capture.GetCaptureProcess().Status != ApiProcessStatus.Finished)
+            else if (capture.GetCaptureFinalizeProcess().Status != ApiProcessStatus.Finished)
             {
                 throw new HttpException(HttpStatusCode.Conflict, "Capture in progress");
             }
             else if (!File.Exists(capture.GetCapturePath()))
             {
-                throw new HttpException(HttpStatusCode.NotFound, "No image available");
+                throw new HttpException(HttpStatusCode.NotFound, "Image not available");
             }
 
             rawConverterParameter.Get(HttpContext);
@@ -363,13 +358,13 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 throw new HttpException(HttpStatusCode.NotFound, "Capture not found");
             }
-            else if (capture.GetCaptureProcess().Status != ApiProcessStatus.Finished)
+            else if (capture.GetCaptureFinalizeProcess().Status != ApiProcessStatus.Finished)
             {
                 throw new HttpException(HttpStatusCode.Conflict, "Capture in progress");
             }
             else if (!File.Exists(capture.GetCapturePath()))
             {
-                throw new HttpException(HttpStatusCode.NotFound, "No image available");
+                throw new HttpException(HttpStatusCode.NotFound, "Image not available");
             }
 
             var result = await capture.GetPlateSolve(imageDataFactory, plateSolverFactory, config, HttpContext.CancellationToken);

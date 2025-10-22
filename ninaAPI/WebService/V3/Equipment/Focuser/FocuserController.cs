@@ -62,7 +62,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
         }
 
 
-        [Route(HttpVerbs.Post, "/move/start")]
+        [Route(HttpVerbs.Post, "/move")]
         public async Task FocuserMove([QueryField] int position)
         {
             object response;

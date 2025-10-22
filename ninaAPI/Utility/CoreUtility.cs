@@ -215,6 +215,7 @@ namespace ninaAPI.Utility
         Camera,
         Dome,
         Filterwheel,
+        FlatDevice,
         Focuser,
         Guider,
         Mount,

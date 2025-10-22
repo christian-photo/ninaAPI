@@ -125,6 +125,14 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return processMediator.Stop(CaptureId);
         }
 
+        /// <summary>
+        /// Performs a platesolve on the captured image, this requires the image to be ready. The result is cached for future calls.
+        /// </summary>
+        /// <param name="imageFactory"></param>
+        /// <param name="plateSolverFactory"></param>
+        /// <param name="config"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public async Task<PlateSolveResult> GetPlateSolve(IImageDataFactory imageFactory, IPlateSolverFactory plateSolverFactory, PlatesolveConfig config, CancellationToken token)
         {
             if (plateSolveResult is not null)
@@ -201,12 +209,20 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return processMediator.GetProcess(CaptureId, out var process) ? process : null;
         }
 
+        public ApiProcess GetCaptureFinalizeProcess()
+        {
+            return processMediator.GetProcess(CaptureFinalizeProcessId, out var process) ? process : null;
+        }
+
         private string capturePath;
         public string GetCapturePath()
         {
             return capturePath;
         }
 
+        /// <summary>
+        /// Deletes the captured image, the capture object is no longer useful after this call.
+        /// </summary>
         public void Cleanup()
         {
             if (File.Exists(GetCapturePath()))
