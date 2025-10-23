@@ -16,7 +16,6 @@ using EmbedIO.Routing;
 using System.Drawing;
 using ninaAPI.Utility;
 using NINA.Core.Utility;
-using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using NINA.Image.ImageAnalysis;
 using System.IO;
@@ -26,6 +25,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using System.Collections;
+using System.Windows.Forms;
+using NINA.Sequencer.SequenceItem.Utility;
 
 namespace ninaAPI.WebService.V2
 {
@@ -297,5 +298,87 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        // [Route(HttpVerbs.Get, "/application/windows")]
+        // public void GetApplicationWindows()
+        // {
+        //     HttpResponse response = new HttpResponse();
+
+        //     try
+        //     {
+        //         response.Response = CreateWindowMeta();
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         Logger.Error(ex);
+        //         response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+        //     }
+
+        //     HttpContext.WriteToResponse(response);
+        // }
+
+        // [Route(HttpVerbs.Get, "/application/windows/close")]
+        // public void GetApplicationWindows([QueryField] int windowId)
+        // {
+        //     HttpResponse response = new HttpResponse();
+
+        //     try
+        //     {
+        //         var windowMeta = CreateWindowMeta().Find(w => w.Id == windowId);
+        //         if (windowMeta is not null)
+        //         {
+        //             System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        //             {
+        //                 foreach (System.Windows.Window window in System.Windows.Application.Current.Windows)
+        //                 {
+        //                     if (window.DataContext?.GetType().FullName == windowMeta.DataContextClassName && window.Title == windowMeta.Title)
+        //                     {
+        //                         window.Close();
+        //                         break;
+        //                     }
+        //                 }
+        //             });
+
+        //             response.Response = "Closed window";
+        //         }
+        //         else
+        //         {
+        //             response = CoreUtility.CreateErrorTable(new Error("Invalid window id", 400));
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         Logger.Error(ex);
+        //         response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+        //     }
+
+        //     HttpContext.WriteToResponse(response);
+        // }
+
+        // private List<WindowMeta> CreateWindowMeta()
+        // {
+        //     List<WindowMeta> windows = new List<WindowMeta>();
+        //     System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        //     {
+        //         foreach (System.Windows.Window window in System.Windows.Application.Current.Windows)
+        //         {
+        //             WindowMeta meta = new WindowMeta
+        //             {
+        //                 Title = window.Title,
+        //                 DataContextClassName = window.DataContext?.GetType().FullName,
+        //             };
+        //             windows.Add(meta);
+        //         }
+        //     });
+
+        //     return windows;
+        // }
+    }
+
+    internal class WindowMeta
+    {
+        public int Id => Math.Abs((Title + DataContextClassName).GetHashCode());
+        public string Title { get; set; }
+        public string DataContextClassName { get; set; }
     }
 }
