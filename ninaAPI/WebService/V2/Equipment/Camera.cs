@@ -466,7 +466,8 @@ namespace ninaAPI.WebService.V2
             [QueryField] bool omitImage,
             [QueryField] bool waitForResult,
             [QueryField] bool save,
-            [QueryField] bool onlyAwaitCaptureCompletion)
+            [QueryField] bool onlyAwaitCaptureCompletion,
+            [QueryField] bool onlySaveRaw)
         {
 
             HttpResponse response = new HttpResponse();
@@ -583,12 +584,15 @@ namespace ninaAPI.WebService.V2
                         IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(sequence, CancellationToken.None, AdvancedAPI.Controls.StatusMediator.GetStatus());
                         IRenderedImage renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(exposure, parameters, CancellationToken.None);
 
-                        var encoder = BitmapHelper.GetEncoder(renderedImage.Image, -1);
-                        using (FileStream fs = new FileStream(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"), FileMode.Create))
+                        if (!onlySaveRaw)
                         {
-                            encoder.Save(fs);
+                            var encoder = BitmapHelper.GetEncoder(renderedImage.Image, -1);
+                            using (FileStream fs = new FileStream(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"), FileMode.Create))
+                            {
+                                encoder.Save(fs);
+                            }
                         }
-                        Logger.Info(Path.Combine(Assembly.GetExecutingAssembly().Location, $"temp.png"));
+
                         isBayered = renderedImage.RawImageData.Properties.IsBayered;
 
 
@@ -614,7 +618,7 @@ namespace ninaAPI.WebService.V2
 
                             plateSolveResult = await captureSolver.Solve(renderedImage.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), CancellationToken.None);
                         }
-                        if (save)
+                        if (save || onlySaveRaw)
                         {
                             await AdvancedAPI.Controls.ImageSaveMediator.Enqueue(renderedImage.RawImageData, Task.Run(() => renderedImage), AdvancedAPI.Controls.StatusMediator.GetStatus(), CancellationToken.None);
                         }
@@ -640,7 +644,7 @@ namespace ninaAPI.WebService.V2
                     {
                         await CaptureTask;
                         // Return the captured image
-                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false, false);
+                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false, false, onlySaveRaw);
                         return;
                     }
 
