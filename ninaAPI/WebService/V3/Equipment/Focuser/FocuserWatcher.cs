@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MyFocuser;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility.Http;
-using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Websocket.Event;
 using OxyPlot;
 
@@ -25,7 +24,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
     {
         private readonly IFocuserMediator focuser;
 
-        public FocuserWatcher(IEventSocket eventSocket, IFocuserMediator focuser) : base(eventSocket)
+        public FocuserWatcher(EventHistoryManager eventHistory, IFocuserMediator focuser) : base(eventHistory)
         {
             Channel = WebSocketChannel.Autofocus;
             this.focuser = focuser;

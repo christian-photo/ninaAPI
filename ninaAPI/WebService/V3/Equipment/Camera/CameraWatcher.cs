@@ -14,7 +14,6 @@ using System;
 using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MyCamera;
 using NINA.Equipment.Interfaces.Mediator;
-using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
@@ -22,7 +21,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
     public class CameraWatcher : EventWatcher, ICameraConsumer
     {
         private readonly ICameraMediator camera;
-        public CameraWatcher(IEventSocket eventSocket, ICameraMediator camera) : base(eventSocket)
+        public CameraWatcher(EventHistoryManager eventHistory, ICameraMediator camera) : base(eventHistory)
         {
             this.camera = camera;
         }

@@ -9,10 +9,10 @@
 
 #endregion "copyright"
 
+using System.Collections.Generic;
 using System.IO;
 using EmbedIO;
 using EmbedIO.WebApi;
-using ninaApi.Utility.Serialization;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
@@ -33,7 +33,34 @@ namespace ninaAPI.WebService.V3
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
 
+        private static EventHistoryManager eventHistory;
         private EventWebSocket eventSocket;
+
+        private static List<EventWatcher> watchers;
+
+        public static void StartEventWatchers()
+        {
+            eventHistory = new EventHistoryManager();
+            watchers =
+            [
+                new CameraWatcher(eventHistory, AdvancedAPI.Controls.Camera),
+                new FocuserWatcher(eventHistory, AdvancedAPI.Controls.Focuser),
+                new ProcessWatcher(eventHistory),
+            ];
+
+            foreach (EventWatcher watcher in watchers)
+            {
+                watcher.StartWatchers();
+            }
+        }
+
+        public static void StopEventWatchers()
+        {
+            foreach (EventWatcher watcher in watchers)
+            {
+                watcher.StopWatchers();
+            }
+        }
 
         public V3Api()
         {
@@ -69,7 +96,12 @@ namespace ninaAPI.WebService.V3
 
         public WebServer ConfigureServer(WebServer server)
         {
-            eventSocket = new EventWebSocket("/v3/ws/events", serializer);
+            eventSocket = new EventWebSocket("/v3/ws/events", serializer, eventHistory);
+
+            foreach (EventWatcher watcher in watchers)
+            {
+                watcher.Initialize(eventSocket);
+            }
 
             Directory.CreateDirectory(FileSystemHelper.GetProcessTempFolder());
 

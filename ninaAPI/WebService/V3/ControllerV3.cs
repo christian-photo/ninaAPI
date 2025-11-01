@@ -57,7 +57,7 @@ namespace ninaAPI.WebService.V3
             );
         }
 
-        [Route(HttpVerbs.Get, "/application-start")]
+        [Route(HttpVerbs.Get, "/time/application-start")]
         public async Task GetApplicationStart()
         {
             await responseHandler.SendObject(
@@ -76,29 +76,45 @@ namespace ninaAPI.WebService.V3
         }
 
         [Route(HttpVerbs.Get, "/process/{id}/status")]
-        public async Task GetProcessStatus(Guid id)
+        public async Task GetProcessStatus(string id)
         {
-            object progress = processMediator.GetProgress(id) ?? throw new HttpException(HttpStatusCode.NotFound, "Process not found");
+            if (!Guid.TryParse(id, out Guid processId))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "ID could not be parsed");
+            }
+            object progress = processMediator.GetProgress(processId) ?? throw new HttpException(HttpStatusCode.NotFound, "Process not found");
             await responseHandler.SendObject(
                 HttpContext,
                 progress
             );
         }
 
-        [Route(HttpVerbs.Post, "/process/{id}/cancel")]
-        public async Task CancelProcess(Guid id)
+        [Route(HttpVerbs.Post, "/process/{id}/abort")]
+        public async Task AbortProcess(string id)
         {
-            processMediator.Stop(id);
+            if (!Guid.TryParse(id, out Guid processId))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "ID could not be parsed");
+            }
+            bool found = processMediator.Stop(processId);
+            if (!found)
+            {
+                throw new HttpException(HttpStatusCode.NotFound, "Process not found");
+            }
             await responseHandler.SendObject(
                 HttpContext,
-                new StatusResponse(processMediator.GetStatus(id).ToString())
+                new StatusResponse(processMediator.GetStatus(processId).ToString())
             );
         }
 
         [Route(HttpVerbs.Get, "/process/{id}/wait")]
-        public async Task WaitForProcess(Guid id)
+        public async Task WaitForProcess(string id)
         {
-            bool found = processMediator.GetProcess(id, out ApiProcess process);
+            if (!Guid.TryParse(id, out Guid processId))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "ID could not be parsed");
+            }
+            bool found = processMediator.GetProcess(processId, out ApiProcess process);
             if (!found)
             {
                 throw new HttpException(HttpStatusCode.NotFound, "Process not found");

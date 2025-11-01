@@ -10,7 +10,7 @@
 #endregion "copyright"
 
 
-namespace ninaApi.Utility.Serialization
+namespace ninaAPI.Utility.Serialization
 {
     public interface ISerializerService
     {

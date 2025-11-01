@@ -13,7 +13,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using EmbedIO;
-using ninaApi.Utility.Serialization;
+using ninaAPI.Utility.Serialization;
 
 namespace ninaAPI.Utility.Http
 {

@@ -24,6 +24,8 @@ paths:
                   Version:
                     type: string
                     example: 3.0.0.0
+                required:
+                  - Version
 
   /version/nina:
     get:
@@ -51,8 +53,10 @@ paths:
                     enum:
                       - 3.2.0.1058
                       - "3.2 NIGHTLY #058"
+                required:
+                  - Version
 
-  /application-start:
+  /time/application-start:
     get:
       tags:
         - Application
@@ -69,13 +73,15 @@ paths:
                   Time:
                     type: string
                     example: 2025-07-20T09:43:44.351798+02:00
+                required:
+                  - Time
 
   /time:
     get:
       tags:
         - Application
       summary: Current time
-      description: Returns the current time.
+      description: Returns the current local time.
       responses:
         "200":
           description: Local time
@@ -87,6 +93,195 @@ paths:
                   Time:
                     type: string
                     example: 2025-07-20T09:43:44.351798+02:00
+                required:
+                  - Time
+
+  /process/{id}/status:
+    get:
+      tags:
+        - Process
+      summary: Process status
+      description: Returns the status of a process. By default this will return the status of the process, but some processes have additional information that can be returned. For example, the status of a camera process will return the current state of the camera.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The Id of the process.
+          schema:
+            type: string
+            format: guid
+      responses:
+        "200":
+          description: Process status
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      Status:
+                        type: string
+                        enum:
+                          - Pending
+                          - Running
+                          - Finished
+                    required:
+                      - Status
+                  - type: object
+        "400":
+          description: Invalid process ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Error:
+                    type: string
+                    example: Bad Request
+                  Message:
+                    type: string
+                    example: ID could not be parsed
+                required:
+                  - Error
+                  - Message
+        "404":
+          description: Process not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Error:
+                    type: string
+                    example: Not Found
+                  Message:
+                    type: string
+                    example: Process not found
+                required:
+                  - Error
+                  - Message
+
+  /process/{id}/abort:
+    get:
+      tags:
+        - Process
+      summary: Process Abort
+      description: Aborts a process. This is guaranteed to leave the process (if it was found) in the finished state. Returns the status of the process.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The Id of the process.
+          schema:
+            type: string
+            format: guid
+      responses:
+        "200":
+          description: Process aborted, returns the status of the process
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      Status:
+                        type: string
+                        example: Finished
+                    required:
+                      - Status
+        "400":
+          description: Invalid process ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Error:
+                    type: string
+                    example: Bad Request
+                  Message:
+                    type: string
+                    example: ID could not be parsed
+                required:
+                  - Error
+                  - Message
+        "404":
+          description: Process not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Error:
+                    type: string
+                    example: Not Found
+                  Message:
+                    type: string
+                    example: Process not found
+                required:
+                  - Error
+                  - Message
+
+  /process/{id}/wait:
+    get:
+      tags:
+        - Process
+      summary: Await Process Completion
+      description: This endpoint does not return until the process has finished. Make sure your timeout is set appropriately.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The Id of the process.
+          schema:
+            type: string
+            format: guid
+      responses:
+        "200":
+          description: Process aborted, returns the status of the process
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      Status:
+                        type: string
+                        example: Finished
+                    required:
+                      - Status
+        "400":
+          description: Invalid process ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Error:
+                    type: string
+                    example: Bad Request
+                  Message:
+                    type: string
+                    example: ID could not be parsed
+                required:
+                  - Error
+                  - Message
+        "404":
+          description: Process not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Error:
+                    type: string
+                    example: Not Found
+                  Message:
+                    type: string
+                    example: Process not found
+                required:
+                  - Error
+                  - Message
 
   /equipment/camera/info:
     get:
@@ -9925,12 +10120,12 @@ components:
       required:
         - Error
 
-    UnknownError:
+    500Error:
       type: object
       properties:
         Error:
           type: string
-          example: OLLDLDLDLLDLDLDL
+          example: Internal Server Error
         Message:
           type: string
       required:

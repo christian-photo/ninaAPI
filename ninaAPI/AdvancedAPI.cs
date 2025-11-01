@@ -142,6 +142,7 @@ namespace ninaAPI
 
             SetHostNames();
             WebApiServer.StartWatchers();
+            V3Api.StartEventWatchers();
         }
 
         private void RunApi()
@@ -187,6 +188,7 @@ namespace ninaAPI
             Server = null;
 
             WebApiServer.StopWatchers();
+            V3Api.StopEventWatchers();
             communicator.Dispose();
 
             FileSystemHelper.Cleanup();

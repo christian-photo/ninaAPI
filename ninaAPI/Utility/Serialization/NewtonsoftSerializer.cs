@@ -22,7 +22,7 @@ using Newtonsoft.Json.Serialization;
 using NINA.Core.Model;
 using NINA.Profile.Interfaces;
 
-namespace ninaApi.Utility.Serialization
+namespace ninaAPI.Utility.Serialization
 {
     public class NewtonsoftSerializer : ISerializerService
     {

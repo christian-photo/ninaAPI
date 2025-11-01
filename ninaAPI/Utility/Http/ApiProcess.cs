@@ -41,8 +41,13 @@ namespace ninaAPI.Utility.Http
         /// </summary>
         public void Start()
         {
+            ProcessStarted?.Invoke(this, EventArgs.Empty);
             process = Task.Run(() => action(token.Token), token.Token);
+            process.ContinueWith(_ => ProcessFinished?.Invoke(this, EventArgs.Empty));
         }
+
+        public static event EventHandler ProcessStarted;
+        public static event EventHandler ProcessFinished;
 
         /// <summary>
         /// Stop the process using the assigned cancellation token

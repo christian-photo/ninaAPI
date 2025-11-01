@@ -14,12 +14,13 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
-using ninaApi.Utility.Serialization;
 using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2;
+using ninaAPI.WebService.V3.Websocket.Event;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +51,7 @@ namespace ninaAPI.WebService
 
         private void CreateServer()
         {
-            responseHandler = new ResponseHandler(new NewtonsoftSerializer());
+            responseHandler = new ResponseHandler(SerializerFactory.GetSerializer());
             Server = new WebServer(o => o
                 .WithUrlPrefix($"http://*:{Port}")
                 .WithMode(HttpListenerMode.EmbedIO))
@@ -106,7 +107,7 @@ namespace ninaAPI.WebService
 
                 foreach (var module in Server.Modules.OfType<WebApiModule>())
                 {
-                    Logger.Info("Registered WebApi Controller: " + module.BaseRoute);
+                    Logger.Debug("Registered WebApi Controller: " + module.BaseRoute);
                 }
 
                 Logger.Info("Starting web server");

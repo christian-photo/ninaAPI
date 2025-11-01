@@ -16,23 +16,24 @@ using System.Net.WebSockets;
 using System.Threading.Tasks;
 using EmbedIO.WebSockets;
 using NINA.Core.Utility;
-using ninaApi.Utility.Serialization;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 
 namespace ninaAPI.WebService.V3.Websocket.Event
 {
     public class EventWebSocket : WebSocketModule, IEventSocket
     {
-        public EventHistoryManager EventHistoryManager { get; } = new();
+        public EventHistoryManager EventHistoryManager { get; }
         public bool IsActive => ActiveContexts.Count > 0;
 
         private readonly ConcurrentDictionary<IWebSocketContext, ClientConfiguration> Clients = new();
         private readonly ISerializerService serializer;
 
-        public EventWebSocket(string url, ISerializerService serializer) : base(url, true)
+        public EventWebSocket(string url, ISerializerService serializer, EventHistoryManager eventHistory) : base(url, true)
         {
             this.serializer = serializer;
+            this.EventHistoryManager = eventHistory;
         }
 
         public async Task SendEvent(WebSocketEvent e)

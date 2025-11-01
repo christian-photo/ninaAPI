@@ -27,9 +27,9 @@ using System.Text.Json.Serialization;
 using NINA.ViewModel.Sequencer;
 using Newtonsoft.Json.Converters;
 using System.Globalization;
-using ninaApi.Utility.Serialization;
 using ninaAPI.Utility.Http;
 using System.Net;
+using ninaAPI.Utility.Serialization;
 
 namespace ninaAPI.Utility
 {
