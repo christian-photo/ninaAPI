@@ -371,7 +371,7 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        private CancellationTokenSource SlewCenterToken;
+        private static CancellationTokenSource SlewCenterToken;
 
         [Route(HttpVerbs.Get, "/equipment/mount/slew/stop")]
         public void MountStopSlew()
