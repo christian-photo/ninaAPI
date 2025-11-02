@@ -19,6 +19,7 @@ using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Equipment;
 using ninaAPI.WebService.V3.Equipment.Camera;
+using ninaAPI.WebService.V3.Equipment.Dome;
 using ninaAPI.WebService.V3.Equipment.Focuser;
 using ninaAPI.WebService.V3.Websocket.Event;
 
@@ -30,6 +31,7 @@ namespace ninaAPI.WebService.V3
         private readonly ISerializerService serializer;
         private readonly CameraController cameraController;
         private readonly FocuserController focuserController;
+        private readonly DomeController domeController;
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
 
@@ -91,6 +93,14 @@ namespace ninaAPI.WebService.V3
                     processMediator
                 );
 
+            domeController = new DomeController(
+                responseHandler,
+                AdvancedAPI.Controls.Dome,
+                AdvancedAPI.Controls.DomeFollower,
+                AdvancedAPI.Controls.Mount,
+                processMediator
+            );
+
             controller = new ControllerV3(responseHandler, processMediator);
         }
 
@@ -109,6 +119,7 @@ namespace ninaAPI.WebService.V3
             return server.WithModule(eventSocket)
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.CameraUrlName}", m => m.WithController(() => cameraController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}", m => m.WithController(() => focuserController))
+                .WithWebApi($"/v3/api/equipment/{EquipmentConstants.DomeUrlName}", m => m.WithController(() => domeController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 

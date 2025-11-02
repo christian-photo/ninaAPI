@@ -120,7 +120,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             minutesParameter.Get(HttpContext);
 
             Guid processId = processMediator.AddProcess(
-                (token) => cam.CoolCamera(temperatureParameter.Value, TimeSpan.FromMinutes(minutesParameter.Value), statusMediator.GetStatus(), token),
+                async (token) => await cam.CoolCamera(temperatureParameter.Value, TimeSpan.FromMinutes(minutesParameter.Value), statusMediator.GetStatus(), token),
                 ApiProcessType.CameraCool
             );
             var result = processMediator.Start(processId);
@@ -157,7 +157,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             minutesParameter.Get(HttpContext);
 
             Guid processId = processMediator.AddProcess(
-                (token) => cam.WarmCamera(TimeSpan.FromMinutes(minutesParameter.Value), statusMediator.GetStatus(), token),
+                async (token) => await cam.WarmCamera(TimeSpan.FromMinutes(minutesParameter.Value), statusMediator.GetStatus(), token),
                 ApiProcessType.CameraWarm
             );
             var result = processMediator.Start(processId);

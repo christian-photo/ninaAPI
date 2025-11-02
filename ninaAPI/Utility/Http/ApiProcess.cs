@@ -151,5 +151,10 @@ namespace ninaAPI.Utility.Http
         public static readonly ApiProcessType CapturePrepare = new("CapturePrepare", true);
         public static readonly ApiProcessType FocuserMove = new("FocuserMove", false, FocuserAutofocus);
         public static readonly ApiProcessType FocuserAutofocus = new("AutoFocus", false, FocuserMove, CameraCapture);
+        public static readonly ApiProcessType DomeOpenShutter = new("DomeOpenShutter", false, DomeCloseShutter);
+        public static readonly ApiProcessType DomeCloseShutter = new("DomeCloseShutter", false, DomeOpenShutter);
+        public static readonly ApiProcessType DomeSlew = new("DomeSlew", false);
+        public static readonly ApiProcessType DomePark = new("DomePark", false, DomeSlew);
+        public static readonly ApiProcessType DomeFindHome = new("DomeFindHome", false, DomePark, DomeSlew);
     }
 }
