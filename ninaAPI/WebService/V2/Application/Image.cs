@@ -43,6 +43,7 @@ namespace ninaAPI.WebService.V2
         public string RmsText { get; set; }
         public double Temperature { get; set; }
         public string CameraName { get; set; }
+        public string TargetName { get; set; }
         public int Gain { get; set; }
         public int Offset { get; set; }
         public DateTime Date { get; set; }
@@ -51,8 +52,11 @@ namespace ninaAPI.WebService.V2
         public double StDev { get; set; }
         public double Mean { get; set; }
         public double Median { get; set; }
+        public double Min { get; set; }
+        public double Max { get; set; }
         public int Stars { get; set; }
         public double HFR { get; set; }
+        public double HFRStDev { get; set; }
         public bool IsBayered { get; set; }
 
         private Uri Path { get; set; }
@@ -64,6 +68,7 @@ namespace ninaAPI.WebService.V2
             return new ImageResponse()
             {
                 ExposureTime = e.Duration,
+                TargetName = e.MetaData.Target.Name,
                 ImageType = e.MetaData.Image.ImageType,
                 Filter = e.Filter,
                 RmsText = e.MetaData.Image.RecordedRMS.TotalText,
@@ -79,6 +84,9 @@ namespace ninaAPI.WebService.V2
                 Median = e.Statistics.Median,
                 Stars = e.StarDetectionAnalysis.DetectedStars,
                 HFR = e.StarDetectionAnalysis.HFR,
+                HFRStDev = e.StarDetectionAnalysis.HFRStDev,
+                Min = e.Statistics.Min,
+                Max = e.Statistics.Max,
                 Path = e.PathToImage,
                 IsBayered = e.IsBayered,
             };

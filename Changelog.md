@@ -5,7 +5,8 @@ The changes for each individual (beta) release can be seen [here](https://github
 ## 2.2.11.0
 
 - Added a networked manual rotator (just like the already existing networked filter wheel)
-- Added the url parameter `onlyAwaitCaptureCompletion` to the `camera/capture` endpoint for faster capture. This can be used to only await the capture completion and not the image preparation.
+- Added the url parameter `onlyAwaitCaptureCompletion` and `onlySaveRaw` to the `camera/capture` endpoint for faster capture. This can be used to only await the capture completion and not the image preparation. The other capture endpoints will not work when using `onlySaveRaw`.
+- Added `HFRStDev`, `Min`, `Max` and `TargetName` to the `IMAGE-SAVE` event (and `image-history`)
 
 ## 2.2.10.0
 
