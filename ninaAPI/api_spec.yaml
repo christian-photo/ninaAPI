@@ -758,6 +758,12 @@ paths:
           required: false
           schema:
             type: boolean
+        - in: query
+          name: onlySaveRaw
+          description: Use if you do not need the other capture endpoints, but want to save the raw image. Useful for high frequency captures.
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Successful response
