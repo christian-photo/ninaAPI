@@ -26,7 +26,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
 
         public FocuserWatcher(EventHistoryManager eventHistory, IFocuserMediator focuser) : base(eventHistory)
         {
-            Channel = WebSocketChannel.Autofocus;
+            Channel = WebSocketChannel.Equipment;
             this.focuser = focuser;
         }
 
@@ -51,20 +51,20 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
 
         public static bool IsAutoFocusRunning { get; private set; } = false;
 
-        private async Task FocuserConnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FOCUSER-CONNECTED", onChannel: WebSocketChannel.Equipment);
-        private async Task FocuserDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FOCUSER-DISCONNECTED", onChannel: WebSocketChannel.Equipment);
-        public async void UpdateUserFocused(FocuserInfo info) => await SubmitEvent("USER-FOCUSED", info, onChannel: WebSocketChannel.Equipment);
-        public async void NewAutoFocusPoint(DataPoint dataPoint) => await SubmitEvent("AUTOFOCUS-POINT", dataPoint);
+        private async Task FocuserConnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FOCUSER-CONNECTED");
+        private async Task FocuserDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FOCUSER-DISCONNECTED");
+        public async void UpdateUserFocused(FocuserInfo info) => await SubmitEvent("USER-FOCUSED", info);
+        public async void NewAutoFocusPoint(DataPoint dataPoint) => await SubmitEvent("AUTOFOCUS-POINT", dataPoint, onChannel: WebSocketChannel.Autofocus);
 
         public async void UpdateEndAutoFocusRun(AutoFocusInfo info)
         {
             IsAutoFocusRunning = false;
-            await SubmitAndStoreEvent("AUTOFOCUS-ENDED", info);
+            await SubmitAndStoreEvent("AUTOFOCUS-ENDED", info, onChannel: WebSocketChannel.Autofocus);
         }
         public async void AutoFocusRunStarting()
         {
             IsAutoFocusRunning = true;
-            await SubmitAndStoreEvent("AUTOFOCUS-STARTED");
+            await SubmitAndStoreEvent("AUTOFOCUS-STARTED", onChannel: WebSocketChannel.Autofocus);
         }
 
         public void UpdateDeviceInfo(FocuserInfo deviceInfo) { }

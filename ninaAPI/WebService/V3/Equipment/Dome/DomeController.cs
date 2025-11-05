@@ -44,7 +44,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             this.processMediator = processMediator;
         }
 
-        [Route(HttpVerbs.Get, "/dome/info")]
+        [Route(HttpVerbs.Get, "/info")]
         public async Task DomeInfo()
         {
             DomeInfoResponse info = new DomeInfoResponse(dome.GetInfo(), domeFollower);
@@ -52,7 +52,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, info);
         }
 
-        [Route(HttpVerbs.Post, "/dome/open-shutter")]
+        [Route(HttpVerbs.Post, "/open-shutter")]
         public async Task DomeOpenShutter()
         {
             if (!dome.GetInfo().Connected)
@@ -70,23 +70,12 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             );
             var result = processMediator.Start(processId);
 
-            object response;
-            int statusCode = 200;
-
-            if (result == ApiProcessStartResult.Conflict)
-            {
-                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
-                statusCode = 409;
-            }
-            else
-            {
-                response = ResponseFactory.CreateProcessResponse(result, processId);
-            }
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/dome/close-shutter")]
+        [Route(HttpVerbs.Post, "/close-shutter")]
         public async Task DomeCloseShutter()
         {
             if (!dome.GetInfo().Connected)
@@ -104,23 +93,12 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             );
             var result = processMediator.Start(processId);
 
-            object response;
-            int statusCode = 200;
-
-            if (result == ApiProcessStartResult.Conflict)
-            {
-                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
-                statusCode = 409;
-            }
-            else
-            {
-                response = ResponseFactory.CreateProcessResponse(result, processId);
-            }
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/dome/stop-movement")]
+        [Route(HttpVerbs.Post, "/stop-movement")]
         public async Task DomeStopMovement()
         {
             if (!dome.GetInfo().Connected)
@@ -138,7 +116,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, new StringResponse("Dome movement stopped"));
         }
 
-        [Route(HttpVerbs.Post, "dome/set-follow")]
+        [Route(HttpVerbs.Post, "/set-follow")]
         public async Task DomeSetFollow()
         {
             QueryParameter<bool> enabledParameter = new QueryParameter<bool>("enabled", false, true);
@@ -166,7 +144,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, new StringResponse("Dome follower updated"));
         }
 
-        [Route(HttpVerbs.Post, "/dome/sync")]
+        [Route(HttpVerbs.Post, "/sync")]
         public async Task DomeSync()
         {
             if (!dome.GetInfo().Connected)
@@ -192,7 +170,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, new StringResponse("Dome synced with mount"));
         }
 
-        [Route(HttpVerbs.Post, "/dome/slew")]
+        [Route(HttpVerbs.Post, "/slew")]
         public async Task DomeSlew()
         {
             QueryParameter<double> azimuthParameter = new QueryParameter<double>("azimuth", double.NaN, true, (azimuth) => azimuth.IsBetween(0, 360));
@@ -214,23 +192,12 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             );
             var result = processMediator.Start(processId);
 
-            object response;
-            int statusCode = 200;
-
-            if (result == ApiProcessStartResult.Conflict)
-            {
-                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
-                statusCode = 409;
-            }
-            else
-            {
-                response = ResponseFactory.CreateProcessResponse(result, processId);
-            }
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/dome/set-park")]
+        [Route(HttpVerbs.Post, "/set-park")]
         public async Task DomeSetPark()
         {
             if (!dome.GetInfo().Connected)
@@ -248,7 +215,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, new StringResponse("Park position set"));
         }
 
-        [Route(HttpVerbs.Post, "/dome/park")]
+        [Route(HttpVerbs.Post, "/park")]
         public async Task DomePark()
         {
             if (!dome.GetInfo().Connected)
@@ -274,23 +241,12 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             );
             var result = processMediator.Start(processId);
 
-            object response;
-            int statusCode = 200;
-
-            if (result == ApiProcessStartResult.Conflict)
-            {
-                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
-                statusCode = 409;
-            }
-            else
-            {
-                response = ResponseFactory.CreateProcessResponse(result, processId);
-            }
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/dome/find-home")]
+        [Route(HttpVerbs.Post, "/find-home")]
         public async Task DomeFindHome()
         {
             if (!dome.GetInfo().Connected)
@@ -320,18 +276,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             );
             var result = processMediator.Start(processId);
 
-            object response;
-            int statusCode = 200;
-
-            if (result == ApiProcessStartResult.Conflict)
-            {
-                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
-                statusCode = 409;
-            }
-            else
-            {
-                response = ResponseFactory.CreateProcessResponse(result, processId);
-            }
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }

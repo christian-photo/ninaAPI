@@ -122,7 +122,7 @@ namespace ninaAPI.WebService
             }
             catch (Exception ex)
             {
-                Logger.Error($"Failed to start web server: {ex}");
+                Logger.Error(ex);
             }
         }
 

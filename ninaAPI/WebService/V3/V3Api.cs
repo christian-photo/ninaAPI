@@ -20,6 +20,7 @@ using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Equipment;
 using ninaAPI.WebService.V3.Equipment.Camera;
 using ninaAPI.WebService.V3.Equipment.Dome;
+using ninaAPI.WebService.V3.Equipment.FilterWheel;
 using ninaAPI.WebService.V3.Equipment.Focuser;
 using ninaAPI.WebService.V3.Websocket.Event;
 
@@ -29,15 +30,16 @@ namespace ninaAPI.WebService.V3
     {
         private readonly ResponseHandler responseHandler;
         private readonly ISerializerService serializer;
+
         private readonly CameraController cameraController;
         private readonly FocuserController focuserController;
         private readonly DomeController domeController;
+        private readonly FilterWheelController filterWheelController;
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
 
         private static EventHistoryManager eventHistory;
         private EventWebSocket eventSocket;
-
         private static List<EventWatcher> watchers;
 
         public static void StartEventWatchers()
@@ -47,6 +49,8 @@ namespace ninaAPI.WebService.V3
             [
                 new CameraWatcher(eventHistory, AdvancedAPI.Controls.Camera),
                 new FocuserWatcher(eventHistory, AdvancedAPI.Controls.Focuser),
+                new DomeWatcher(eventHistory, AdvancedAPI.Controls.Dome),
+                new FilterWheelWatcher(eventHistory, AdvancedAPI.Controls.FilterWheel),
                 new ProcessWatcher(eventHistory),
             ];
 
@@ -101,6 +105,14 @@ namespace ninaAPI.WebService.V3
                 processMediator
             );
 
+            filterWheelController = new FilterWheelController(
+                AdvancedAPI.Controls.FilterWheel,
+                AdvancedAPI.Controls.Profile,
+                AdvancedAPI.Controls.StatusMediator,
+                responseHandler,
+                processMediator
+            );
+
             controller = new ControllerV3(responseHandler, processMediator);
         }
 
@@ -120,6 +132,7 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.CameraUrlName}", m => m.WithController(() => cameraController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}", m => m.WithController(() => focuserController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.DomeUrlName}", m => m.WithController(() => domeController))
+                .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FilterWheelUrlName}", m => m.WithController(() => filterWheelController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 

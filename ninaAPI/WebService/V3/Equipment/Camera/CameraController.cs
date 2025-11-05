@@ -101,9 +101,6 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         [Route(HttpVerbs.Post, "/cool")]
         public async Task CameraCool()
         {
-            object response = null;
-            int statusCode = 200;
-
             QueryParameter<double> temperatureParameter = new QueryParameter<double>("temperature", double.NaN, true);
             QueryParameter<double> minutesParameter = new QueryParameter<double>("minutes", profile.ActiveProfile.CameraSettings.CoolingDuration, false, (minutes) => minutes >= 0);
 
@@ -125,15 +122,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             );
             var result = processMediator.Start(processId);
 
-            if (result == ApiProcessStartResult.Conflict)
-            {
-                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
-                statusCode = 409;
-            }
-            else
-            {
-                response = ResponseFactory.CreateProcessResponse(result, processId);
-            }
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
@@ -141,9 +130,6 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         [Route(HttpVerbs.Post, "/warm")]
         public async Task CameraWarm()
         {
-            object response = null;
-            int statusCode = 200;
-
             QueryParameter<double> minutesParameter = new QueryParameter<double>("minutes", profile.ActiveProfile.CameraSettings.WarmingDuration, false, (minutes) => minutes >= 0);
 
             if (!cam.GetInfo().Connected)
@@ -162,15 +148,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             );
             var result = processMediator.Start(processId);
 
-            if (result == ApiProcessStartResult.Conflict)
-            {
-                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
-                statusCode = 409;
-            }
-            else
-            {
-                response = ResponseFactory.CreateProcessResponse(result, processId);
-            }
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }

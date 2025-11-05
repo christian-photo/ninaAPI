@@ -12,71 +12,95 @@
 
     <DataTemplate x:Key="Advanced API_Options">
         <StackPanel Orientation="Vertical">
+            <!-- Warning Text -->
+            <TextBlock
+                Margin="0,5,0,15"
+                TextWrapping="Wrap"
+                Text="Be careful when changing any of the below options! These alter the functionality of the API and can cause apps like Touch 'N' Stars to not work properly." />
 
-            <StackPanel Orientation="Horizontal">
+            <!-- Create Thumbnails -->
+            <StackPanel Orientation="Horizontal" Margin="0,5">
                 <TextBlock
-                    Width="100"
-                    Margin="0,5,5,0"
-                    Text="API Enabled " />
-                <CheckBox IsChecked="{Binding APIEnabled}" />
+                    Width="350"
+                    VerticalAlignment="Center"
+                    Text="Create Thumbnails:" />
+                <CheckBox
+                    VerticalAlignment="Center"
+                    IsChecked="{Binding CreateThumbnails}" />
             </StackPanel>
-            <Separator Margin="30" />
-            <TextBlock Margin="10,5,0,10" Text="Be careful when changing any of the below options! These alter the functionaliy of the API, and can cause apps like Touch 'N' Stars to not work properly." />
-            <StackPanel Orientation="Horizontal">
+
+            <!-- Enable ComboBox -->
+            <StackPanel Orientation="Horizontal" Margin="0,5">
                 <TextBlock
-                    Width="300"
-                    Margin="0,5,5,0"
-                    Text="Create Thumbnails " />
-                <CheckBox IsChecked="{Binding CreateThumbnails}" />
+                    Width="350"
+                    VerticalAlignment="Center"
+                    Text="Enable:" />
+                <ComboBox
+                    Width="200"
+                    ItemsSource="{Binding ApiOptions}"
+                    SelectedValue="{Binding SelectedApiOption}" />
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+
+            <!-- API Port Section -->
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                 <TextBlock
-                    Width="100"
-                    Margin="0,0,5,0"
-                    Text="Enable " />
-                <ComboBox ItemsSource="{Binding ApiOptions}" SelectedValue="{Binding SelectedApiOption}" />
-            </StackPanel>
-            <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                    Width="350"
+                    VerticalAlignment="Center"
+                    Text="API Port:" />
+                <TextBox
+                    Width="80"
+                    VerticalAlignment="Center"
+                    Text="{Binding PreferredPort}" />
+
                 <TextBlock
-                    Width="300"
-                    Margin="0,0,5,0"
-                    Text="API Port " />
-                <TextBox Width="100" Text="{Binding PreferredPort}" />
-                <TextBlock Margin="10,5,0,0" Text="Profile Dependent Port?" />
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="Profile Dependent Port?" />
                 <CheckBox
                     Margin="5,0,0,0"
+                    VerticalAlignment="Center"
                     IsChecked="{Binding ProfileDependentPort}"
                     ToolTip="Make the port profile dependent" />
+
                 <TextBlock
-                    Margin="20,5,0,0"
-                    Text="API running on port: "
+                    Margin="20,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="API running on port:"
                     Visibility="{Binding PortVisibility}" />
                 <TextBlock
-                    Margin="0,5,0,0"
+                    Margin="5,0,0,0"
+                    VerticalAlignment="Center"
                     Text="{Binding ActualPort}"
                     Visibility="{Binding PortVisibility}" />
+
                 <Button
-                    Width="200"
-                    Margin="10,0,0,0"
+                    Width="180"
+                    Margin="15,0,0,0"
+                    VerticalAlignment="Center"
                     Command="{Binding UpdateDefaultPortCommand}"
                     Content="Update Default Port"
-                    ToolTip="This updates the port the api is launched on, meaning that the api will always launch on that port"
+                    ToolTip="Updates the default launch port for the API"
                     Visibility="{Binding PortVisibility}" />
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal">
+            <!-- Access-Control-Allow-Origin -->
+            <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
                 <TextBlock
-                    Width="300"
-                    Margin="0,0,5,0"
+                    Width="350"
                     VerticalAlignment="Center"
-                    Text="⚠️Use Access-Control-Allow-Origin Header⚠️"
-                    ToolTip="This makes it possible to fetch the api using javascript without having to set up a proxy. It is required for some applications like Touch 'N' Stars" />
-                <CheckBox IsChecked="{Binding UseAccessHeader}" />
+                    Text="⚠️ Use Access-Control-Allow-Origin Header ⚠️"
+                    ToolTip="Allows JavaScript to access the API directly without a proxy. Required for some applications like Touch 'N' Stars." />
+                <CheckBox
+                    VerticalAlignment="Center"
+                    IsChecked="{Binding UseAccessHeader}" />
             </StackPanel>
 
-            <TextBlock Margin="0,5,0,0" Text="Access-Control-Allow-Origin is part of the CORS rules and determines which websites are allowed to access a server's data. Without this header, browsers block requests from other domains for security reasons. This is only relevant if the software is accessible via the Internet - in closed networks, such attacks from outside are not possible." />
+            <TextBlock
+                Margin="0,5,0,0"
+                TextWrapping="Wrap"
+                Text="Access-Control-Allow-Origin is part of the CORS rules and determines which websites are allowed to access a server's data. Without this header, browsers block requests from other domains for security reasons. This is only relevant if the software is accessible via the Internet; in closed networks, such attacks are not possible." />
 
-            <Separator Margin="30" />
+            <Separator Margin="0,15" />
 
             <StackPanel Orientation="Vertical">
                 <TextBlock Margin="0,5,0,5" Text="Network adresses: " />

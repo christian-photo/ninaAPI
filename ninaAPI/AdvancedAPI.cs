@@ -36,6 +36,8 @@ using System;
 using Settings = ninaAPI.Properties.Settings;
 using ninaAPI.WebService.V2;
 using ninaAPI.WebService.V3;
+using System.Runtime.CompilerServices;
+using ninaAPI.WebService.Interfaces;
 
 namespace ninaAPI
 {
@@ -132,6 +134,8 @@ namespace ninaAPI
                 ActualPort = PreferredPort; // This may look useless, but that way the visibility only changes when cachedPort changes and not when the user enters a new port
             });
 
+            V3Api.StartEventWatchers(); // THis has to be done before the API is started because the event socket needs to be initialized
+
             if (APIEnabled)
             {
                 RunApi();
@@ -142,8 +146,10 @@ namespace ninaAPI
 
             SetHostNames();
             WebApiServer.StartWatchers();
-            V3Api.StartEventWatchers();
         }
+
+        private IHttpApi V3 { get; set; }
+        private IHttpApi V2 { get; set; }
 
         private void RunApi()
         {
@@ -151,22 +157,26 @@ namespace ninaAPI
             Server = new WebApiServer(ActualPort);
             if (SelectedApiOption == "V3")
             {
-                Server.Start(new V3Api());
+                V3 ??= new V3Api();
+                Server.Start(V3);
             }
             else if (SelectedApiOption == "V2")
             {
-                Server.Start(new V2Api());
+                V2 ??= new V2Api();
+                Server.Start(V2);
             }
             else if (SelectedApiOption == "Both")
             {
-                Server.Start(new V2Api(), new V3Api());
+                V2 ??= new V2Api();
+                V3 ??= new V3Api();
+                Server.Start(V2, V3);
             }
         }
 
         private void ProfileChanged(object sender, EventArgs e)
         {
             // Raise the event that this profile specific value has been changed due to the profile switch
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PreferredPort)));
+            RaisePropertyChanged(nameof(PreferredPort));
         }
 
         public static int GetActualPort()
@@ -204,7 +214,7 @@ namespace ninaAPI
             set
             {
                 actualPort = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ActualPort)));
+                RaisePropertyChanged();
                 PortVisibility = ((ActualPort != PreferredPort) && APIEnabled) ? Visibility.Visible : Visibility.Hidden;
                 SetHostNames();
             }
@@ -217,7 +227,7 @@ namespace ninaAPI
             set
             {
                 portVisibility = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PortVisibility)));
+                RaisePropertyChanged();
             }
         }
 
@@ -228,8 +238,8 @@ namespace ninaAPI
             {
                 Settings.Default.ProfileDependentPort = value;
                 CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ProfileDependentPort)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PreferredPort)));
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(PreferredPort));
             }
         }
 
@@ -247,7 +257,7 @@ namespace ninaAPI
                     Settings.Default.Port = value;
                     CoreUtil.SaveSettings(Settings.Default);
                 }
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PreferredPort)));
+                RaisePropertyChanged();
             }
         }
 
@@ -261,38 +271,35 @@ namespace ninaAPI
             }
         }
 
-        public bool APIEnabled
-        {
-            get => Settings.Default.APIEnabled;
-            set
-            {
-                Settings.Default.APIEnabled = value;
-                CoreUtil.SaveSettings(Settings.Default);
-                if (value)
-                {
-                    RunApi();
-                    Notification.ShowSuccess("API successfully started");
-                    ShowNotificationIfPortChanged();
-                }
-                else
-                {
-                    Server.Stop();
-                    Server = null;
-                    ActualPort = -1;
-                    Notification.ShowSuccess("API successfully stopped");
-                }
-            }
-        }
+        public bool APIEnabled => SelectedApiOption != "Off";
 
-        public List<string> ApiOptions { get; } = ["Both", "V2", "V3"];
+        public List<string> ApiOptions { get; } = ["Both", "V2", "V3", "Off"];
         public string SelectedApiOption
         {
             get => Settings.Default.SelectedApiOption;
             set
             {
+                if (value == SelectedApiOption)
+                    return;
+
                 Settings.Default.SelectedApiOption = value;
                 CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedApiOption)));
+                RaisePropertyChanged();
+
+                Server?.Stop();
+                Server = null;
+
+                if (value == "Off")
+                {
+                    ActualPort = -1;
+                    Notification.ShowSuccess("API successfully stopped");
+                }
+                else
+                {
+                    RunApi();
+                    Notification.ShowSuccess("API successfully started");
+                    ShowNotificationIfPortChanged();
+                }
             }
         }
 
@@ -320,6 +327,11 @@ namespace ninaAPI
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalAddress)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalNetworkAddress)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HostAddress)));
+        }
+
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

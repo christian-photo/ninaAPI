@@ -50,18 +50,6 @@ namespace ninaAPI.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool APIEnabled {
-            get {
-                return ((bool)(this["APIEnabled"]));
-            }
-            set {
-                this["APIEnabled"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool CreateThumbnails {
             get {
                 return ((bool)(this["CreateThumbnails"]));

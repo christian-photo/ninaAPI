@@ -9,9 +9,6 @@
 
 #endregion "copyright"
 
-
-using ninaAPI.Utility.Serialization;
-
 namespace ninaAPI.Utility.Serialization
 {
     public static class SerializerFactory

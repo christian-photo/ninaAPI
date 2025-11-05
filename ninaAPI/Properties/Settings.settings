@@ -8,9 +8,6 @@
     <Setting Name="Port" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1888</Value>
     </Setting>
-    <Setting Name="APIEnabled" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
-    </Setting>
     <Setting Name="CreateThumbnails" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>

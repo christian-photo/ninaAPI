@@ -167,6 +167,16 @@ namespace ninaAPI.Utility
 
             return str;
         }
+
+        public static bool IsBetween(this short value, short min, short max)
+        {
+            return value >= min && value <= max;
+        }
+
+        public static bool IsBetween(this short value, int min, int max)
+        {
+            return IsBetween(value, (short)min, (short)max);
+        }
     }
 
     public class HttpResponse
@@ -207,6 +217,24 @@ namespace ninaAPI.Utility
                 Message = $"Process {process.ProcessId} ({process.ProcessType}) could not be started because other processes conflict with it",
                 Conflicts = conflicts
             };
+        }
+
+        public static (object, int) CreateProcessStartedResponse(ApiProcessStartResult result, ApiProcessMediator mediator, ApiProcess process)
+        {
+            object response;
+            int statusCode = 200;
+
+            if (result == ApiProcessStartResult.Conflict)
+            {
+                response = CreateProcessConflictsResponse(mediator, process);
+                statusCode = (int)HttpStatusCode.Conflict;
+            }
+            else
+            {
+                response = CreateProcessResponse(result, process.ProcessId);
+            }
+
+            return (response, statusCode);
         }
     }
 

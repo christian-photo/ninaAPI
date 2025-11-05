@@ -65,9 +65,6 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
         [Route(HttpVerbs.Post, "/move")]
         public async Task FocuserMove([QueryField] int position)
         {
-            object response;
-            int statusCode = 200;
-
             if (!focuser.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Focuser);
@@ -79,15 +76,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             var processId = processMediator.AddProcess(async (token) => await focuser.MoveFocuser(position, token), ApiProcessType.FocuserMove);
             var result = processMediator.Start(processId);
 
-            if (result == ApiProcessStartResult.Conflict)
-            {
-                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
-                statusCode = (int)HttpStatusCode.Conflict;
-            }
-            else
-            {
-                response = ResponseFactory.CreateProcessResponse(result, processId);
-            }
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
@@ -97,9 +86,6 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
         [Route(HttpVerbs.Post, "/auto-focus/start")]
         public async Task StartAutoFocus()
         {
-            object response;
-            int statusCode = 200;
-
             if (!focuser.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Focuser);
@@ -118,15 +104,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             var processId = processMediator.AddProcess(AutoFocusProcess.Create(autoFocusVM, filterWheel, statusMediator));
             var result = processMediator.Start(processId);
 
-            if (result == ApiProcessStartResult.Conflict)
-            {
-                response = ResponseFactory.CreateProcessConflictsResponse(processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
-                statusCode = (int)HttpStatusCode.Conflict;
-            }
-            else
-            {
-                response = ResponseFactory.CreateProcessResponse(result, processId);
-            }
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
