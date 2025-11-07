@@ -466,6 +466,7 @@ namespace ninaAPI.WebService.V2
             [QueryField] bool omitImage,
             [QueryField] bool waitForResult,
             [QueryField] bool save,
+            [QueryField] string targetName,
             [QueryField] bool onlyAwaitCaptureCompletion,
             [QueryField] bool onlySaveRaw)
         {
@@ -581,7 +582,12 @@ namespace ninaAPI.WebService.V2
                         }
 
                         PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: true);
-                        IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(sequence, CancellationToken.None, AdvancedAPI.Controls.StatusMediator.GetStatus());
+                        IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(
+                            sequence,
+                            CancellationToken.None,
+                            AdvancedAPI.Controls.StatusMediator.GetStatus(),
+                            string.IsNullOrEmpty(targetName) ? "Snapshot" : targetName
+                        );
                         IRenderedImage renderedImage = await AdvancedAPI.Controls.Imaging.PrepareImage(exposure, parameters, CancellationToken.None);
 
                         if (!onlySaveRaw)
@@ -644,7 +650,7 @@ namespace ninaAPI.WebService.V2
                     {
                         await CaptureTask;
                         // Return the captured image
-                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false, false, onlySaveRaw);
+                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false, targetName, false, onlySaveRaw);
                         return;
                     }
 
