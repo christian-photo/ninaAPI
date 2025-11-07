@@ -1,7 +1,7 @@
 asyncapi: 2.0.0
 info:
   title: Advanced API
-  version: 2.2.9.0
+  version: 2.2.11.0
   description: This is the Websocket documentation for the NINA plugin Advanced API.
 servers:
   production:
@@ -139,6 +139,14 @@ channels:
                           type: number
                         IsBayered:
                           type: boolean
+                        Min:
+                          type: number
+                        Max:
+                          type: number
+                        HFRStDev:
+                          type: number
+                        TargetName:
+                          type: string
                 Error:
                   type: string
                 StatusCode:
