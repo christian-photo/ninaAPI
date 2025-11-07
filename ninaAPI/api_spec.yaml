@@ -6622,6 +6622,80 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /livestack/image/{target}/{filter}/info:
+    get:
+      tags:
+        - Livestack
+      summary: Get Stacked Image Info
+      description: Gets information about the stacked image, like filter, target and stack count.
+      parameters:
+        - in: path
+          name: target
+          required: true
+          schema:
+            type: string
+            example: M31
+        - in: path
+          name: filter
+          required: true
+          schema:
+            type: string
+            example: RGB
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    properties:
+                      IsMonochrome:
+                        type: boolean
+                        example: true
+                      StackCount:
+                        type: integer
+                        description: Only present if IsMonochrome is true
+                        example: 10
+                      RedStackCount:
+                        type: integer
+                        description: Only present if IsMonochrome is false
+                        example: 10
+                      GreenStackCount:
+                        type: integer
+                        description: Only present if IsMonochrome is false
+                        example: 10
+                      BlueStackCount:
+                        type: integer
+                        description: Only present if IsMonochrome is false
+                        example: 10
+                      Filter:
+                        type: string
+                        example: RGB
+                      Target:
+                        type: string
+                        example: M31
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /flats/skyflat:
     get:
       tags:

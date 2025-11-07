@@ -25,8 +25,13 @@ using ninaAPI.Utility;
 
 namespace ninaAPI.WebService.V2
 {
-    public class LiveStackResponse(string filter, string target, BitmapSource image)
+    public class LiveStackResponse(bool isMonochrome, int? stackCount, int? redImages, int? greenImages, int? blueImages, string filter, string target, BitmapSource image)
     {
+        public bool IsMonochrome { get; set; } = isMonochrome;
+        public int? StackCount { get; set; } = stackCount;
+        public int? RedStackCount { get; set; } = redImages;
+        public int? GreenStackCount { get; set; } = greenImages;
+        public int? BlueStackCount { get; set; } = blueImages;
         public string Filter { get; set; } = filter;
         public string Target { get; set; } = target;
         public BitmapSource Image { get; set; } = image;
@@ -36,9 +41,14 @@ namespace ninaAPI.WebService.V2
     {
         public List<LiveStackResponse> Images { get; set; } = new List<LiveStackResponse>();
 
-        public void Add(string filter, string target, BitmapSource image)
+        public void AddMono(string filter, int stackCount, string target, BitmapSource image)
         {
-            Add(new LiveStackResponse(filter, target, image));
+            Add(new LiveStackResponse(true, stackCount, null, null, null, filter, target, image));
+        }
+
+        public void AddColor(int redImages, int greenImages, int blueImages, string filter, string target, BitmapSource image)
+        {
+            Add(new LiveStackResponse(false, null, redImages, greenImages, blueImages, filter, target, image));
         }
 
         public void Add(LiveStackResponse image)
@@ -67,14 +77,38 @@ namespace ninaAPI.WebService.V2
         {
             string filter = message.Content.GetType().GetProperty("Filter").GetValue(message.Content).ToString();
             string target = message.Content.GetType().GetProperty("Target").GetValue(message.Content).ToString();
+            bool isMono = (bool)message.Content.GetType().GetProperty("IsMonochrome").GetValue(message.Content);
+            int? stackCount = (int?)message.Content.GetType().GetProperty("StackCount").GetValue(message.Content);
+            int? redImages = (int?)message.Content.GetType().GetProperty("RedStackCount").GetValue(message.Content);
+            int? greenImages = (int?)message.Content.GetType().GetProperty("GreenStackCount").GetValue(message.Content);
+            int? blueImages = (int?)message.Content.GetType().GetProperty("BlueStackCount").GetValue(message.Content);
+
             if (message.Content.GetType().GetProperty("Image").GetValue(message.Content) is BitmapSource image)
             {
-                LiveStackHistory.Add(filter, target, image);
-                await WebSocketV2.SendAndAddEvent("STACK-UPDATED", new Dictionary<string, object>()
+                if (isMono)
                 {
-                    { "Filter", filter },
-                    { "Target", target }
-                });
+                    LiveStackHistory.AddMono(filter, stackCount ?? -1, target, image);
+                    await WebSocketV2.SendAndAddEvent("STACK-UPDATED", new Dictionary<string, object>()
+                    {
+                        { "Filter", filter },
+                        { "Target", target },
+                        { "IsMonochrome", isMono },
+                        { "StackCount", stackCount },
+                    });
+                }
+                else
+                {
+                    LiveStackHistory.AddColor(redImages ?? -1, greenImages ?? -1, blueImages ?? -1, filter, target, image);
+                    await WebSocketV2.SendAndAddEvent("STACK-UPDATED", new Dictionary<string, object>()
+                    {
+                        { "Filter", filter },
+                        { "Target", target },
+                        { "IsMonochrome", isMono },
+                        { "GreenStackCount", greenImages },
+                        { "RedStackCount", redImages },
+                        { "BlueStackCount", blueImages },
+                    });
+                }
             }
         }
 
@@ -247,6 +281,43 @@ namespace ninaAPI.WebService.V2
                         if (!resize)
                             response.Response = BitmapHelper.ScaleAndConvertBitmap(image, 1, quality);
                     }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/livestack/image/{target}/{filter}/info")]
+        public async Task LiveStackImageInfo(string filter, string target)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                LiveStackResponse l = LiveStackWatcher.LiveStackHistory.Images.Where(x => x.Filter == filter && x.Target == target).LastOrDefault();
+                if (l is null)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("No image with specified filter and target found", 404));
+                }
+                else
+                {
+
+                    response.Response = new
+                    {
+                        IsMonochrome = l.IsMonochrome,
+                        StackCount = l.StackCount,
+                        RedStackCount = l.RedStackCount,
+                        GreenStackCount = l.GreenStackCount,
+                        BlueStackCount = l.BlueStackCount,
+                        Filter = l.Filter,
+                        Target = l.Target,
+                    };
 
                 }
             }

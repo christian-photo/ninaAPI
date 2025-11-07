@@ -264,6 +264,30 @@ channels:
                     Target:
                       type: string
                       example: M31
+                    IsMonochrome:
+                      type: boolean
+                      example: true
+                    StackCount:
+                      type: integer
+                      description: Only present if IsMonochrome is true
+                      example: 10
+                    RedStackCount:
+                      type: integer
+                      description: Only present if IsMonochrome is false
+                      example: 10
+                    GreenStackCount:
+                      type: integer
+                      description: Only present if IsMonochrome is false
+                      example: 10
+                    BlueStackCount:
+                      type: integer
+                      description: Only present if IsMonochrome is false
+                      example: 10
+                  required:
+                    - Event
+                    - Filter
+                    - Target
+                    - IsMonochrome
                 Error:
                   type: string
                 StatusCode:
