@@ -51,7 +51,8 @@ namespace ninaAPI.WebService
                 .WithModule(new WebSocketV2("/v2/socket"))
                 .WithModule(new TPPASocket("/v2/tppa"))
                 .WithModule(new MountAxisMoveSocket("/v2/mount"))
-                .WithModule(new NetworkedFilterWheelSocket("/v2/filterwheel"));
+                .WithModule(new NetworkedFilterWheelSocket("/v2/filterwheel"))
+                .WithModule(new NetworkedRotatorSocket("/v2/rotator"));
         }
 
         public static void StartWatchers()
