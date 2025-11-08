@@ -1,7 +1,7 @@
 asyncapi: 2.0.0
 info:
   title: Advanced API
-  version: 2.2.9.0
+  version: 2.2.11.0
   description: This is the Websocket documentation for the NINA plugin Advanced API.
 servers:
   production:
@@ -139,6 +139,14 @@ channels:
                           type: number
                         IsBayered:
                           type: boolean
+                        Min:
+                          type: number
+                        Max:
+                          type: number
+                        HFRStDev:
+                          type: number
+                        TargetName:
+                          type: string
                 Error:
                   type: string
                 StatusCode:
@@ -264,6 +272,30 @@ channels:
                     Target:
                       type: string
                       example: M31
+                    IsMonochrome:
+                      type: boolean
+                      example: true
+                    StackCount:
+                      type: integer
+                      description: Only present if IsMonochrome is true
+                      example: 10
+                    RedStackCount:
+                      type: integer
+                      description: Only present if IsMonochrome is false
+                      example: 10
+                    GreenStackCount:
+                      type: integer
+                      description: Only present if IsMonochrome is false
+                      example: 10
+                    BlueStackCount:
+                      type: integer
+                      description: Only present if IsMonochrome is false
+                      example: 10
+                  required:
+                    - Event
+                    - Filter
+                    - Target
+                    - IsMonochrome
                 Error:
                   type: string
                 StatusCode:

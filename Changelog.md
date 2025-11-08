@@ -6,7 +6,15 @@ The changes for each individual (beta) release can be seen [here](https://github
 
 - Added a networked manual rotator (just like the already existing networked filter wheel)
 - Added the url parameter `onlyAwaitCaptureCompletion` and `onlySaveRaw` to the `camera/capture` endpoint for faster capture. This can be used to only await the capture completion and not the image preparation. The other capture endpoints will not work when using `onlySaveRaw`.
+- Added the url parameter `targetName` to the `camera/capture` endpoint to specify the name of the target that is being captured.
 - Added `HFRStDev`, `Min`, `Max` and `TargetName` to the `IMAGE-SAVE` event (and `image-history`)
+- Extended the STACK-UPDATED event with the following fields:
+  - `IsMonochrome`
+  - `StackCount` (If IsMonochrome is true)
+  - `RedStackCount` (If IsMonochrome is false)
+  - `GreenStackCount` (If IsMonochrome is false)
+  - `BlueStackCount` (If IsMonochrome is false)
+- Added `livestack/image/{target}/{filter}/info` to get information about the current stacked image
 
 ## 2.2.10.0
 
