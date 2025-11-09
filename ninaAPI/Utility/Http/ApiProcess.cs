@@ -157,5 +157,7 @@ namespace ninaAPI.Utility.Http
         public static readonly ApiProcessType DomePark = new("DomePark", false, DomeSlew);
         public static readonly ApiProcessType DomeFindHome = new("DomeFindHome", false, DomePark, DomeSlew);
         public static readonly ApiProcessType FilterWheelChangeFilter = new("FilterWheelChangeFilter", false, FocuserAutofocus, CameraCapture);
+        public static readonly ApiProcessType GuiderStartGuiding = new("GuiderStartGuiding", false);
+        public static readonly ApiProcessType GuiderDither = new("GuiderDither", false);
     }
 }

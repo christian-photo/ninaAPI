@@ -21,7 +21,9 @@ using ninaAPI.WebService.V3.Equipment;
 using ninaAPI.WebService.V3.Equipment.Camera;
 using ninaAPI.WebService.V3.Equipment.Dome;
 using ninaAPI.WebService.V3.Equipment.FilterWheel;
+using ninaAPI.WebService.V3.Equipment.FlatDevice;
 using ninaAPI.WebService.V3.Equipment.Focuser;
+using ninaAPI.WebService.V3.Equipment.Guider;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3
@@ -35,6 +37,8 @@ namespace ninaAPI.WebService.V3
         private readonly FocuserController focuserController;
         private readonly DomeController domeController;
         private readonly FilterWheelController filterWheelController;
+        private readonly FlatController flatController;
+        private readonly GuiderController guiderController;
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
 
@@ -51,6 +55,8 @@ namespace ninaAPI.WebService.V3
                 new FocuserWatcher(eventHistory, AdvancedAPI.Controls.Focuser),
                 new DomeWatcher(eventHistory, AdvancedAPI.Controls.Dome),
                 new FilterWheelWatcher(eventHistory, AdvancedAPI.Controls.FilterWheel),
+                new FlatWatcher(eventHistory, AdvancedAPI.Controls.FlatDevice),
+                new GuiderWatcher(eventHistory, AdvancedAPI.Controls.Guider),
                 new ProcessWatcher(eventHistory),
             ];
 
@@ -75,27 +81,18 @@ namespace ninaAPI.WebService.V3
             processMediator = new ApiProcessMediator();
 
             cameraController = new CameraController(
-                    AdvancedAPI.Controls.Camera,
-                    AdvancedAPI.Controls.Profile,
-                    AdvancedAPI.Controls.Imaging,
-                    AdvancedAPI.Controls.ImageSaveMediator,
-                    AdvancedAPI.Controls.StatusMediator,
-                    AdvancedAPI.Controls.ImageDataFactory,
-                    AdvancedAPI.Controls.PlateSolver,
-                    AdvancedAPI.Controls.Mount,
-                    AdvancedAPI.Controls.FilterWheel,
-                    responseHandler,
-                    processMediator
-                );
-
-            focuserController = new FocuserController(
-                    AdvancedAPI.Controls.Focuser,
-                    AdvancedAPI.Controls.FilterWheel,
-                    AdvancedAPI.Controls.StatusMediator,
-                    AdvancedAPI.Controls.AutoFocusFactory,
-                    responseHandler,
-                    processMediator
-                );
+                AdvancedAPI.Controls.Camera,
+                AdvancedAPI.Controls.Profile,
+                AdvancedAPI.Controls.Imaging,
+                AdvancedAPI.Controls.ImageSaveMediator,
+                AdvancedAPI.Controls.StatusMediator,
+                AdvancedAPI.Controls.ImageDataFactory,
+                AdvancedAPI.Controls.PlateSolver,
+                AdvancedAPI.Controls.Mount,
+                AdvancedAPI.Controls.FilterWheel,
+                responseHandler,
+                processMediator
+            );
 
             domeController = new DomeController(
                 responseHandler,
@@ -111,6 +108,28 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.StatusMediator,
                 responseHandler,
                 processMediator
+            );
+
+            flatController = new FlatController(
+                AdvancedAPI.Controls.FlatDevice,
+                AdvancedAPI.Controls.StatusMediator,
+                responseHandler
+            );
+
+            focuserController = new FocuserController(
+                AdvancedAPI.Controls.Focuser,
+                AdvancedAPI.Controls.FilterWheel,
+                AdvancedAPI.Controls.StatusMediator,
+                AdvancedAPI.Controls.AutoFocusFactory,
+                responseHandler,
+                processMediator
+            );
+
+            guiderController = new GuiderController(
+                AdvancedAPI.Controls.Guider,
+                AdvancedAPI.Controls.StatusMediator,
+                processMediator,
+                responseHandler
             );
 
             controller = new ControllerV3(responseHandler, processMediator);
@@ -133,6 +152,8 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}", m => m.WithController(() => focuserController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.DomeUrlName}", m => m.WithController(() => domeController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FilterWheelUrlName}", m => m.WithController(() => filterWheelController))
+                .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FlatDeviceUrlName}", m => m.WithController(() => flatController))
+                .WithWebApi($"/v3/api/equipment/{EquipmentConstants.GuiderUrlName}", m => m.WithController(() => guiderController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 

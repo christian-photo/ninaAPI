@@ -10,17 +10,23 @@
 #endregion "copyright"
 
 
-using NINA.Equipment.Equipment.MyCamera;
+using NINA.Equipment.Equipment.MyGuider;
+using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 
-namespace ninaAPI.WebService.V3.Equipment.Camera
+namespace ninaAPI.WebService.V3.Equipment.Guider
 {
-    public class CameraInfoResponse : CameraInfo
+    public class GuiderInfoResponse : GuiderInfo
     {
-        public CameraInfoResponse(ICameraMediator cam)
+        public GuiderInfoResponse(IGuiderMediator guider)
         {
-            var info = cam.GetInfo();
+            var info = guider.GetInfo();
             CopyFrom(info);
+
+            IGuider device = (IGuider)guider.GetDevice();
+            State = device?.State;
         }
+
+        public string? State { get; set; }
     }
 }

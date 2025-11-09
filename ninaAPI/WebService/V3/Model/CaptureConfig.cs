@@ -29,12 +29,15 @@ namespace ninaAPI.WebService.V3.Model
         public double? ROI { get; set; } = 1;
         public BinningMode Binning { get; set; }
 
+        public string TargetName { get; set; }
+
         public void UpdateDefaults(IPlateSolveSettings solveSettings, CameraInfo info)
         {
             Duration ??= solveSettings.ExposureTime;
             Gain ??= info.Gain;
             ROI ??= 1;
             Binning ??= new BinningMode(info.BinX, info.BinY);
+            TargetName ??= "Snapshot";
         }
     }
 }

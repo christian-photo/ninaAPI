@@ -53,7 +53,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             this.autofocusFactory = autofocusFactory;
         }
 
-        [Route(HttpVerbs.Get, "/info")]
+        [Route(HttpVerbs.Get, "/")]
         public async Task FocuserInfo()
         {
             var info = focuser.GetInfo();

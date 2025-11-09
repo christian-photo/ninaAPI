@@ -43,6 +43,7 @@ namespace ninaAPI.Utility.Http
         Capture,
         Livestack,
         Autofocus,
-        Process
+        Process,
+        Guiding
     }
 }

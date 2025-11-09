@@ -41,7 +41,7 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             this.processMediator = processMediator;
         }
 
-        [Route(HttpVerbs.Get, "/info")]
+        [Route(HttpVerbs.Get, "/")]
         public async Task FilterWheelInfo()
         {
             var info = filterWheel.GetInfo();

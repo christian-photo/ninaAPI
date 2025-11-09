@@ -19,32 +19,11 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
     {
         public DomeInfoResponse(DomeInfo info, IDomeFollower follower)
         {
-            Altitude = info.Altitude;
-            Azimuth = info.Azimuth;
-            ApplicationFollowing = info.ApplicationFollowing;
-            AtHome = info.AtHome;
-            AtPark = info.AtPark;
-            CanFindHome = info.CanFindHome;
-            CanPark = info.CanPark;
-            CanSetAzimuth = info.CanSetAzimuth;
-            CanSetPark = info.CanSetPark;
-            CanSetShutter = info.CanSetShutter;
-            CanSyncAzimuth = info.CanSyncAzimuth;
-            DriverCanFollow = info.DriverCanFollow;
-            DriverFollowing = info.DriverFollowing;
-            ShutterStatus = info.ShutterStatus;
-            Slewing = info.Slewing;
-            SupportedActions = info.SupportedActions;
+            CopyFrom(info);
             IsFollowing = follower.IsFollowing;
             IsSynchronized = follower.IsSynchronized;
-            DriverInfo = info.DriverInfo;
-            DriverVersion = info.DriverVersion;
-            Name = info.Name;
-            DisplayName = info.DisplayName;
-            Connected = info.Connected;
-            Description = info.Description;
-            DeviceId = info.DeviceId;
         }
+
         public bool IsFollowing { get; set; }
         public bool IsSynchronized { get; set; }
     }

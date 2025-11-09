@@ -55,6 +55,14 @@ namespace ninaAPI.Utility
             }
         }
 
+        public void RemoveAt(int index)
+        {
+            lock (_lock)
+            {
+                _list.RemoveAt(index);
+            }
+        }
+
         public bool Contains(T item)
         {
             lock (_lock)

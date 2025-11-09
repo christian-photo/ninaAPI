@@ -44,7 +44,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             this.processMediator = processMediator;
         }
 
-        [Route(HttpVerbs.Get, "/info")]
+        [Route(HttpVerbs.Get, "/")]
         public async Task DomeInfo()
         {
             DomeInfoResponse info = new DomeInfoResponse(dome.GetInfo(), domeFollower);
@@ -197,7 +197,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/set-park")]
+        [Route(HttpVerbs.Patch, "/set-park")]
         public async Task DomeSetPark()
         {
             if (!dome.GetInfo().Connected)

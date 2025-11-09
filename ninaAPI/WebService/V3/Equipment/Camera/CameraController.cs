@@ -70,10 +70,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             this.captureMediator = new CaptureMediator(camera, filterWheel, profile, imaging, imageSave, status, processMediator);
         }
 
-        [Route(HttpVerbs.Get, "/info")]
+        [Route(HttpVerbs.Get, "/")]
         public async Task CameraInfo()
         {
-            CameraInfoResponse info = CameraInfoResponse.FromCam(cam);
+            CameraInfoResponse info = new CameraInfoResponse(cam);
 
             await responseHandler.SendObject(HttpContext, info);
         }
