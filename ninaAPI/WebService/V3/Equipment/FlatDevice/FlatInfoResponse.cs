@@ -13,24 +13,43 @@
 using System.Collections.Generic;
 using NINA.Equipment.Equipment.MyFlatDevice;
 using NINA.Equipment.Interfaces;
+using NINA.Equipment.Interfaces.Mediator;
 
 namespace ninaAPI.WebService.V3.Equipment.FlatDevice
 {
-    public class FlatInfoResponse(FlatDeviceInfo info)
+    public class FlatInfoResponse
     {
-        public CoverState CoverState { get; set; } = info.CoverState;
-        public bool LightOn { get; set; } = info.LightOn;
-        public int Brightness { get; set; } = info.Brightness;
-        public bool SupportsOpenClose { get; set; } = info.SupportsOpenClose;
-        public int MinBrightness { get; set; } = info.MinBrightness;
-        public int MaxBrightness { get; set; } = info.MaxBrightness;
-        public bool SupportsOnOff { get; set; } = info.SupportsOnOff;
-        public IList<string> SupportedActions { get; set; } = info.SupportedActions;
-        public bool Connected { get; set; } = info.Connected;
-        public string Name { get; set; } = info.Name;
-        public string DisplayName { get; set; } = info.DisplayName;
-        public string DriverInfo { get; set; } = info.DriverInfo;
-        public string DriverVersion { get; set; } = info.DriverVersion;
-        public string DeviceId { get; set; } = info.DeviceId;
+        public CoverState CoverState { get; set; }
+        public bool LightOn { get; set; }
+        public int Brightness { get; set; }
+        public bool SupportsOpenClose { get; set; }
+        public int MinBrightness { get; set; }
+        public int MaxBrightness { get; set; }
+        public bool SupportsOnOff { get; set; }
+        public IList<string> SupportedActions { get; set; }
+        public bool Connected { get; set; }
+        public string Name { get; set; }
+        public string DisplayName { get; set; }
+        public string DriverInfo { get; set; }
+        public string DriverVersion { get; set; }
+        public string DeviceId { get; set; }
+
+        public FlatInfoResponse(FlatDeviceInfo info)
+        {
+            CoverState = info.CoverState;
+            LightOn = info.LightOn;
+            Brightness = info.Brightness;
+            SupportsOpenClose = info.SupportsOpenClose;
+            MinBrightness = info.MinBrightness;
+            MaxBrightness = info.MaxBrightness;
+            SupportsOnOff = info.SupportsOnOff;
+            SupportedActions = info.SupportedActions;
+            Connected = info.Connected;
+            Name = info.Name;
+            DisplayName = info.DisplayName;
+            DriverInfo = info.DriverInfo;
+            DriverVersion = info.DriverVersion;
+            DeviceId = info.DeviceId;
+        }
     }
 }

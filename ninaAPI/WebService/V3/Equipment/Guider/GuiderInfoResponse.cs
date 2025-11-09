@@ -21,12 +21,26 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
         public GuiderInfoResponse(IGuiderMediator guider)
         {
             var info = guider.GetInfo();
-            CopyFrom(info);
+            CanClearCalibration = info.CanClearCalibration;
+            CanSetShiftRate = info.CanSetShiftRate;
+            CanGetLockPosition = info.CanGetLockPosition;
+            SupportedActions = info.SupportedActions;
+            RMSError = info.RMSError;
+            PixelScale = info.PixelScale;
+            Connected = info.Connected;
+            Name = info.Name;
+            DisplayName = info.DisplayName;
+            Description = info.Description;
+            DriverInfo = info.DriverInfo;
+            DriverVersion = info.DriverVersion;
+            DeviceId = info.DeviceId;
 
             IGuider device = (IGuider)guider.GetDevice();
             State = device?.State;
         }
 
-        public string? State { get; set; }
+        public GuiderInfoResponse() { }
+
+        public string State { get; set; }
     }
 }

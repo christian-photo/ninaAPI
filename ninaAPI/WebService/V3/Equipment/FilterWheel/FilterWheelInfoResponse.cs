@@ -50,5 +50,7 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
                 SupportedActions = info.SupportedActions,
             };
         }
+
+        public FilterWheelInfoResponse() { }
     }
 }
