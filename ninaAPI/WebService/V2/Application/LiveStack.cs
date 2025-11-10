@@ -177,6 +177,25 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
+        [Route(HttpVerbs.Get, "/livestack/status")]
+        public void LiveStackStatus()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                AdvancedAPI.Controls.MessageBroker.Publish(new LiveStackMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StatusRequest", string.Empty));
+                response.Response = "Live stack status requested";
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/livestack/stop")]
         public void LiveStackStop()
         {
