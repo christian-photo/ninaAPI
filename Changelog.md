@@ -2,6 +2,10 @@
 
 The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
 
+## 2.2.11.1
+
+- Fixed a bug where NINA would crash if another plugin also subscribed to the Meridian Flip events
+
 ## 2.2.11.0
 
 - Added a networked manual rotator (just like the already existing networked filter wheel)
