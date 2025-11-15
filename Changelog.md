@@ -1,6 +1,13 @@
 # Changelog
 
-The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
+The changes for each individual (beta) release can be seen in each [release](https://github.com/christian-photo/ninaAPI/releases). This changelog will only cover the fully released versions.
+
+## 2.2.12.0
+
+- Minimum application version was increased to NINA 3.2!
+- Fixes an issue where the `image-history` endpoint would return the first, now the last image when all parameters were omitted
+- Added `AUTOFOCUS-STARTING` and `AUTOFOCUS-POINT-ADDED` events to the websocket
+- Added `plugin/settings` to get the plugin settings
 
 ## 2.2.11.1
 
