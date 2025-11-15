@@ -107,6 +107,33 @@ paths:
                     type: string
                     example: "API"
 
+  /plugin/settings:
+    get:
+      tags:
+        - Plugin
+      summary: Plugin settings
+      description: This endpoint returns the plugin settings.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  AccessControlHeaderEnabled:
+                    type: boolean
+                    example: true
+                  ShouldCreateThumbnails:
+                    type: boolean
+                    example: true
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /equipment/camera/info:
     get:
       tags:

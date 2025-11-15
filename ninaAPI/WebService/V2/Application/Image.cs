@@ -553,6 +553,7 @@ namespace ninaAPI.WebService.V2
             try
             {
                 var images = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
+                index = HttpContext.IsParameterOmitted(nameof(index)) ? images.Count() - 1 : index;
                 if (count)
                 {
                     response.Response = images.Count();

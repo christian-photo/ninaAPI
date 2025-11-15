@@ -39,16 +39,16 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NINA.Astrometry" Version="3.2.0.2001-beta" />
-    <PackageReference Include="NINA.Core" Version="3.2.0.2001-beta" />
-    <PackageReference Include="NINA.CustomControlLibrary" Version="3.2.0.2001-beta" />
-    <PackageReference Include="NINA.Equipment" Version="3.2.0.2001-beta" />
-    <PackageReference Include="NINA.Image" Version="3.2.0.2001-beta" />
-    <PackageReference Include="NINA.MGEN" Version="3.2.0.2001-beta" />
-    <PackageReference Include="NINA.PlateSolving" Version="3.2.0.2001-beta" />
-    <PackageReference Include="NINA.Profile" Version="3.2.0.2001-beta" />
-    <PackageReference Include="NINA.Sequencer" Version="3.2.0.2001-beta" />
-    <PackageReference Include="NINA.WPF.Base" Version="3.2.0.2001-beta" />
+    <PackageReference Include="NINA.Astrometry" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.Core" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.CustomControlLibrary" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.Equipment" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.Image" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.MGEN" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.PlateSolving" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.Profile" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.Sequencer" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.WPF.Base" Version="3.2.0.9001" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.346202">
       <PrivateAssets>all</PrivateAssets>
@@ -59,7 +59,7 @@
     <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
     <PackageReference Include="EmbedIO" Version="3.5.2" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
-    <PackageReference Include="NINA.Plugin" Version="3.2.0.2001-beta" />
+    <PackageReference Include="NINA.Plugin" Version="3.2.0.9001" />
     <PackageReference Include="NINA.WpfToolkit" Version="3.5.3" />
     <PackageReference Include="System.Windows.Interactivity.WPF" Version="2.0.20525" />
   </ItemGroup>
