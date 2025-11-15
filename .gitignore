@@ -10,3 +10,4 @@ gather.js
 push.bat
 /ninaAPI/manifest.json
 /ninaAPI/ninaAPI.zip
+.env
