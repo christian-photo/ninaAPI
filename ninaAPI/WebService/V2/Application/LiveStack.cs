@@ -72,6 +72,7 @@ namespace ninaAPI.WebService.V2
     public class LiveStackWatcher : INinaWatcher, ISubscriber
     {
         public static LiveStackHistory LiveStackHistory { get; private set; }
+        public static string LivestackStatus { get; private set; } = "stopped";
 
         public async Task OnMessageReceived(IMessage message)
         {
@@ -92,10 +93,11 @@ namespace ninaAPI.WebService.V2
 
         public async Task OnStatusReceived(IMessage message)
         {
-                await WebSocketV2.SendAndAddEvent("STACK-STATUS", new Dictionary<string, object>()
-                {
-                    { "Status", message.Content.Status },
-                });
+            LivestackStatus = message.Content.Status;
+            await WebSocketV2.SendAndAddEvent("STACK-STATUS", new Dictionary<string, object>()
+            {
+                { "Status", LivestackStatus },
+            });
         }
 
          public async Task OnStackUpdateReceived(IMessage message)
@@ -182,16 +184,7 @@ namespace ninaAPI.WebService.V2
         {
             HttpResponse response = new HttpResponse();
 
-            try
-            {
-                AdvancedAPI.Controls.MessageBroker.Publish(new LiveStackMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StatusRequest", string.Empty));
-                response.Response = "Live stack status requested";
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
-            }
+            response.Response = LiveStackWatcher.LivestackStatus;
 
             HttpContext.WriteToResponse(response);
         }
