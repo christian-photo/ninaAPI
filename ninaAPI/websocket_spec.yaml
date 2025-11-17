@@ -15,513 +15,516 @@ channels:
       summary: Subscribe to WebSocket events
       message:
         oneOf:
-          - contentType: application/json
-            title: Simple Event Response
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      description: The event name
-                      enum:
-                        - API-CAPTURE-FINISHED
-                        - AUTOFOCUS-FINISHED
-                        - AUTOFOCUS-STARTING
-                        - CAMERA-CONNECTED
-                        - CAMERA-DISCONNECTED
-                        - CAMERA-DOWNLOAD-TIMEOUT
-                        - DOME-CONNECTED
-                        - DOME-DISCONNECTED
-                        - DOME-SHUTTER-CLOSED
-                        - DOME-SHUTTER-OPENED
-                        - DOME-HOMED
-                        - DOME-PARKED
-                        - DOME-STOPPED
-                        - DOME-SLEWED
-                        - DOME-SYNCED
-                        - FILTERWHEEL-CONNECTED
-                        - FILTERWHEEL-DISCONNECTED
-                        - FLAT-CONNECTED
-                        - FLAT-DISCONNECTED
-                        - FLAT-LIGHT-TOGGLED
-                        - FLAT-COVER-OPENED
-                        - FLAT-COVER-CLOSED
-                        - FOCUSER-CONNECTED
-                        - FOCUSER-DISCONNECTED
-                        - FOCUSER-USER-FOCUSED
-                        - GUIDER-CONNECTED
-                        - GUIDER-DISCONNECTED
-                        - GUIDER-START
-                        - GUIDER-STOP
-                        - GUIDER-DITHER
-                        - IMAGE-PREPARED
-                        - MOUNT-CONNECTED
-                        - MOUNT-DISCONNECTED
-                        - MOUNT-BEFORE-FLIP
-                        - MOUNT-AFTER-FLIP
-                        - MOUNT-HOMED
-                        - MOUNT-PARKED
-                        - MOUNT-UNPARKED
-                        - MOUNT-CENTER
-                        - PROFILE-ADDED
-                        - PROFILE-CHANGED
-                        - PROFILE-REMOVED
-                        - ROTATOR-CONNECTED
-                        - ROTATOR-DISCONNECTED
-                        - ROTATOR-SYNCED
-                        - SAFETY-CONNECTED
-                        - SAFETY-DISCONNECTED
-                        - SEQUENCE-STARTING
-                        - SEQUENCE-FINISHED
-                        - SWITCH-CONNECTED
-                        - SWITCH-DISCONNECTED
-                        - WEATHER-CONNECTED
-                        - WEATHER-DISCONNECTED
-                        - ERROR-AF
-                        - ERROR-PLATESOLVE
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: Image Save Event
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      example: "IMAGE-SAVE"
-                    ImageStatistics:
-                      properties:
-                        ExposureTime:
-                          type: number
-                        Index:
-                          type: number
-                        Filter:
-                          type: string
-                        RmsText:
-                          type: string
-                        Temperature:
-                          type: number
-                        CameraName:
-                          type: string
-                        Gain:
-                          type: number
-                        Offset:
-                          type: number
-                        Date:
-                          type: string
-                        TelescopeName:
-                          type: string
-                        FocalLength:
-                          type: number
-                        StDev:
-                          type: number
-                        Mean:
-                          type: number
-                        Median:
-                          type: number
-                        Stars:
-                          type: number
-                        HFR:
-                          type: number
-                        IsBayered:
-                          type: boolean
-                        Min:
-                          type: number
-                        Max:
-                          type: number
-                        HFRStDev:
-                          type: number
-                        TargetName:
-                          type: string
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: Filter Changed Event
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      example: FILTERWHEEL-CHANGED
-                    Previous:
-                      properties:
-                        Name:
-                          type: string
-                          example: Filter 1
-                        Íd:
-                          type: integer
-                          example: 1
-                    New:
-                      properties:
-                        Name:
-                          type: string
-                          example: Filter 2
-                        Íd:
-                          type: integer
-                          example: 2
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: Flat Brightness Changed Event
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      example: FLAT-BRIGHTNESS-CHANGED
-                    Previous:
-                      type: integer
-                      example: 0
-                      minimum: 0
-                      maximum: 100
-                      description: Brightness in percent
-                    New:
-                      type: integer
-                      example: 100
-                      minimum: 0
-                      maximum: 100
-                      description: Brightness in percent
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: Safety Changed Event
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      example: SAFETY-CHANGED
-                    IsSafe:
-                      type: boolean
-                      example: true
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: Live stack updated (requires Livestack >= 1.0.0.9)
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      example: STACK-UPDATED
-                    Filter:
-                      type: string
-                      example: RGB
-                    Target:
-                      type: string
-                      example: M31
-                    IsMonochrome:
-                      type: boolean
-                      example: true
-                    StackCount:
-                      type: integer
-                      description: Only present if IsMonochrome is true
-                      example: 10
-                    RedStackCount:
-                      type: integer
-                      description: Only present if IsMonochrome is false
-                      example: 10
-                    GreenStackCount:
-                      type: integer
-                      description: Only present if IsMonochrome is false
-                      example: 10
-                    BlueStackCount:
-                      type: integer
-                      description: Only present if IsMonochrome is false
-                      example: 10
-                  required:
-                    - Event
-                    - Filter
-                    - Target
-                    - IsMonochrome
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: TS Wait Start Event
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      example: "TS-WAITSTART"
-                    WaitStartTime:
-                      type: string
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: TS (New) Target Start Event
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      enum:
-                        - "TS-NEWTARGETSTART"
-                        - "TS-TARGETSTART"
-                    TargetName:
-                      type: string
-                    ProjectName:
-                      type: string
-                    Coordinates:
-                      type: object
-                      properties:
-                        RA:
-                          type: number
-                        RAString:
-                          type: string
-                        RADegrees:
-                          type: number
-                        Dec:
-                          type: number
-                        DecString:
-                          type: string
-                        Epoch:
-                          type: string
-                          enum:
-                            - JNOW
-                            - B1950
-                            - J2000
-                            - J2050
-                        DateTime:
-                          type: object
-                          properties:
-                            Now:
-                              type: string
-                            UtcNow:
-                              type: string
-                    Rotation:
-                      type: number
-                    TargetEndTime:
-                      type: string
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: Send WebSocket Event Instruction
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: string
-                  example: "Test event"
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: Send Error to WebSocket Trigger
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      example: "SEQUENCE-ENTITY-FAILED"
-                    Entity:
-                      type: string
-                      example: "Dew Heater"
-                    Error:
-                      type: string
-                      example: "Camera not connected"
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: Rotator moved
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      example: ROTATOR-MOVED
-                    From:
-                      type: number
-                      example: 0
-                    To:
-                      type: number
-                      example: 100
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: Rotator moved mechanical
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      example: ROTATOR-MOVED-MECHANICAL
-                    From:
-                      type: number
-                      example: 0
-                    To:
-                      type: number
-                      example: 100
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: New Autofocus Point
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Event:
-                      type: string
-                      example: "AUTOFOCs-POINT-ADDED"
-                    Position:
-                      type: number
-                      example: 1200
-                    HFR:
-                      type: number
-                      example: 2.2
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
+        - contentType: application/json
+          title: Simple Event Response
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    description: The event name
+                    enum:
+                    - API-CAPTURE-FINISHED
+                    - AUTOFOCUS-FINISHED
+                    - CAMERA-CONNECTED
+                    - CAMERA-DISCONNECTED
+                    - CAMERA-DOWNLOAD-TIMEOUT
+                    - DOME-CONNECTED
+                    - DOME-DISCONNECTED
+                    - DOME-SHUTTER-CLOSED
+                    - DOME-SHUTTER-OPENED
+                    - DOME-HOMED
+                    - DOME-PARKED
+                    - DOME-STOPPED
+                    - DOME-SLEWED
+                    - DOME-SYNCED
+                    - FILTERWHEEL-CONNECTED
+                    - FILTERWHEEL-DISCONNECTED
+                    - FLAT-CONNECTED
+                    - FLAT-DISCONNECTED
+                    - FLAT-LIGHT-TOGGLED
+                    - FLAT-COVER-OPENED
+                    - FLAT-COVER-CLOSED
+                    - FOCUSER-CONNECTED
+                    - FOCUSER-DISCONNECTED
+                    - FOCUSER-USER-FOCUSED
+                    - GUIDER-CONNECTED
+                    - GUIDER-DISCONNECTED
+                    - GUIDER-START
+                    - GUIDER-STOP
+                    - GUIDER-DITHER
+                    - IMAGE-PREPARED
+                    - MOUNT-CONNECTED
+                    - MOUNT-DISCONNECTED
+                    - MOUNT-BEFORE-FLIP
+                    - MOUNT-AFTER-FLIP
+                    - MOUNT-HOMED
+                    - MOUNT-PARKED
+                    - MOUNT-UNPARKED
+                    - MOUNT-CENTER
+                    - PROFILE-ADDED
+                    - PROFILE-CHANGED
+                    - PROFILE-REMOVED
+                    - ROTATOR-CONNECTED
+                    - ROTATOR-DISCONNECTED
+                    - ROTATOR-SYNCED
+                    - SAFETY-CONNECTED
+                    - SAFETY-DISCONNECTED
+                    - SEQUENCE-STARTING
+                    - SEQUENCE-FINISHED
+                    - STACK-STATUS
+                    - STACK-UPDATED
+                    - SWITCH-CONNECTED
+                    - SWITCH-DISCONNECTED
+                    - WEATHER-CONNECTED
+                    - WEATHER-DISCONNECTED
+                    - ERROR-AF
+                    - ERROR-PLATESOLVE
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: Image Save Event
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    example: "IMAGE-SAVE"
+                  ImageStatistics:
+                    properties:
+                      ExposureTime:
+                        type: number
+                      Index:
+                        type: number
+                      Filter:
+                        type: string
+                      RmsText:
+                        type: string
+                      Temperature:
+                        type: number
+                      CameraName:
+                        type: string
+                      Gain:
+                        type: number
+                      Offset:
+                        type: number
+                      Date:
+                        type: string
+                      TelescopeName:
+                        type: string
+                      FocalLength:
+                        type: number
+                      StDev:
+                        type: number
+                      Mean:
+                        type: number
+                      Median:
+                        type: number
+                      Stars:
+                        type: number
+                      HFR:
+                        type: number
+                      IsBayered:
+                        type: boolean
+                      Min:
+                        type: number
+                      Max:
+                        type: number
+                      HFRStDev:
+                        type: number
+                      TargetName:
+                        type: string
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: Filter Changed Event
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    example: FILTERWHEEL-CHANGED
+                  Previous:
+                    properties:
+                      Name:
+                        type: string
+                        example: Filter 1
+                      Íd:
+                        type: integer
+                        example: 1
+                  New:
+                    properties:
+                      Name:
+                        type: string
+                        example: Filter 2
+                      Íd:
+                        type: integer
+                        example: 2
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: Flat Brightness Changed Event
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    example: FLAT-BRIGHTNESS-CHANGED
+                  Previous:
+                    type: integer
+                    example: 0
+                    minimum: 0
+                    maximum: 100
+                    description: Brightness in percent
+                  New:
+                    type: integer
+                    example: 100
+                    minimum: 0
+                    maximum: 100
+                    description: Brightness in percent
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: Safety Changed Event
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    example: SAFETY-CHANGED
+                  IsSafe:
+                    type: boolean
+                    example: true
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: Live stack updated (requires Livestack >= 1.0.0.9)
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    example: STACK-UPDATED
+                  Filter:
+                    type: string
+                    example: RGB
+                  Target:
+                    type: string
+                    example: M31
+                  IsMonochrome:
+                    type: boolean
+                    example: true
+                  StackCount:
+                    type: integer
+                    description: Only present if IsMonochrome is true
+                    example: 10
+                  RedStackCount:
+                    type: integer
+                    description: Only present if IsMonochrome is false
+                    example: 10
+                  GreenStackCount:
+                    type: integer
+                    description: Only present if IsMonochrome is false
+                    example: 10
+                  BlueStackCount:
+                    type: integer
+                    description: Only present if IsMonochrome is false
+                    example: 10
+                required:
+                - Event
+                - Filter
+                - Target
+                - IsMonochrome
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: Live stack updstateated (requires Livestack >= 1.0.1.7)
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    example: STACK-STATUS
+                  Status:
+                    type: string
+                    enum:
+                    - "running"
+                    - "stopped"
+                required:
+                - Event
+                - Status
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: TS Wait Start Event
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    example: "TS-WAITSTART"
+                  WaitStartTime:
+                    type: string
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: TS (New) Target Start Event
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    enum:
+                    - "TS-NEWTARGETSTART"
+                    - "TS-TARGETSTART"
+                  TargetName:
+                    type: string
+                  ProjectName:
+                    type: string
+                  Coordinates:
+                    type: object
+                    properties:
+                      RA:
+                        type: number
+                      RAString:
+                        type: string
+                      RADegrees:
+                        type: number
+                      Dec:
+                        type: number
+                      DecString:
+                        type: string
+                      Epoch:
+                        type: string
+                        enum:
+                        - JNOW
+                        - B1950
+                        - J2000
+                        - J2050
+                      DateTime:
+                        type: object
+                        properties:
+                          Now:
+                            type: string
+                          UtcNow:
+                            type: string
+                  Rotation:
+                    type: number
+                  TargetEndTime:
+                    type: string
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: Send WebSocket Event Instruction
+          payload:
+            type: object
+            properties:
+              Response:
+                type: string
+                example: "Test event"
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: Send Error to WebSocket Trigger
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    example: "SEQUENCE-ENTITY-FAILED"
+                  Entity:
+                    type: string
+                    example: "Dew Heater"
+                  Error:
+                    type: string
+                    example: "Camera not connected"
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: Rotator moved
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    example: ROTATOR-MOVED
+                  From:
+                    type: number
+                    example: 0
+                  To:
+                    type: number
+                    example: 100
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: Rotator moved mechanical
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Event:
+                    type: string
+                    example: ROTATOR-MOVED-MECHANICAL
+                  From:
+                    type: number
+                    example: 0
+                  To:
+                    type: number
+                    example: 100
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
 
   /tppa:
     description: TPPA WebSocket channel. To use this channel, TPPA >= 2.2.4.1 must be installed. You can specify the TPPA settings in the json payload.
@@ -529,194 +532,192 @@ channels:
       summary: Start or Stop TPPA
       message:
         oneOf:
-          - contentType: application/text
-            description: This is deprecated. Use the json payload instead.
-            payload:
-              type: string
-              enum:
+        - contentType: application/text
+          description: This is deprecated. Use the json payload instead.
+          payload:
+            type: string
+            enum:
+            - start-alignment
+            - stop-alignment
+            - pause-alignment
+            - resume-alignment
+
+        - contentType: application/json
+          payload:
+            type: object
+            required:
+            - Action
+            properties:
+              Action:
+                type: string
+                enum:
                 - start-alignment
                 - stop-alignment
                 - pause-alignment
                 - resume-alignment
-
-          - contentType: application/json
-            payload:
-              type: object
-              required:
-                - Action
-              properties:
-                Action:
-                  type: string
-                  enum:
-                    - start-alignment
-                    - stop-alignment
-                    - pause-alignment
-                    - resume-alignment
-                ManualMode:
-                  type: boolean
-                  description: Relevant for start-alignment only. If true, the alignment will be started in manual mode.
-                TargetDistance:
-                  type: integer
-                  description: Relevant for start-alignment only.
-                MoveRate:
-                  type: integer
-                  description: Relevant for start-alignment only.
-                EastDirection:
-                  type: boolean
-                  description: Relevant for start-alignment only.
-                StartFromCurrentPosition:
-                  type: boolean
-                  description: Relevant for start-alignment only.
-                AltDegrees:
-                  type: integer
-                  description: Relevant for start-alignment only.
-                AltMinutes:
-                  type: integer
-                  format: int32
-                  description: Relevant for start-alignment only.
-                AltSeconds:
-                  type: number
-                  format: double
-                  description: Relevant for start-alignment only.
-                AzDegrees:
-                  type: integer
-                  description: Relevant for start-alignment only.
-                AzMinutes:
-                  type: integer
-                  format: int32
-                  description: Relevant for start-alignment only.
-                AzSeconds:
-                  type: number
-                  format: double
-                  description: Relevant for start-alignment only.
-                AlignmentTolerance:
-                  type: number
-                  format: double
-                  description: Relevant for start-alignment only.
-                Filter:
-                  type: string
-                  description: Relevant for start-alignment only. The name of the filter to use.
-                ExposureTime:
-                  type: number
-                  format: double
-                  description: Relevant for start-alignment only.
-                Binning:
-                  type: integer
-                  format: int32
-                  description: Relevant for start-alignment only.
-                Gain:
-                  type: integer
-                  format: int32
-                  description: Relevant for start-alignment only.
-                Offset:
-                  type: integer
-                  format: int32
-                  description: Relevant for start-alignment only.
-                SearchRadius:
-                  type: number
-                  format: double
-                  description: Relevant for start-alignment only.
+              ManualMode:
+                type: boolean
+                description: Relevant for start-alignment only. If true, the alignment will be started in manual mode.
+              TargetDistance:
+                type: integer
+                description: Relevant for start-alignment only.
+              MoveRate:
+                type: integer
+                description: Relevant for start-alignment only.
+              EastDirection:
+                type: boolean
+                description: Relevant for start-alignment only.
+              StartFromCurrentPosition:
+                type: boolean
+                description: Relevant for start-alignment only.
+              AltDegrees:
+                type: integer
+                description: Relevant for start-alignment only.
+              AltMinutes:
+                type: integer
+                format: int32
+                description: Relevant for start-alignment only.
+              AltSeconds:
+                type: number
+                format: double
+                description: Relevant for start-alignment only.
+              AzDegrees:
+                type: integer
+                description: Relevant for start-alignment only.
+              AzMinutes:
+                type: integer
+                format: int32
+                description: Relevant for start-alignment only.
+              AzSeconds:
+                type: number
+                format: double
+                description: Relevant for start-alignment only.
+              AlignmentTolerance:
+                type: number
+                format: double
+                description: Relevant for start-alignment only.
+              Filter:
+                type: string
+                description: Relevant for start-alignment only. The name of the filter to use.
+              ExposureTime:
+                type: number
+                format: double
+                description: Relevant for start-alignment only.
+              Binning:
+                type: integer
+                format: int32
+                description: Relevant for start-alignment only.
+              Gain:
+                type: integer
+                format: int32
+                description: Relevant for start-alignment only.
+              Offset:
+                type: integer
+                format: int32
+                description: Relevant for start-alignment only.
+              SearchRadius:
+                type: number
+                format: double
+                description: Relevant for start-alignment only.
     subscribe:
       summary: Subscribe to TPPA WebSocket events
       operationId: onTPPAEvent
       message:
         oneOf:
-          - contentType: application/json
-            title: Alignment Error Response
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    AzimuthError:
-                      type: number
-                    AltitudeError:
-                      type: number
-                    TotalError:
-                      type: number
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-              required:
-                - Response
-                - Error
-                - StatusCode
-                - Success
-                - Type
-          - contentType: application/json
-            title: Process Confirmation Response
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: string
-                  enum:
-                    - "started procedure"
-                    - "stopped procedure"
-                    - "paused procedure"
-                    - "resumed procedure"
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-              required:
-                - Response
-                - Error
-                - StatusCode
-                - Success
-                - Type
-          - contentType: application/json
-            title: Progress Response
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: object
-                  properties:
-                    Status:
-                      type: string
-                      example: "Moving to next point"
-                    Progress:
-                      type: number
-                      format: double
-                      example: 0.75
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-              required:
-                - Response
-                - Error
-                - StatusCode
-                - Success
-                - Type
+        - contentType: application/json
+          title: Alignment Error Response
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  AzimuthError:
+                    type: number
+                  AltitudeError:
+                    type: number
+                  TotalError:
+                    type: number
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+            required:
+            - Response
+            - Error
+            - StatusCode
+            - Success
+            - Type
+        - contentType: application/json
+          title: Process Confirmation Response
+          payload:
+            type: object
+            properties:
+              Response:
+                type: string
+                enum:
+                - "started procedure"
+                - "stopped procedure"
+                - "paused procedure"
+                - "resumed procedure"
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+            required:
+            - Response
+            - Error
+            - StatusCode
+            - Success
+            - Type
+        - contentType: application/json
+          title: Progress Response
+          payload:
+            type: object
+            properties:
+              Response:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                    example: "Moving to next point"
+                  Progress:
+                    type: number
+                    format: double
+                    example: 0.75
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+            required:
+            - Response
+            - Error
+            - StatusCode
+            - Success
+            - Type
   /mount:
-    description: A websocket channel to move the mount axis manually.
-      You will need to resend the command to move the axis periodically about every second,
-      because the server will automatically stop the movement when it hasn't recieved a command for two seconds as a safety measure.
+    description: A websocket channel to move the mount axis manually. You will need to resend the command to move the axis periodically about every second, because the server will automatically stop the movement when it hasn't recieved a command for two seconds as a safety measure.
     publish:
       summary: Move mount axis
       message:
@@ -727,10 +728,10 @@ channels:
             direction:
               type: string
               enum:
-                - east
-                - west
-                - north
-                - south
+              - east
+              - west
+              - north
+              - south
             rate:
               type: number
               format: double
@@ -738,51 +739,49 @@ channels:
       summary: Subscribe to mount axis move events
       message:
         oneOf:
-          - contentType: application/json
-            title: Mount Axis Move Response
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: string
-                  enum:
-                    - Moving
-                    - Stopped Move
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 200
-                Success:
-                  type: boolean
-                  example: true
-                Type:
-                  type: string
-                  example: "Socket"
-          - contentType: application/json
-            title: Error
-            payload:
-              type: object
-              properties:
-                Response:
-                  type: string
-                  example: Some Error
-                Error:
-                  type: string
-                StatusCode:
-                  type: integer
-                  example: 400
-                Success:
-                  type: boolean
-                  example: false
-                Type:
-                  type: string
-                  example: "Socket"
+        - contentType: application/json
+          title: Mount Axis Move Response
+          payload:
+            type: object
+            properties:
+              Response:
+                type: string
+                enum:
+                - Moving
+                - Stopped Move
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 200
+              Success:
+                type: boolean
+                example: true
+              Type:
+                type: string
+                example: "Socket"
+        - contentType: application/json
+          title: Error
+          payload:
+            type: object
+            properties:
+              Response:
+                type: string
+                example: Some Error
+              Error:
+                type: string
+              StatusCode:
+                type: integer
+                example: 400
+              Success:
+                type: boolean
+                example: false
+              Type:
+                type: string
+                example: "Socket"
 
   /filterwheel:
-    description:
-      A websocket channel to interact with the networked filterwheel. To use this, make sure you connect the networked manual filterwheel, not the normal manual filterwheel.
-      This extends the manual filterwheel with network capabilities, so filter changes can be completed remotely.
+    description: A websocket channel to interact with the networked filterwheel. To use this, make sure you connect the networked manual filterwheel, not the normal manual filterwheel. This extends the manual filterwheel with network capabilities, so filter changes can be completed remotely.
     publish:
       description: Interact with the filterwheel. You may need get-target-filter if the client wasn't connected, when the filter change was issued.
       message:
@@ -790,26 +789,22 @@ channels:
         payload:
           type: string
           enum:
-            - get-target-filter
-            - filter-changed
+          - get-target-filter
+          - filter-changed
     subscribe:
-      description:
-        Subscribe to filter changes. When the filter changes, you will receive a message with the new filter name. If you request the target filter, but there isn't a filter change in progress, N/A will be returned.
-        Once the filter change is completed (either in NINA or via the websocket), Change Complete will be returned.
+      description: Subscribe to filter changes. When the filter changes, you will receive a message with the new filter name. If you request the target filter, but there isn't a filter change in progress, N/A will be returned. Once the filter change is completed (either in NINA or via the websocket), Change Complete will be returned.
       operationId: onFilterEvent
       message:
         contentType: application/text
         payload:
           type: string
           enum:
-            - <one of your filters>
-            - N/A
-            - Change Complete
+          - <one of your filters>
+          - N/A
+          - Change Complete
 
   /rotator:
-    description:
-      A websocket channel to interact with the networked rotator. To use this, make sure you connect the networked manual rotator, not the normal manual rotator.
-      This extends the manual rotator with network capabilities, so rotations can be completed remotely.
+    description: A websocket channel to interact with the networked rotator. To use this, make sure you connect the networked manual rotator, not the normal manual rotator. This extends the manual rotator with network capabilities, so rotations can be completed remotely.
     publish:
       description: Interact with the rotator. You may need get-target-position if the client wasn't connected, when the rotation was issued.
       message:
@@ -817,32 +812,30 @@ channels:
         payload:
           type: string
           enum:
-            - get-target-position
-            - rotation-completed
+          - get-target-position
+          - rotation-completed
     subscribe:
-      description:
-        Subscribe to rotation changes. When the rotation changes, you will receive a message containing relevant information, like target position and current position. If you request the target position, but there isn't a rotation in progress, N/A will be returned.
-        Once the rotation is completed (either in NINA or via the websocket), Rotation completed will be returned.
+      description: Subscribe to rotation changes. When the rotation changes, you will receive a message containing relevant information, like target position and current position. If you request the target position, but there isn't a rotation in progress, N/A will be returned. Once the rotation is completed (either in NINA or via the websocket), Rotation completed will be returned.
       operationId: onRotationEvent
       message:
         contentType: application/json
         payload:
           oneOf:
-            - type: object
-              properties:
-                Position:
-                  type: number
-                  format: double
-                TargetPosition:
-                  type: number
-                  format: double
-                Rotation:
-                  type: number
-                  format: double
-            - type: object
-              properties:
-                Message:
-                  type: string
-                  enum:
-                    - Rotation completed
-                    - N/A
+          - type: object
+            properties:
+              Position:
+                type: number
+                format: double
+              TargetPosition:
+                type: number
+                format: double
+              Rotation:
+                type: number
+                format: double
+          - type: object
+            properties:
+              Message:
+                type: string
+                enum:
+                - Rotation completed
+                - N/A

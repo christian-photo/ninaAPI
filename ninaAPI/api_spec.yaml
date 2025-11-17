@@ -6455,7 +6455,7 @@ paths:
       tags:
         - Livestack
       summary: Request Livestack status
-      description: Requests the current status of the Livestack, requires Livestack >= v1.0.1.7. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to request the livestack status.
+      description: Requests the current status of the Livestack, requires Livestack >= v1.0.1.7. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. Livestack status is tracked by the server and we can get always the last status reported by nina.plugin.livestack.
       responses:
         "200":
           description: Successful response
