@@ -83,7 +83,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
 
         private IAutoFocusVM autoFocusVM;
 
-        [Route(HttpVerbs.Post, "/auto-focus/start")]
+        [Route(HttpVerbs.Post, "/auto-focus")]
         public async Task StartAutoFocus()
         {
             if (!focuser.GetInfo().Connected)

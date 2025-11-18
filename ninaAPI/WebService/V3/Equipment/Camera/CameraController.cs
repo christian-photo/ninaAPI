@@ -24,13 +24,14 @@ using NINA.Core.Model.Equipment;
 using NINA.Image.Interfaces;
 using NINA.Core.Enum;
 using NINA.Profile.Interfaces;
-using System.Windows.Media.Imaging;
 using NINA.PlateSolving.Interfaces;
 using ninaAPI.WebService.V3.Service;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility.Http;
 using System.IO;
 using ninaAPI.WebService.V3.Model;
+using System.Windows.Media.Imaging;
+using NINA.Core.Utility;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {
@@ -209,7 +210,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
 
-        [Route(HttpVerbs.Post, "/capture/start")]
+        [Route(HttpVerbs.Post, "/capture")]
         public async Task CameraCapture([JsonData] CaptureConfig config)
         {
             CameraInfo info = cam.GetInfo();
@@ -257,7 +258,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Get, "/capture/{id}/get-image")]
+        [Route(HttpVerbs.Get, "/capture/{id}")]
         public async Task CameraCaptureImage(Guid id)
         {
             SensorType sensor = SensorType.Monochrome;
@@ -291,6 +292,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             }
 
             BitmapEncoder encoder = await ImageService.ProcessAndPrepareImage(capture.GetCapturePath(), capture.IsCaptureBayered, imageQuery, capture.BitDepth);
+
             using (MemoryStream memory = new MemoryStream())
             {
                 encoder.Save(memory);
@@ -298,7 +300,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             }
         }
 
-        [Route(HttpVerbs.Get, "/capture/{id}/statistics")]
+        [Route(HttpVerbs.Get, "/capture/{id}/analysis")]
         public async Task CameraCaptureStats(Guid id)
         {
             QueryParameter<RawConverterEnum> rawConverterParameter = new QueryParameter<RawConverterEnum>("raw-converter", RawConverterEnum.FREEIMAGE, false);
