@@ -29,6 +29,7 @@ channels:
                       enum:
                         - API-CAPTURE-FINISHED
                         - AUTOFOCUS-FINISHED
+                        - AUTOFOCUS-STARTING
                         - CAMERA-CONNECTED
                         - CAMERA-DISCONNECTED
                         - CAMERA-DOWNLOAD-TIMEOUT
@@ -149,6 +150,34 @@ channels:
                           type: number
                         TargetName:
                           type: string
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Autofocus point added
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      example: "AUTOFOCUS-POINT-ADDED"
+                    ImageStatistics:
+                      properties:
+                        Position:
+                          type: number
+                        HFR:
+                          type: number
                 Error:
                   type: string
                 StatusCode:
