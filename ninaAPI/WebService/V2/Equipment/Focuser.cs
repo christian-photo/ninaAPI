@@ -18,7 +18,9 @@ using NINA.Equipment.Equipment.MyFocuser;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Utility.AutoFocus;
 using ninaAPI.Utility;
+using OxyPlot;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -58,6 +60,20 @@ namespace ninaAPI.WebService.V2
         public async void UpdateEndAutoFocusRun(AutoFocusInfo info)
         {
             await WebSocketV2.SendAndAddEvent("AUTOFOCUS-FINISHED");
+        }
+
+        public async void AutoFocusRunStarting()
+        {
+            await WebSocketV2.SendAndAddEvent("AUTOFOCUS-STARTING");
+        }
+
+        public async void NewAutoFocusPoint(DataPoint dataPoint)
+        {
+            await WebSocketV2.SendAndAddEvent("AUTOFOCUS-POINT-ADDED", DateTime.Now, new Dictionary<string, object>()
+            {
+                ["HFR"] = dataPoint.Y,
+                ["Position"] = dataPoint.X,
+            });
         }
 
         public async void UpdateUserFocused(FocuserInfo info)

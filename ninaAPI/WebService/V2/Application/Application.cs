@@ -27,6 +27,7 @@ using NINA.WPF.Base.Interfaces.ViewModel;
 using System.Collections;
 using System.Windows.Forms;
 using NINA.Sequencer.SequenceItem.Utility;
+using ninaAPI.Properties;
 
 namespace ninaAPI.WebService.V2
 {
@@ -289,6 +290,28 @@ namespace ninaAPI.WebService.V2
                 logs.Reverse();
 
                 response.Response = logs;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/plugin/settings")]
+        public void GetPluginSettings()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                response.Response = new
+                {
+                    AccessControlHeaderEnabled = Settings.Default.UseAccessControlHeader,
+                    ShouldCreateThumbnails = Settings.Default.CreateThumbnails,
+                };
             }
             catch (Exception ex)
             {

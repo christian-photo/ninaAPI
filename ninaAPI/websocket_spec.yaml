@@ -29,6 +29,7 @@ channels:
                       enum:
                         - API-CAPTURE-FINISHED
                         - AUTOFOCUS-FINISHED
+                        - AUTOFOCUS-STARTING
                         - CAMERA-CONNECTED
                         - CAMERA-DISCONNECTED
                         - CAMERA-DOWNLOAD-TIMEOUT
@@ -75,6 +76,8 @@ channels:
                         - SAFETY-DISCONNECTED
                         - SEQUENCE-STARTING
                         - SEQUENCE-FINISHED
+                        - STACK-STATUS
+                        - STACK-UPDATED
                         - SWITCH-CONNECTED
                         - SWITCH-DISCONNECTED
                         - WEATHER-CONNECTED
@@ -147,6 +150,34 @@ channels:
                           type: number
                         TargetName:
                           type: string
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Autofocus point added
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      example: "AUTOFOCUS-POINT-ADDED"
+                    ImageStatistics:
+                      properties:
+                        Position:
+                          type: number
+                        HFR:
+                          type: number
                 Error:
                   type: string
                 StatusCode:
@@ -296,6 +327,36 @@ channels:
                     - Filter
                     - Target
                     - IsMonochrome
+                Error:
+                  type: string
+                StatusCode:
+                  type: integer
+                  example: 200
+                Success:
+                  type: boolean
+                  example: true
+                Type:
+                  type: string
+                  example: "Socket"
+          - contentType: application/json
+            title: Live stack updstateated (requires Livestack >= 1.0.1.7)
+            payload:
+              type: object
+              properties:
+                Response:
+                  type: object
+                  properties:
+                    Event:
+                      type: string
+                      example: STACK-STATUS
+                    Status:
+                      type: string
+                      enum:
+                        - running
+                        - stopped
+                  required:
+                    - Event
+                    - Status
                 Error:
                   type: string
                 StatusCode:
@@ -685,9 +746,7 @@ channels:
                 - Success
                 - Type
   /mount:
-    description: A websocket channel to move the mount axis manually.
-      You will need to resend the command to move the axis periodically about every second,
-      because the server will automatically stop the movement when it hasn't recieved a command for two seconds as a safety measure.
+    description: A websocket channel to move the mount axis manually. You will need to resend the command to move the axis periodically about every second, because the server will automatically stop the movement when it hasn't recieved a command for two seconds as a safety measure.
     publish:
       summary: Move mount axis
       message:
@@ -751,9 +810,7 @@ channels:
                   example: "Socket"
 
   /filterwheel:
-    description:
-      A websocket channel to interact with the networked filterwheel. To use this, make sure you connect the networked manual filterwheel, not the normal manual filterwheel.
-      This extends the manual filterwheel with network capabilities, so filter changes can be completed remotely.
+    description: A websocket channel to interact with the networked filterwheel. To use this, make sure you connect the networked manual filterwheel, not the normal manual filterwheel. This extends the manual filterwheel with network capabilities, so filter changes can be completed remotely.
     publish:
       description: Interact with the filterwheel. You may need get-target-filter if the client wasn't connected, when the filter change was issued.
       message:
@@ -764,9 +821,7 @@ channels:
             - get-target-filter
             - filter-changed
     subscribe:
-      description:
-        Subscribe to filter changes. When the filter changes, you will receive a message with the new filter name. If you request the target filter, but there isn't a filter change in progress, N/A will be returned.
-        Once the filter change is completed (either in NINA or via the websocket), Change Complete will be returned.
+      description: Subscribe to filter changes. When the filter changes, you will receive a message with the new filter name. If you request the target filter, but there isn't a filter change in progress, N/A will be returned. Once the filter change is completed (either in NINA or via the websocket), Change Complete will be returned.
       operationId: onFilterEvent
       message:
         contentType: application/text
@@ -778,9 +833,7 @@ channels:
             - Change Complete
 
   /rotator:
-    description:
-      A websocket channel to interact with the networked rotator. To use this, make sure you connect the networked manual rotator, not the normal manual rotator.
-      This extends the manual rotator with network capabilities, so rotations can be completed remotely.
+    description: A websocket channel to interact with the networked rotator. To use this, make sure you connect the networked manual rotator, not the normal manual rotator. This extends the manual rotator with network capabilities, so rotations can be completed remotely.
     publish:
       description: Interact with the rotator. You may need get-target-position if the client wasn't connected, when the rotation was issued.
       message:
@@ -791,9 +844,7 @@ channels:
             - get-target-position
             - rotation-completed
     subscribe:
-      description:
-        Subscribe to rotation changes. When the rotation changes, you will receive a message containing relevant information, like target position and current position. If you request the target position, but there isn't a rotation in progress, N/A will be returned.
-        Once the rotation is completed (either in NINA or via the websocket), Rotation completed will be returned.
+      description: Subscribe to rotation changes. When the rotation changes, you will receive a message containing relevant information, like target position and current position. If you request the target position, but there isn't a rotation in progress, N/A will be returned. Once the rotation is completed (either in NINA or via the websocket), Rotation completed will be returned.
       operationId: onRotationEvent
       message:
         contentType: application/json

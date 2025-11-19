@@ -1,6 +1,19 @@
 # Changelog
 
-The changes for each individual (beta) release can be seen [here](https://github.com/christian-photo/ninaAPI/releases). However this Changelog will be mostly complete.
+The changes for each individual (beta) release can be seen in each [release](https://github.com/christian-photo/ninaAPI/releases). This changelog will only cover the fully released versions.
+
+## 2.2.12.0
+
+- Minimum application version was increased to NINA 3.2!
+- Added the field `TrackingMode` to the `mount/info` endpoint
+- Fixes an issue where the `image-history` endpoint would return the first, now the last image when all parameters were omitted
+- Added `AUTOFOCUS-STARTING` and `AUTOFOCUS-POINT-ADDED` events to the websocket
+- Added `plugin/settings` to get the plugin settings
+- New `livestack/status` endpoint and `STACK-STATUS` event in the websocket (thanks @rbarbera)
+
+## 2.2.11.1
+
+- Fixed a bug where NINA would crash if another plugin also subscribed to the Meridian Flip events
 
 ## 2.2.11.0
 
