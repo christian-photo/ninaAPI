@@ -93,7 +93,7 @@ namespace ninaAPI.WebService.V2
 
         public async Task OnStatusReceived(IMessage message)
         {
-            LivestackStatus = message.Content.Status;
+            LivestackStatus = message.Content.ToString();
             await WebSocketV2.SendAndAddEvent("STACK-STATUS", new Dictionary<string, object>()
             {
                 { "Status", LivestackStatus },
