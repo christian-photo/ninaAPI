@@ -6466,7 +6466,9 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: Live stack status requested
+                    enum:
+                      - running
+                      - stopped
                   Error:
                     type: string
                     example: ""
@@ -8469,6 +8471,15 @@ components:
         Response:
           type: object
           properties:
+            TrackingMode:
+              type: string
+              enum:
+                - Siderial
+                - Lunar
+                - Solar
+                - King
+                - Custom
+                - Stopped
             SiderealTime:
               type: number
             RightAscension:
