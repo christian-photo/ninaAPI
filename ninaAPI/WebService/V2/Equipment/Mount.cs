@@ -32,6 +32,23 @@ using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
+    public class MountInfo : TelescopeInfo
+    {
+        public TrackingMode TrackingMode { get; set; }
+        public MountInfo(ITelescopeMediator t)
+        {
+            var info = t.GetInfo();
+            var props = info.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            var thisType = typeof(MountInfo);
+            foreach (var prop in props)
+            {
+                thisType.GetProperty(prop.Name).SetValue(this, prop.GetValue(info));
+            }
+
+            TrackingMode = (t.GetDevice() as ITelescope).TrackingMode;
+        }
+    }
+
     public class MountWatcher : INinaWatcher, ITelescopeConsumer
     {
         private readonly Func<object, EventArgs, Task> MountConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("MOUNT-CONNECTED");
@@ -87,7 +104,7 @@ namespace ninaAPI.WebService.V2
             try
             {
                 ITelescopeMediator mount = AdvancedAPI.Controls.Mount;
-                response.Response = mount.GetInfo();
+                response.Response = new MountInfo(mount);
             }
             catch (Exception ex)
             {

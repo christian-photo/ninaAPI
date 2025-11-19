@@ -6450,6 +6450,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /livestack/status:
+    get:
+      tags:
+        - Livestack
+      summary: Request Livestack status
+      description: Requests the current status of the Livestack, requires Livestack >= v1.0.1.7. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. Livestack status is tracked by the server and we can get always the last status reported by nina.plugin.livestack.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    enum:
+                      - running
+                      - stopped
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /livestack/start:
     get:
       tags:
@@ -8433,6 +8471,15 @@ components:
         Response:
           type: object
           properties:
+            TrackingMode:
+              type: string
+              enum:
+                - Siderial
+                - Lunar
+                - Solar
+                - King
+                - Custom
+                - Stopped
             SiderealTime:
               type: number
             RightAscension:

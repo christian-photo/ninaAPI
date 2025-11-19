@@ -72,8 +72,35 @@ namespace ninaAPI.WebService.V2
     public class LiveStackWatcher : INinaWatcher, ISubscriber
     {
         public static LiveStackHistory LiveStackHistory { get; private set; }
+        public static string LivestackStatus { get; private set; } = "stopped";
 
         public async Task OnMessageReceived(IMessage message)
+        {
+            switch (message.Topic)
+            {
+                case "Livestack_LivestackDockable_StackUpdateBroadcast":
+                    await OnStackUpdateReceived(message);
+                    break;
+
+                case "Livestack_LivestackDockable_StatusBroadcast":
+                    await OnStatusReceived(message);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        public async Task OnStatusReceived(IMessage message)
+        {
+            LivestackStatus = message.Content.ToString();
+            await WebSocketV2.SendAndAddEvent("STACK-STATUS", new Dictionary<string, object>()
+            {
+                { "Status", LivestackStatus },
+            });
+        }
+
+         public async Task OnStackUpdateReceived(IMessage message)
         {
             string filter = message.Content.GetType().GetProperty("Filter").GetValue(message.Content).ToString();
             string target = message.Content.GetType().GetProperty("Target").GetValue(message.Content).ToString();
@@ -114,6 +141,7 @@ namespace ninaAPI.WebService.V2
 
         public void StartWatchers()
         {
+            AdvancedAPI.Controls.MessageBroker.Subscribe("Livestack_LivestackDockable_StatusBroadcast", this);
             AdvancedAPI.Controls.MessageBroker.Subscribe("Livestack_LivestackDockable_StackUpdateBroadcast", this);
             LiveStackHistory = new LiveStackHistory();
         }
@@ -121,6 +149,7 @@ namespace ninaAPI.WebService.V2
         public void StopWatchers()
         {
             AdvancedAPI.Controls.MessageBroker.Unsubscribe("Livestack_LivestackDockable_StackUpdateBroadcast", this);
+            AdvancedAPI.Controls.MessageBroker.Unsubscribe("Livestack_LivestackDockable_StatusBroadcast", this);
             LiveStackHistory.Dispose();
         }
     }
@@ -150,6 +179,16 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
+        [Route(HttpVerbs.Get, "/livestack/status")]
+        public void LiveStackStatus()
+        {
+            HttpResponse response = new HttpResponse();
+
+            response.Response = LiveStackWatcher.LivestackStatus;
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/livestack/stop")]
         public void LiveStackStop()
         {
