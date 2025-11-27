@@ -46,7 +46,7 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
         {
             var info = filterWheel.GetInfo();
 
-            await responseHandler.SendObject(HttpContext, FilterWheelInfoResponse.FromInfo(info, profile.ActiveProfile));
+            await responseHandler.SendObject(HttpContext, new FilterWheelInfoResponse(info, profile.ActiveProfile));
         }
 
         [Route(HttpVerbs.Get, "/filter")]

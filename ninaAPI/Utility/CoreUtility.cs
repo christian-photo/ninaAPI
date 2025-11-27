@@ -61,6 +61,21 @@ namespace ninaAPI.Utility
             return targets;
         }
 
+        public static void CopyProperties(object source, object target)
+        {
+            var sourceType = source.GetType();
+            var targetType = target.GetType();
+
+            foreach (var property in sourceType.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            {
+                var targetProperty = targetType.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
+                if (targetProperty != null && targetProperty.CanWrite && targetProperty.PropertyType == property.PropertyType)
+                {
+                    targetProperty.SetValue(target, property.GetValue(source));
+                }
+            }
+        }
+
         private static ApplicationStatus Status;
         public static Progress<ApplicationStatus> GetStatus(this IApplicationStatusMediator mediator)
         {
