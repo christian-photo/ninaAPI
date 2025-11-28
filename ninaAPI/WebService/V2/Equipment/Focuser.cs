@@ -118,8 +118,11 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Focuser not connected", 409));
                 }
-                focuser.MoveFocuser(position, new CancellationTokenSource().Token);
-                response.Response = "Move started";
+                else
+                {
+                    focuser.MoveFocuser(position, new CancellationTokenSource().Token);
+                    response.Response = "Move started";
+                }
             }
             catch (Exception ex)
             {

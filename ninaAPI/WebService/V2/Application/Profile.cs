@@ -9,20 +9,20 @@
 
 #endregion "copyright"
 
-using EmbedIO.WebApi;
-using EmbedIO;
 using System;
-using EmbedIO.Routing;
-using ninaAPI.Utility;
-using NINA.Core.Utility;
-using NINA.Profile.Interfaces;
-using NINA.Core.Enum;
-using System.Reflection;
 using System.Collections.Generic;
-using NINA.Profile;
-using System.Linq;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Reflection;
+using EmbedIO;
+using EmbedIO.Routing;
+using EmbedIO.WebApi;
+using NINA.Core.Enum;
 using NINA.Core.Model;
+using NINA.Core.Utility;
+using NINA.Profile;
+using NINA.Profile.Interfaces;
+using ninaAPI.Utility;
 
 namespace ninaAPI.WebService.V2
 {

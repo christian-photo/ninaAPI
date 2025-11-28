@@ -9,25 +9,24 @@
 
 #endregion "copyright"
 
-using EmbedIO.WebApi;
-using EmbedIO;
 using System;
-using EmbedIO.Routing;
-using System.Drawing;
-using ninaAPI.Utility;
-using NINA.Core.Utility;
-using System.Windows.Media.Imaging;
-using NINA.Image.ImageAnalysis;
-using System.IO;
-using System.Threading.Tasks;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Linq;
-using NINA.WPF.Base.Interfaces.ViewModel;
 using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using NINA.Sequencer.SequenceItem.Utility;
+using System.Windows.Media.Imaging;
+using EmbedIO;
+using EmbedIO.Routing;
+using EmbedIO.WebApi;
+using NINA.Core.Utility;
+using NINA.Image.ImageAnalysis;
+using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.Properties;
+using ninaAPI.Utility;
 
 namespace ninaAPI.WebService.V2
 {
