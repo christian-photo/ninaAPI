@@ -10,6 +10,7 @@
   <!-- When building for linux  -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <Page Include="**\*.xaml" />
+    <!-- When building for linux, the correct NINA assemblies are required and these arent the official ones-->
     <ProjectReference Include="..\..\..\NINA.Astrometry\NINA.Astrometry.csproj" />
     <ProjectReference Include="..\..\..\NINA.Core\NINA.Core.csproj" />
     <ProjectReference Include="..\..\..\NINA.Equipment\NINA.Equipment.csproj" />
