@@ -2,6 +2,12 @@
 
 The changes for each individual (beta) release can be seen in each [release](https://github.com/christian-photo/ninaAPI/releases). This changelog will only cover the fully released versions.
 
+## 2.2.12.1
+
+- When no prepared image is available, the endpoint now returns a 404 error
+- The autofocus endpont `equipment/focuser/auto-focus` now correctly opens the autofocus window
+- Fixed an issue where the `profile/change-value` endpoint would not work with indexed properties
+
 ## 2.2.12.0
 
 - Minimum application version was increased to NINA 3.2!

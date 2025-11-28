@@ -270,6 +270,13 @@ namespace ninaAPI.WebService.V2
 
                 IRenderedImage renderedImage = ImageWatcher.PreparedImage;
 
+                if (renderedImage is null)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("No image", 404));
+                    HttpContext.WriteToResponse(response);
+                    return;
+                }
+
                 if (debayer || (autoPrepare && renderedImage.RawImageData.Properties.IsBayered))
                 {
                     try

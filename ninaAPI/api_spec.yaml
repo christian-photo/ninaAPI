@@ -5322,7 +5322,7 @@ paths:
                 type: array
                 format: binary
         "400":
-          description: Invalid image index / invalid bayer pattern / image is not a FITS file
+          description: Invalid bayer pattern
           content:
             application/json:
               schema:
@@ -5337,6 +5337,28 @@ paths:
                   StatusCode:
                     type: integer
                     example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "404":
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: No image
+                  StatusCode:
+                    type: integer
+                    example: 404
                   Success:
                     type: boolean
                     example: false

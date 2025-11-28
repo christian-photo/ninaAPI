@@ -13,6 +13,7 @@ using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using Newtonsoft.Json;
+using NINA.Core.Locale;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyFocuser;
 using NINA.Equipment.Interfaces.Mediator;
@@ -152,11 +153,20 @@ namespace ninaAPI.WebService.V2
                     AutoFocusToken?.Cancel();
                     AutoFocusToken = new CancellationTokenSource();
 
-                    AdvancedAPI.Controls.AutoFocusFactory.Create().StartAutoFocus(
+                    var service = AdvancedAPI.Controls.WindowFactory.Create();
+
+                    var autofocus = AdvancedAPI.Controls.AutoFocusFactory.Create();
+                    service.Show(autofocus, Loc.Instance["LblAutoFocus"], System.Windows.ResizeMode.CanResize, System.Windows.WindowStyle.ToolWindow);
+
+                    autofocus.StartAutoFocus(
                         AdvancedAPI.Controls.FilterWheel.GetInfo().SelectedFilter,
                         AutoFocusToken.Token,
                         AdvancedAPI.Controls.StatusMediator.GetStatus()
-                    );
+                    ).ContinueWith(result =>
+                    {
+                        AdvancedAPI.Controls.ImageHistory.AppendAutoFocusPoint(result.Result);
+                        service.DelayedClose(TimeSpan.FromSeconds(10));
+                    });
                     response.Response = "Autofocus started";
                 }
             }
