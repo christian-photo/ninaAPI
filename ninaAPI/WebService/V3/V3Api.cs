@@ -59,6 +59,7 @@ namespace ninaAPI.WebService.V3
                 new FilterWheelWatcher(eventHistory, AdvancedAPI.Controls.FilterWheel),
                 new FlatWatcher(eventHistory, AdvancedAPI.Controls.FlatDevice),
                 new GuiderWatcher(eventHistory, AdvancedAPI.Controls.Guider),
+                new MountWatcher(eventHistory, AdvancedAPI.Controls.Mount),
                 new ProcessWatcher(eventHistory),
             ];
 

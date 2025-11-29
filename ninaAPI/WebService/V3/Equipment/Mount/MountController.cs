@@ -76,6 +76,8 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             this.responseHandler = responseHandler;
         }
 
+        // TODO: Still need to port over the manual mount move socket
+
         [Route(HttpVerbs.Get, "/")]
         public async Task MountInfo()
         {
