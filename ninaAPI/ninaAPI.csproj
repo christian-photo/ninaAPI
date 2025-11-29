@@ -1,12 +1,67 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFrameworks>net8.0-windows</TargetFrameworks>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
+  <!-- When building for linux  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <Page Include="**\*.xaml" />
+    <!-- When building for linux, the correct NINA assemblies are required and these arent the official ones-->
+    <ProjectReference Include="..\..\..\NINA.Astrometry\NINA.Astrometry.csproj" />
+    <ProjectReference Include="..\..\..\NINA.Core\NINA.Core.csproj" />
+    <ProjectReference Include="..\..\..\NINA.Equipment\NINA.Equipment.csproj" />
+    <ProjectReference Include="..\..\..\NINA.Image\NINA.Image.csproj" />
+    <ProjectReference Include="..\..\..\NINA.Platesolving\NINA.PlateSolving.csproj" />
+    <ProjectReference Include="..\..\..\NINA.Plugin\NINA.Plugin.csproj" />
+    <ProjectReference Include="..\..\..\NINA.Profile\NINA.Profile.csproj" />
+    <ProjectReference Include="..\..\..\NINA.Sequencer\NINA.Sequencer.csproj" />
+    <ProjectReference Include="..\..\..\NINA.WPF.Base\NINA.WPF.Base.csproj" />
+    <ProjectReference Include="..\..\..\System.Windows.Compat\System.Windows.Compat.csproj" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.346202">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="EmbedIO" Version="3.5.2" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
+  </ItemGroup>
+
+  <!-- When building for windows -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <Reference Include="ReachFramework" />
+    <Reference Update="System">
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net" />
+    <Reference Include="System.Printing" />
+    <Reference Include="System.Windows" />
+
+    <!-- Services -->
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+
+    <!-- PackageReferences -->
+    <PackageReference Include="NINA.Astrometry" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.Core" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.CustomControlLibrary" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.Equipment" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.Image" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.MGEN" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.PlateSolving" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.Profile" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.Sequencer" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.WPF.Base" Version="3.2.0.9001" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.1" />
+
+    <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
+    <PackageReference Include="NINA.Plugin" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.WpfToolkit" Version="3.5.3" />
+    <PackageReference Include="System.Windows.Interactivity.WPF" Version="2.0.20525" />
+  </ItemGroup>
+
+  <!-- Always active -->
   <ItemGroup>
     <Compile Remove="manifests\**" />
     <Compile Remove="node_modules\**" />
@@ -20,69 +75,39 @@
     <Page Remove="manifests\**" />
     <Page Remove="node_modules\**" />
     <Page Remove="packages\**" />
-  </ItemGroup>
-  <ItemGroup>
+
     <None Remove="CreateManifest.ps1" />
     <None Remove="gather.js" />
     <None Remove="manifest.schema.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="ReachFramework" />
-    <Reference Update="System">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net" />
-    <Reference Include="System.Printing" />
-    <Reference Include="System.Windows" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="NINA.Astrometry" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.Core" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.CustomControlLibrary" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.Equipment" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.Image" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.MGEN" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.PlateSolving" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.Profile" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.Sequencer" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.WPF.Base" Version="3.2.0.9001" />
+
+    <PackageReference Include="EmbedIO" Version="3.5.2" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.346202">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
-    <PackageReference Include="EmbedIO" Version="3.5.2" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
-    <PackageReference Include="NINA.Plugin" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.WpfToolkit" Version="3.5.3" />
-    <PackageReference Include="System.Windows.Interactivity.WPF" Version="2.0.20525" />
-  </ItemGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;CA1416</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn>1701;1702;CA1416</NoWarn>
-  </PropertyGroup>
-  <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
+
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <NoWarn>1701;1702;CA1416</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+      <NoWarn>1701;1702;CA1416</NoWarn>
+    </PropertyGroup>
   </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if not exist &quot;%25localappdata%25\NINA\Plugins&quot; (&#xD;&#xA;echo &quot;Creating $(PlatformName) Plugins folder&quot;&#xD;&#xA;mkdir  &quot;%25localappdata%25\NINA\Plugins&quot;&#xD;&#xA;)&#xD;&#xA;if not exist &quot;%25localappdata%25\NINA\Plugin\Advanced API&quot; (&#xD;&#xA;echo &quot;Creating $(PlatformName) Plugins Advanced API folder&quot;&#xD;&#xA;mkdir  &quot;%25localappdata%25\NINA\Plugins\3.0.0\Advanced API&quot;&#xD;&#xA;)&#xD;&#xA;echo &quot;Copying $(PlatformName) $(TargetFileName)&quot;&#xD;&#xA;xcopy &quot;$(TargetPath)&quot; &quot;%25localappdata%25\NINA\Plugins\3.0.0\Advanced API&quot; /h/i/c/k/e/r/y" />
+    <Exec Command="if not exist &quot;%25localappdata%25\NINA\Plugins&quot; mkdir &quot;%25localappdata%25\NINA\Plugins&quot;" />
+    <Exec Command="if not exist &quot;%25localappdata%25\NINA\Plugins\3.0.0\Advanced API&quot; mkdir &quot;%25localappdata%25\NINA\Plugins\3.0.0\Advanced API&quot;" />
+    <Exec Command="xcopy &quot;$(TargetPath)&quot; &quot;%25localappdata%25\NINA\Plugins\3.0.0\Advanced API&quot; /h/i/c/k/e/r/y" />
   </Target>
 </Project>

@@ -9,46 +9,44 @@
 
 #endregion "copyright"
 
-using EmbedIO.WebApi;
-using EmbedIO;
 using System;
-using EmbedIO.Routing;
-using ninaAPI.Utility;
-using NINA.Core.Utility;
-using NINA.Sequencer.Interfaces.Mediator;
-using System.Collections.Generic;
-using NINA.Sequencer.Container;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Windows;
+using EmbedIO;
+using EmbedIO.Routing;
+using EmbedIO.WebApi;
+using NINA.Astrometry;
+using NINA.Core.Locale;
+using NINA.Core.Utility;
 using NINA.Profile.Interfaces;
-using NINA.Sequencer.Trigger.Autofocus;
+using NINA.Sequencer;
 using NINA.Sequencer.Conditions;
-using NINA.Sequencer.SequenceItem.Utility;
-using NINA.Sequencer.Trigger.Guider;
-using NINA.Sequencer.Trigger.MeridianFlip;
-using NINA.Sequencer.Trigger.Platesolving;
+using NINA.Sequencer.Container;
+using NINA.Sequencer.Interfaces.Mediator;
+using NINA.Sequencer.Mediator;
+using NINA.Sequencer.SequenceItem;
 using NINA.Sequencer.SequenceItem.Camera;
-using NINA.Sequencer.SequenceItem.Imaging;
 using NINA.Sequencer.SequenceItem.Dome;
 using NINA.Sequencer.SequenceItem.FilterWheel;
 using NINA.Sequencer.SequenceItem.Focuser;
 using NINA.Sequencer.SequenceItem.Guider;
+using NINA.Sequencer.SequenceItem.Imaging;
 using NINA.Sequencer.SequenceItem.Platesolving;
 using NINA.Sequencer.SequenceItem.Switch;
 using NINA.Sequencer.SequenceItem.Telescope;
-using System.IO;
-using NINA.Astrometry;
-using System.Reflection;
-using System.Linq;
-using NINA.Sequencer.Trigger;
-using NINA.Sequencer.SequenceItem;
-using NINA.ViewModel.Sequencer;
-using System.Windows;
-using System.Threading.Tasks;
+using NINA.Sequencer.SequenceItem.Utility;
 using NINA.Sequencer.Serialization;
-using NINA.Sequencer.Mediator;
-using NINA.Sequencer;
-using NINA.Core.Enum;
-using NINA.Core.Locale;
+using NINA.Sequencer.Trigger;
+using NINA.Sequencer.Trigger.Autofocus;
+using NINA.Sequencer.Trigger.Guider;
+using NINA.Sequencer.Trigger.MeridianFlip;
+using NINA.Sequencer.Trigger.Platesolving;
+using ninaAPI.Utility;
 
 namespace ninaAPI.WebService.V2
 {
@@ -587,6 +585,7 @@ namespace ninaAPI.WebService.V2
                     {
                         it.Add("Text", i21.Text);
                     }
+#if WINDOWS
                     else if (item is NINA.Sequencer.SequenceItem.Utility.MessageBox i22)
                     {
                         it.Add("Text", i22.Text);
@@ -595,6 +594,7 @@ namespace ninaAPI.WebService.V2
                     {
                         it.Add("Script", i23.Script);
                     }
+#endif
                     else if (item is SaveSequence i24)
                     {
                         it.Add("FilePath", i24.FilePath);

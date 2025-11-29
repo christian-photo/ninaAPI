@@ -9,30 +9,26 @@
 
 #endregion "copyright"
 
-using EmbedIO.WebApi;
-using EmbedIO;
 using System;
-using EmbedIO.Routing;
-using ninaAPI.Utility;
-using NINA.Core.Utility;
-using System.Threading.Tasks;
-using System.Drawing;
-using NINA.Profile.Interfaces;
-using NINA.Image.Interfaces;
-using NINA.Image.FileFormat.FITS;
-using NINA.Core.Enum;
 using System.Collections.Generic;
-using NINA.WPF.Base.Interfaces.Mediator;
-using System.Windows.Media.Imaging;
+using System.Drawing;
 using System.IO;
-using System.Threading;
 using System.Linq;
 using System.Reflection;
-using NINA.Profile;
-using NINA.WPF.Base.Model;
-using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
+using EmbedIO;
+using EmbedIO.Routing;
+using EmbedIO.WebApi;
+using NINA.Core.Enum;
+using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility.Http;
+using NINA.Image.FileFormat.FITS;
+using NINA.Image.Interfaces;
+using NINA.Profile.Interfaces;
+using NINA.WPF.Base.Interfaces.Mediator;
+using ninaAPI.Utility;
 
 namespace ninaAPI.WebService.V2
 {
@@ -270,6 +266,13 @@ namespace ninaAPI.WebService.V2
                 }
 
                 IRenderedImage renderedImage = ImageWatcher.PreparedImage;
+
+                if (renderedImage is null)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("No image", 404));
+                    HttpContext.WriteToResponse(response);
+                    return;
+                }
 
                 if (debayer || (autoPrepare && renderedImage.RawImageData.Properties.IsBayered))
                 {

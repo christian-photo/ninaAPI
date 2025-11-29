@@ -34,6 +34,17 @@ The event websocket now supports channels, which can be subscribed to per client
 - Endpoints like `image-history` now support pagination
 - It is now possible to work with multiple captures, not just the last one
 
+## 2.2.12.1
+
+- When no prepared image is available, the endpoint now returns a 404 error
+- The autofocus endpont `equipment/focuser/auto-focus` now correctly opens the autofocus window
+- The endpoint `profile/change-value` now also works with indexed properties
+- Fixed an issue where the following endpoints would execute the command even though the validation had failed:
+  - `/equipment/focuser/move`
+  - `/equipment/switch/set`
+  - `/equipment/rotator/move`
+  - `/equipment/rotator/move-mechanical`
+
 ## 2.2.12.0
 
 - Minimum application version was increased to NINA 3.2!
