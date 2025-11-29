@@ -26,6 +26,7 @@ using ninaAPI.WebService.V3.Equipment.Focuser;
 using ninaAPI.WebService.V3.Equipment.Guider;
 using ninaAPI.WebService.V3.Equipment.Mount;
 using ninaAPI.WebService.V3.Equipment.Rotator;
+using ninaAPI.WebService.V3.Equipment.Safety;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3
@@ -43,6 +44,8 @@ namespace ninaAPI.WebService.V3
         private readonly GuiderController guiderController;
         private readonly MountController mountController;
         private readonly RotatorController rotatorController;
+        private readonly SafetyController safetyController;
+        private readonly ConnectController connectionController;
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
 
@@ -63,6 +66,7 @@ namespace ninaAPI.WebService.V3
                 new GuiderWatcher(eventHistory, AdvancedAPI.Controls.Guider),
                 new MountWatcher(eventHistory, AdvancedAPI.Controls.Mount),
                 new RotatorWatcher(eventHistory, AdvancedAPI.Controls.Rotator),
+                new SafetyWatcher(eventHistory, AdvancedAPI.Controls.SafetyMonitor),
                 new ProcessWatcher(eventHistory),
             ];
 
@@ -167,6 +171,26 @@ namespace ninaAPI.WebService.V3
                 responseHandler
             );
 
+            safetyController = new SafetyController(
+                AdvancedAPI.Controls.SafetyMonitor,
+                responseHandler
+            );
+
+            connectionController = new ConnectController(
+                AdvancedAPI.Controls.Camera,
+                AdvancedAPI.Controls.Dome,
+                AdvancedAPI.Controls.FilterWheel,
+                AdvancedAPI.Controls.FlatDevice,
+                AdvancedAPI.Controls.Focuser,
+                AdvancedAPI.Controls.Guider,
+                AdvancedAPI.Controls.Mount,
+                AdvancedAPI.Controls.Rotator,
+                AdvancedAPI.Controls.SafetyMonitor,
+                AdvancedAPI.Controls.Switch,
+                AdvancedAPI.Controls.Weather,
+                responseHandler
+            );
+
             controller = new ControllerV3(responseHandler, processMediator);
         }
 
@@ -191,6 +215,8 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.GuiderUrlName}", m => m.WithController(() => guiderController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.MountUrlName}", m => m.WithController(() => mountController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.RotatorUrlName}", m => m.WithController(() => rotatorController))
+                .WithWebApi($"/v3/api/equipment/{EquipmentConstants.SafetyMonitorUrlName}", m => m.WithController(() => safetyController))
+                .WithWebApi("/v3/api/equipment", m => m.WithController(() => connectionController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 

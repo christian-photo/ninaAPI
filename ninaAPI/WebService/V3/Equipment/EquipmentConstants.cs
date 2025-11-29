@@ -22,7 +22,7 @@ namespace ninaAPI.WebService.V3.Equipment
         public const string GuiderUrlName = "guider";
         public const string MountUrlName = "mount";
         public const string RotatorUrlName = "rotator";
-        public const string SafetyMonitorUrlName = "safetymonitor";
+        public const string SafetyMonitorUrlName = "safety";
         public const string SwitchUrlName = "switch";
         public const string WeatherUrlName = "weather";
     }

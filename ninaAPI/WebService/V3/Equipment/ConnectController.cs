@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using NINA.Equipment.Equipment;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
@@ -80,7 +81,7 @@ namespace ninaAPI.WebService.V3.Equipment
         }
 
         [Route(HttpVerbs.Get, "/{device}/list-devices")]
-        public async Task ListDevices(Device device)
+        public async Task ListDevices(string device)
         {
             var chooser = GetDeviceChooserVM(device);
 
@@ -90,7 +91,7 @@ namespace ninaAPI.WebService.V3.Equipment
         }
 
         [Route(HttpVerbs.Post, "/{device}/connect")]
-        public async Task DeviceConnect(Device device)
+        public async Task DeviceConnect(string device)
         {
             var chooser = GetDeviceChooserVM(device);
 
@@ -110,8 +111,8 @@ namespace ninaAPI.WebService.V3.Equipment
             }
         }
 
-        [Route(HttpVerbs.Get, "/equipment/{device}/disconnect")]
-        public async Task DeviceDisconnect(Device device)
+        [Route(HttpVerbs.Post, "/{device}/disconnect")]
+        public async Task DeviceDisconnect(string device)
         {
             var chooser = GetDeviceChooserVM(device);
 
@@ -125,8 +126,8 @@ namespace ninaAPI.WebService.V3.Equipment
             await responseHandler.SendObject(HttpContext, new StringResponse($"{chooser.SelectedDevice.DisplayName} disconnected"));
         }
 
-        [Route(HttpVerbs.Get, "/equipment/{device}/rescan")]
-        public async Task DeviceRescan(Device device)
+        [Route(HttpVerbs.Get, "/{device}/rescan")]
+        public async Task DeviceRescan(string device)
         {
             var chooser = GetDeviceChooserVM(device);
 
@@ -135,41 +136,86 @@ namespace ninaAPI.WebService.V3.Equipment
             await ListDevices(device);
         }
 
-        private IDeviceChooserVM GetDeviceChooserVM(Device device)
+        [Route(HttpVerbs.Post, "/{device}/action")]
+        public async Task DeviceAction(string device, [JsonData] ActionConfig config)
+        {
+            var deviceobj = GetDevice(device);
+
+            if (!deviceobj.SupportedActions.Contains(config.Action))
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Action not supported");
+            }
+            string result = deviceobj.Action(config.Action, config.Parameters);
+
+            await responseHandler.SendObject(HttpContext, new StringResponse(string.IsNullOrEmpty(result) ? "Action executed" : result));
+        }
+
+        private IDevice GetDevice(string device)
         {
             switch (device)
             {
-                case Device.Camera:
+                case EquipmentConstants.CameraUrlName:
+                    return camera.GetDevice();
+                case EquipmentConstants.DomeUrlName:
+                    return dome.GetDevice();
+                case EquipmentConstants.FilterWheelUrlName:
+                    return filterWheel.GetDevice();
+                case EquipmentConstants.FlatDeviceUrlName:
+                    return flatDevice.GetDevice();
+                case EquipmentConstants.FocuserUrlName:
+                    return focuser.GetDevice();
+                case EquipmentConstants.GuiderUrlName:
+                    return guider.GetDevice();
+                case EquipmentConstants.MountUrlName:
+                    return mount.GetDevice();
+                case EquipmentConstants.RotatorUrlName:
+                    return rotator.GetDevice();
+                case EquipmentConstants.SafetyMonitorUrlName:
+                    return safetyMonitor.GetDevice();
+                case EquipmentConstants.SwitchUrlName:
+                    return switchMediator.GetDevice();
+                case EquipmentConstants.WeatherUrlName:
+                    return weatherData.GetDevice();
+                default:
+                    throw new HttpException(HttpStatusCode.NotFound, "Device not found");
+            }
+        }
+
+        private IDeviceChooserVM GetDeviceChooserVM(string device)
+        {
+            switch (device)
+            {
+                case EquipmentConstants.CameraUrlName:
                     var cam = (CameraVM)typeof(CameraMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(camera);
                     return cam.DeviceChooserVM;
-                case Device.Dome:
+                case EquipmentConstants.DomeUrlName:
                     var domeVM = (DomeVM)typeof(DomeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(dome);
                     return domeVM.DeviceChooserVM;
-                case Device.Filterwheel:
+                case EquipmentConstants.FilterWheelUrlName:
                     var fw = (FilterWheelVM)typeof(FilterWheelMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(filterWheel);
                     return fw.DeviceChooserVM;
-                case Device.FlatDevice:
+                case EquipmentConstants.FlatDeviceUrlName:
                     var fd = (FlatDeviceVM)typeof(FlatDeviceMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(flatDevice);
                     return fd.DeviceChooserVM;
-                case Device.Focuser:
+                case EquipmentConstants.FocuserUrlName:
                     var focuserVM = (FocuserVM)typeof(FocuserMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(focuser);
                     return focuserVM.DeviceChooserVM;
-                case Device.Guider:
+                case EquipmentConstants.GuiderUrlName:
                     var guiderVM = (GuiderVM)typeof(GuiderMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(guider);
                     return guiderVM.DeviceChooserVM;
-                case Device.Mount:
+                case EquipmentConstants.MountUrlName:
                     var mountVM = (TelescopeVM)typeof(TelescopeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(mount);
                     return mountVM.DeviceChooserVM;
-                case Device.Rotator:
+                case EquipmentConstants.RotatorUrlName:
                     var rotatorVM = (RotatorVM)typeof(RotatorMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(rotator);
                     return rotatorVM.DeviceChooserVM;
-                case Device.Safetymonitor:
+                case EquipmentConstants.SafetyMonitorUrlName:
                     var sf = (SafetyMonitorVM)typeof(SafetyMonitorMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(safetyMonitor);
                     return sf.DeviceChooserVM;
-                case Device.Switch:
+                case EquipmentConstants.SwitchUrlName:
                     var swit = (SwitchVM)typeof(SwitchMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(switchMediator);
                     return swit.DeviceChooserVM;
-                case Device.Weather:
+                case EquipmentConstants.WeatherUrlName:
                     var weather = (WeatherDataVM)typeof(WeatherDataMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weatherData);
                     return weather.DeviceChooserVM;
                 default:
@@ -188,5 +234,11 @@ namespace ninaAPI.WebService.V3.Equipment
         public string DriverVersion { get; set; } = device.DriverVersion;
         public string DriverInfo { get; set; } = device.DriverInfo;
         public bool Connected { get; set; } = device.Connected;
+    }
+
+    public class ActionConfig
+    {
+        public string Action { get; set; }
+        public string Parameters { get; set; }
     }
 }
