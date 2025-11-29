@@ -10,24 +10,24 @@
 #endregion "copyright"
 
 
-using NINA.Equipment.Equipment.MyGuider;
+using NINA.Equipment.Equipment.MyTelescope;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 
-namespace ninaAPI.WebService.V3.Equipment.Guider
+namespace ninaAPI.WebService.V3.Equipment.Mount
 {
-    public class GuiderInfoResponse : GuiderInfo
+    public class MountInfoResponse : TelescopeInfo
     {
-        public GuiderInfoResponse(IGuiderMediator guider)
+        public MountInfoResponse(ITelescopeMediator mount)
         {
-            var info = guider.GetInfo();
+            var info = mount.GetInfo();
             CoreUtility.CopyProperties(info, this);
 
-            IGuider device = (IGuider)guider.GetDevice();
-            State = device?.State;
+            ITelescope device = (ITelescope)mount.GetDevice();
+            TrackingMode = device?.TrackingMode;
         }
 
-        public string State { get; set; }
+        public TrackingMode? TrackingMode { get; set; }
     }
 }

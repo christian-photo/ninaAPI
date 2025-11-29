@@ -24,6 +24,7 @@ using ninaAPI.WebService.V3.Equipment.FilterWheel;
 using ninaAPI.WebService.V3.Equipment.FlatDevice;
 using ninaAPI.WebService.V3.Equipment.Focuser;
 using ninaAPI.WebService.V3.Equipment.Guider;
+using ninaAPI.WebService.V3.Equipment.Mount;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3
@@ -39,6 +40,7 @@ namespace ninaAPI.WebService.V3
         private readonly FilterWheelController filterWheelController;
         private readonly FlatController flatController;
         private readonly GuiderController guiderController;
+        private readonly MountController mountController;
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
 
@@ -132,6 +134,22 @@ namespace ninaAPI.WebService.V3
                 responseHandler
             );
 
+            mountController = new MountController(
+                AdvancedAPI.Controls.Mount,
+                AdvancedAPI.Controls.Profile,
+                AdvancedAPI.Controls.Imaging,
+                AdvancedAPI.Controls.Rotator,
+                AdvancedAPI.Controls.FilterWheel,
+                AdvancedAPI.Controls.Guider,
+                AdvancedAPI.Controls.Dome,
+                AdvancedAPI.Controls.DomeFollower,
+                AdvancedAPI.Controls.PlateSolver,
+                AdvancedAPI.Controls.WindowFactory,
+                AdvancedAPI.Controls.StatusMediator,
+                processMediator,
+                responseHandler
+            );
+
             controller = new ControllerV3(responseHandler, processMediator);
         }
 
@@ -154,6 +172,7 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FilterWheelUrlName}", m => m.WithController(() => filterWheelController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FlatDeviceUrlName}", m => m.WithController(() => flatController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.GuiderUrlName}", m => m.WithController(() => guiderController))
+                .WithWebApi($"/v3/api/equipment/{EquipmentConstants.MountUrlName}", m => m.WithController(() => mountController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 
