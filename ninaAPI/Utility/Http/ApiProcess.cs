@@ -163,5 +163,6 @@ namespace ninaAPI.Utility.Http
         public static readonly ApiProcessType MountPark = new("MountPark", false, MountHome, MountSlew);
         public static readonly ApiProcessType MountSlew = new("MountSlew", false, MountHome, MountPark);
         public static readonly ApiProcessType MountSolveAndSync = new("MountSolveAndSync", false, MountSlew, MountPark, MountHome);
+        public static readonly ApiProcessType RotatorMove = new("RotatorMove", false);
     }
 }

@@ -25,6 +25,7 @@ using ninaAPI.WebService.V3.Equipment.FlatDevice;
 using ninaAPI.WebService.V3.Equipment.Focuser;
 using ninaAPI.WebService.V3.Equipment.Guider;
 using ninaAPI.WebService.V3.Equipment.Mount;
+using ninaAPI.WebService.V3.Equipment.Rotator;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3
@@ -41,6 +42,7 @@ namespace ninaAPI.WebService.V3
         private readonly FlatController flatController;
         private readonly GuiderController guiderController;
         private readonly MountController mountController;
+        private readonly RotatorController rotatorController;
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
 
@@ -60,6 +62,7 @@ namespace ninaAPI.WebService.V3
                 new FlatWatcher(eventHistory, AdvancedAPI.Controls.FlatDevice),
                 new GuiderWatcher(eventHistory, AdvancedAPI.Controls.Guider),
                 new MountWatcher(eventHistory, AdvancedAPI.Controls.Mount),
+                new RotatorWatcher(eventHistory, AdvancedAPI.Controls.Rotator),
                 new ProcessWatcher(eventHistory),
             ];
 
@@ -151,6 +154,19 @@ namespace ninaAPI.WebService.V3
                 responseHandler
             );
 
+            rotatorController = new RotatorController(
+                AdvancedAPI.Controls.Rotator,
+                AdvancedAPI.Controls.Profile,
+                AdvancedAPI.Controls.Imaging,
+                AdvancedAPI.Controls.Mount,
+                AdvancedAPI.Controls.FilterWheel,
+                AdvancedAPI.Controls.PlateSolver,
+                AdvancedAPI.Controls.WindowFactory,
+                AdvancedAPI.Controls.StatusMediator,
+                processMediator,
+                responseHandler
+            );
+
             controller = new ControllerV3(responseHandler, processMediator);
         }
 
@@ -174,6 +190,7 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FlatDeviceUrlName}", m => m.WithController(() => flatController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.GuiderUrlName}", m => m.WithController(() => guiderController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.MountUrlName}", m => m.WithController(() => mountController))
+                .WithWebApi($"/v3/api/equipment/{EquipmentConstants.RotatorUrlName}", m => m.WithController(() => rotatorController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 

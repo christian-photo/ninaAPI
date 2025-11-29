@@ -81,6 +81,23 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
+        [Route(HttpVerbs.Patch, "/temp-comp")]
+        public async Task FocuserTemperatureCompensation([QueryField] bool compensation)
+        {
+            if (!focuser.GetInfo().Connected)
+            {
+                throw CommonErrors.DeviceNotConnected(Device.Focuser);
+            }
+            else if (!focuser.GetInfo().TempCompAvailable)
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Temperature compensation not available");
+            }
+
+            focuser.ToggleTempComp(compensation);
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("Temperature compensation set"));
+        }
+
         private IAutoFocusVM autoFocusVM;
 
         [Route(HttpVerbs.Post, "/auto-focus")]
@@ -129,15 +146,13 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
 
             string filename = filenameParameter.Get(HttpContext);
             string file = Path.Combine(FileSystemHelper.GetAutofocusFolder(), $"{filename}.json");
-            if (File.Exists(file))
-            {
-                string json = await Retry.Do(() => File.ReadAllText(file), TimeSpan.FromMilliseconds(50), 5);
-                await responseHandler.SendString(HttpContext, json);
-            }
-            else
+            if (!File.Exists(file))
             {
                 throw new HttpException(HttpStatusCode.NotFound, "Report not found");
             }
+
+            string json = await Retry.Do(() => File.ReadAllText(file), TimeSpan.FromMilliseconds(50), 5);
+            await responseHandler.SendString(HttpContext, json);
         }
     }
 }
