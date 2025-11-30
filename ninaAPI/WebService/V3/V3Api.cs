@@ -64,8 +64,8 @@ namespace ninaAPI.WebService.V3
             [
                 new CameraWatcher(eventHistory, AdvancedAPI.Controls.Camera),
                 new FocuserWatcher(eventHistory, AdvancedAPI.Controls.Focuser),
-                new DomeWatcher(eventHistory, AdvancedAPI.Controls.Dome),
-                new FilterWheelWatcher(eventHistory, AdvancedAPI.Controls.FilterWheel),
+                new DomeWatcher(eventHistory, AdvancedAPI.Controls.Dome, AdvancedAPI.Controls.DomeFollower),
+                new FilterWheelWatcher(eventHistory, AdvancedAPI.Controls.FilterWheel, AdvancedAPI.Controls.Profile),
                 new FlatWatcher(eventHistory, AdvancedAPI.Controls.FlatDevice),
                 new GuiderWatcher(eventHistory, AdvancedAPI.Controls.Guider),
                 new MountWatcher(eventHistory, AdvancedAPI.Controls.Mount),
@@ -160,6 +160,9 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.PlateSolver,
                 AdvancedAPI.Controls.WindowFactory,
                 AdvancedAPI.Controls.StatusMediator,
+                AdvancedAPI.Controls.MeridianFlipFactory,
+                AdvancedAPI.Controls.Camera,
+                AdvancedAPI.Controls.Focuser,
                 processMediator,
                 responseHandler
             );
@@ -233,6 +236,8 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.MountUrlName}", m => m.WithController(() => mountController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.RotatorUrlName}", m => m.WithController(() => rotatorController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.SafetyMonitorUrlName}", m => m.WithController(() => safetyController))
+                .WithWebApi($"/v3/api/equipment/{EquipmentConstants.SwitchUrlName}", m => m.WithController(() => switchController))
+                .WithWebApi($"/v3/api/equipment/{EquipmentConstants.WeatherUrlName}", m => m.WithController(() => weatherController))
                 .WithWebApi("/v3/api/equipment", m => m.WithController(() => connectionController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
