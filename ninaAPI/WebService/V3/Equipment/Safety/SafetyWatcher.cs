@@ -39,6 +39,8 @@ namespace ninaAPI.WebService.V3.Equipment.Safety
             safety.Connected += SafetyConnectedHandler;
             safety.Disconnected += SafetyDisconnectedHandler;
             safety.IsSafeChanged += SafetyChangedHandler;
+
+            safety.RegisterConsumer(this);
         }
 
         public override void StopWatchers()
@@ -46,6 +48,8 @@ namespace ninaAPI.WebService.V3.Equipment.Safety
             safety.Connected -= SafetyConnectedHandler;
             safety.Disconnected -= SafetyDisconnectedHandler;
             safety.IsSafeChanged -= SafetyChangedHandler;
+
+            safety.RemoveConsumer(this);
         }
 
         private async Task SafetyConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("SAFETY-CONNECTED");

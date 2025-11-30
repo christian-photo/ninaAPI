@@ -36,12 +36,16 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
         {
             @switch.Connected += SwitchConnectedHandler;
             @switch.Disconnected += SwitchDisconnectedHandler;
+
+            @switch.RegisterConsumer(this;)
         }
 
         public override void StopWatchers()
         {
             @switch.Connected -= SwitchConnectedHandler;
             @switch.Disconnected -= SwitchDisconnectedHandler;
+
+            @switch.RemoveConsumer(this);
         }
 
         private async Task SwitchConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("SWITCH-CONNECTED");
@@ -52,3 +56,4 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
 
         }
     }
+}

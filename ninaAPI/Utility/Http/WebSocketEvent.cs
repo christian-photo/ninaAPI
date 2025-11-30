@@ -17,7 +17,7 @@ namespace ninaAPI.Utility.Http
     public class WebSocketEvent
     {
         public string Event { get; set; }
-        public WebSocketChannel Channel { get; set; }
+        public WebSocketChannel Channel { get; set; } // TODO: See if this should be sent or not
         public object Data { get; set; }
     }
 
