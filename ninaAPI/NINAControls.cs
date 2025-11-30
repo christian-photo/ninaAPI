@@ -1,4 +1,4 @@
-﻿#region "copyright"
+#region "copyright"
 
 /*
     Copyright © 2024 Christian Palm (christian@palm-family.de)
@@ -38,6 +38,7 @@ namespace ninaAPI
         public ISwitchMediator Switch;
         public ISafetyMonitorMediator SafetyMonitor;
         public IAutoFocusVMFactory AutoFocusFactory;
+        public IMeridianFlipVMFactory MeridianFlipFactory;
         public IWeatherDataMediator Weather;
         public IDomeFollower DomeFollower;
         #endregion
@@ -58,6 +59,7 @@ namespace ninaAPI
         public IMessageBroker MessageBroker;
         public IFramingAssistantVM FramingAssistant;
         public ITwilightCalculator TwilightCalculator;
+        public INighttimeCalculator NighttimeCalculator;
         public IWindowServiceFactory WindowFactory;
         #endregion
     }

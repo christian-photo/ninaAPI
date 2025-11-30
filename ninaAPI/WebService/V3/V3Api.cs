@@ -27,6 +27,7 @@ using ninaAPI.WebService.V3.Equipment.Guider;
 using ninaAPI.WebService.V3.Equipment.Mount;
 using ninaAPI.WebService.V3.Equipment.Rotator;
 using ninaAPI.WebService.V3.Equipment.Safety;
+using ninaAPI.WebService.V3.Equipment.Switch;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3
@@ -45,6 +46,7 @@ namespace ninaAPI.WebService.V3
         private readonly MountController mountController;
         private readonly RotatorController rotatorController;
         private readonly SafetyController safetyController;
+        private readonly SwitchController switchController;
         private readonly ConnectController connectionController;
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
@@ -67,6 +69,7 @@ namespace ninaAPI.WebService.V3
                 new MountWatcher(eventHistory, AdvancedAPI.Controls.Mount),
                 new RotatorWatcher(eventHistory, AdvancedAPI.Controls.Rotator),
                 new SafetyWatcher(eventHistory, AdvancedAPI.Controls.SafetyMonitor),
+                new SwitchWatcher(eventHistory, AdvancedAPI.Controls.Switch),
                 new ProcessWatcher(eventHistory),
             ];
 

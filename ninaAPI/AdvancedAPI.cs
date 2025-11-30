@@ -82,7 +82,9 @@ namespace ninaAPI
                            IFramingAssistantVM framing,
                            IDomeFollower domeFollower,
                            ITwilightCalculator twilightCalculator,
-                           IWindowServiceFactory windowFactory)
+                           INighttimeCalculator nighttimeCalculator,
+                           IWindowServiceFactory windowFactory,
+                           IMeridianFlipVMFactory meridianFlipVMFactory)
         {
 #if WINDOWS
             Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri("pack://application:,,,/ninaAPI;component/WebService/V2/CustomDrivers/RotatorDataTemplate.xaml") });
@@ -110,6 +112,7 @@ namespace ninaAPI
                 Application = application,
                 ImageDataFactory = imageDataFactory,
                 AutoFocusFactory = AFFactory,
+                MeridianFlipFactory = meridianFlipVMFactory,
                 ImageSaveMediator = saveMediator,
                 Weather = weather,
                 PlateSolver = platesolver,
@@ -117,6 +120,7 @@ namespace ninaAPI
                 FramingAssistant = framing,
                 DomeFollower = domeFollower,
                 TwilightCalculator = twilightCalculator,
+                NighttimeCalculator = nighttimeCalculator,
                 WindowFactory = windowFactory,
             };
 
