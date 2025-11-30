@@ -61,6 +61,13 @@ namespace ninaAPI.Utility
             return targets;
         }
 
+        /// <summary>
+        /// Copies properties from source to target. Ensures that:
+        /// - Properties in the source type exist in the target type
+        /// - Properties in the source type have the same type as the ones in the target type
+        /// - Properties can actually be written
+        /// - Properties are public and instance members (not static)
+        /// </summary>
         public static void CopyProperties(object source, object target)
         {
             var sourceType = source.GetType();
@@ -191,6 +198,21 @@ namespace ninaAPI.Utility
         public static bool IsBetween(this short value, int min, int max)
         {
             return IsBetween(value, (short)min, (short)max);
+        }
+
+        public static bool IsBetween(this int value, int min, int max)
+        {
+            return value >= min && value <= max;
+        }
+
+        public static bool IsBetween(this decimal value, decimal min, decimal max)
+        {
+            return value >= min && value <= max;
+        }
+
+        public static bool IsBetween(this float value, float min, float max)
+        {
+            return IsBetween((decimal)value, (decimal)min, (decimal)max);
         }
     }
 

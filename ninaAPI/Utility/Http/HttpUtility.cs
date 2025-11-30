@@ -72,24 +72,14 @@ namespace ninaAPI.Utility.Http
 
         private T Evaluate(IHttpContext context)
         {
-            if (context.IsParameterOmitted(this))
-            {
-                WasProvided = false;
-                if (Required)
-                    throw CommonErrors.ParameterMissing(ParameterName);
-                return DefaultValue;
-            }
-
             var raw = context.Request.QueryString.Get(ParameterName);
-            if (string.IsNullOrWhiteSpace(raw))
+            if (raw is null || string.IsNullOrWhiteSpace(raw))
             {
                 WasProvided = false;
                 if (Required)
                     throw CommonErrors.ParameterMissing(ParameterName);
                 return DefaultValue;
             }
-
-            WasProvided = true;
 
             // determine target (handle Nullable<T>)
             var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
@@ -98,25 +88,13 @@ namespace ninaAPI.Utility.Http
             {
                 object converted;
 
-                // prefer existing helper if it reliably converts simple types
-                // fallback to robust conversion logic:
-                if (targetType.IsEnum)
-                {
-                    converted = Enum.Parse(targetType, raw, ignoreCase: true);
-                }
-                else if (targetType == typeof(Guid))
-                {
-                    converted = Guid.Parse(raw);
-                }
+                var converter = TypeDescriptor.GetConverter(targetType);
+                if (converter != null && converter.CanConvertFrom(typeof(string)))
+                    converted = converter.ConvertFromInvariantString(raw);
                 else
-                {
-                    var converter = TypeDescriptor.GetConverter(targetType);
-                    if (converter != null && converter.CanConvertFrom(typeof(string)))
-                        converted = converter.ConvertFromInvariantString(raw);
-                    else
-                        converted = Convert.ChangeType(raw, targetType, CultureInfo.InvariantCulture);
-                }
+                    converted = Convert.ChangeType(raw, targetType, CultureInfo.InvariantCulture);
 
+                WasProvided = true;
                 return (T)converted;
             }
             catch
@@ -239,8 +217,8 @@ namespace ninaAPI.Utility.Http
             {
                 Size = new SizeQueryParameter(new Size(1500, 1000), false),
                 Resize = new QueryParameter<bool>("resize", false, false),
-                Scale = new QueryParameter<float>("scale", 0.5f, false, (scale) => scale > 0 && scale <= 1),
-                Quality = new QueryParameter<int>("quality", -1, false, (quality) => quality >= -1 && quality <= 100),
+                Scale = new QueryParameter<float>("scale", 0.5f, false, (scale) => scale.IsBetween(0.1f, 1)),
+                Quality = new QueryParameter<int>("quality", -1, false, (quality) => quality.IsBetween(-1, 100)),
                 StretchFactor = new QueryParameter<double>("stretch-factor", 1.0f, false),
                 Debayer = new QueryParameter<bool>("debayer", false, false),
                 BayerPattern = new QueryParameter<SensorType>("bayer-pattern", SensorType.Monochrome, false),
