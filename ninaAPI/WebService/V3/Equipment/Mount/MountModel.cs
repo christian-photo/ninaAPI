@@ -43,6 +43,12 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
         public bool SolveAndSync { get; set; }
     }
 
+    public class MountFlipConfig
+    {
+        public bool Recenter { get; set; }
+        public bool AutofocusAfterFlip { get; set; }
+    }
+
     public enum SlewType
     {
         Slew,

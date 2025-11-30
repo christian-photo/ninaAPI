@@ -159,10 +159,11 @@ namespace ninaAPI.Utility.Http
         public static readonly ApiProcessType FilterWheelChangeFilter = new("FilterWheelChangeFilter", false, FocuserAutofocus, CameraCapture);
         public static readonly ApiProcessType GuiderStartGuiding = new("GuiderStartGuiding", false);
         public static readonly ApiProcessType GuiderDither = new("GuiderDither", false);
-        public static readonly ApiProcessType MountHome = new("MountHome", false, MountPark, MountSlew);
-        public static readonly ApiProcessType MountPark = new("MountPark", false, MountHome, MountSlew);
-        public static readonly ApiProcessType MountSlew = new("MountSlew", false, MountHome, MountPark);
-        public static readonly ApiProcessType MountSolveAndSync = new("MountSolveAndSync", false, MountSlew, MountPark, MountHome);
+        public static readonly ApiProcessType MountHome = new("MountHome", false, MountPark, MountSlew, MountFlip, MountSolveAndSync);
+        public static readonly ApiProcessType MountPark = new("MountPark", false, MountHome, MountSlew, MountFlip, MountSolveAndSync);
+        public static readonly ApiProcessType MountSlew = new("MountSlew", false, MountHome, MountPark, MountFlip, MountSolveAndSync);
+        public static readonly ApiProcessType MountFlip = new("MountMeridianFlip", false, MountPark, MountSlew, MountHome, MountSolveAndSync);
+        public static readonly ApiProcessType MountSolveAndSync = new("MountSolveAndSync", false, MountSlew, MountPark, MountHome, MountFlip, MountSolveAndSync);
         public static readonly ApiProcessType RotatorMove = new("RotatorMove", false);
     }
 }

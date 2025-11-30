@@ -24,6 +24,7 @@ using NINA.PlateSolving.Interfaces;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.SequenceItem;
 using NINA.Sequencer.SequenceItem.Platesolving;
+using NINA.WPF.Base.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
@@ -43,6 +44,9 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
         private readonly IPlateSolverFactory plateSolver;
         private readonly IWindowServiceFactory windowService;
         private readonly IApplicationStatusMediator statusMediator;
+        private readonly IMeridianFlipVMFactory flipVMFactory;
+        private readonly ICameraMediator camera;
+        private readonly IFocuserMediator focuser;
         private readonly ApiProcessMediator processMediator;
         private readonly ResponseHandler responseHandler;
 
@@ -58,6 +62,9 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             IPlateSolverFactory plateSolver,
             IWindowServiceFactory windowService,
             IApplicationStatusMediator statusMediator,
+            IMeridianFlipVMFactory flipVMFactory,
+            ICameraMediator camera,
+            IFocuserMediator focuser,
             ApiProcessMediator processMediator,
             ResponseHandler responseHandler)
         {
@@ -72,6 +79,9 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             this.plateSolver = plateSolver;
             this.windowService = windowService;
             this.statusMediator = statusMediator;
+            this.flipVMFactory = flipVMFactory;
+            this.camera = camera;
+            this.focuser = focuser;
             this.processMediator = processMediator;
             this.responseHandler = responseHandler;
         }
@@ -210,7 +220,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
         }
 
         [Route(HttpVerbs.Post, "/flip")]
-        public async Task MountFlip()
+        public async Task MountFlip([JsonData] MountFlipConfig config)
         {
             if (!mount.GetInfo().Connected)
             {
@@ -224,13 +234,20 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             {
                 throw new HttpException(HttpStatusCode.Conflict, "Mount cannot slew");
             }
+            else if (!mount.GetInfo().TrackingEnabled)
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Mount is not tracking");
+            }
+            else if (config.Recenter && !camera.GetInfo().Connected)
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Recenter is enabled but camera is disconnected");
+            }
+            else if (config.AutofocusAfterFlip && !focuser.GetInfo().Connected)
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Autofocus is enabled but focuser is disconnected");
+            }
 
-            // TODO: Check if we need more checks here
-
-            Guid processId = processMediator.AddProcess(
-                async (token) => await mount.MeridianFlip(mount.GetCurrentPosition(), token),
-                ApiProcessType.MountSlew
-            );
+            Guid processId = processMediator.AddProcess(MeridianFlipProcess.Create(flipVMFactory.Create(), mount, statusMediator));
             var result = processMediator.Start(processId);
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);

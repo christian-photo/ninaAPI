@@ -37,7 +37,7 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
             @switch.Connected += SwitchConnectedHandler;
             @switch.Disconnected += SwitchDisconnectedHandler;
 
-            @switch.RegisterConsumer(this;)
+            @switch.RegisterConsumer(this);
         }
 
         public override void StopWatchers()
