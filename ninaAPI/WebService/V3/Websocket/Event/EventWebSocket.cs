@@ -40,7 +40,7 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         {
             foreach (var (client, clientConfig) in Clients)
             {
-                if (client.WebSocket.State != WebSocketState.Open)
+                if (client.WebSocket.State != WebSocketState.Open && client.WebSocket.State != WebSocketState.Connecting)
                 {
                     Logger.Warning($"Client {client.RemoteEndPoint} not connected, removing...");
                     Clients.TryRemove(client, out _);
@@ -59,11 +59,12 @@ namespace ninaAPI.WebService.V3.Websocket.Event
 
         protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
         {
+            ClientMessage message = null;
             try
             {
                 string json = Encoding.GetString(buffer);
-                Logger.Trace($"Client {context.RemoteEndPoint} sent message: {json}");
-                var message = serializer.Deserialize<ClientMessage>(json);
+                Logger.Debug($"Client {context.RemoteEndPoint} sent message: {json}");
+                message = serializer.Deserialize<ClientMessage>(json);
 
                 if (message.Type == "Subscribe")
                 {
@@ -85,31 +86,27 @@ namespace ninaAPI.WebService.V3.Websocket.Event
                 }
                 else
                 {
-                    Logger.Trace($"Message from {context.RemoteEndPoint} was invalid");
+                    Logger.Debug($"Message from {context.RemoteEndPoint} was invalid");
                     await SendAsync(context, serializer.Serialize(ClientMessage.Reply(message, "Invalid message")));
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                await SendAsync(context, serializer.Serialize(new ClientMessage()
-                {
-                    Type = "Server",
-                    Data = "Internal Server Error"
-                }));
+                await SendAsync(context, serializer.Serialize(ClientMessage.Reply(message ?? new ClientMessage(), new { Error = "Error encountered while reading message", Message = ex.Message })));
             }
         }
 
         protected override Task OnClientConnectedAsync(IWebSocketContext context)
         {
-            Logger.Trace($"Client {context.RemoteEndPoint} connected");
+            Logger.Info($"Client {context.RemoteEndPoint} connected");
             Clients.TryAdd(context, new ClientConfiguration());
             return base.OnClientConnectedAsync(context);
         }
 
         protected override Task OnClientDisconnectedAsync(IWebSocketContext context)
         {
-            Logger.Trace($"Client {context.RemoteEndPoint} disconnected");
+            Logger.Info($"Client {context.RemoteEndPoint} disconnected");
             Clients.TryRemove(context, out _);
             return base.OnClientDisconnectedAsync(context);
         }

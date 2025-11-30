@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 
+using System;
 using System.Collections.Generic;
 
 namespace ninaAPI.Utility
@@ -25,9 +26,17 @@ namespace ninaAPI.Utility
 
         public List<T> GetPage(int page, int pageSize)
         {
-            var start = (page - 1) * pageSize;
-            var end = start + pageSize;
-            return list.GetRange(start, end);
+            if (page < 1 || pageSize < 1)
+                return [];
+
+            int start = (page - 1) * pageSize;
+
+            if (start >= list.Count)
+                return [];
+
+            int count = Math.Min(pageSize, list.Count - start);
+
+            return list.GetRange(start, count);
         }
     }
 }

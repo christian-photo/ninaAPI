@@ -28,6 +28,7 @@ using NINA.Core.Model.Equipment;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.ViewModel;
+using ninaAPI.Utility;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
