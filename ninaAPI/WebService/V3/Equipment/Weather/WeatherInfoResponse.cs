@@ -10,17 +10,17 @@
 #endregion "copyright"
 
 
-using NINA.Equipment.Equipment.MyFlatDevice;
+using NINA.Equipment.Equipment.MyWeatherData;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 
-namespace ninaAPI.WebService.V3.Equipment.FlatDevice
+namespace ninaAPI.WebService.V3.Equipment.Weather
 {
-    public class FlatInfoResponse : FlatDeviceInfo
+    public class WeatherInfoResponse : WeatherDataInfo
     {
-        public FlatInfoResponse(IFlatDeviceMediator flat)
+        public WeatherInfoResponse(IWeatherDataMediator weather)
         {
-            CoreUtility.CopyProperties(flat.GetInfo(), this);
+            CoreUtility.CopyProperties(weather.GetInfo(), this);
         }
     }
 }

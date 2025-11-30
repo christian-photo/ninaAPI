@@ -75,9 +75,9 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
         private async void RotatorSyncedHandler(object sender, RotatorEventArgs e) => await SubmitAndStoreEvent("ROTATOR-SYNCED");
 
 
-        public void UpdateDeviceInfo(RotatorInfo deviceInfo)
+        public async void UpdateDeviceInfo(RotatorInfo deviceInfo)
         {
-
+            await SubmitEvent("ROTATOR-INFO-UPDATE", new RotatorInfoResponse(rotator), WebSocketChannel.RotatorInfoUpdate);
         }
     }
 }

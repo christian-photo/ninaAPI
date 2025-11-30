@@ -24,6 +24,18 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         public ClientConfiguration()
         {
             SubscriptionManager = new ChannelSubscriptionManager([.. Enum.GetValues<WebSocketChannel>()]); // Subscribe to all channels by default
+
+            SubscriptionManager.Unsubscribe(WebSocketChannel.CameraInfoUpdate); // except the info channels because these might have a lot of traffic
+            SubscriptionManager.Unsubscribe(WebSocketChannel.DomeInfoUpdate);
+            SubscriptionManager.Unsubscribe(WebSocketChannel.FilterwheelInfoUpdate);
+            SubscriptionManager.Unsubscribe(WebSocketChannel.FlatdeviceInfoUpdate);
+            SubscriptionManager.Unsubscribe(WebSocketChannel.FocuserInfoUpdate);
+            SubscriptionManager.Unsubscribe(WebSocketChannel.GuiderInfoUpdate);
+            SubscriptionManager.Unsubscribe(WebSocketChannel.MountInfoUpdate);
+            SubscriptionManager.Unsubscribe(WebSocketChannel.RotatorInfoUpdate);
+            SubscriptionManager.Unsubscribe(WebSocketChannel.SafetyInfoUpdate);
+            SubscriptionManager.Unsubscribe(WebSocketChannel.SwitchInfoUpdate);
+            SubscriptionManager.Unsubscribe(WebSocketChannel.WeatherInfoUpdate);
         }
     }
 

@@ -12,9 +12,9 @@
 
 using System;
 using System.Threading.Tasks;
-using NINA.Equipment.Equipment.MySwitch;
 using NINA.Equipment.Equipment.MyWeatherData;
 using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.Weather
@@ -26,6 +26,7 @@ namespace ninaAPI.WebService.V3.Equipment.Weather
         public WeatherWatcher(EventHistoryManager history, IWeatherDataMediator weather) : base(history)
         {
             this.weather = weather;
+            Channel = WebSocketChannel.Equipment;
         }
 
         public void Dispose()
@@ -52,9 +53,9 @@ namespace ninaAPI.WebService.V3.Equipment.Weather
         private async Task WeatherConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("WEATHER-CONNECTED");
         private async Task WeatherDisconnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("WEATHER-DISCONNECTED");
 
-        public void UpdateDeviceInfo(WeatherDataInfo deviceInfo)
+        public async void UpdateDeviceInfo(WeatherDataInfo deviceInfo)
         {
-
+            await SubmitEvent("WEATHER-INFO-UPDATE", new WeatherInfoResponse(weather), WebSocketChannel.WeatherInfoUpdate);
         }
     }
 }

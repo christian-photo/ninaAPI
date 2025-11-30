@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MySafetyMonitor;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.Safety
@@ -26,7 +27,7 @@ namespace ninaAPI.WebService.V3.Equipment.Safety
         public SafetyWatcher(EventHistoryManager history, ISafetyMonitorMediator safety) : base(history)
         {
             this.safety = safety;
-            Channel = Utility.Http.WebSocketChannel.Equipment;
+            Channel = WebSocketChannel.Equipment;
         }
 
         public void Dispose()
@@ -60,9 +61,9 @@ namespace ninaAPI.WebService.V3.Equipment.Safety
                 IsSafe = e.IsSafe
             });
 
-        public void UpdateDeviceInfo(SafetyMonitorInfo deviceInfo)
+        public async void UpdateDeviceInfo(SafetyMonitorInfo deviceInfo)
         {
-
+            await SubmitEvent("SAFETY-INFO-UPDATE", new SafetyInfoResponse(safety), WebSocketChannel.SafetyInfoUpdate);
         }
     }
 }

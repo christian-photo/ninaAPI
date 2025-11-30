@@ -12,8 +12,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using Accord;
-using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;

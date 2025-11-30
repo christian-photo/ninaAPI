@@ -23,7 +23,5 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             var info = cam.GetInfo();
             CoreUtility.CopyProperties(info, this);
         }
-
-        public CameraInfoResponse() { }
     }
 }

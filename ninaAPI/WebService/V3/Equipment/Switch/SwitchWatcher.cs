@@ -14,6 +14,7 @@ using System;
 using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MySwitch;
 using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.Switch
@@ -25,6 +26,7 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
         public SwitchWatcher(EventHistoryManager history, ISwitchMediator @switch) : base(history)
         {
             this.@switch = @switch;
+            Channel = WebSocketChannel.Equipment;
         }
 
         public void Dispose()
@@ -51,9 +53,9 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
         private async Task SwitchConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("SWITCH-CONNECTED");
         private async Task SwitchDisconnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("SWITCH-DISCONNECTED");
 
-        public void UpdateDeviceInfo(SwitchInfo deviceInfo)
+        public async void UpdateDeviceInfo(SwitchInfo deviceInfo)
         {
-
+            await SubmitEvent("SWITCH-INFO-UPDATE", new SwitchInfoResponse(@switch), WebSocketChannel.SwitchInfoUpdate);
         }
     }
 }

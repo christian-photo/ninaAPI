@@ -46,7 +46,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
         [Route(HttpVerbs.Get, "/")]
         public async Task DomeInfo()
         {
-            DomeInfoResponse info = new DomeInfoResponse(dome.GetInfo(), domeFollower);
+            DomeInfoResponse info = new DomeInfoResponse(dome, domeFollower);
 
             await responseHandler.SendObject(HttpContext, info);
         }

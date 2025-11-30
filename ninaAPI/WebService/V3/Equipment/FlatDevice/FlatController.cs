@@ -38,8 +38,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
         [Route(HttpVerbs.Get, "/")]
         public async Task FlatInfo()
         {
-            var info = flatDevice.GetInfo();
-            await responseHandler.SendObject(HttpContext, new FlatInfoResponse(info));
+            await responseHandler.SendObject(HttpContext, new FlatInfoResponse(flatDevice));
         }
 
         [Route(HttpVerbs.Put, "/light")]

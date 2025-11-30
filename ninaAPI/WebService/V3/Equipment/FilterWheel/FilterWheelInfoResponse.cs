@@ -12,8 +12,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using NINA.Core.Model.Equipment;
 using NINA.Equipment.Equipment.MyFilterWheel;
+using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
 
@@ -24,8 +24,9 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
         public FilterData CurrentFilter { get; set; }
         public List<FilterData> AvailableFilters { get; set; }
 
-        public FilterWheelInfoResponse(FilterWheelInfo info, IProfile profile)
+        public FilterWheelInfoResponse(IFilterWheelMediator filterwheel, IProfile profile)
         {
+            var info = filterwheel.GetInfo();
             bool hasFilters = profile.FilterWheelSettings.FilterWheelFilters.Count > 0;
 
             CoreUtility.CopyProperties(info, this);

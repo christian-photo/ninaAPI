@@ -12,15 +12,16 @@
 
 using NINA.Equipment.Equipment.MyDome;
 using NINA.Equipment.Interfaces;
+using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 
 namespace ninaAPI.WebService.V3.Equipment.Dome
 {
     public class DomeInfoResponse : DomeInfo
     {
-        public DomeInfoResponse(DomeInfo info, IDomeFollower follower)
+        public DomeInfoResponse(IDomeMediator dome, IDomeFollower follower)
         {
-            CoreUtility.CopyProperties(info, this);
+            CoreUtility.CopyProperties(dome.GetInfo(), this);
             IsFollowing = follower.IsFollowing;
             IsSynchronized = follower.IsSynchronized;
         }

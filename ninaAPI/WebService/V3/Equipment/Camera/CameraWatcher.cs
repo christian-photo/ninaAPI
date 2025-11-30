@@ -14,6 +14,7 @@ using System;
 using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MyCamera;
 using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
@@ -21,9 +22,12 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
     public class CameraWatcher : EventWatcher, ICameraConsumer
     {
         private readonly ICameraMediator camera;
+
         public CameraWatcher(EventHistoryManager eventHistory, ICameraMediator camera) : base(eventHistory)
         {
             this.camera = camera;
+
+            Channel = WebSocketChannel.Equipment;
         }
 
         public void Dispose()
@@ -47,10 +51,13 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             camera.DownloadTimeout -= CameraDownloadTimeout;
         }
 
-        public void UpdateDeviceInfo(CameraInfo deviceInfo) { }
-
         private async Task CameraConnected(object sender, EventArgs e) => await SubmitAndStoreEvent("CAMERA-CONNECTED");
         private async Task CameraDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent("CAMERA-DISCONNECTED");
         private async Task CameraDownloadTimeout(object sender, EventArgs e) => await SubmitAndStoreEvent("CAMERA-DOWNLOAD-TIMEOUT");
+
+        public async void UpdateDeviceInfo(CameraInfo deviceInfo)
+        {
+            await SubmitEvent("CAMERA-INFO-UPDATE", new CameraInfoResponse(camera), WebSocketChannel.CameraInfoUpdate);
+        }
     }
 }

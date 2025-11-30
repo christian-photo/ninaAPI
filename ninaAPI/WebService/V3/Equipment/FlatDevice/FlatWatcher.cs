@@ -14,6 +14,7 @@ using System;
 using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MyFlatDevice;
 using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.FlatDevice
@@ -25,7 +26,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
         public FlatWatcher(EventHistoryManager history, IFlatDeviceMediator flatDevice) : base(history)
         {
             this.flatDevice = flatDevice;
-            Channel = Utility.Http.WebSocketChannel.Equipment;
+            Channel = WebSocketChannel.Equipment;
         }
 
         public void Dispose()
@@ -66,9 +67,9 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
             e.To,
         });
 
-        public void UpdateDeviceInfo(FlatDeviceInfo deviceInfo)
+        public async void UpdateDeviceInfo(FlatDeviceInfo deviceInfo)
         {
-
+            await SubmitEvent("FLATDEVICE-INFO-UPDATE", new FlatInfoResponse(flatDevice), WebSocketChannel.FlatdeviceInfoUpdate);
         }
     }
 }

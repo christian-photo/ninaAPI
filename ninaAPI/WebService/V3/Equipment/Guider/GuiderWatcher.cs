@@ -16,6 +16,7 @@ using NINA.Core.Interfaces;
 using NINA.Equipment.Equipment.MyGuider;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.Guider
@@ -39,7 +40,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
         public GuiderWatcher(EventHistoryManager history, IGuiderMediator guider) : base(history)
         {
             this.guider = guider;
-            Channel = Utility.Http.WebSocketChannel.Equipment;
+            Channel = WebSocketChannel.Equipment;
         }
 
         public void Dispose()
@@ -79,18 +80,18 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
                 GuideStepHistory.RemoveAt(0);
             }
 
-            await SubmitEvent("GUIDER-GUIDE-EVENT", step);
+            await SubmitEvent("GUIDER-GUIDE-EVENT", step, WebSocketChannel.Guiding);
         }
 
         private async Task GuiderConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("GUIDER-CONNECTED");
         private async Task GuiderDisconnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("GUIDER-DISCONNECTED");
-        private async Task GuiderAfterDitherHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("GUIDER-AFTER-DITHER");
+        private async Task GuiderAfterDitherHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("GUIDER-DITHER-COMPLETED"); // TODO: Maybe this should go to the guiding channel or both
         private async Task GuiderGuidingStartedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("GUIDER-GUIDING-STARTED");
         private async Task GuiderGuidingStoppedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("GUIDER-GUIDING-STOPPED");
 
-        public void UpdateDeviceInfo(GuiderInfo deviceInfo)
+        public async void UpdateDeviceInfo(GuiderInfo deviceInfo)
         {
-
+            await SubmitEvent("GUIDER-INFO-UPDATE", new GuiderInfoResponse(guider), WebSocketChannel.GuiderInfoUpdate);
         }
     }
 }

@@ -10,17 +10,17 @@
 #endregion "copyright"
 
 
-using NINA.Equipment.Equipment.MyFlatDevice;
+using NINA.Equipment.Equipment.MySafetyMonitor;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 
-namespace ninaAPI.WebService.V3.Equipment.FlatDevice
+namespace ninaAPI.WebService.V3.Equipment.Safety
 {
-    public class FlatInfoResponse : FlatDeviceInfo
+    public class SafetyInfoResponse : SafetyMonitorInfo
     {
-        public FlatInfoResponse(IFlatDeviceMediator flat)
+        public SafetyInfoResponse(ISafetyMonitorMediator safety)
         {
-            CoreUtility.CopyProperties(flat.GetInfo(), this);
+            CoreUtility.CopyProperties(safety.GetInfo(), this);
         }
     }
 }

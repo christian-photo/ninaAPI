@@ -53,13 +53,13 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
 
         private async Task FocuserConnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FOCUSER-CONNECTED");
         private async Task FocuserDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FOCUSER-DISCONNECTED");
-        public async void UpdateUserFocused(FocuserInfo info) => await SubmitEvent("USER-FOCUSED", info);
-        public async void NewAutoFocusPoint(DataPoint dataPoint) => await SubmitEvent("AUTOFOCUS-POINT", dataPoint, onChannel: WebSocketChannel.Autofocus);
+        public async void UpdateUserFocused(FocuserInfo info) => await SubmitEvent("USER-FOCUSED");
+        public async void NewAutoFocusPoint(DataPoint dataPoint) => await SubmitEvent("AUTOFOCUS-POINT", dataPoint, WebSocketChannel.Autofocus);
 
         public async void UpdateEndAutoFocusRun(AutoFocusInfo info)
         {
             IsAutoFocusRunning = false;
-            await SubmitAndStoreEvent("AUTOFOCUS-ENDED", info, onChannel: WebSocketChannel.Autofocus);
+            await SubmitAndStoreEvent("AUTOFOCUS-ENDED", info, WebSocketChannel.Autofocus);
         }
         public async void AutoFocusRunStarting()
         {
@@ -67,6 +67,9 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             await SubmitAndStoreEvent("AUTOFOCUS-STARTED", onChannel: WebSocketChannel.Autofocus);
         }
 
-        public void UpdateDeviceInfo(FocuserInfo deviceInfo) { }
+        public async void UpdateDeviceInfo(FocuserInfo deviceInfo)
+        {
+            await SubmitEvent("FOCUSER-INFO-UPDATE", new FocuserInfoResponse(focuser), WebSocketChannel.FocuserInfoUpdate);
+        }
     }
 }

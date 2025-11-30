@@ -44,6 +44,17 @@ namespace ninaAPI.Utility.Http
         Livestack,
         Autofocus,
         Process,
-        Guiding
+        Guiding,
+        CameraInfoUpdate,
+        DomeInfoUpdate,
+        FilterwheelInfoUpdate,
+        FlatdeviceInfoUpdate,
+        FocuserInfoUpdate,
+        GuiderInfoUpdate,
+        MountInfoUpdate,
+        RotatorInfoUpdate,
+        SafetyInfoUpdate,
+        SwitchInfoUpdate,
+        WeatherInfoUpdate
     }
 }

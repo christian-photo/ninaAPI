@@ -85,9 +85,9 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             });
         private async Task MountUnparkedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("MOUNT-UNPARKED");
 
-        public void UpdateDeviceInfo(TelescopeInfo deviceInfo)
+        public async void UpdateDeviceInfo(TelescopeInfo deviceInfo)
         {
-
+            await SubmitEvent("MOUNT-INFO-UPDATE", new MountInfoResponse(mount), WebSocketChannel.MountInfoUpdate);
         }
     }
 }

@@ -14,6 +14,8 @@ using System;
 using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MyFilterWheel;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.Profile.Interfaces;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.FilterWheel
@@ -36,11 +38,14 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
         }
 
         private readonly IFilterWheelMediator filterWheel;
+        private readonly IProfileService profileService;
 
-        public FilterWheelWatcher(EventHistoryManager eventHistory, IFilterWheelMediator filterWheel) : base(eventHistory)
+        public FilterWheelWatcher(EventHistoryManager eventHistory, IFilterWheelMediator filterWheel, IProfileService profileService) : base(eventHistory)
         {
-            Channel = Utility.Http.WebSocketChannel.Equipment;
             this.filterWheel = filterWheel;
+            this.profileService = profileService;
+
+            Channel = WebSocketChannel.Equipment;
         }
 
         public void Dispose()
@@ -64,10 +69,13 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             filterWheel.RemoveConsumer(this);
         }
 
-        public void UpdateDeviceInfo(FilterWheelInfo deviceInfo) { }
-
         private async Task FilterWheelConnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FILTERWHEEL-CONNECTED");
         private async Task FilterWheelDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FILTERWHEEL-DISCONNECTED");
         private async Task FilterWheelFilterChanged(object sender, FilterChangedEventArgs e) => await SubmitAndStoreEvent("FILTERWHEEL-FILTER-CHANGED", FilterChangedEvent.FromEvent(e));
+
+        public async void UpdateDeviceInfo(FilterWheelInfo deviceInfo)
+        {
+            await SubmitEvent("FILTERWHEEL-INFO-UPDATE", new FilterWheelInfoResponse(filterWheel, profileService.ActiveProfile), WebSocketChannel.FilterwheelInfoUpdate);
+        }
     }
 }

@@ -10,17 +10,17 @@
 #endregion "copyright"
 
 
-using NINA.Equipment.Equipment.MyFlatDevice;
+using NINA.Equipment.Equipment.MySwitch;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 
-namespace ninaAPI.WebService.V3.Equipment.FlatDevice
+namespace ninaAPI.WebService.V3.Equipment.Switch
 {
-    public class FlatInfoResponse : FlatDeviceInfo
+    public class SwitchInfoResponse : SwitchInfo
     {
-        public FlatInfoResponse(IFlatDeviceMediator flat)
+        public SwitchInfoResponse(ISwitchMediator @switch)
         {
-            CoreUtility.CopyProperties(flat.GetInfo(), this);
+            CoreUtility.CopyProperties(@switch.GetInfo(), this);
         }
     }
 }
