@@ -54,6 +54,7 @@ namespace ninaAPI.WebService.V2
         public double HFR { get; set; }
         public double HFRStDev { get; set; }
         public bool IsBayered { get; set; }
+        public string Filename { get => Path?.IsFile == true ? System.IO.Path.GetFileName(Path.LocalPath) : null; }
 
         private Uri Path { get; set; }
 
