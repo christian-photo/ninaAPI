@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 // [MANDATORY] The following GUID is used as a unique identifier of the plugin
@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 
 // [MANDATORY] The assembly versioning
 //Should be incremented for each new build of a plugin
-[assembly: AssemblyVersion("2.2.12.1")]
-[assembly: AssemblyFileVersion("2.2.12.1")]
+[assembly: AssemblyVersion("2.2.13.0")]
+[assembly: AssemblyFileVersion("2.2.13.0")]
 
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]
