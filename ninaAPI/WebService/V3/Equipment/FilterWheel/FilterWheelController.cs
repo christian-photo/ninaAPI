@@ -44,9 +44,7 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
         [Route(HttpVerbs.Get, "/")]
         public async Task FilterWheelInfo()
         {
-            var info = filterWheel.GetInfo();
-
-            await responseHandler.SendObject(HttpContext, new FilterWheelInfoResponse(info, profile.ActiveProfile));
+            await responseHandler.SendObject(HttpContext, new FilterWheelInfoResponse(filterWheel, profile.ActiveProfile));
         }
 
         [Route(HttpVerbs.Get, "/filter")]
@@ -83,6 +81,42 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
+        }
+
+        [Route(HttpVerbs.Post, "/filter")]
+        public async Task AddFilter([JsonData] FilterData filter)
+        {
+            // In the FilterData object, the position is not used, everything else is optional
+            var filterPosition = profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count;
+            FilterInfo filterInfo = new FilterInfo(
+                string.IsNullOrEmpty(filter.Name) ? $"Filter {filterPosition + 1}" : filter.Name,
+                filter.FocusOffset ?? 0,
+                (short)filterPosition,
+                filter.AutoFocusExposureTime ?? -1,
+                filter.AutoFocusBinning ?? new BinningMode(1, 1),
+                filter.AutoFocusGain ?? -1,
+                filter.AutoFocusOffset ?? -1
+            );
+
+            profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Add(filterInfo);
+
+            await responseHandler.SendObject(HttpContext, FilterData.FromFilter(filterInfo));
+        }
+
+        [Route(HttpVerbs.Delete, "/filter")]
+        public async Task RemoveFilter()
+        {
+            QueryParameter<short> positionParameter = new QueryParameter<short>("position", 0, true, (position) => position.IsBetween(0, profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1));
+            short position = positionParameter.Get(HttpContext);
+
+            var filters = profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters;
+            filters.RemoveAt(position);
+            for (short i = 0; i < filters.Count; i++)
+            {
+                filters[i].Position = i;
+            }
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("Filter removed"));
         }
     }
 }
