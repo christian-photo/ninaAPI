@@ -201,5 +201,57 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/filterwheel/add-filter")]
+        public void FilterWheelAddFilter()
+        {
+            HttpResponse response = new HttpResponse();
+            try
+            {
+                IFilterWheelSettings settings = AdvancedAPI.Controls.Profile.ActiveProfile.FilterWheelSettings;
+                var pos = settings.FilterWheelFilters.Count;
+                FilterInfo filter = new FilterInfo("Filter" + (pos + 1), 0, (short)pos, -1, new BinningMode(1, 1), -1, -1);
+                settings.FilterWheelFilters.Add(filter);
+                response.Response = "Filter added";
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/filterwheel/remove-filter")]
+        public void FilterWheelRemoveFilter([QueryField] int filterId)
+        {
+            HttpResponse response = new HttpResponse();
+            try
+            {
+                var settings = AdvancedAPI.Controls.Profile.ActiveProfile.FilterWheelSettings;
+                if (filterId < 0 || filterId >= settings.FilterWheelFilters.Count)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Filter not available", 409));
+                }
+                else
+                {
+                    var filters = settings.FilterWheelFilters;
+                    filters.RemoveAt(filterId);
+                    for (short i = 0; i < filters.Count; i++)
+                    {
+                        filters[i].Position = i;
+                    }
+                    response.Response = "Filter removed";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 }
