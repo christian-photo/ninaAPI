@@ -108,6 +108,7 @@ namespace ninaAPI.WebService
             catch (Exception ex)
             {
                 Logger.Error($"failed to start web server: {ex}");
+                Notification.ShowError("Webserver start failed, please check the logs for more info");
             }
         }
 

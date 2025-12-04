@@ -509,7 +509,7 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "prepared-image/solve")]
+        [Route(HttpVerbs.Get, "/prepared-image/solve")]
         public async Task SolvePreparedImage()
         {
             if (ImageWatcher.PreparedImage is null)
@@ -521,12 +521,13 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/image/{index}/solve")]
-        public async Task SolveImage(int index, [QueryField] string imageType, IRenderedImage image = null)
+        public async Task SolveImage(int index, [QueryField] string imageType, object image = null)
         {
             HttpResponse response = new HttpResponse();
 
             try
             {
+                IRenderedImage img = null;
                 if (image is null)
                 {
                     IEnumerable<ImageResponse> points;
@@ -551,8 +552,12 @@ namespace ninaAPI.WebService.V2
                     {
                         ImageResponse p = points.ElementAt(index);
                         IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, p.IsBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
-                        image = imageData.RenderImage();
+                        img = imageData.RenderImage();
                     }
+                }
+                else
+                {
+                    img = (IRenderedImage)image;
                 }
 
                 plateSolveResult = null;
@@ -572,11 +577,11 @@ namespace ninaAPI.WebService.V2
                     MaxObjects = settings.MaxObjects,
                     Regions = settings.Regions,
                     SearchRadius = settings.SearchRadius,
-                    PixelSize = image.RawImageData.MetaData.Camera.PixelSize
+                    PixelSize = img.RawImageData.MetaData.Camera.PixelSize
                 };
                 IImageSolver captureSolver = platesolver.GetImageSolver(platesolver.GetPlateSolver(settings), platesolver.GetBlindSolver(settings));
 
-                plateSolveResult = await captureSolver.Solve(image.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), HttpContext.CancellationToken);
+                plateSolveResult = await captureSolver.Solve(img.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), HttpContext.CancellationToken);
 
                 response.Response = plateSolveResult;
             }
