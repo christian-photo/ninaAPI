@@ -146,8 +146,6 @@ namespace ninaAPI
 
             SetHostNames();
             API.StartWatchers();
-
-
         }
 
         private void ProfileChanged(object sender, EventArgs e)
