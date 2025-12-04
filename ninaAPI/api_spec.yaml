@@ -1923,6 +1923,13 @@ paths:
         - FilterWheel
       summary: Remove Filter
       description: Remove a filter from the list of available filters
+      parameters:
+        - in: query
+          name: filterId
+          description: The filter to remove.
+          required: true
+          schema:
+            type: integer
       responses:
         "200":
           description: Successful response
