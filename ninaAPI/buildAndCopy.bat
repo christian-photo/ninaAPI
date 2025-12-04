@@ -1,3 +1,4 @@
+dotnet clean
 dotnet build C:\Users\Christian\source\repos\NINA\ninaAPI\ninaAPI\ninaAPI.csproj /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary /p:Configuration=Release /p:Platform="AnyCPU"
 set /p "beta=Should this be a beta release? y/n: "
 echo "%beta%"

@@ -20,12 +20,15 @@ using System.Windows.Media.Imaging;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility.Http;
 using NINA.Image.FileFormat.FITS;
 using NINA.Image.Interfaces;
+using NINA.PlateSolving;
+using NINA.PlateSolving.Interfaces;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
@@ -55,6 +58,7 @@ namespace ninaAPI.WebService.V2
         public double HFR { get; set; }
         public double HFRStDev { get; set; }
         public bool IsBayered { get; set; }
+        public string Filename { get => Path?.IsFile == true ? System.IO.Path.GetFileName(Path.LocalPath) : null; }
 
         private Uri Path { get; set; }
 
@@ -504,6 +508,92 @@ namespace ninaAPI.WebService.V2
             }
 
             HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/prepared-image/solve")]
+        public async Task SolvePreparedImage()
+        {
+            if (ImageWatcher.PreparedImage is null)
+            {
+                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(new Error("Image not available", 404)));
+                return;
+            }
+            await SolveImage(-1, string.Empty, ImageWatcher.PreparedImage);
+        }
+
+        [Route(HttpVerbs.Get, "/image/{index}/solve")]
+        public async Task SolveImage(int index, [QueryField] string imageType, object image = null)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IRenderedImage img = null;
+                if (image is null)
+                {
+                    IEnumerable<ImageResponse> points;
+                    lock (ImageWatcher.imageLock)
+                    {
+                        points = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
+                    }
+
+                    if (!points.Any())
+                    {
+                        response = CoreUtility.CreateErrorTable(new Error("No images available", 400));
+                        HttpContext.WriteToResponse(response);
+                        return;
+                    }
+                    else if (index >= points.Count() || index < 0)
+                    {
+                        response = CoreUtility.CreateErrorTable(CommonErrors.INDEX_OUT_OF_RANGE);
+                        HttpContext.WriteToResponse(response);
+                        return;
+                    }
+                    else
+                    {
+                        ImageResponse p = points.ElementAt(index);
+                        IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, p.IsBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
+                        img = imageData.RenderImage();
+                    }
+                }
+                else
+                {
+                    img = (IRenderedImage)image;
+                }
+
+                plateSolveResult = null;
+                IPlateSolveSettings settings = AdvancedAPI.Controls.Profile.ActiveProfile.PlateSolveSettings;
+
+                IPlateSolverFactory platesolver = AdvancedAPI.Controls.PlateSolver;
+                Coordinates coordinates = AdvancedAPI.Controls.Mount.GetCurrentPosition();
+                double focalLength = AdvancedAPI.Controls.Profile.ActiveProfile.TelescopeSettings.FocalLength;
+                CaptureSolverParameter solverParameter = new CaptureSolverParameter()
+                {
+                    Attempts = 1,
+                    Binning = settings.Binning,
+                    BlindFailoverEnabled = settings.BlindFailoverEnabled,
+                    Coordinates = coordinates,
+                    DownSampleFactor = settings.DownSampleFactor,
+                    FocalLength = focalLength,
+                    MaxObjects = settings.MaxObjects,
+                    Regions = settings.Regions,
+                    SearchRadius = settings.SearchRadius,
+                    PixelSize = img.RawImageData.MetaData.Camera.PixelSize
+                };
+                IImageSolver captureSolver = platesolver.GetImageSolver(platesolver.GetPlateSolver(settings), platesolver.GetBlindSolver(settings));
+
+                plateSolveResult = await captureSolver.Solve(img.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), HttpContext.CancellationToken);
+
+                response.Response = plateSolveResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+
         }
 
         [Route(HttpVerbs.Get, "/image/{index}/prefix")]

@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Advanced API
   description: This is the API documentation for the NINA plugin Advanced API. Please use streaming instead of the default base64 encoding for images, as base64 support will be removed in the near future!
-  version: 2.2.11
+  version: 2.2.13
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -1865,6 +1865,107 @@ paths:
                     enum:
                       - Filterwheel not connected
                       - Filter not available
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/filterwheel/add-filter:
+    get:
+      tags:
+        - FilterWheel
+      summary: Add Filter
+      description: Add Filter
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Filter added
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/filterwheel/remove-filter:
+    get:
+      tags:
+        - FilterWheel
+      summary: Remove Filter
+      description: Remove a filter from the list of available filters
+      parameters:
+        - in: query
+          name: filterId
+          description: The filter to remove.
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Filter removed
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Filter not available
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Filter not available
                   StatusCode:
                     type: integer
                     example: 409
@@ -5220,6 +5321,205 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /image/{index}/solve:
+    get:
+      tags:
+        - Image
+      summary: Solve image
+      description: Solves the specified image, the result is returned immediately (blocking request)
+      parameters:
+        - in: path
+          name: index
+          description: The index of the image to solve
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: imageType
+          description: Filter the image history by image type. This is useful if you got the index of an image using the history with a filter and now want to get the image. E.g. the 3rd flat in the image history is the 3rd flat in the image endpoint.
+          required: false
+          schema:
+            type: string
+            enum:
+              - LIGHT
+              - FLAT
+              - DARK
+              - BIAS
+              - SNAPSHOT
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    properties:
+                      Coordinates:
+                        type: object
+                        properties:
+                          RA:
+                            type: number
+                          RADegrees:
+                            type: number
+                          Dec:
+                            type: number
+                          DECDegrees:
+                            type: number
+                          Epoch:
+                            type: integer
+                      PositionAngle:
+                        type: number
+                      PixelScale:
+                        type: number
+                      Radius:
+                        type: number
+                      Flipped:
+                        type: boolean
+                      Success:
+                        type: boolean
+                      RaErrorString:
+                        type: string
+                      RaPixError:
+                        type: number
+                      DecPixError:
+                        type: number
+                      DecErrorString:
+                        type: string
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Invalid image index / No images available
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Index out of range
+                      - No images available
+                  StatusCode:
+                    type: integer
+                    example: 400
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /prepared-image/solve:
+    get:
+      tags:
+        - Image
+      summary: Solve prepared image
+      description: Solves the prepared image, the result is returned immediately (blocking request)
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    properties:
+                      Coordinates:
+                        type: object
+                        properties:
+                          RA:
+                            type: number
+                          RADegrees:
+                            type: number
+                          Dec:
+                            type: number
+                          DECDegrees:
+                            type: number
+                          Epoch:
+                            type: integer
+                      PositionAngle:
+                        type: number
+                      PixelScale:
+                        type: number
+                      Radius:
+                        type: number
+                      Flipped:
+                        type: boolean
+                      Success:
+                        type: boolean
+                      RaErrorString:
+                        type: string
+                      RaPixError:
+                        type: number
+                      DecPixError:
+                        type: number
+                      DecErrorString:
+                        type: string
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "404":
+          description: "Image not available"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: "Image not available"
+                  StatusCode:
+                    type: integer
+                    example: 404
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /prepared-image:
     get:
       tags:
@@ -5474,6 +5774,8 @@ paths:
                             HFRStDev:
                               type: number
                             TargetName:
+                              type: string
+                            Filename:
                               type: string
                       - type: integer
                         description: The number of images

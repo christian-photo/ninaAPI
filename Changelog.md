@@ -34,6 +34,12 @@ The event websocket now supports channels, which can be subscribed to per client
 - Endpoints like `image-history` now support pagination
 - It is now possible to work with multiple captures, not just the last one
 
+## 2.2.13.0
+
+- The `IMAGE-SAVED` event and `image-history` now contain the Filenames of the images
+- `image/{index}/solve` and `prepared-image/solve` added
+- `equipment/filterwheel/add-filter` and `equipment/filterwheel/remove-filter` added
+
 ## 2.2.12.1
 
 - When no prepared image is available, the endpoint now returns a 404 error

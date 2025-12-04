@@ -1,7 +1,7 @@
 asyncapi: 2.0.0
 info:
   title: Advanced API
-  version: 2.2.11.0
+  version: 2.2.13.0
   description: This is the Websocket documentation for the NINA plugin Advanced API.
 servers:
   production:
@@ -149,6 +149,8 @@ channels:
                         HFRStDev:
                           type: number
                         TargetName:
+                          type: string
+                        Filename:
                           type: string
                 Error:
                   type: string

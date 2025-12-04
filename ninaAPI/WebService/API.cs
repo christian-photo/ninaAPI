@@ -123,6 +123,7 @@ namespace ninaAPI.WebService
             catch (Exception ex)
             {
                 Logger.Error(ex);
+                Notification.ShowError("Webserver start failed, please check the logs for more info");
             }
         }
 
