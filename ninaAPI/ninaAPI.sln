@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ninaAPI", "ninaAPI.csproj",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ninaAPI.Test", "..\ninaAPI.Test\ninaAPI.Test.csproj", "{0AB39216-46BB-43E2-87F4-E53B5350D709}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ninaAPI.Doc", "..\ninaAPI.Doc\ninaAPI.Doc.csproj", "{1FEDDBA7-F25C-4ECE-8929-30C53537AE42}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

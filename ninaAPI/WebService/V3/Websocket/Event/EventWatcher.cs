@@ -94,7 +94,7 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         /// <returns>True, if the event was actually sent to the websocket, false otherwise</returns>
         public async Task<bool> SubmitEvent(WebSocketEvent e)
         {
-            if (eventSocket.IsActive)
+            if (eventSocket?.IsActive ?? false)
             {
                 await eventSocket.SendEvent(e);
                 return true;

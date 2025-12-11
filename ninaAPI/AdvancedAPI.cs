@@ -330,9 +330,9 @@ namespace ninaAPI
             LocalNetworkAddress = $"http://{LocalAddresses.IPAddress}:{ActualPort}{api}";
             HostAddress = $"http://{LocalAddresses.HostName}:{ActualPort}{api}";
 
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalAddress)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalNetworkAddress)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HostAddress)));
+            RaisePropertyChanged(nameof(LocalAddress));
+            RaisePropertyChanged(nameof(LocalNetworkAddress));
+            RaisePropertyChanged(nameof(HostAddress));
         }
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
