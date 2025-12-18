@@ -80,6 +80,7 @@ namespace ninaAPI
                            IFramingAssistantVM framing,
                            IDomeFollower domeFollower,
                            ITwilightCalculator twilightCalculator,
+                           INighttimeCalculator nighttimeCalculator,
                            IWindowServiceFactory windowFactory)
         {
 #if WINDOWS
@@ -115,6 +116,7 @@ namespace ninaAPI
                 FramingAssistant = framing,
                 DomeFollower = domeFollower,
                 TwilightCalculator = twilightCalculator,
+                NighttimeCalculator = nighttimeCalculator,
                 WindowFactory = windowFactory,
             };
 

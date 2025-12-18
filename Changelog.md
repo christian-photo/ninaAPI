@@ -2,6 +2,13 @@
 
 The changes for each individual (beta) release can be seen in each [release](https://github.com/christian-photo/ninaAPI/releases). This changelog will only cover the fully released versions.
 
+## 2.2.14.0
+
+- Added `rotator/reverse` to reverse its direction
+- Added `rotator/set-mechanical-range` to set the rotators mechanical range (full, 180°, 90°)
+- Added `/astro-util/moon-separation` to calculate the moon seperation for given coordinates
+- Added `imageType` to the capture endpoint
+
 ## 2.2.13.0
 
 - The `IMAGE-SAVED` event and `image-history` now contain the Filenames of the images

@@ -1,5 +1,8 @@
 /ninaAPI/manifest.json
 /ninaAPI/ninaAPI.zip
+CreateNET7Manifest.ps1
+publish.bat
+validateAndDeploy.bat
 .env
 
 ## Ignore Visual Studio temporary files, build results, and

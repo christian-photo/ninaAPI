@@ -1,4 +1,4 @@
-﻿#region "copyright"
+#region "copyright"
 
 /*
     Copyright © 2024 Christian Palm (christian@palm-family.de)
@@ -58,6 +58,7 @@ namespace ninaAPI
         public IMessageBroker MessageBroker;
         public IFramingAssistantVM FramingAssistant;
         public ITwilightCalculator TwilightCalculator;
+        public INighttimeCalculator NighttimeCalculator;
         public IWindowServiceFactory WindowFactory;
         #endregion
     }
