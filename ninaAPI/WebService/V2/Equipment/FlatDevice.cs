@@ -15,7 +15,6 @@ using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyFlatDevice;
 using NINA.Equipment.Interfaces.Mediator;
-using NINA.Sequencer.SequenceItem.FlatDevice;
 using ninaAPI.Utility;
 using System;
 using System.Collections.Generic;

@@ -11,7 +11,6 @@
 
 using EmbedIO;
 using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MySafetyMonitor;
 using NINA.Equipment.Interfaces.Mediator;

@@ -12,9 +12,12 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyRotator;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.WPF.Base.Mediator;
+using NINA.WPF.Base.ViewModel.Equipment.Rotator;
 using ninaAPI.Utility;
 using System;
 using System.Collections.Generic;
@@ -119,10 +122,13 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Rotator not connected", 409));
                 }
-                RotatorToken?.Cancel();
-                RotatorToken = new CancellationTokenSource();
-                rotator.Move(position, RotatorToken.Token);
-                response.Response = "Rotator move started";
+                else
+                {
+                    RotatorToken?.Cancel();
+                    RotatorToken = new CancellationTokenSource();
+                    rotator.Move(position, RotatorToken.Token);
+                    response.Response = "Rotator move started";
+                }
             }
             catch (Exception ex)
             {
@@ -146,10 +152,65 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Rotator not connected", 409));
                 }
-                RotatorToken?.Cancel();
-                RotatorToken = new CancellationTokenSource();
-                rotator.MoveMechanical(position, RotatorToken.Token);
-                response.Response = "Rotator move started";
+                else
+                {
+                    RotatorToken?.Cancel();
+                    RotatorToken = new CancellationTokenSource();
+                    rotator.MoveMechanical(position, RotatorToken.Token);
+                    response.Response = "Rotator move started";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/rotator/reverse")]
+        public void RotatorReverse([QueryField] bool reverseDirection)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                if (!AdvancedAPI.Controls.Rotator.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Rotator not connected", 409));
+                }
+                else
+                {
+                    var rotator = (RotatorVM)typeof(RotatorMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(AdvancedAPI.Controls.Rotator);
+                    rotator.ReverseCommand.Execute(reverseDirection);
+
+                    response.Response = "Reverse set";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/rotator/set-mechanical-range")]
+        public void RotatorSetRange([QueryField(true)] RotatorRangeTypeEnum range, [QueryField] float rangeStartPosition)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                AdvancedAPI.Controls.Profile.ActiveProfile.RotatorSettings.RangeType = range;
+                if (!HttpContext.IsParameterOmitted(nameof(rangeStartPosition)))
+                {
+                    AdvancedAPI.Controls.Profile.ActiveProfile.RotatorSettings.RangeStartMechanicalPosition = rangeStartPosition;
+                }
+
+                response.Response = "Range set";
             }
             catch (Exception ex)
             {

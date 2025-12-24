@@ -1,4 +1,4 @@
-﻿#region "copyright"
+#region "copyright"
 
 /*
     Copyright © 2025 Christian Palm (christian@palm-family.de)
@@ -101,13 +101,14 @@ namespace ninaAPI.WebService
                 {
                     serverThread = new Thread(() => APITask(Server));
                     serverThread.Name = "API Thread";
-                    serverThread.SetApartmentState(ApartmentState.STA);
+                    // serverThread.SetApartmentState(ApartmentState.STA);
                     serverThread.Start();
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error($"failed to start web server: {ex}");
+                Notification.ShowError("Webserver start failed, please check the logs for more info");
             }
         }
 
@@ -126,7 +127,7 @@ namespace ninaAPI.WebService
             }
         }
 
-        [STAThread]
+        // [STAThread]
         private void APITask(WebServer server)
         {
             string ipAdress = CoreUtility.GetLocalNames()["IPADRESS"];

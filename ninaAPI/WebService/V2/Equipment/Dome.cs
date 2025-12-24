@@ -9,7 +9,6 @@
 
 #endregion "copyright"
 
-using ASCOM.Com.DriverAccess;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;

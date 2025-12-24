@@ -90,10 +90,13 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Switch not connected", 409));
                 }
-                SwitchToken?.Cancel();
-                SwitchToken = new CancellationTokenSource();
-                sw.SetSwitchValue(index, value, AdvancedAPI.Controls.StatusMediator.GetStatus(), SwitchToken.Token);
-                response.Response = "Switch value updated";
+                else
+                {
+                    SwitchToken?.Cancel();
+                    SwitchToken = new CancellationTokenSource();
+                    sw.SetSwitchValue(index, value, AdvancedAPI.Controls.StatusMediator.GetStatus(), SwitchToken.Token);
+                    response.Response = "Switch value updated";
+                }
             }
             catch (Exception ex)
             {

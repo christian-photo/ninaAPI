@@ -9,20 +9,20 @@
 
 #endregion "copyright"
 
-using EmbedIO.WebApi;
-using EmbedIO;
 using System;
-using EmbedIO.Routing;
-using ninaAPI.Utility;
-using NINA.Core.Utility;
-using NINA.Profile.Interfaces;
-using NINA.Core.Enum;
-using System.Reflection;
 using System.Collections.Generic;
-using NINA.Profile;
-using System.Linq;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Reflection;
+using EmbedIO;
+using EmbedIO.Routing;
+using EmbedIO.WebApi;
+using NINA.Core.Enum;
 using NINA.Core.Model;
+using NINA.Core.Utility;
+using NINA.Profile;
+using NINA.Profile.Interfaces;
+using ninaAPI.Utility;
 
 namespace ninaAPI.WebService.V2
 {
@@ -219,7 +219,21 @@ namespace ninaAPI.WebService.V2
                     {
                         for (int i = 0; i <= pathSplit.Length - 2; i++)
                         {
-                            position = position.GetType().GetProperty(pathSplit[i]).GetValue(position);
+                            if (IsIndexable(position, out Type indexType, out PropertyInfo indexProp))
+                            {
+                                if (indexType == typeof(string))
+                                {
+                                    indexProp.GetValue(position, [pathSplit[i]]);
+                                }
+                                else
+                                {
+                                    position = indexProp.GetValue(position, [int.Parse(pathSplit[i])]);
+                                }
+                            }
+                            else
+                            {
+                                position = position.GetType().GetProperty(pathSplit[i]).GetValue(position);
+                            }
                         }
                         PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
                         prop.SetValue(position, ((string)newValue).CastString(prop.PropertyType));
@@ -235,6 +249,19 @@ namespace ninaAPI.WebService.V2
             }
 
             HttpContext.WriteToResponse(response);
+        }
+
+        private bool IsIndexable(object obj, out Type indexType, out PropertyInfo indexProp)
+        {
+            indexProp = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).FirstOrDefault(x => x.GetIndexParameters().Length > 0, null);
+            if (indexProp == null)
+            {
+                indexType = null;
+                return false;
+            }
+
+            indexType = indexProp.GetIndexParameters()[0].ParameterType;
+            return true;
         }
 
         [Route(HttpVerbs.Get, "/profile/switch")]

@@ -1,4 +1,4 @@
-﻿#region "copyright"
+#region "copyright"
 
 /*
     Copyright © 2025 Christian Palm (christian@palm-family.de)
@@ -9,33 +9,32 @@
 
 #endregion "copyright"
 
-using NINA.Plugin;
-using NINA.Plugin.Interfaces;
-using NINA.Equipment.Interfaces.Mediator;
-using NINA.WPF.Base.Interfaces.ViewModel;
-using NINA.Profile.Interfaces;
-using NINA.Sequencer.Interfaces.Mediator;
-using NINA.WPF.Base.Interfaces.Mediator;
-using ninaAPI.Properties;
-using ninaAPI.WebService;
-using System.ComponentModel.Composition;
-using System.Threading.Tasks;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using NINA.Image.Interfaces;
-using NINA.WPF.Base.Interfaces;
-using NINA.PlateSolving.Interfaces;
-using ninaAPI.Utility;
-using NINA.Core.Utility.Notification;
-using System.Windows;
-using NINA.Core.Utility;
-using NINA.Equipment.Interfaces;
-using NINA.Astrometry.Interfaces;
-using NINA.Core.Utility.WindowService;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Windows;
+using NINA.Astrometry.Interfaces;
+using NINA.Core.Utility;
+using NINA.Core.Utility.Notification;
+using NINA.Core.Utility.WindowService;
+using NINA.Equipment.Interfaces;
+using NINA.Equipment.Interfaces.Mediator;
+using NINA.Image.Interfaces;
+using NINA.PlateSolving.Interfaces;
+using NINA.Plugin;
+using NINA.Plugin.Interfaces;
 using NINA.Profile;
-using System;
+using NINA.Profile.Interfaces;
+using NINA.Sequencer.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces;
+using NINA.WPF.Base.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces.ViewModel;
+using ninaAPI.Utility;
+using ninaAPI.WebService;
 using Settings = ninaAPI.Properties.Settings;
 
 namespace ninaAPI
@@ -81,9 +80,12 @@ namespace ninaAPI
                            IFramingAssistantVM framing,
                            IDomeFollower domeFollower,
                            ITwilightCalculator twilightCalculator,
+                           INighttimeCalculator nighttimeCalculator,
                            IWindowServiceFactory windowFactory)
         {
+#if WINDOWS
             Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri("pack://application:,,,/ninaAPI;component/WebService/V2/CustomDrivers/RotatorDataTemplate.xaml") });
+#endif
             PluginId = this.Identifier;
             instance = this;
 
@@ -114,6 +116,7 @@ namespace ninaAPI
                 FramingAssistant = framing,
                 DomeFollower = domeFollower,
                 TwilightCalculator = twilightCalculator,
+                NighttimeCalculator = nighttimeCalculator,
                 WindowFactory = windowFactory,
             };
 
@@ -145,8 +148,6 @@ namespace ninaAPI
 
             SetHostNames();
             API.StartWatchers();
-
-
         }
 
         private void ProfileChanged(object sender, EventArgs e)

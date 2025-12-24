@@ -226,5 +226,38 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/astro-util/moon-separation")]
+        public async Task UtilCalculateNighttime([QueryField] double ra, [QueryField] double dec)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                var info = new MoonInfo(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000));
+                var settings = AdvancedAPI.Controls.Profile.ActiveProfile.AstrometrySettings;
+                info.DisplayMoon = true;
+                info.SetReferenceDateAndObserver(DateTime.Now, new ObserverInfo()
+                {
+                    Elevation = settings.Elevation,
+                    Latitude = settings.Latitude,
+                    Longitude = settings.Longitude
+                });
+                response.Response = new MoonSeparationInfo(info);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+    }
+
+    public class MoonSeparationInfo(MoonInfo info)
+    {
+        public double Separation { get; set; } = info.Separation;
+        public AstroUtil.MoonPhase MoonPhase { get; set; } = info.Phase;
     }
 }
