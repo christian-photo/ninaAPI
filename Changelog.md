@@ -2,6 +2,10 @@
 
 The changes for each individual (beta) release can be seen in each [release](https://github.com/christian-photo/ninaAPI/releases). This changelog will only cover the fully released versions.
 
+## 2.2.14.1
+
+- Fix moon separation calculation
+
 ## 2.2.14.0
 
 - Added `rotator/reverse` to reverse its direction

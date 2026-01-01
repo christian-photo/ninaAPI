@@ -288,7 +288,7 @@ paths:
             minimum: 0
           required: true
       responses:
-        200:
+        "200":
           description: Successful response
           content:
             application/json:
@@ -310,7 +310,7 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        400:
+        "400":
           description: Invalid readout mode
           content:
             application/json:
@@ -332,7 +332,7 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -4987,7 +4987,7 @@ paths:
       tags:
         - Framing Assistant
       summary: Moon Separation
-      description: Calculate the moon separation for the current time and location for given coordinates.
+      description: Calculate the moon separation for the current time and location for given coordinates. This may not agree with NINA but it seems that this implementation is more accurate.
       parameters:
         - in: query
           name: ra
