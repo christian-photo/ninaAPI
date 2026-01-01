@@ -4,7 +4,7 @@ The changes for each individual (beta) release can be seen in each [release](htt
 
 ## 2.2.14.1
 
-- Fix moon sepraration calculation
+- Fix moon separation calculation
 
 ## 2.2.14.0
 
