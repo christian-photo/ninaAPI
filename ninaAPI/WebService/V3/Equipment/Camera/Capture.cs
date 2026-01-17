@@ -63,7 +63,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 CaptureSequence sequence = new CaptureSequence(
                     (double)Config.Duration,
-                    CaptureSequence.ImageTypes.SNAPSHOT,
+                    Config.ImageType,
                     filterWheel.GetInfo().SelectedFilter,
                     Config.Binning,
                     1);
