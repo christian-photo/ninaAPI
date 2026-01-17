@@ -214,6 +214,8 @@ namespace ninaAPI.Utility
         {
             return IsBetween((decimal)value, (decimal)min, (decimal)max);
         }
+
+        public static readonly List<string> IMAGE_TYPES = ["LIGHT", "FLAT", "BIAS", "DARK", "SNAPSHOT"];
     }
 
     public class HttpResponse

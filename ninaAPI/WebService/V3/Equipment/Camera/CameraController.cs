@@ -261,19 +261,8 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         [Route(HttpVerbs.Get, "/capture/{id}")]
         public async Task CameraCaptureImage(Guid id)
         {
-            SensorType sensor = SensorType.Monochrome;
-
-            if (profile.ActiveProfile.CameraSettings.BayerPattern != BayerPatternEnum.Auto)
-            {
-                sensor = (SensorType)profile.ActiveProfile.CameraSettings.BayerPattern;
-            }
-            else if (cam.GetInfo().Connected)
-            {
-                sensor = cam.GetInfo().SensorType;
-            }
-
             ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile.ActiveProfile);
-            imageQuery.BayerPattern = new QueryParameter<SensorType>("bayer-pattern", sensor, false);
+            imageQuery.BayerPattern = new QueryParameter<SensorType>("bayer-pattern", FindBayer(profile.ActiveProfile, cam), false);
 
             imageQuery.Evaluate(HttpContext);
 
@@ -353,7 +342,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         /// <summary>
-        /// Removes a capture and cleans everything up. This is unique to capture since it stores data on the disk 
+        /// Removes a capture and cleans everything up. This is unique to capture since it stores data on the disk
         /// and the user might want to clean it up without having to exit NINA
         /// </summary>
         /// <param name="id">The id of the capture that will be removed</param>
@@ -367,6 +356,22 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             captureMediator.RemoveCapture(id);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Capture removed"));
+        }
+
+        public static SensorType FindBayer(IProfile profile, ICameraMediator cameraMediator)
+        {
+            SensorType sensor = SensorType.Monochrome;
+
+            if (profile.CameraSettings.BayerPattern != BayerPatternEnum.Auto)
+            {
+                sensor = (SensorType)profile.CameraSettings.BayerPattern;
+            }
+            else if (cameraMediator.GetInfo().Connected)
+            {
+                sensor = cameraMediator.GetInfo().SensorType;
+            }
+
+            return sensor;
         }
     }
 }

@@ -19,6 +19,7 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Rotator;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using System;
 using System.Collections.Generic;
 using System.Threading;
