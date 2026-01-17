@@ -1,4 +1,4 @@
-﻿#region "copyright"
+#region "copyright"
 
 /*
     Copyright © 2025 Christian Palm (christian@palm-family.de)
@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using Accord;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
@@ -16,8 +17,11 @@ using Newtonsoft.Json;
 using NINA.Core.Locale;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyFocuser;
+using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.Utility.AutoFocus;
+using NINA.WPF.Base.ViewModel.Equipment.Focuser;
 using ninaAPI.Utility;
 using OxyPlot;
 using System;
@@ -207,6 +211,32 @@ namespace ninaAPI.WebService.V2
                 else
                 {
                     response = CoreUtility.CreateErrorTable(new Error("No AF available", 500));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/focuser/pins/reverse")]
+        public async Task FocuserLastAF([QueryField] bool reversing)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                if (AdvancedAPI.Controls.Focuser.GetType().HasMethod("SetReverse"))
+                {
+                    AdvancedAPI.Controls.Focuser.GetType().GetMethod("SetReverse").Invoke(AdvancedAPI.Controls.Focuser, [reversing]);
+                    response.Response = "Reverse set";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Platform not supported", 500));
                 }
             }
             catch (Exception ex)

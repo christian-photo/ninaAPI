@@ -288,7 +288,7 @@ paths:
             minimum: 0
           required: true
       responses:
-        200:
+        "200":
           description: Successful response
           content:
             application/json:
@@ -310,7 +310,7 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        400:
+        "400":
           description: Invalid readout mode
           content:
             application/json:
@@ -332,7 +332,7 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -797,6 +797,19 @@ paths:
           required: false
           schema:
             type: boolean
+        - in: query
+          name: imageType
+          description: The image type (light, dark, bias, flat, snapshot)
+          required: false
+          schema:
+            type: string
+            default: SNAPSHOT
+            enum:
+              - LIGHT
+              - DARK
+              - BIAS
+              - FLAT
+              - SNAPSHOT
       responses:
         "200":
           description: Successful response
@@ -4002,6 +4015,146 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /equipment/rotator/reverse:
+    get:
+      tags:
+        - Rotator
+      summary: Reverse
+      description: Reverses the direction of the rotator
+      parameters:
+        - in: query
+          name: reverseDirection
+          description: If reverse should be on or off
+          required: true
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Reverse set
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Rotator not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Rotator not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/rotator/set-mechanical-range:
+    get:
+      tags:
+        - Rotator
+      summary: Set Range
+      description: Sets the mechanical range of the rotator to full, 180° (half) or 90° (quarter)
+      parameters:
+        - in: query
+          name: range
+          description: The range to set
+          required: true
+          schema:
+            type: string
+            enum:
+              - full
+              - half
+              - quarter
+        - in: query
+          name: rangeStartPosition
+          description: The mechanical position of the start of the set range (only applies to half and quarter)
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Range set
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Rotator not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Rotator not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /equipment/safetymonitor/info:
     get:
       tags:
@@ -4822,6 +4975,72 @@ paths:
                 description: Image in jpg format, when stream is set to true and the image quality is specified
                 type: array
                 format: binary
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /astro-util/moon-separation:
+    get:
+      tags:
+        - Framing Assistant
+      summary: Moon Separation
+      description: Calculate the moon separation for the current time and location for given coordinates. This may not agree with NINA but it seems that this implementation is more accurate.
+      parameters:
+        - in: query
+          name: ra
+          description: Right Ascension in degrees
+          required: true
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: dec
+          description: Declination in degrees
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    properties:
+                      Separation:
+                        type: number
+                        format: double
+                      MoonPhase:
+                        type: string
+                        enum:
+                          - Unknown
+                          - FullMoon
+                          - WaningGibbous
+                          - LastQuarter
+                          - WaningCrescent
+                          - NewMoon
+                          - WaxingCrescent
+                          - FirstQuarter
+                          - WaxingGibbous
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
         "500":
           description: Internal server error, Unknown error
           content:

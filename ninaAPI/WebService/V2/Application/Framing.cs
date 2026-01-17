@@ -226,5 +226,80 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/astro-util/moon-separation")]
+        public async Task UtilCalculateNighttime([QueryField] double ra, [QueryField] double dec)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                var info = new MoonInfo(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000));
+                var settings = AdvancedAPI.Controls.Profile.ActiveProfile.AstrometrySettings;
+                var obInfo = new ObserverInfo()
+                {
+                    Elevation = settings.Elevation,
+                    Latitude = settings.Latitude,
+                    Longitude = settings.Longitude
+                };
+                info.DisplayMoon = true;
+                double separation = CalculateTargetSeparation(info.Coordinates, true, obInfo);
+                response.Response = new MoonSeparationInfo { MoonPhase = info.Phase, Separation = separation };
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        // This method is copied from https://github.com/daleghent/nina-moon-angle/blob/main/Utility/Utility.cs#L28
+        // Original license:
+        //    Copyright Dale Ghent <daleg@elemental.org>
+        //
+        //     This Source Code Form is subject to the terms of the Mozilla Public
+        //     License, v. 2.0. If a copy of the MPL was not distributed with this
+        //     file, You can obtain one at http://mozilla.org/MPL/2.0/
+        // Modifications:
+        //   - Replaced Enums.SepObject with a bool to avoid copying the enum
+        private static double CalculateTargetSeparation(Coordinates targetCoordinates, bool toMoon, ObserverInfo observerInfo)
+        {
+            var date = DateTime.UtcNow;
+            var jd = AstroUtil.GetJulianDate(date);
+
+            var sepObjectPosition = new NOVAS.SkyPosition();
+
+            if (toMoon)
+            {
+                sepObjectPosition = AstroUtil.GetMoonPosition(date, jd, observerInfo);
+            }
+            else
+            {
+                sepObjectPosition = AstroUtil.GetSunPosition(date, jd, observerInfo);
+            }
+
+            var sepObjectRaRadians = AstroUtil.ToRadians(AstroUtil.HoursToDegrees(sepObjectPosition.RA));
+            var sepObjectDecRadians = AstroUtil.ToRadians(sepObjectPosition.Dec);
+
+            _ = targetCoordinates.Transform(Epoch.JNOW);
+            var targetRaRadians = AstroUtil.ToRadians(targetCoordinates.RADegrees);
+            var targetDecRadians = AstroUtil.ToRadians(targetCoordinates.Dec);
+
+            var theta = SOFA.Seps(sepObjectRaRadians, sepObjectDecRadians, targetRaRadians, targetDecRadians);
+
+            var thetaDegrees = AstroUtil.ToDegree(theta);
+
+            Logger.Trace($"{(toMoon ? "Moon" : "Sun")} RA: {AstroUtil.HoursToHMS(sepObjectPosition.RA)}, Dec: {AstroUtil.DegreesToDMS(sepObjectPosition.Dec)}, True angle: {thetaDegrees:0.00}");
+
+            return thetaDegrees;
+        }
+    }
+
+    public class MoonSeparationInfo
+    {
+        public double Separation { get; set; }
+        public AstroUtil.MoonPhase MoonPhase { get; set; }
     }
 }

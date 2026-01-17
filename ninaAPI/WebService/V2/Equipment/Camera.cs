@@ -1,4 +1,4 @@
-﻿#region "copyright"
+#region "copyright"
 
 /*
     Copyright © 2025 Christian Palm (christian@palm-family.de)
@@ -35,6 +35,7 @@ using NINA.Image.ImageData;
 using NINA.Image.ImageAnalysis;
 using NINA.Core.Enum;
 using System.Reflection;
+using Accord;
 
 namespace ninaAPI.WebService.V2
 {
@@ -468,7 +469,8 @@ namespace ninaAPI.WebService.V2
             [QueryField] bool save,
             [QueryField] string targetName,
             [QueryField] bool onlyAwaitCaptureCompletion,
-            [QueryField] bool onlySaveRaw)
+            [QueryField] bool onlySaveRaw,
+            [QueryField] string imageType)
         {
 
             HttpResponse response = new HttpResponse();
@@ -482,6 +484,7 @@ namespace ninaAPI.WebService.V2
                 size = "640x480";
 
             Size resolution = Size.Empty;
+
 
             try
             {
@@ -571,7 +574,7 @@ namespace ninaAPI.WebService.V2
 
                         CaptureSequence sequence = new CaptureSequence(
                             duration <= 0 ? settings.ExposureTime : duration,
-                            CaptureSequence.ImageTypes.SNAPSHOT,
+                            isImageTypeValid(imageType) ? imageType.ToUpper() : CaptureSequence.ImageTypes.SNAPSHOT,
                             AdvancedAPI.Controls.FilterWheel.GetInfo().SelectedFilter,
                             new BinningMode(cam.GetInfo().BinX, cam.GetInfo().BinY),
                             1);
@@ -650,7 +653,7 @@ namespace ninaAPI.WebService.V2
                     {
                         await CaptureTask;
                         // Return the captured image
-                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false, targetName, false, onlySaveRaw);
+                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false, targetName, false, onlySaveRaw, imageType);
                         return;
                     }
 
@@ -663,6 +666,22 @@ namespace ninaAPI.WebService.V2
             }
 
             HttpContext.WriteToResponse(response);
+        }
+
+        private bool isImageTypeValid(string imageType)
+        {
+            if (string.IsNullOrEmpty(imageType)) return false;
+            imageType = imageType.ToUpper();
+            if (imageType.Equals(CaptureSequence.ImageTypes.BIAS) ||
+                imageType.Equals(CaptureSequence.ImageTypes.DARK) ||
+                imageType.Equals(CaptureSequence.ImageTypes.FLAT) ||
+                imageType.Equals(CaptureSequence.ImageTypes.LIGHT) ||
+                imageType.Equals(CaptureSequence.ImageTypes.SNAPSHOT))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

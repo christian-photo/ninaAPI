@@ -34,6 +34,18 @@ The event websocket now supports channels, which can be subscribed to per client
 - Endpoints like `image-history` now support pagination
 - It is now possible to work with multiple captures, not just the last one
 
+
+## 2.2.14.1
+
+- Fix moon separation calculation
+
+## 2.2.14.0
+
+- Added `rotator/reverse` to reverse its direction
+- Added `rotator/set-mechanical-range` to set the rotators mechanical range (full, 180°, 90°)
+- Added `/astro-util/moon-separation` to calculate the moon seperation for given coordinates
+- Added `imageType` to the capture endpoint
+
 ## 2.2.13.0
 
 - The `IMAGE-SAVED` event and `image-history` now contain the Filenames of the images
