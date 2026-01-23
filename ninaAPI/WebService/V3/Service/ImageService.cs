@@ -11,28 +11,41 @@
 
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using NINA.Core.Utility;
 using NINA.Image.Interfaces;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using SkiaSharp;
 
 namespace ninaAPI.WebService.V3.Service
 {
     public static class ImageService
     {
-        public static async Task<BitmapEncoder> ProcessAndPrepareImage(IRenderedImage image, ImageQueryParameterSet parameters)
+        private static ImageWriter GetImageWriter(BitmapSource image, ImageFormat format)
+        {
+            return format switch
+            {
+                ImageFormat.AVIF => new AvifWriter(image),
+                ImageFormat.JPEG => new JpegWriter(image),
+                ImageFormat.PNG => new PngWriter(image),
+                ImageFormat.WEBP => new WebpWriter(image),
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        public static async Task<ImageWriter> ProcessAndPrepareImage(IRenderedImage image, ImageQueryParameterSet parameters)
         {
             image = await StretchAndDebayer(image, parameters);
 
             BitmapSource bitmap = ResizeBitmap(image.Image, parameters);
-            BitmapEncoder encoder = BitmapHelper.GetEncoder(bitmap, parameters.Quality.Value);
 
-            return encoder;
+            return GetImageWriter(bitmap, parameters.Format.Value);
         }
 
-        public static async Task<BitmapEncoder> ProcessAndPrepareImage(string path, bool isBayered, ImageQueryParameterSet parameters, int bitDepth = 16, int delay = 200, int retries = 10)
+        public static async Task<ImageWriter> ProcessAndPrepareImage(string path, bool isBayered, ImageQueryParameterSet parameters, int bitDepth = 16, int delay = 200, int retries = 10)
         {
             IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(path, bitDepth, isBayered, parameters.RawConverter.Value), TimeSpan.FromMilliseconds(delay), retries);
             IRenderedImage image = imageData.RenderImage();
@@ -41,16 +54,13 @@ namespace ninaAPI.WebService.V3.Service
 
         public static BitmapSource ResizeBitmap(BitmapSource image, ImageQueryParameterSet parameters)
         {
-            if (parameters.Resize.Value)
+            if (parameters.Scale.WasProvided)
             {
-                if (parameters.Scale.WasProvided)
-                {
-                    image = BitmapHelper.ScaleBitmap(image, parameters.Scale.Value);
-                }
-                else
-                {
-                    image = BitmapHelper.ResizeBitmap(image, parameters.Size.Value);
-                }
+                image = BitmapHelper.ScaleBitmap(image, parameters.Scale.Value);
+            }
+            else if (parameters.Size.WasProvided)
+            {
+                image = BitmapHelper.ResizeBitmap(image, parameters.Size.Value);
             }
             return image;
         }
@@ -63,5 +73,88 @@ namespace ninaAPI.WebService.V3.Service
             }
             return await image.Stretch(parameters.StretchFactor.Value, parameters.BlackClipping.Value, parameters.UnlinkedStretch.Value);
         }
+    }
+
+    public abstract class ImageWriter(BitmapSource img)
+    {
+        protected BitmapSource image = img;
+
+        public abstract void WriteToStream(ImageQueryParameterSet parameter, Stream target);
+        public abstract string MimeType { get; protected set; }
+    }
+
+    public class JpegWriter(BitmapSource image) : ImageWriter(image)
+    {
+        public override void WriteToStream(ImageQueryParameterSet parameter, Stream target)
+        {
+            var encoder = new JpegBitmapEncoder();
+            encoder.QualityLevel = parameter.Quality.Value;
+            encoder.Frames.Add(BitmapFrame.Create(image));
+
+            encoder.Save(target);
+        }
+
+        public override string MimeType { get; protected set; } = "image/jpeg";
+    }
+
+    public class PngWriter(BitmapSource image) : ImageWriter(image)
+    {
+        public override void WriteToStream(ImageQueryParameterSet parameter, Stream target)
+        {
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(image));
+
+            encoder.Save(target);
+        }
+
+        public override string MimeType { get; protected set; } = "image/png";
+    }
+
+    public class WebpWriter(BitmapSource image) : ImageWriter(image)
+    {
+        public override void WriteToStream(ImageQueryParameterSet parameter, Stream target)
+        {
+            int quality = parameter.Quality.Value;
+
+            using (var pngStream = new MemoryStream())
+            {
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(image));
+                encoder.Save(pngStream);
+                pngStream.Position = 0;
+
+                using var skBitmap = SKBitmap.Decode(pngStream);
+                using var skImage = SKImage.FromBitmap(skBitmap);
+                using var data = skImage.Encode(SKEncodedImageFormat.Webp, quality);
+
+                data.SaveTo(target);
+            }
+        }
+
+        public override string MimeType { get; protected set; } = "image/jpeg";
+    }
+
+    public class AvifWriter(BitmapSource image) : ImageWriter(image)
+    {
+        public override void WriteToStream(ImageQueryParameterSet parameter, Stream target)
+        {
+            int quality = parameter.Quality.Value;
+
+            using (var pngStream = new MemoryStream())
+            {
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(image));
+                encoder.Save(pngStream);
+                pngStream.Position = 0;
+
+                using var skBitmap = SKBitmap.Decode(pngStream);
+                using var skImage = SKImage.FromBitmap(skBitmap);
+                using var data = skImage.Encode(SKEncodedImageFormat.Avif, quality);
+
+                data.SaveTo(target);
+            }
+        }
+
+        public override string MimeType { get; protected set; } = "image/avif";
     }
 }

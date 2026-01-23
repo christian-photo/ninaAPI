@@ -57,88 +57,88 @@ namespace ninaAPI.WebService.V3.Application.Image
             this.responseHandler = responseHandler;
         }
 
-        [Route(HttpVerbs.Get, "/image/{index}")]
-        public async Task GetImage(int index)
-        {
-            IProfile profile = profileService.ActiveProfile;
+        // [Route(HttpVerbs.Get, "/image/{index}")]
+        // public async Task GetImage(int index)
+        // {
+        //     IProfile profile = profileService.ActiveProfile;
 
-            QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
-            ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile);
-            imageQuery.BayerPattern = new QueryParameter<SensorType>("bayer-pattern", CameraController.FindBayer(profile, cameraMediator), false);
+        //     QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
+        //     ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile);
+        //     imageQuery.BayerPattern = new QueryParameter<SensorType>("bayer-pattern", CameraController.FindBayer(profile, cameraMediator), false);
 
-            imageQuery.Evaluate(HttpContext);
-            imageTypeParameter.Get(HttpContext);
+        //     imageQuery.Evaluate(HttpContext);
+        //     imageTypeParameter.Get(HttpContext);
 
-            ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
-            BitmapEncoder encoder = await ImageService.ProcessAndPrepareImage(p.GetPath(), p.IsBayered, imageQuery); // TODO: See if its possible to save the bitdepth
+        //     ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
+        //     BitmapEncoder encoder = await ImageService.ProcessAndPrepareImage(p.GetPath(), p.IsBayered, imageQuery); // TODO: See if its possible to save the bitdepth
 
-            using (MemoryStream memory = new MemoryStream())
-            {
-                encoder.Save(memory);
-                await responseHandler.SendBytes(HttpContext, memory.ToArray(), encoder.CodecInfo.MimeTypes);
-            }
-        }
+        //     using (MemoryStream memory = new MemoryStream())
+        //     {
+        //         encoder.Save(memory);
+        //         await responseHandler.SendBytes(HttpContext, memory.ToArray(), encoder.CodecInfo.MimeTypes);
+        //     }
+        // }
 
-        [Route(HttpVerbs.Get, "/image/{index}/raw")]
-        public async Task GetImageRaw(int index)
-        {
-            QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
-            imageTypeParameter.Get(HttpContext);
+        // [Route(HttpVerbs.Get, "/image/{index}/raw")]
+        // public async Task GetImageRaw(int index)
+        // {
+        //     QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
+        //     imageTypeParameter.Get(HttpContext);
 
-            ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
+        //     ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
 
-            using MemoryStream fileStream = new MemoryStream();
+        //     using MemoryStream fileStream = new MemoryStream();
 
-            if (p.GetPath().EndsWith(".fits", true, null))
-            {
-                var imageData = await Retry.Do(
-                    async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(
-                        p.GetPath(),
-                        16,
-                        p.IsBayered,
-                        RawConverterEnum.FREEIMAGE
-                    ), TimeSpan.FromMilliseconds(200), 10
-                );
+        //     if (p.GetPath().EndsWith(".fits", true, null))
+        //     {
+        //         var imageData = await Retry.Do(
+        //             async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(
+        //                 p.GetPath(),
+        //                 16,
+        //                 p.IsBayered,
+        //                 RawConverterEnum.FREEIMAGE
+        //             ), TimeSpan.FromMilliseconds(200), 10
+        //         );
 
-                // Create the FITS image.
-                FITS f = new FITS(
-                    imageData.Data.FlatArray,
-                    imageData.Properties.Width,
-                    imageData.Properties.Height
-                );
+        //         // Create the FITS image.
+        //         FITS f = new FITS(
+        //             imageData.Data.FlatArray,
+        //             imageData.Properties.Width,
+        //             imageData.Properties.Height
+        //         );
 
-                f.PopulateHeaderCards(imageData.MetaData);
+        //         f.PopulateHeaderCards(imageData.MetaData);
 
-                f.Write(fileStream);
-            }
-            else
-            {
-                var file = File.OpenRead(p.GetPath());
-                file.CopyTo(fileStream);
-                file.Close();
-            }
+        //         f.Write(fileStream);
+        //     }
+        //     else
+        //     {
+        //         var file = File.OpenRead(p.GetPath());
+        //         file.CopyTo(fileStream);
+        //         file.Close();
+        //     }
 
-            await responseHandler.SendBytes(HttpContext, fileStream.ToArray(), "application/octet-stream");
-        }
+        //     await responseHandler.SendBytes(HttpContext, fileStream.ToArray(), "application/octet-stream");
+        // }
 
-        private ImageResponse GetImageResponseFromHistory(int index, QueryParameter<string> imageType)
-        {
-            IEnumerable<ImageResponse> points;
-            lock (ImageWatcher.imageLock)
-            {
-                points = imageType.WasProvided ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType.Value));
-            }
+        // private ImageResponse GetImageResponseFromHistory(int index, QueryParameter<string> imageType)
+        // {
+        //     IEnumerable<ImageResponse> points;
+        //     lock (ImageWatcher.imageLock)
+        //     {
+        //         points = imageType.WasProvided ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType.Value));
+        //     }
 
-            if (!points.Any())
-            {
-                throw new HttpException(404, "No images available");
-            }
-            else if (!index.IsBetween(0, points.Count() - 1))
-            {
-                throw CommonErrors.ParameterOutOfRange(nameof(index), 0, points.Count() - 1);
-            }
+        //     if (!points.Any())
+        //     {
+        //         throw new HttpException(404, "No images available");
+        //     }
+        //     else if (!index.IsBetween(0, points.Count() - 1))
+        //     {
+        //         throw CommonErrors.ParameterOutOfRange(nameof(index), 0, points.Count() - 1);
+        //     }
 
-            return points.ElementAt(index);
-        }
+        //     return points.ElementAt(index);
+        // }
     }
 }

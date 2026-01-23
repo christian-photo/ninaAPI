@@ -291,4 +291,12 @@ namespace ninaAPI.Utility
         Switch,
         Weather,
     }
+
+    public enum ImageFormat
+    {
+        AVIF,
+        JPEG,
+        PNG,
+        WEBP
+    }
 }

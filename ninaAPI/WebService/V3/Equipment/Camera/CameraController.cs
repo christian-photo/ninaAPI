@@ -55,7 +55,6 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             IApplicationStatusMediator status,
             IImageDataFactory imageDataFactory,
             IPlateSolverFactory plateSolverFactory,
-            ITelescopeMediator mount,
             IFilterWheelMediator filterWheel,
             ResponseHandler responseHandler,
             ApiProcessMediator processMediator)
@@ -279,14 +278,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 throw new HttpException(HttpStatusCode.NotFound, "No image available");
             }
+            ImageWriter writer = await ImageService.ProcessAndPrepareImage(capture.GetCapturePath(), capture.IsCaptureBayered, imageQuery, capture.BitDepth);
 
-            BitmapEncoder encoder = await ImageService.ProcessAndPrepareImage(capture.GetCapturePath(), capture.IsCaptureBayered, imageQuery, capture.BitDepth);
-
-            using (MemoryStream memory = new MemoryStream())
-            {
-                encoder.Save(memory);
-                await responseHandler.SendBytes(HttpContext, memory.ToArray(), encoder.CodecInfo.MimeTypes);
-            }
+            HttpContext.Response.ContentType = writer.MimeType;
+            writer.WriteToStream(imageQuery, HttpContext.OpenResponseStream());
         }
 
         [Route(HttpVerbs.Get, "/capture/{id}/analysis")]

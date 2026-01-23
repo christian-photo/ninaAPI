@@ -25,6 +25,7 @@
 
   <!-- When building for windows -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <PackageReference Include="SkiaSharp" Version="3.119.1" />
     <Reference Include="ReachFramework" />
     <Reference Update="System">
       <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.dll</HintPath>
