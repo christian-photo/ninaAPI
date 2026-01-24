@@ -470,6 +470,7 @@ namespace ninaAPI.WebService.V2
             [QueryField] string targetName,
             [QueryField] bool onlyAwaitCaptureCompletion,
             [QueryField] bool onlySaveRaw,
+            [QueryField] bool skipAutoStretch,
             [QueryField] string imageType)
         {
 
@@ -584,7 +585,7 @@ namespace ninaAPI.WebService.V2
                             sequence.Gain = gain;
                         }
 
-                        PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: true);
+                        PrepareImageParameters parameters = new PrepareImageParameters(autoStretch: !skipAutoStretch);
                         IExposureData exposure = await AdvancedAPI.Controls.Imaging.CaptureImage(
                             sequence,
                             CancellationToken.None,
@@ -653,7 +654,7 @@ namespace ninaAPI.WebService.V2
                     {
                         await CaptureTask;
                         // Return the captured image
-                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false, targetName, false, onlySaveRaw, imageType);
+                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false, targetName, false, onlySaveRaw, skipAutoStretch, imageType);
                         return;
                     }
 

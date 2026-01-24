@@ -35,6 +35,11 @@ The event websocket now supports channels, which can be subscribed to per client
 - It is now possible to work with multiple captures, not just the last one
 
 
+## 2.2.14.2
+
+- Add option to skip autostretch when using the capture endpoint
+
+
 ## 2.2.14.1
 
 - Fix moon separation calculation
