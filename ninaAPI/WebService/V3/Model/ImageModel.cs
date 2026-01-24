@@ -38,9 +38,11 @@ namespace ninaAPI.WebService.V3.Model
         public double HFR { get; set; }
         public double HFRStDev { get; set; }
         public bool IsBayered { get; set; }
+        public int BitDepth { get; set; }
         public string Filename { get => Path?.IsFile == true ? System.IO.Path.GetFileName(Path.LocalPath) : null; }
 
         private Uri Path { get; set; }
+        private Uri ThumbnailPath { get; set; }
 
         private ImageResponse() { }
 
@@ -69,6 +71,7 @@ namespace ninaAPI.WebService.V3.Model
                 Min = e.Statistics.Min,
                 Max = e.Statistics.Max,
                 Path = e.PathToImage,
+                BitDepth = e.Statistics.BitDepth,
                 IsBayered = e.IsBayered,
             };
         }
@@ -81,6 +84,16 @@ namespace ninaAPI.WebService.V3.Model
         public void SetPath(string path)
         {
             Path = new Uri(path);
+        }
+
+        public string GetThumbnailPath()
+        {
+            return ThumbnailPath?.LocalPath;
+        }
+
+        public void SetThumbnailPath(string path)
+        {
+            ThumbnailPath = new Uri(path);
         }
     }
 }

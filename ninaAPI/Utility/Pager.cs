@@ -12,6 +12,8 @@
 
 using System;
 using System.Collections.Generic;
+using EmbedIO;
+using ninaAPI.Utility.Http;
 
 namespace ninaAPI.Utility
 {
@@ -26,6 +28,9 @@ namespace ninaAPI.Utility
 
         public List<T> GetPage(int page, int pageSize)
         {
+            if (pageSize == -1)
+                return list;
+
             if (page < 1 || pageSize < 1)
                 return [];
 
@@ -37,6 +42,29 @@ namespace ninaAPI.Utility
             int count = Math.Min(pageSize, list.Count - start);
 
             return list.GetRange(start, count);
+        }
+    }
+
+    public class PagerParameterSet
+    {
+        public QueryParameter<int> PageParameter { get; set; }
+        public QueryParameter<int> PageSizeParameter { get; set; }
+
+        private PagerParameterSet() { }
+
+        public static PagerParameterSet Default()
+        {
+            return new PagerParameterSet()
+            {
+                PageParameter = new QueryParameter<int>("page", 0, false, (page) => page.IsBetween(0, int.MaxValue)),
+                PageSizeParameter = new QueryParameter<int>("page-size", 20, false, (size) => size.IsBetween(-1, int.MaxValue))
+            };
+        }
+
+        public void Evaluate(IHttpContext context)
+        {
+            PageParameter.Get(context);
+            PageSizeParameter.Get(context);
         }
     }
 }

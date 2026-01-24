@@ -52,6 +52,11 @@ namespace ninaAPI.WebService.V3.Service
                 TimeSpan.FromMilliseconds(200), 10
             );
 
+            return await PlateSolve(imageData, config, pixelSize, coordinates, cts);
+        }
+
+        public async Task<PlateSolveResult> PlateSolve(IImageData imageData, PlatesolveConfig config, double pixelSize, Coordinates coordinates, CancellationToken cts)
+        {
             CaptureSolverParameter solverParameter = new CaptureSolverParameter()
             {
                 Attempts = config.Attempts ?? 1,
@@ -59,7 +64,7 @@ namespace ninaAPI.WebService.V3.Service
                 BlindFailoverEnabled = config.BlindFailoverEnabled ?? false,
                 Coordinates = coordinates,
                 DownSampleFactor = config.DownSampleFactor ?? 1,
-                FocalLength = 0,
+                FocalLength = config.FocalLength ?? 0,
                 MaxObjects = config.MaxObjects ?? 1,
                 Regions = config.Regions ?? 0,
                 SearchRadius = config.SearchRadius ?? 0,

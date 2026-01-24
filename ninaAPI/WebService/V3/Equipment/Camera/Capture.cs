@@ -139,7 +139,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 return plateSolveResult;
             }
-            Coordinates coordinates = new Coordinates(Angle.ByDegree((double)config.RA), Angle.ByDegree((double)config.Dec), Epoch.J2000);
+            Coordinates coordinates = config.Coordinates.ToCoordinates();
             var result = await new PlateSolveService(
                 imageFactory,
                 plateSolverFactory,

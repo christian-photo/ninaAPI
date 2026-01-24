@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 
+using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
@@ -17,6 +18,21 @@ using Swan.Validators;
 
 namespace ninaAPI.WebService.V3.Model
 {
+    public class HttpCoordinates
+    {
+        [Range(-180, 180)]
+        public double? RA { get; set; }
+
+        [Range(-90, 90)]
+        public double? Dec { get; set; }
+
+        public Epoch? Epoch { get; set; }
+
+        public Coordinates ToCoordinates()
+        {
+            return new Coordinates(Angle.ByDegree((double)RA), Angle.ByDegree((double)Dec), Epoch ?? NINA.Astrometry.Epoch.J2000);
+        }
+    }
     public class PlatesolveConfig
     {
         [Range(1, int.MaxValue)]
@@ -39,15 +55,17 @@ namespace ninaAPI.WebService.V3.Model
         [Range(0, int.MaxValue)]
         public int? Regions { get; set; }
 
+        [Range(10, double.MaxValue)]
+        public double? FocalLength { get; set; }
+
         public RawConverterEnum? RawConverter { get; set; }
 
-        [Range(-180, 180)]
-        public double? RA { get; set; }
+        public HttpCoordinates? Coordinates { get; set; }
 
-        [Range(-90, 90)]
-        public double? Dec { get; set; }
+        [Range(0, double.MaxValue)]
+        public double? PixelSize { get; set; }
 
-        public void UpdateDefaults(IProfile profile, ITelescopeMediator mount)
+        public void UpdateDefaults(IProfile profile, ITelescopeMediator mount, ICameraMediator camera)
         {
             Attempts ??= profile.PlateSolveSettings.NumberOfAttempts;
             DownSampleFactor ??= profile.PlateSolveSettings.DownSampleFactor;
@@ -56,9 +74,13 @@ namespace ninaAPI.WebService.V3.Model
             MaxObjects ??= profile.PlateSolveSettings.MaxObjects;
             Binning ??= profile.PlateSolveSettings.Binning;
             Regions ??= profile.PlateSolveSettings.Regions;
+            FocalLength ??= profile.TelescopeSettings.FocalLength;
             RawConverter ??= profile.CameraSettings.RawConverter;
-            RA ??= mount.GetCurrentPosition().RA;
-            Dec ??= mount.GetCurrentPosition().Dec;
+            Coordinates ??= new HttpCoordinates();
+            Coordinates.RA ??= mount.GetCurrentPosition().RA;
+            Coordinates.Dec ??= mount.GetCurrentPosition().Dec;
+            Coordinates.Epoch = Epoch.J2000;
+            PixelSize ??= camera.GetInfo().PixelSize;
         }
     }
 }

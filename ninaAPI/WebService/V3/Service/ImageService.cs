@@ -71,7 +71,11 @@ namespace ninaAPI.WebService.V3.Service
             {
                 image = image.Debayer(bayerPattern: parameters.BayerPattern.Value, saveColorChannels: true, saveLumChannel: true);
             }
-            return await image.Stretch(parameters.StretchFactor.Value, parameters.BlackClipping.Value, parameters.UnlinkedStretch.Value);
+            if (parameters.Stretch.Value)
+            {
+                image = await image.Stretch(parameters.StretchFactor.Value, parameters.BlackClipping.Value, parameters.UnlinkedStretch.Value);
+            }
+            return image;
         }
     }
 

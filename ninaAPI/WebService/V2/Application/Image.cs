@@ -152,7 +152,7 @@ namespace ninaAPI.WebService.V2
             {
                 string thumbnailFile = FileSystemHelper.GetThumbnailFolder();
                 Directory.CreateDirectory(thumbnailFile);
-                thumbnailFile = Path.Combine(thumbnailFile, $"{Images.Count - 1}.jpg");
+                thumbnailFile = Path.Combine(thumbnailFile, $"v2-{Images.Count - 1}.jpg");
                 var img = BitmapHelper.ScaleBitmap(e.Image, 256 / e.Image.Width);
 
                 JpegBitmapEncoder encoder = new JpegBitmapEncoder();

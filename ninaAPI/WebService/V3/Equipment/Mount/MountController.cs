@@ -272,7 +272,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             }
 
             Guid processId;
-            Coordinates coordinates = new Coordinates(Angle.ByDegree(config.RA), Angle.ByDegree(config.Dec), config.Epoch);
+            Coordinates coordinates = config.Coordinates.ToCoordinates(); // TODO: Verfiy coordinates
 
             if (config.SlewType == SlewType.Slew)
             {

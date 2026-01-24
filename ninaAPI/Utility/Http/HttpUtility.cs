@@ -199,6 +199,7 @@ namespace ninaAPI.Utility.Http
         public QueryParameter<float> Scale { get; set; }
         public QueryParameter<int> Quality { get; set; }
         public QueryParameter<ImageFormat> Format { get; set; }
+        public QueryParameter<bool> Stretch { get; set; }
         public QueryParameter<double> StretchFactor { get; set; }
         public QueryParameter<bool> Debayer { get; set; }
         public QueryParameter<SensorType> BayerPattern { get; set; }
@@ -219,6 +220,7 @@ namespace ninaAPI.Utility.Http
                 Scale = new QueryParameter<float>("scale", 0.5f, false, (scale) => scale.IsBetween(0.1f, 1)),
                 Quality = new QueryParameter<int>("quality", 80, false, (quality) => quality.IsBetween(1, 100)),
                 Format = new QueryParameter<ImageFormat>("format", ImageFormat.JPEG, false),
+                Stretch = new QueryParameter<bool>("stretch", true, false),
                 StretchFactor = new QueryParameter<double>("stretch-factor", 1.0f, false),
                 Debayer = new QueryParameter<bool>("debayer", false, false),
                 BayerPattern = new QueryParameter<SensorType>("bayer-pattern", SensorType.Monochrome, false),
@@ -231,6 +233,7 @@ namespace ninaAPI.Utility.Http
         public static ImageQueryParameterSet ByProfile(IProfile profile)
         {
             var set = Default();
+            set.Stretch = new QueryParameter<bool>("stretch", profile.ImageSettings.AutoStretch, false);
             set.StretchFactor = new QueryParameter<double>("stretch-factor", profile.ImageSettings.AutoStretchFactor, false);
             set.Debayer = new QueryParameter<bool>("debayer", profile.ImageSettings.DebayerImage, false);
             set.BlackClipping = new QueryParameter<double>("black-clipping", profile.ImageSettings.BlackClipping, false);

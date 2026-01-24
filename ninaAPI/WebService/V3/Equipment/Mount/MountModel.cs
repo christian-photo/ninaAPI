@@ -10,24 +10,19 @@
 #endregion "copyright"
 
 using NINA.Astrometry;
+using ninaAPI.WebService.V3.Model;
 using Swan.Validators;
 
 namespace ninaAPI.WebService.V3.Equipment.Mount
 {
     public class MountSlewConfig
     {
-        [Range(0, 360)]
-        public double RA { get; set; }
-
-        [Range(-90, 90)]
-        public double Dec { get; set; }
+        public HttpCoordinates Coordinates { get; set; }
 
         [Range(0, 360)]
         public double? PositionAngle { get; set; }
 
         public SlewType SlewType { get; set; }
-
-        public Epoch Epoch { get; set; } = Epoch.J2000;
     }
 
     public class MountSyncConfig
