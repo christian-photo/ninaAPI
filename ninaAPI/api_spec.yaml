@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Advanced API
   description: This is the API documentation for the NINA plugin Advanced API. Please use streaming instead of the default base64 encoding for images, as base64 support will be removed in the near future!
-  version: 2.2.13
+  version: 2.2.14
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -794,6 +794,12 @@ paths:
         - in: query
           name: onlySaveRaw
           description: Use if you do not need the other capture endpoints, but want to save the raw image. Useful for high frequency captures.
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: skipAutoStretch
+          description: Use if you do not want the autostretch in the preview window. Useful for high frequency captures.
           required: false
           schema:
             type: boolean
