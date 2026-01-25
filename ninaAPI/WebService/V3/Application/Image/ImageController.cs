@@ -11,12 +11,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
@@ -44,7 +42,6 @@ namespace ninaAPI.WebService.V3.Application.Image
         private readonly IPlateSolverFactory plateSolverFactory;
         private readonly ICameraMediator cameraMediator;
         private readonly IApplicationStatusMediator statusMediator;
-        private readonly ApiProcessMediator apiProcessMediator;
         private readonly ResponseHandler responseHandler;
 
         public ImageController(IImageDataFactory imageDataFactory,
@@ -52,7 +49,6 @@ namespace ninaAPI.WebService.V3.Application.Image
             IPlateSolverFactory plateSolverFactory,
             ICameraMediator cameraMediator,
             IApplicationStatusMediator statusMediator,
-            ApiProcessMediator apiProcessMediator,
             ResponseHandler responseHandler)
         {
             this.imageDataFactory = imageDataFactory;
@@ -60,11 +56,10 @@ namespace ninaAPI.WebService.V3.Application.Image
             this.profileService = profileService;
             this.cameraMediator = cameraMediator;
             this.statusMediator = statusMediator;
-            this.apiProcessMediator = apiProcessMediator;
             this.responseHandler = responseHandler;
         }
 
-        [Route(HttpVerbs.Get, "/image/{index}")]
+        [Route(HttpVerbs.Get, "/{index}")]
         public async Task GetImage(int index)
         {
             IProfile profile = profileService.ActiveProfile;
@@ -83,7 +78,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             writer.WriteToStream(imageQuery, HttpContext.OpenResponseStream());
         }
 
-        [Route(HttpVerbs.Get, "/image/{index}/thumbnail")]
+        [Route(HttpVerbs.Get, "/{index}/thumbnail")]
         public async Task GetThumbnail(int index)
         {
             IProfile profile = profileService.ActiveProfile;
@@ -105,7 +100,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             }
         }
 
-        [Route(HttpVerbs.Get, "/image/{index}/raw")]
+        [Route(HttpVerbs.Get, "/{index}/raw")]
         public async Task GetImageRaw(int index)
         {
             QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
@@ -150,7 +145,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             }
         }
 
-        [Route(HttpVerbs.Patch, "/image/{index}/prefix")]
+        [Route(HttpVerbs.Patch, "/{index}/prefix")]
         public async Task AddPrefix(int index)
         {
             QueryParameter<string> prefixParameter = new QueryParameter<string>("prefix", "", true, (prefix) => prefix.IndexOfAny(Path.GetInvalidFileNameChars()) < 0);
@@ -183,7 +178,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             });
         }
 
-        [Route(HttpVerbs.Post, "/image/{index}/platesolve")]
+        [Route(HttpVerbs.Post, "/{index}/platesolve")]
         public async Task ImageSolve(int index, [JsonData] PlatesolveConfig config)
         {
             IProfile profile = profileService.ActiveProfile;
@@ -215,7 +210,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             await responseHandler.SendObject(HttpContext, result);
         }
 
-        [Route(HttpVerbs.Get, "/prepared-image")]
+        [Route(HttpVerbs.Get, "/prepared")]
         public async Task GetPreparedImage()
         {
             IProfile profile = profileService.ActiveProfile;
@@ -236,7 +231,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             writer.WriteToStream(imageQuery, HttpContext.OpenResponseStream());
         }
 
-        [Route(HttpVerbs.Post, "/image/{index}/platesolve")]
+        [Route(HttpVerbs.Post, "/prepared/platesolve")]
         public async Task PreparedImageSolve([JsonData] PlatesolveConfig config)
         {
             IProfile profile = profileService.ActiveProfile;
@@ -262,7 +257,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             await responseHandler.SendObject(HttpContext, result);
         }
 
-        [Route(HttpVerbs.Get, "/image-history")]
+        [Route(HttpVerbs.Get, "/history")]
         public async Task GetImageHistory()
         {
             PagerParameterSet pagerParameterSet = PagerParameterSet.Default();

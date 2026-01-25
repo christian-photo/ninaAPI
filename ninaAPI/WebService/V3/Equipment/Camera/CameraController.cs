@@ -30,8 +30,6 @@ using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility.Http;
 using System.IO;
 using ninaAPI.WebService.V3.Model;
-using System.Windows.Media.Imaging;
-using NINA.Core.Utility;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {

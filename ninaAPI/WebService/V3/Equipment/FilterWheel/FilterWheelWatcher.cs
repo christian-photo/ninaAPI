@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -15,12 +15,13 @@ using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MyFilterWheel;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
+using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.FilterWheel
 {
-    public class FilterWheelWatcher : EventWatcher, IFilterWheelConsumer
+    public sealed class FilterWheelWatcher : EventWatcher, IFilterWheelConsumer
     {
         private class FilterChangedEvent
         {
@@ -69,13 +70,13 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             filterWheel.RemoveConsumer(this);
         }
 
-        private async Task FilterWheelConnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FILTERWHEEL-CONNECTED");
-        private async Task FilterWheelDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FILTERWHEEL-DISCONNECTED");
-        private async Task FilterWheelFilterChanged(object sender, FilterChangedEventArgs e) => await SubmitAndStoreEvent("FILTERWHEEL-FILTER-CHANGED", FilterChangedEvent.FromEvent(e));
+        private async Task FilterWheelConnected(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceConnected(Device.Filterwheel));
+        private async Task FilterWheelDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceDisconnected(Device.Filterwheel));
+        private async Task FilterWheelFilterChanged(object sender, FilterChangedEventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.FILTERWHEEL_FILTER_CHANGED, FilterChangedEvent.FromEvent(e));
 
         public async void UpdateDeviceInfo(FilterWheelInfo deviceInfo)
         {
-            await SubmitEvent("FILTERWHEEL-INFO-UPDATE", new FilterWheelInfoResponse(filterWheel, profileService.ActiveProfile), WebSocketChannel.FilterwheelInfoUpdate);
+            await SubmitEvent(WebSocketEvents.DeviceInfoUpdate(Device.Filterwheel), new FilterWheelInfoResponse(filterWheel, profileService.ActiveProfile), WebSocketChannel.FilterwheelInfoUpdate);
         }
     }
 }

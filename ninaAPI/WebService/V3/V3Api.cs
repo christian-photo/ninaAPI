@@ -17,6 +17,8 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
+using ninaAPI.WebService.V3.Application.Image;
+using ninaAPI.WebService.V3.Application.Profile;
 using ninaAPI.WebService.V3.Equipment;
 using ninaAPI.WebService.V3.Equipment.Camera;
 using ninaAPI.WebService.V3.Equipment.Dome;
@@ -50,6 +52,9 @@ namespace ninaAPI.WebService.V3
         private readonly SwitchController switchController;
         private readonly WeatherController weatherController;
         private readonly ConnectController connectionController;
+
+        private readonly ImageController imageController;
+        private readonly ProfileController profileController;
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
 
@@ -63,10 +68,10 @@ namespace ninaAPI.WebService.V3
             watchers =
             [
                 new CameraWatcher(eventHistory, AdvancedAPI.Controls.Camera),
-                new FocuserWatcher(eventHistory, AdvancedAPI.Controls.Focuser),
                 new DomeWatcher(eventHistory, AdvancedAPI.Controls.Dome, AdvancedAPI.Controls.DomeFollower),
                 new FilterWheelWatcher(eventHistory, AdvancedAPI.Controls.FilterWheel, AdvancedAPI.Controls.Profile),
                 new FlatWatcher(eventHistory, AdvancedAPI.Controls.FlatDevice),
+                new FocuserWatcher(eventHistory, AdvancedAPI.Controls.Focuser),
                 new GuiderWatcher(eventHistory, AdvancedAPI.Controls.Guider),
                 new MountWatcher(eventHistory, AdvancedAPI.Controls.Mount),
                 new RotatorWatcher(eventHistory, AdvancedAPI.Controls.Rotator),
@@ -74,6 +79,8 @@ namespace ninaAPI.WebService.V3
                 new SwitchWatcher(eventHistory, AdvancedAPI.Controls.Switch),
                 new WeatherWatcher(eventHistory, AdvancedAPI.Controls.Weather),
                 new ProcessWatcher(eventHistory),
+                new ImageWatcher(eventHistory, AdvancedAPI.Controls.ImageSaveMediator, AdvancedAPI.Controls.Imaging),
+                new ProfileWatcher(eventHistory, AdvancedAPI.Controls.Profile)
             ];
 
             foreach (EventWatcher watcher in watchers)
@@ -104,7 +111,6 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.StatusMediator,
                 AdvancedAPI.Controls.ImageDataFactory,
                 AdvancedAPI.Controls.PlateSolver,
-                AdvancedAPI.Controls.Mount,
                 AdvancedAPI.Controls.FilterWheel,
                 responseHandler,
                 processMediator
@@ -211,6 +217,20 @@ namespace ninaAPI.WebService.V3
                 responseHandler
             );
 
+            imageController = new ImageController(
+                AdvancedAPI.Controls.ImageDataFactory,
+                AdvancedAPI.Controls.Profile,
+                AdvancedAPI.Controls.PlateSolver,
+                AdvancedAPI.Controls.Camera,
+                AdvancedAPI.Controls.StatusMediator,
+                responseHandler
+            );
+
+            profileController = new ProfileController(
+                AdvancedAPI.Controls.Profile,
+                responseHandler
+            );
+
             controller = new ControllerV3(responseHandler, processMediator);
         }
 
@@ -239,6 +259,8 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.SwitchUrlName}", m => m.WithController(() => switchController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.WeatherUrlName}", m => m.WithController(() => weatherController))
                 .WithWebApi("/v3/api/equipment", m => m.WithController(() => connectionController))
+                .WithWebApi("/v3/api/image", m => m.WithController(() => imageController))
+                .WithWebApi("/v3/api/profile", m => m.WithController(() => profileController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 

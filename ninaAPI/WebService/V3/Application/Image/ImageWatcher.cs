@@ -63,7 +63,7 @@ namespace ninaAPI.WebService.V3.Application.Image
                 history.Add(imageInfo);
             }
 
-            await SubmitEvent("IMAGE-SAVED", imageInfo);
+            await SubmitEvent(WebSocketEvents.IMAGE_SAVED, imageInfo);
         }
 
         private static string CacheThumbnail(ImageSavedEventArgs e)
@@ -108,7 +108,7 @@ namespace ninaAPI.WebService.V3.Application.Image
                 PreparedImage = e.RenderedImage;
             }
 
-            await SubmitEvent("IMAGE-PREPARED");
+            await SubmitEvent(WebSocketEvents.IMAGE_PREPARED);
         }
     }
 }

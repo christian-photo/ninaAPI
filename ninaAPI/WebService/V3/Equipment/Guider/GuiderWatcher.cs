@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -30,7 +30,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
         public double DECDuration { get; set; } = guideStep.DECDuration;
     }
 
-    public class GuiderWatcher : EventWatcher, IGuiderConsumer
+    public sealed class GuiderWatcher : EventWatcher, IGuiderConsumer
     {
         private readonly IGuiderMediator guider;
 
@@ -80,18 +80,18 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
                 GuideStepHistory.RemoveAt(0);
             }
 
-            await SubmitEvent("GUIDER-GUIDE-EVENT", step, WebSocketChannel.Guiding);
+            await SubmitEvent(WebSocketEvents.GUIDER_GUIDESTEP, step, WebSocketChannel.Guiding);
         }
 
-        private async Task GuiderConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("GUIDER-CONNECTED");
-        private async Task GuiderDisconnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("GUIDER-DISCONNECTED");
-        private async Task GuiderAfterDitherHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("GUIDER-DITHER-COMPLETED"); // TODO: Maybe this should go to the guiding channel or both
-        private async Task GuiderGuidingStartedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("GUIDER-GUIDING-STARTED");
-        private async Task GuiderGuidingStoppedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("GUIDER-GUIDING-STOPPED");
+        private async Task GuiderConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceConnected(Device.Guider));
+        private async Task GuiderDisconnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceDisconnected(Device.Guider));
+        private async Task GuiderAfterDitherHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.GUIDER_DITHER); // TODO: Maybe this should go to the guiding channel or both
+        private async Task GuiderGuidingStartedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.GUIDER_GUIDING_STARTED);
+        private async Task GuiderGuidingStoppedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.GUIDER_GUIDING_STOPPED);
 
         public async void UpdateDeviceInfo(GuiderInfo deviceInfo)
         {
-            await SubmitEvent("GUIDER-INFO-UPDATE", new GuiderInfoResponse(guider), WebSocketChannel.GuiderInfoUpdate);
+            await SubmitEvent(WebSocketEvents.DeviceInfoUpdate(Device.Guider), new GuiderInfoResponse(guider), WebSocketChannel.GuiderInfoUpdate);
         }
     }
 }

@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,12 +14,13 @@ using System;
 using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MyCamera;
 using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {
-    public class CameraWatcher : EventWatcher, ICameraConsumer
+    public sealed class CameraWatcher : EventWatcher, ICameraConsumer
     {
         private readonly ICameraMediator camera;
 
@@ -51,13 +52,13 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             camera.DownloadTimeout -= CameraDownloadTimeout;
         }
 
-        private async Task CameraConnected(object sender, EventArgs e) => await SubmitAndStoreEvent("CAMERA-CONNECTED");
-        private async Task CameraDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent("CAMERA-DISCONNECTED");
-        private async Task CameraDownloadTimeout(object sender, EventArgs e) => await SubmitAndStoreEvent("CAMERA-DOWNLOAD-TIMEOUT");
+        private async Task CameraConnected(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceConnected(Device.Camera));
+        private async Task CameraDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceDisconnected(Device.Camera));
+        private async Task CameraDownloadTimeout(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.CAMERA_DOWNLOAD_TIMEOUT);
 
         public async void UpdateDeviceInfo(CameraInfo deviceInfo)
         {
-            await SubmitEvent("CAMERA-INFO-UPDATE", new CameraInfoResponse(camera), WebSocketChannel.CameraInfoUpdate);
+            await SubmitEvent(WebSocketEvents.DeviceInfoUpdate(Device.Camera), new CameraInfoResponse(camera), WebSocketChannel.CameraInfoUpdate);
         }
     }
 }

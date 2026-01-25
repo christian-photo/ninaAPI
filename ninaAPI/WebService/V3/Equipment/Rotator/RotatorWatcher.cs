@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,12 +14,13 @@ using System;
 using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MyRotator;
 using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.Rotator
 {
-    public class RotatorWatcher : EventWatcher, IRotatorConsumer
+    public sealed class RotatorWatcher : EventWatcher, IRotatorConsumer
     {
         private readonly IRotatorMediator rotator;
 
@@ -56,28 +57,33 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
             rotator.RemoveConsumer(this);
         }
 
-        private async Task RotatorConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("ROTATOR-CONNECTED");
-        private async Task RotatorDisconnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("ROTATOR-DISCONNECTED");
-        private async Task RotatorMovedHandler(object sender, RotatorEventArgs e) => await SubmitAndStoreEvent("ROTATOR-MOVED",
+        private async Task RotatorConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceConnected(Device.Rotator));
+        private async Task RotatorDisconnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceDisconnected(Device.Rotator));
+        private async Task RotatorMovedHandler(object sender, RotatorEventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.ROTATOR_MOVED,
             new
             {
                 From = e.From,
                 To = e.To,
                 Mechanical = false
             });
-        private async Task RotatorMovedMechanicalHandler(object sender, RotatorEventArgs e) => await SubmitAndStoreEvent("ROTATOR-MOVED",
+        private async Task RotatorMovedMechanicalHandler(object sender, RotatorEventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.ROTATOR_MOVED,
             new
             {
                 From = e.From,
                 To = e.To,
                 Mechanical = true
             });
-        private async void RotatorSyncedHandler(object sender, RotatorEventArgs e) => await SubmitAndStoreEvent("ROTATOR-SYNCED");
+        private async void RotatorSyncedHandler(object sender, RotatorEventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.ROTATOR_SYNCED,
+            new
+            {
+                From = e.From,
+                To = e.To
+            });
 
 
         public async void UpdateDeviceInfo(RotatorInfo deviceInfo)
         {
-            await SubmitEvent("ROTATOR-INFO-UPDATE", new RotatorInfoResponse(rotator), WebSocketChannel.RotatorInfoUpdate);
+            await SubmitEvent(WebSocketEvents.DeviceInfoUpdate(Device.Rotator), new RotatorInfoResponse(rotator), WebSocketChannel.RotatorInfoUpdate);
         }
     }
 }

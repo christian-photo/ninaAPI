@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,13 +14,14 @@ using System;
 using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MyFocuser;
 using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 using OxyPlot;
 
 namespace ninaAPI.WebService.V3.Equipment.Focuser
 {
-    public class FocuserWatcher : EventWatcher, IFocuserConsumer
+    public sealed class FocuserWatcher : EventWatcher, IFocuserConsumer
     {
         private readonly IFocuserMediator focuser;
 
@@ -51,25 +52,25 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
 
         public static bool IsAutoFocusRunning { get; private set; } = false;
 
-        private async Task FocuserConnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FOCUSER-CONNECTED");
-        private async Task FocuserDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent("FOCUSER-DISCONNECTED");
-        public async void UpdateUserFocused(FocuserInfo info) => await SubmitEvent("USER-FOCUSED");
-        public async void NewAutoFocusPoint(DataPoint dataPoint) => await SubmitEvent("AUTOFOCUS-POINT", dataPoint, WebSocketChannel.Autofocus);
+        private async Task FocuserConnected(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceConnected(Device.Focuser));
+        private async Task FocuserDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceDisconnected(Device.Focuser));
+        public async void UpdateUserFocused(FocuserInfo info) => await SubmitEvent(WebSocketEvents.FOCUSER_USER_FOCUSED, onChannel: WebSocketChannel.Autofocus);
+        public async void NewAutoFocusPoint(DataPoint dataPoint) => await SubmitEvent(WebSocketEvents.FOCUSER_NEW_AF_POINT, dataPoint, WebSocketChannel.Autofocus);
 
         public async void UpdateEndAutoFocusRun(AutoFocusInfo info)
         {
             IsAutoFocusRunning = false;
-            await SubmitAndStoreEvent("AUTOFOCUS-ENDED", info, WebSocketChannel.Autofocus);
+            await SubmitAndStoreEvent(WebSocketEvents.FOCUSER_AF_ENDED, info, WebSocketChannel.Autofocus);
         }
         public async void AutoFocusRunStarting()
         {
             IsAutoFocusRunning = true;
-            await SubmitAndStoreEvent("AUTOFOCUS-STARTED", onChannel: WebSocketChannel.Autofocus);
+            await SubmitAndStoreEvent(WebSocketEvents.FOCUSER_AF_STARTED, onChannel: WebSocketChannel.Autofocus);
         }
 
         public async void UpdateDeviceInfo(FocuserInfo deviceInfo)
         {
-            await SubmitEvent("FOCUSER-INFO-UPDATE", new FocuserInfoResponse(focuser), WebSocketChannel.FocuserInfoUpdate);
+            await SubmitEvent(WebSocketEvents.DeviceInfoUpdate(Device.Focuser), new FocuserInfoResponse(focuser), WebSocketChannel.FocuserInfoUpdate);
         }
     }
 }

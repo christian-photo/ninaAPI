@@ -14,12 +14,13 @@ using System;
 using System.Threading.Tasks;
 using NINA.Equipment.Equipment.MyWeatherData;
 using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Equipment.Weather
 {
-    public class WeatherWatcher : EventWatcher, IWeatherDataConsumer
+    public sealed class WeatherWatcher : EventWatcher, IWeatherDataConsumer
     {
         private readonly IWeatherDataMediator weather;
 
@@ -50,12 +51,12 @@ namespace ninaAPI.WebService.V3.Equipment.Weather
             weather.RemoveConsumer(this);
         }
 
-        private async Task WeatherConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("WEATHER-CONNECTED");
-        private async Task WeatherDisconnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent("WEATHER-DISCONNECTED");
+        private async Task WeatherConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceConnected(Device.Weather));
+        private async Task WeatherDisconnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceDisconnected(Device.Weather));
 
         public async void UpdateDeviceInfo(WeatherDataInfo deviceInfo)
         {
-            await SubmitEvent("WEATHER-INFO-UPDATE", new WeatherInfoResponse(weather), WebSocketChannel.WeatherInfoUpdate);
+            await SubmitEvent(WebSocketEvents.DeviceInfoUpdate(Device.Weather), new WeatherInfoResponse(weather), WebSocketChannel.WeatherInfoUpdate);
         }
     }
 }

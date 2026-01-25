@@ -36,14 +36,14 @@ namespace ninaAPI.WebService.V3.Websocket.Event
 
         private async void OnProcessFinished(object sender, EventArgs e)
         {
-            await SubmitEvent("Process Finished",
+            await SubmitEvent(WebSocketEvents.PROCESS_FINISHED,
                 new { ProcessId = (sender as ApiProcess).ProcessId }
             );
         }
 
         private async void OnProcessStarted(object sender, EventArgs e)
         {
-            await SubmitEvent("Process Started",
+            await SubmitEvent(WebSocketEvents.PROCESS_STARTED,
                 new { ProcessId = (sender as ApiProcess).ProcessId }
             );
         }
