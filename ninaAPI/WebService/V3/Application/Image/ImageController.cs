@@ -74,8 +74,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
             ImageWriter writer = await ImageService.ProcessAndPrepareImage(p.GetPath(), p.IsBayered, imageQuery, p.BitDepth);
 
-            HttpContext.Response.ContentType = writer.MimeType;
-            writer.WriteToStream(imageQuery, HttpContext.OpenResponseStream());
+            await responseHandler.SendBytes(HttpContext, writer.Encode(imageQuery), writer.MimeType);
         }
 
         [Route(HttpVerbs.Get, "/{index}/thumbnail")]
@@ -95,8 +94,9 @@ namespace ninaAPI.WebService.V3.Application.Image
 
             HttpContext.Response.ContentType = "image/png";
             using (FileStream image = File.OpenRead(p.GetThumbnailPath()))
+            using (var target = HttpContext.OpenResponseStream())
             {
-                await image.CopyToAsync(HttpContext.OpenResponseStream());
+                await image.CopyToAsync(target);
             }
         }
 
@@ -134,14 +134,19 @@ namespace ninaAPI.WebService.V3.Application.Image
                 f.PopulateHeaderCards(imageData.MetaData);
 
                 HttpContext.Response.ContentType = "application/octet-stream";
-                f.Write(HttpContext.OpenResponseStream());
+                using (var target = HttpContext.OpenResponseStream())
+                {
+                    f.Write(target); // TODO: TEsting
+                }
             }
             else
             {
-                var file = File.OpenRead(p.GetPath());
-                HttpContext.Response.ContentType = "application/octet-stream";
-                file.CopyTo(HttpContext.OpenResponseStream());
-                file.Close();
+                using (var file = File.OpenRead(p.GetPath()))
+                using (var target = HttpContext.OpenResponseStream())
+                {
+                    HttpContext.Response.ContentType = "application/octet-stream";
+                    file.CopyTo(target);
+                }
             }
         }
 
@@ -227,8 +232,7 @@ namespace ninaAPI.WebService.V3.Application.Image
 
             ImageWriter writer = await ImageService.ProcessAndPrepareImage(ImageWatcher.PreparedImage, imageQuery);
 
-            HttpContext.Response.ContentType = writer.MimeType;
-            writer.WriteToStream(imageQuery, HttpContext.OpenResponseStream());
+            await responseHandler.SendBytes(HttpContext, writer.Encode(imageQuery), writer.MimeType);
         }
 
         [Route(HttpVerbs.Post, "/prepared/platesolve")]

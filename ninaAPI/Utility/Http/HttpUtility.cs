@@ -106,7 +106,7 @@ namespace ninaAPI.Utility.Http
         public T Get(IHttpContext context)
         {
             Value = Evaluate(context);
-            if (Validate(Value))
+            if (WasProvided && Validate(Value) || !WasProvided)
             {
                 return Value;
             }
@@ -249,6 +249,7 @@ namespace ninaAPI.Utility.Http
             Quality.Get(context);
             Format.Get(context);
             StretchFactor.Get(context);
+            Stretch.Get(context);
             RawConverter.Get(context);
             Debayer.Get(context);
             BayerPattern.Get(context);
