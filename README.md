@@ -21,7 +21,7 @@ The versioning of the api works as follows:
 ### Acknowledgements
 
 - This project uses [EmbedIO](https://github.com/unosquare/embedio) for its Webserver
-- [ImageMagick](https://github.com/dlemstra/Magick.NET) is used to support a variety of different image formats
+- [NetVips](https://github.com/kleisauke/net-vips) is used to support a variety of different image formats
 
 ---
 

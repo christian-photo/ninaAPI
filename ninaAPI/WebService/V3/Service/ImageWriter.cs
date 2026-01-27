@@ -12,7 +12,7 @@
 using System;
 using System.IO;
 using System.Windows.Media.Imaging;
-using ImageMagick;
+using NetVips;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 
@@ -40,7 +40,7 @@ namespace ninaAPI.WebService.V3.Service
         public abstract byte[] Encode(ImageQueryParameterSet parameter);
         public abstract string MimeType { get; protected set; }
 
-        protected static byte[] BitmapSourceToByteArray(BitmapSource bitmapSource, out int width, out int height)
+        protected static Image BitmapSourceToVipsImage(BitmapSource bitmapSource)
         {
             // Ensure the bitmap is in BGRA32 format
             if (bitmapSource.Format != System.Windows.Media.PixelFormats.Bgra32)
@@ -53,14 +53,27 @@ namespace ninaAPI.WebService.V3.Service
                 bitmapSource = converted;
             }
 
-            width = bitmapSource.PixelWidth;
-            height = bitmapSource.PixelHeight;
-            int stride = width * 4; // 4 bytes per pixel (BGRA)
+            int width = bitmapSource.PixelWidth;
+            int height = bitmapSource.PixelHeight;
+            int stride = width * 4;
 
             byte[] pixels = new byte[height * stride];
             bitmapSource.CopyPixels(pixels, stride, 0);
 
-            return pixels;
+            // Create image with BGRA interpretation
+            var vipsImage = Image.NewFromMemory(
+                pixels,
+                width,
+                height,
+                bands: 4,
+                format: Enums.BandFormat.Uchar
+            );
+
+            // Set interpretation to sRGB
+            vipsImage = vipsImage.Copy(interpretation: Enums.Interpretation.Srgb);
+
+            // Swap B and R channels to get proper RGB
+            return vipsImage.Bandjoin(vipsImage[2], vipsImage[1], vipsImage[0], vipsImage[3]);
         }
     }
 
@@ -100,21 +113,15 @@ namespace ninaAPI.WebService.V3.Service
         public override byte[] Encode(ImageQueryParameterSet parameter)
         {
             int quality = parameter.Quality.Value;
+            using var vipsImage = BitmapSourceToVipsImage(image);
 
-            byte[] pixels = BitmapSourceToByteArray(image, out int width, out int height);
-
-            using var magickImage = new MagickImage(pixels, new MagickReadSettings
-            {
-                Width = (uint)width,
-                Height = (uint)height,
-                Format = MagickFormat.Bgra,
-                Depth = 8
-            });
-            magickImage.Quality = (uint)quality;
-
-            using var target = new MemoryStream();
-            magickImage.Write(target, MagickFormat.WebP);
-            return target.ToArray();
+            // WebP with additional options
+            return vipsImage.WebpsaveBuffer(
+                q: quality,
+                lossless: quality >= 100,  // Use lossless for quality 100
+                nearLossless: quality >= 95,  // Near-lossless for very high quality
+                effort: 4  // 0-6, higher = better compression but slower
+            );
         }
 
         public override string MimeType { get; protected set; } = "image/webp";
@@ -125,21 +132,15 @@ namespace ninaAPI.WebService.V3.Service
         public override byte[] Encode(ImageQueryParameterSet parameter)
         {
             int quality = parameter.Quality.Value;
+            using var vipsImage = BitmapSourceToVipsImage(image);
 
-            byte[] pixels = BitmapSourceToByteArray(image, out int width, out int height);
-
-            using var magickImage = new MagickImage(pixels, new MagickReadSettings
-            {
-                Width = (uint)width,
-                Height = (uint)height,
-                Format = MagickFormat.Bgra,
-                Depth = 8
-            });
-            magickImage.Quality = (uint)quality;
-
-            using var target = new MemoryStream();
-            magickImage.Write(target, MagickFormat.Avif);
-            return target.ToArray();
+            // AVIF with additional options
+            return vipsImage.HeifsaveBuffer(
+                q: quality,
+                lossless: quality >= 100,
+                compression: Enums.ForeignHeifCompression.Av1, // Why is this sooo slow??
+                effort: 4  // encoding effort
+            );
         }
 
         public override string MimeType { get; protected set; } = "image/avif";
@@ -150,21 +151,14 @@ namespace ninaAPI.WebService.V3.Service
         public override byte[] Encode(ImageQueryParameterSet parameter)
         {
             int quality = parameter.Quality.Value;
+            using var vipsImage = BitmapSourceToVipsImage(image);
 
-            byte[] pixels = BitmapSourceToByteArray(image, out int width, out int height);
-
-            using var magickImage = new MagickImage(pixels, new MagickReadSettings
-            {
-                Width = (uint)width,
-                Height = (uint)height,
-                Format = MagickFormat.Bgra,
-                Depth = 8
-            });
-            magickImage.Quality = (uint)quality;
-
-            using var target = new MemoryStream();
-            magickImage.Write(target, MagickFormat.Jxl);
-            return target.ToArray();
+            // AVIF with additional options
+            return vipsImage.JxlsaveBuffer(
+                q: quality,
+                lossless: quality >= 100,
+                effort: 4  // encoding effort
+            );
         }
 
         public override string MimeType { get; protected set; } = "image/jxl";
