@@ -18,6 +18,11 @@ The versioning of the api works as follows:
 - The third number is incremented for smaller feature updates and bug fixes.
 - The fourth number is incremented for small 'emergency' bug fixes.
 
+### Acknowledgements
+
+- This project uses [EmbedIO](https://github.com/unosquare/embedio) for its Webserver
+- [ImageMagick](https://github.com/dlemstra/Magick.NET) is used to support a variety of different image formats
+
 ---
 
 Take a look at these projects:
