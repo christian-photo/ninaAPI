@@ -118,7 +118,7 @@ namespace ninaAPI.WebService.V3.Application.Image
                 var imageData = await Retry.Do(
                     async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(
                         p.GetPath(),
-                        16,
+                        p.BitDepth,
                         p.IsBayered,
                         RawConverterEnum.FREEIMAGE
                     ), TimeSpan.FromMilliseconds(200), 10

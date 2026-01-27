@@ -25,7 +25,8 @@
 
   <!-- When building for windows -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
-    <PackageReference Include="SkiaSharp" Version="3.119.1" />
+    <PackageReference Include="Magick.NET-Q8-x64" Version="14.10.2" />
+    <PackageReference Include="Magick.NET.Core" Version="14.10.2" />
     <Reference Include="ReachFramework" />
     <Reference Update="System">
       <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.dll</HintPath>

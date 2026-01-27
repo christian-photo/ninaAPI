@@ -294,9 +294,8 @@ namespace ninaAPI.Utility
 
     public enum ImageFormat
     {
-        // HEIF,
-        // JPEGXL,
-        // Avif,
+        JXL,
+        AVIF,
         JPEG,
         PNG,
         WEBP
