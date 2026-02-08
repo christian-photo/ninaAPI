@@ -110,6 +110,8 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        private CancellationTokenSource FocuserToken;
+
         [Route(HttpVerbs.Get, "/equipment/focuser/move")]
         public void FocuserMove([QueryField] int position)
         {
@@ -124,8 +126,37 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    focuser.MoveFocuser(position, new CancellationTokenSource().Token);
+                    FocuserToken?.Cancel();
+                    FocuserToken = new CancellationTokenSource();
+                    focuser.MoveFocuser(position, FocuserToken.Token);
                     response.Response = "Move started";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/focuser/stop-move")]
+        public void FocuserStopMove()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IFocuserMediator focuser = AdvancedAPI.Controls.Focuser;
+                if (!focuser.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Focuser not connected", 409));
+                }
+                else
+                {
+                    FocuserToken?.Cancel();
+                    response.Response = "Focuser move stopped";
                 }
             }
             catch (Exception ex)

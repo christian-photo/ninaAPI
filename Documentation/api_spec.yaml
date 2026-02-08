@@ -339,6 +339,138 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /equipment/camera/set-readout/image:
+    get:
+      tags:
+        - Camera
+      summary: Set readout mode for normal images
+      description: This endpoint sets the readout mode for normal images.
+      parameters:
+        - in: query
+          name: mode
+          description: The readout mode to set.
+          schema:
+            type: integer
+            minimum: 0
+          required: true
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Readout mode updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Invalid readout mode
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Invalid readout mode
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/camera/set-readout/snapshot:
+    get:
+      tags:
+        - Camera
+      summary: Set readout mode for snapshots
+      description: This endpoint sets the readout mode for snapshots.
+      parameters:
+        - in: query
+          name: mode
+          description: The readout mode to set.
+          schema:
+            type: integer
+            minimum: 0
+          required: true
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Readout mode updated
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "400":
+          description: Invalid readout mode
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Invalid readout mode
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /equipment/camera/cool:
     get:
       tags:
@@ -611,6 +743,75 @@ paths:
                     enum:
                       - Camera not connected
                       - Camera has no dew heater
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/camera/usb-limit:
+    get:
+      tags:
+        - Camera
+      summary: Set USB limit
+      description: This endpoint sets the usb limit of the camera
+      parameters:
+        - in: query
+          name: limit
+          description: The USB limit. Has to be between USBLimitMin and USBLimitMax.
+          required: true
+          schema:
+            type: string
+            example: 2x2
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: USB limit set
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Camera not connected / USB limit cant be set
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Camera not connected
+                      - Camera can not set USB limit
+                      - USB limit out of range
                   StatusCode:
                     type: integer
                     example: 409
@@ -2574,6 +2775,64 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnknownError"
 
+  /equipment/focuser/stop-move:
+    get:
+      tags:
+        - Focuser
+      summary: Stop Movement
+      description: Stops the movement of the focuser, this only works if the movement was started using one of the api endpoints
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Focuser move stopped
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Focuser not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Focuser not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
   /equipment/focuser/auto-focus:
     get:
       tags:
@@ -4120,6 +4379,64 @@ paths:
                   Response:
                     type: string
                     example: Range set
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Rotator not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    example: Rotator not connected
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /equipment/rotator/stop-move:
+    get:
+      tags:
+        - Rotator
+      summary: Stop Movement
+      description: Stops the movement of the rotator, this only works if the movement was started using one of the api endpoints
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Rotator move stopped
                   Error:
                     type: string
                     example: ""

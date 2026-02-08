@@ -96,7 +96,6 @@ namespace ninaAPI.WebService.V2.CustomDrivers
 
         public async Task<bool> Move(float position, CancellationToken ct)
         {
-            Logger.Debug($"Moving asdfsadfasdf to {Position + position}");
             IsMoving = true;
 
             TargetPosition = Position + position;
@@ -120,16 +119,18 @@ namespace ninaAPI.WebService.V2.CustomDrivers
                 await Task.WhenAny(WindowTaskSource.Task, window.Task);
             }
 
+
+            MoveFinished?.Invoke(this, null);
+
+            IsMoving = false;
+
             if (ct.IsCancellationRequested)
             {
                 _ = WindowService.Close();
                 ct.ThrowIfCancellationRequested();
             }
+
             Position = AstroUtil.EuclidianModulus(TargetPosition, 360);
-
-            MoveFinished?.Invoke(this, null);
-
-            IsMoving = false;
             return true;
         }
 

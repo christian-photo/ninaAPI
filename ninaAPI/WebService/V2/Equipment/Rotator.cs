@@ -221,5 +221,31 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/equipment/rotator/stop-move")]
+        public void RotatorStopMove()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                if (!AdvancedAPI.Controls.Rotator.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Rotator not connected", 409));
+                }
+                else
+                {
+                    RotatorToken?.Cancel();
+                    response.Response = "Rotator move stopped";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
     }
 }

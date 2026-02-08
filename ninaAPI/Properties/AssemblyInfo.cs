@@ -9,7 +9,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("3.0.0.0")]
 [assembly: AssemblyFileVersion("3.0.0.0")]
 
-
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]
 // [MANDATORY] A short description of your plugin
@@ -19,7 +18,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("Christian Palm")]
 // The product name that this plugin is part of
 [assembly: AssemblyProduct("Advanced API")]
-[assembly: AssemblyCopyright("Copyright ©  2025")]
+[assembly: AssemblyCopyright("Copyright ©  2026")]
 
 // The minimum Version of N.I.N.A. that this plugin is compatible with
 [assembly: AssemblyMetadata("MinimumApplicationVersion", "3.2.0.9001")]

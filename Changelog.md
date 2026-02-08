@@ -34,11 +34,22 @@ The event websocket now supports channels, which can be subscribed to per client
 - Endpoints like `image-history` now support pagination
 - It is now possible to work with multiple captures, not just the last one
 
+## 2.2.14.4
+
+- Add camera USB limit api endpoint
+- Add snapshot mode for normal images and snapshots
+  - `equipment/camera/set-readout/image`
+  - `equipment/camera/set-readout/snapshot`
+
+## 2.2.14.3
+
+- Add rotator stop move api endpoint
+- Add focuser stop move api endpoint
+- Bugfix for networked rotator
 
 ## 2.2.14.2
 
 - Add option to skip autostretch when using the capture endpoint
-
 
 ## 2.2.14.1
 
