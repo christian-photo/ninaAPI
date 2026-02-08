@@ -2,6 +2,13 @@
 
 The changes for each individual (beta) release can be seen in each [release](https://github.com/christian-photo/ninaAPI/releases). This changelog will only cover the fully released versions.
 
+## 2.2.14.4
+
+- Add camera USB limit api endpoint
+- Add snapshot mode for normal images and snapshots
+  - `equipment/camera/set-readout/image`
+  - `equipment/camera/set-readout/snapshot`
+
 ## 2.2.14.3
 
 - Add rotator stop move api endpoint
