@@ -30,6 +30,7 @@ using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility.Http;
 using System.IO;
 using ninaAPI.WebService.V3.Model;
+using NINA.Equipment.Interfaces;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {
@@ -75,26 +76,6 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
             await responseHandler.SendObject(HttpContext, info);
         }
-
-        [Route(HttpVerbs.Put, "/settings/readout")]
-        public async Task CameraSetReadout()
-        {
-            int readoutModes = cam.GetInfo().ReadoutModes.Count();
-
-            QueryParameter<int> modeParameter = new QueryParameter<int>("mode", 0, true, (mode) => mode.IsBetween(0, readoutModes));
-
-            if (!cam.GetInfo().Connected)
-            {
-                throw CommonErrors.DeviceNotConnected(Device.Camera);
-            }
-
-            int mode = modeParameter.Get(HttpContext);
-
-            cam.SetReadoutMode((short)mode);
-
-            await responseHandler.SendObject(HttpContext, new StringResponse("Readout mode updated"));
-        }
-
 
         [Route(HttpVerbs.Post, "/cool")]
         public async Task CameraCool()
@@ -204,6 +185,81 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             cam.SetBinning(binning.X, binning.Y);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Binning set"));
+        }
+
+        [Route(HttpVerbs.Put, "/settings/usb-limit")]
+        public async Task CameraSetBinning()
+        {
+            var info = cam.GetInfo();
+
+            QueryParameter<int> limitParameter = new QueryParameter<int>("limit", -1, true, (limit) => limit.IsBetween(info.USBLimitMin, info.USBLimitMax));
+            limitParameter.Get(HttpContext);
+
+            if (!cam.GetInfo().Connected)
+            {
+                throw CommonErrors.DeviceNotConnected(Device.Camera);
+            }
+
+            cam.SetUSBLimit(limitParameter.Value);
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("USB limit set"));
+        }
+
+        [Route(HttpVerbs.Put, "/settings/readout")]
+        public async Task CameraSetReadout()
+        {
+            int readoutModes = cam.GetInfo().ReadoutModes.Count();
+
+            QueryParameter<int> modeParameter = new QueryParameter<int>("mode", 0, true, (mode) => mode.IsBetween(0, readoutModes - 1));
+
+            if (!cam.GetInfo().Connected)
+            {
+                throw CommonErrors.DeviceNotConnected(Device.Camera);
+            }
+
+            int mode = modeParameter.Get(HttpContext);
+
+            cam.SetReadoutMode((short)mode);
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("Readout mode updated"));
+        }
+
+        [Route(HttpVerbs.Put, "/settings/readout/image")]
+        public async Task CameraSetReadoutNormal()
+        {
+            int readoutModes = cam.GetInfo().ReadoutModes.Count();
+
+            QueryParameter<int> modeParameter = new QueryParameter<int>("mode", 0, true, (mode) => mode.IsBetween(0, readoutModes - 1));
+
+            if (!cam.GetInfo().Connected)
+            {
+                throw CommonErrors.DeviceNotConnected(Device.Camera);
+            }
+
+            int mode = modeParameter.Get(HttpContext);
+
+            ((ICamera)cam.GetDevice()).ReadoutModeForNormalImages = (short)mode;
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("Readout mode updated"));
+        }
+
+        [Route(HttpVerbs.Put, "/settings/readout/snapshot")]
+        public async Task CameraSetReadoutSnapshot()
+        {
+            int readoutModes = cam.GetInfo().ReadoutModes.Count();
+
+            QueryParameter<int> modeParameter = new QueryParameter<int>("mode", 0, true, (mode) => mode.IsBetween(0, readoutModes - 1));
+
+            if (!cam.GetInfo().Connected)
+            {
+                throw CommonErrors.DeviceNotConnected(Device.Camera);
+            }
+
+            int mode = modeParameter.Get(HttpContext);
+
+            ((ICamera)cam.GetDevice()).ReadoutModeForSnapImages = (short)mode;
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("Readout mode updated"));
         }
 
 

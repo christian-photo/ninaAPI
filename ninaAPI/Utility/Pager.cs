@@ -56,8 +56,8 @@ namespace ninaAPI.Utility
         {
             return new PagerParameterSet()
             {
-                PageParameter = new QueryParameter<int>("page", 0, false, (page) => page.IsBetween(0, int.MaxValue)),
-                PageSizeParameter = new QueryParameter<int>("page-size", 20, false, (size) => size.IsBetween(-1, int.MaxValue))
+                PageParameter = new QueryParameter<int>("page", 0, false, (page) => page >= 0),
+                PageSizeParameter = new QueryParameter<int>("page-size", 20, false, (size) => size >= -1)
             };
         }
 
