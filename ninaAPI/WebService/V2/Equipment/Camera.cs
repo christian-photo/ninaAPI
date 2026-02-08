@@ -36,6 +36,7 @@ using NINA.Image.ImageAnalysis;
 using NINA.Core.Enum;
 using System.Reflection;
 using Accord;
+using NINA.Equipment.Interfaces;
 
 namespace ninaAPI.WebService.V2
 {
@@ -213,6 +214,62 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        [Route(HttpVerbs.Get, "/equipment/camera/set-readout/image")]
+        public void CameraSetReadoutImage([QueryField] short mode)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ICameraMediator cam = AdvancedAPI.Controls.Camera;
+
+                if (mode >= 0 && mode < cam.GetInfo().ReadoutModes.Count())
+                {
+                    ((ICamera)cam.GetDevice()).ReadoutModeForNormalImages = mode;
+                    response.Response = "Readout mode updated";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid readout mode", 400));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/camera/set-readout/snapshot")]
+        public void CameraSetReadoutSnapshot([QueryField] short mode)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ICameraMediator cam = AdvancedAPI.Controls.Camera;
+
+                if (mode >= 0 && mode < cam.GetInfo().ReadoutModes.Count())
+                {
+                    ((ICamera)cam.GetDevice()).ReadoutModeForSnapImages = mode;
+                    response.Response = "Readout mode updated";
+                }
+                else
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Invalid readout mode", 400));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
         [Route(HttpVerbs.Get, "/equipment/camera/cool")]
         public void CameraCool([QueryField] double temperature, [QueryField] bool cancel, [QueryField] double minutes)
         {
@@ -350,6 +407,42 @@ namespace ninaAPI.WebService.V2
                 {
                     cam.SetDewHeater(power);
                     response.Response = "Dew heater set";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+        [Route(HttpVerbs.Get, "/equipment/camera/usb-limit")]
+        public void CameraDewHeater([QueryField] int limit)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ICameraMediator cam = AdvancedAPI.Controls.Camera;
+
+                if (!cam.GetInfo().Connected)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Camera not connected", 409));
+                }
+                else if (!cam.GetInfo().CanSetUSBLimit)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Camera can not set USB limit", 409));
+                }
+                else if (limit < cam.GetInfo().USBLimitMin || limit > cam.GetInfo().USBLimitMax)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("USB limit out of range", 409));
+                }
+                else
+                {
+                    cam.SetUSBLimit(limit);
+                    response.Response = "USB limit set";
                 }
             }
             catch (Exception ex)
