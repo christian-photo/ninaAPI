@@ -334,7 +334,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             }
             ImageWriter writer = await ImageService.ProcessAndPrepareImage(capture.GetCapturePath(), capture.IsCaptureBayered, imageQuery, capture.BitDepth);
 
-            await responseHandler.SendBytes(HttpContext, writer.Encode(imageQuery), writer.MimeType);
+            await responseHandler.SendBytes(HttpContext, writer.Encode(imageQuery.Quality.Value), writer.MimeType);
         }
 
         [Route(HttpVerbs.Get, "/capture/{id}/analysis")]

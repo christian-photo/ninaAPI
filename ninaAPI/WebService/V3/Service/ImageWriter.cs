@@ -37,7 +37,7 @@ namespace ninaAPI.WebService.V3.Service
 
         protected BitmapSource image = img;
 
-        public abstract byte[] Encode(ImageQueryParameterSet parameter);
+        public abstract byte[] Encode(int quality);
         public abstract string MimeType { get; protected set; }
 
         protected static Image BitmapSourceToVipsImage(BitmapSource bitmapSource)
@@ -79,10 +79,10 @@ namespace ninaAPI.WebService.V3.Service
 
     public class JpegWriter(BitmapSource image) : ImageWriter(image)
     {
-        public override byte[] Encode(ImageQueryParameterSet parameter)
+        public override byte[] Encode(int quality)
         {
             var encoder = new JpegBitmapEncoder();
-            encoder.QualityLevel = parameter.Quality.Value;
+            encoder.QualityLevel = quality;
             encoder.Frames.Add(BitmapFrame.Create(image));
 
             using var target = new MemoryStream();
@@ -95,7 +95,7 @@ namespace ninaAPI.WebService.V3.Service
 
     public class PngWriter(BitmapSource image) : ImageWriter(image)
     {
-        public override byte[] Encode(ImageQueryParameterSet parameter)
+        public override byte[] Encode(int quality)
         {
             var encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(image));
@@ -110,9 +110,8 @@ namespace ninaAPI.WebService.V3.Service
 
     public class WebpWriter(BitmapSource image) : ImageWriter(image)
     {
-        public override byte[] Encode(ImageQueryParameterSet parameter)
+        public override byte[] Encode(int quality)
         {
-            int quality = parameter.Quality.Value;
             using var vipsImage = BitmapSourceToVipsImage(image);
 
             // WebP with additional options
@@ -129,9 +128,8 @@ namespace ninaAPI.WebService.V3.Service
 
     public class AvifWriter(BitmapSource image) : ImageWriter(image)
     {
-        public override byte[] Encode(ImageQueryParameterSet parameter)
+        public override byte[] Encode(int quality)
         {
-            int quality = parameter.Quality.Value;
             using var vipsImage = BitmapSourceToVipsImage(image);
 
             // AVIF with additional options
@@ -148,9 +146,8 @@ namespace ninaAPI.WebService.V3.Service
 
     public class JxlWriter(BitmapSource image) : ImageWriter(image)
     {
-        public override byte[] Encode(ImageQueryParameterSet parameter)
+        public override byte[] Encode(int quality)
         {
-            int quality = parameter.Quality.Value;
             using var vipsImage = BitmapSourceToVipsImage(image);
 
             // AVIF with additional options

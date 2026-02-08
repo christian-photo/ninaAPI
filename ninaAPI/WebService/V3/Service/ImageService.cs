@@ -40,13 +40,26 @@ namespace ninaAPI.WebService.V3.Service
 
         public static BitmapSource ResizeBitmap(BitmapSource image, ImageQueryParameterSet parameters)
         {
-            if (parameters.Scale.WasProvided)
+            return ResizeBitmap(image, parameters.Scale, parameters.Size);
+        }
+
+        public static BitmapSource ResizeBitmap(BitmapSource image, QueryParameter<float> scale, SizeQueryParameter size)
+        {
+            if (scale.WasProvided)
             {
-                image = BitmapHelper.ScaleBitmap(image, parameters.Scale.Value);
+                image = BitmapHelper.ScaleBitmap(image, scale.Value);
             }
-            else if (parameters.Size.WasProvided)
+            else if (size.WasProvided)
             {
-                image = BitmapHelper.ResizeBitmap(image, parameters.Size.Value);
+                if (size.Value.Width == 0)
+                {
+                    image = BitmapHelper.ScaleBitmap(image, size.Value.Width / image.Width);
+                }
+                else
+                {
+                    // We know that height is not 0, so we can safely divide by height
+                    image = BitmapHelper.ScaleBitmap(image, size.Value.Height / image.Height);
+                }
             }
             return image;
         }

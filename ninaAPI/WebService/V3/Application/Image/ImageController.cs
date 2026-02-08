@@ -74,7 +74,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
             ImageWriter writer = await ImageService.ProcessAndPrepareImage(p.GetPath(), p.IsBayered, imageQuery, p.BitDepth);
 
-            await responseHandler.SendBytes(HttpContext, writer.Encode(imageQuery), writer.MimeType);
+            await responseHandler.SendBytes(HttpContext, writer.Encode(imageQuery.Quality.Value), writer.MimeType);
         }
 
         [Route(HttpVerbs.Get, "/{index}/thumbnail")]
@@ -232,7 +232,7 @@ namespace ninaAPI.WebService.V3.Application.Image
 
             ImageWriter writer = await ImageService.ProcessAndPrepareImage(ImageWatcher.PreparedImage, imageQuery);
 
-            await responseHandler.SendBytes(HttpContext, writer.Encode(imageQuery), writer.MimeType);
+            await responseHandler.SendBytes(HttpContext, writer.Encode(imageQuery.Quality.Value), writer.MimeType);
         }
 
         [Route(HttpVerbs.Post, "/prepared/platesolve")]

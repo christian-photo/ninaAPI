@@ -17,6 +17,7 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
+using ninaAPI.WebService.V3.Application;
 using ninaAPI.WebService.V3.Application.Image;
 using ninaAPI.WebService.V3.Application.Profile;
 using ninaAPI.WebService.V3.Equipment;
@@ -53,6 +54,7 @@ namespace ninaAPI.WebService.V3
         private readonly WeatherController weatherController;
         private readonly ConnectController connectionController;
 
+        private readonly ApplicationController applicationController;
         private readonly ImageController imageController;
         private readonly ProfileController profileController;
         private readonly ControllerV3 controller;
@@ -231,6 +233,11 @@ namespace ninaAPI.WebService.V3
                 responseHandler
             );
 
+            applicationController = new ApplicationController(
+                AdvancedAPI.Controls.Profile,
+                AdvancedAPI.Controls.Application,
+                responseHandler);
+
             controller = new ControllerV3(responseHandler, processMediator);
         }
 
@@ -261,6 +268,7 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi("/v3/api/equipment", m => m.WithController(() => connectionController))
                 .WithWebApi("/v3/api/image", m => m.WithController(() => imageController))
                 .WithWebApi("/v3/api/profile", m => m.WithController(() => profileController))
+                .WithWebApi("/v3/api/application", m => m.WithController(() => applicationController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 
