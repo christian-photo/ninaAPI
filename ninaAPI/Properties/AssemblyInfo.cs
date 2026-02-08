@@ -64,8 +64,8 @@ A powerful HTTP and WebSocket server plugin that enables remote control and moni
 * Comprehensive error handling
 
 ## Documentation & Support
-* [Full API Documentation](https://bump.sh/christian-photo/doc/advanced-api/)
-* [WebSocket Documentation](https://bump.sh/christian-photo/doc/advanced-api-websockets)
+* [Full API Documentation](https://christian-photo.github.io/github-page/projects/ninaAPI/v3/doc/api)
+* [WebSocket Documentation](https://github.com/christian-photo/ninaAPI/wiki/Websocket-V3)
 * [Issue Tracker](https://github.com/christian-photo/ninaAPI/issues)
 
 If you need help, want to report a bug or request a new feature, please join the N.I.N.A. discord or write an issue on the github repository!")]
