@@ -63,6 +63,9 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         public const string PROFILE_CHANGED = "profile-changed";
         public const string PROFILE_REMOVED = "profile-removed";
 
+        public const string SEQUENCE_ENTITY_FAILED = "sequence-entity-failed";
+        public const string SEQUENCE_CUSTOM_EVENT = "sequence-custom-event";
+
         public static string DeviceConnected(Device device) => $"{device.ToString().ToLower()}-connected";
         public static string DeviceDisconnected(Device device) => $"{device.ToString().ToLower()}-disconnected";
         public static string DeviceInfoUpdate(Device device) => $"{device.ToString().ToLower()}-info-update";

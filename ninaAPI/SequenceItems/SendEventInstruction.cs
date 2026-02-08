@@ -19,7 +19,10 @@ using NINA.Core.Model;
 using NINA.Sequencer.SequenceItem;
 using NINA.Sequencer.Validations;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V2;
+using ninaAPI.WebService.V3;
+using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.SequenceItems
 {
@@ -74,12 +77,18 @@ namespace ninaAPI.SequenceItems
         public override async Task Execute(IProgress<ApplicationStatus> progress, CancellationToken token)
         {
             await WebSocketV2.SendEvent(new HttpResponse() { Response = string.IsNullOrEmpty(Message) ? "Test event" : Message, Type = HttpResponse.TypeSocket }).WaitAsync(token);
+            await (AdvancedAPI.V3 as V3Api).GetEventWebSocket().SendEvent(new WebSocketEvent()
+            {
+                Channel = WebSocketChannel.Sequence,
+                Event = WebSocketEvents.SEQUENCE_CUSTOM_EVENT,
+                Data = string.IsNullOrEmpty(Message) ? "Test event" : Message,
+            }).WaitAsync(token);
         }
 
         public bool Validate()
         {
             List<string> i = new List<string>();
-            if (!WebSocketV2.IsAvailable)
+            if (!WebSocketV2.IsAvailable && (AdvancedAPI.V3 is null || (AdvancedAPI.V3 as V3Api).GetEventWebSocket() is null))
             {
                 i.Add("WebSocket is not available");
             }

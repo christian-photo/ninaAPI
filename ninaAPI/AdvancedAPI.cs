@@ -154,8 +154,8 @@ namespace ninaAPI
             WebApiServer.StartWatchers();
         }
 
-        private IHttpApi V3 { get; set; }
-        private IHttpApi V2 { get; set; }
+        public static IHttpApi V3 { get; private set; }
+        public static IHttpApi V2 { get; private set; }
 
         private void RunApi()
         {

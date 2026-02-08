@@ -40,6 +40,7 @@ namespace ninaAPI.Utility.Http
     public enum WebSocketChannel
     {
         General,
+        Sequence,
         Image,
         Equipment,
         Capture,
