@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net8.0-windows</TargetFrameworks>
+    <TargetFrameworks>net10.0-windows</TargetFrameworks>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>
@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <!-- When building for windows -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
     <Reference Include="ReachFramework" />
     <Reference Update="System">
       <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.dll</HintPath>
@@ -37,20 +37,20 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
 
     <!-- PackageReferences -->
-    <PackageReference Include="NINA.Astrometry" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.Core" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.CustomControlLibrary" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.Equipment" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.Image" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.MGEN" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.PlateSolving" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.Profile" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.Sequencer" Version="3.2.0.9001" />
-    <PackageReference Include="NINA.WPF.Base" Version="3.2.0.9001" />
+    <PackageReference Include="NINA.Astrometry" Version="3.3.0.1000-canary" />
+    <PackageReference Include="NINA.Core" Version="3.3.0.1000-canary" />
+    <PackageReference Include="NINA.CustomControlLibrary" Version="3.3.0.1000-canary" />
+    <PackageReference Include="NINA.Equipment" Version="3.3.0.1000-canary" />
+    <PackageReference Include="NINA.Image" Version="3.3.0.1000-canary" />
+    <PackageReference Include="NINA.MGEN" Version="3.3.0.1000-canary" />
+    <PackageReference Include="NINA.PlateSolving" Version="3.3.0.1000-canary" />
+    <PackageReference Include="NINA.Profile" Version="3.3.0.1000-canary" />
+    <PackageReference Include="NINA.Sequencer" Version="3.3.0.1000-canary" />
+    <PackageReference Include="NINA.WPF.Base" Version="3.3.0.1000-canary" />
+    <PackageReference Include="NINA.Plugin" Version="3.3.0.1000-canary" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.1" />
 
     <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
-    <PackageReference Include="NINA.Plugin" Version="3.2.0.9001" />
     <PackageReference Include="NINA.WpfToolkit" Version="3.5.3" />
     <PackageReference Include="System.Windows.Interactivity.WPF" Version="2.0.20525" />
   </ItemGroup>
