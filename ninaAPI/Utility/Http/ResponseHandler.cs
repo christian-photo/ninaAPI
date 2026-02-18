@@ -13,6 +13,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using EmbedIO;
+using NINA.Sequencer.Container;
 using ninaAPI.Utility.Serialization;
 
 namespace ninaAPI.Utility.Http
@@ -35,10 +36,20 @@ namespace ninaAPI.Utility.Http
             {
                 json = serializer.Serialize(obj);
             }
-            await SendString(context, json, statusCode, mimeType);
+            await SendRaw(context, json, statusCode, mimeType);
         }
 
-        public async Task SendString(IHttpContext context, string json, int statusCode = 200, string mimeType = MimeType.Json)
+        public async Task SendSequence(IHttpContext context, ISequenceContainer container, int statusCode = 200, string mimeType = MimeType.Json)
+        {
+            string json;
+            lock (serializerLock)
+            {
+                json = serializer.Serialize(container, true);
+            }
+            await SendRaw(context, json, statusCode, mimeType);
+        }
+
+        public async Task SendRaw(IHttpContext context, string json, int statusCode = 200, string mimeType = MimeType.Json)
         {
             context.Response.ContentType = mimeType;
             context.Response.StatusCode = statusCode;

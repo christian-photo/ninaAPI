@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using NINA.Core.Model;
+using NINA.Core.Utility;
 using NINA.Profile.Interfaces;
 
 namespace ninaAPI.Utility.Serialization
@@ -30,12 +31,13 @@ namespace ninaAPI.Utility.Serialization
         {
             Error = delegate (object sender, ErrorEventArgs args)
             {
+                Logger.Error(args.ErrorContext.Error);
                 args.ErrorContext.Handled = true;
             },
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             NullValueHandling = NullValueHandling.Ignore,
             Converters = { new StringEnumConverter() },
-            ContractResolver = new SequenceIgnoreResolver(),
+            ContractResolver = new SequenceResolver(),
             FloatFormatHandling = FloatFormatHandling.String,
         };
 
@@ -43,6 +45,7 @@ namespace ninaAPI.Utility.Serialization
         {
             Error = delegate (object sender, ErrorEventArgs args)
             {
+                Logger.Error(args.ErrorContext.Error);
                 args.ErrorContext.Handled = true;
             },
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
@@ -62,20 +65,36 @@ namespace ninaAPI.Utility.Serialization
         }
     }
 
+    internal class SequenceResolver : DefaultContractResolver
+    {
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            JsonProperty property = base.CreateProperty(member, memberSerialization);
+            if (property.PropertyName == "Name" || property.PropertyName == "Status")
+            {
+                property.Ignored = false;
+                property.ShouldSerialize = _ => true;
+            }
+
+            return property;
+        }
+    }
+
     internal class SequenceIgnoreResolver : DefaultContractResolver
     {
         private static readonly string[] ignoredProperties = ["UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
             "DateTime", "Expanded", "DateTimeProviders", "Horizon", "Parent", "InfoButtonColor", "Icon"];
 
-        private static readonly Type[] ignoredTypes = [typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(RelayCommand), typeof(Icon), typeof(Func<>), typeof(Action<>)];
+        private static readonly Type[] ignoredTypes = [typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand), typeof(Icon), typeof(Func<>), typeof(Action<>)];
 
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             JsonProperty property = base.CreateProperty(member, memberSerialization);
-            if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Contains(property.PropertyType))
+            if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Any(t => t.IsAssignableFrom(property.PropertyType)))
             {
                 property.ShouldSerialize = _ => false;
             }
+
             return property;
         }
     }

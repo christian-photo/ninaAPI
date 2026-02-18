@@ -273,11 +273,11 @@ namespace ninaAPI.WebService.V2
 
             if (toMoon)
             {
-                sepObjectPosition = AstroUtil.GetMoonPosition(date, jd, observerInfo);
+                sepObjectPosition = AstroUtil.GetMoonPosition(date, observerInfo);
             }
             else
             {
-                sepObjectPosition = AstroUtil.GetSunPosition(date, jd, observerInfo);
+                sepObjectPosition = AstroUtil.GetSunPosition(date, observerInfo);
             }
 
             var sepObjectRaRadians = AstroUtil.ToRadians(AstroUtil.HoursToDegrees(sepObjectPosition.RA));

@@ -38,6 +38,7 @@ using ninaAPI.WebService.V2;
 using ninaAPI.WebService.V3;
 using System.Runtime.CompilerServices;
 using ninaAPI.WebService.Interfaces;
+using NINA.Sequencer.Logic;
 
 namespace ninaAPI
 {
@@ -84,7 +85,8 @@ namespace ninaAPI
                            ITwilightCalculator twilightCalculator,
                            INighttimeCalculator nighttimeCalculator,
                            IWindowServiceFactory windowFactory,
-                           IMeridianFlipVMFactory meridianFlipVMFactory)
+                           IMeridianFlipVMFactory meridianFlipVMFactory,
+                           ISymbolBroker symbolBroker)
         {
 #if WINDOWS
             Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri("pack://application:,,,/ninaAPI;component/WebService/V2/CustomDrivers/RotatorDataTemplate.xaml") });
@@ -122,6 +124,7 @@ namespace ninaAPI
                 TwilightCalculator = twilightCalculator,
                 NighttimeCalculator = nighttimeCalculator,
                 WindowFactory = windowFactory,
+                SymbolBroker = symbolBroker,
             };
 
             if (Settings.Default.UpdateSettings)

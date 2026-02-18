@@ -57,6 +57,7 @@ namespace ninaAPI.WebService.V3
         private readonly ApplicationController applicationController;
         private readonly ImageController imageController;
         private readonly ProfileController profileController;
+        private readonly SequenceController sequenceController;
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
 
@@ -238,6 +239,11 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.Application,
                 responseHandler);
 
+            sequenceController = new SequenceController(
+                AdvancedAPI.Controls.Sequence,
+                responseHandler
+            );
+
             controller = new ControllerV3(responseHandler, processMediator);
         }
 
@@ -269,6 +275,7 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi("/v3/api/image", m => m.WithController(() => imageController))
                 .WithWebApi("/v3/api/profile", m => m.WithController(() => profileController))
                 .WithWebApi("/v3/api/application", m => m.WithController(() => applicationController))
+                .WithWebApi("/v3/api/sequence", m => m.WithController(() => sequenceController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 

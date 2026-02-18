@@ -64,7 +64,7 @@ namespace ninaAPI.WebService.V3.Application.Profile
             await responseHandler.SendObject(HttpContext, new HorizonResponse(AdvancedAPI.Controls.Profile.ActiveProfile.AstrometrySettings.Horizon));
         }
 
-        [Route(HttpVerbs.Put, "/change")]
+        [Route(HttpVerbs.Put, "/")]
         public async Task ChangeProfile()
         {
             QueryParameter<Guid> idParameter = new QueryParameter<Guid>("id", Guid.Empty, true);
@@ -80,7 +80,7 @@ namespace ninaAPI.WebService.V3.Application.Profile
             await responseHandler.SendObject(HttpContext, new StringResponse(success ? "Profile changed" : "Profile change failed"), success ? 200 : 500);
         }
 
-        [Route(HttpVerbs.Patch, "/set-value")]
+        [Route(HttpVerbs.Patch, "/")]
         public async Task UpdateProfileValue([JsonData] ProfileValueChangeConfig config)
         {
             if (string.IsNullOrEmpty(config.PathDescription))

@@ -152,7 +152,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             }
 
             string json = await Retry.Do(() => File.ReadAllText(file), TimeSpan.FromMilliseconds(50), 5);
-            await responseHandler.SendString(HttpContext, json);
+            await responseHandler.SendRaw(HttpContext, json);
         }
     }
 }
