@@ -34,6 +34,10 @@ The event websocket now supports channels, which can be subscribed to per client
 - Endpoints like `image-history` now support pagination
 - It is now possible to work with multiple captures, not just the last one
 
+## 2.2.14.5
+
+- Add support for floats when updating profile settings (#85)
+
 ## 2.2.14.4
 
 - Add camera USB limit api endpoint

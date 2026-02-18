@@ -213,7 +213,9 @@ namespace ninaAPI.WebService.V2
 
                     if (pathSplit.Length == 1)
                     {
-                        position.GetType().GetProperty(settingpath).SetValue(position, newValue);
+                        PropertyInfo prop = position.GetType().GetProperty(settingpath);
+                        string sval = newValue.ToString();
+                        prop.SetValue(position, sval.CastString(prop.PropertyType));
                     }
                     else
                     {
@@ -236,7 +238,8 @@ namespace ninaAPI.WebService.V2
                             }
                         }
                         PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
-                        prop.SetValue(position, ((string)newValue).CastString(prop.PropertyType));
+                        string sval = newValue.ToString();
+                        prop.SetValue(position, sval.CastString(prop.PropertyType));
                     }
 
                     response.Response = "Updated setting";

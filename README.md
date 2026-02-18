@@ -31,3 +31,4 @@ Take a look at these projects:
 - [N.I.N.A Model Context Protocol Server for Advanced API Plugin v2 (MCP)](https://github.com/PaDev1/Nina_advanced_api_mcp)
 - [Mobile interface to Manage NINA using the Advanced API plugin](https://github.com/venturachrisdev/Cygnus-Astro)
 - [Your Personal Astrophotography Catalog - CosmosCollection](https://github.com/quake101/CosmosCollection)
+- [NINA Astrophotography display using Waveshare ESP32-P4-WIFI6-Touch-LCD-4B](https://github.com/chvvkumar/ESP32-P4-NINA-Display)
