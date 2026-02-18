@@ -229,6 +229,14 @@ namespace ninaAPI.Utility
             {
                 return double.Parse(str);
             }
+            if (type == typeof(float) || type == typeof(float?))
+            {
+                return float.Parse(str);
+            }
+            if (type == typeof(decimal) || type == typeof(decimal?))
+            {
+                return decimal.Parse(str);
+            }
             if (type == typeof(bool) || type == typeof(bool?))
             {
                 return bool.Parse(str);
