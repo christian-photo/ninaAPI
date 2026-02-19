@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,6 +11,7 @@
 
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using EmbedIO;
 using NINA.Sequencer.Container;
@@ -22,7 +23,7 @@ namespace ninaAPI.Utility.Http
     {
         private readonly ISerializerService serializer;
 
-        private object serializerLock = new object();
+        private readonly Lock serializerLock = new Lock();
 
         public ResponseHandler(ISerializerService serializerService)
         {

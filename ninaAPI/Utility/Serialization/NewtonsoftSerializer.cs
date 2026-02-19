@@ -11,6 +11,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
@@ -22,6 +23,10 @@ using Newtonsoft.Json.Serialization;
 using NINA.Core.Model;
 using NINA.Core.Utility;
 using NINA.Profile.Interfaces;
+using NINA.Sequencer;
+using NINA.Sequencer.Container;
+using NINA.Sequencer.Logic;
+using NINA.Sequencer.SequenceItem;
 
 namespace ninaAPI.Utility.Serialization
 {
@@ -67,35 +72,56 @@ namespace ninaAPI.Utility.Serialization
 
     internal class SequenceResolver : DefaultContractResolver
     {
+        private static readonly string[] includedNames = ["Name", "Status"];
+        private static readonly string[] excludedNames = ["Parent"];
+        private static readonly Type[] excludedTypes = [typeof(Expression)];
+
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             JsonProperty property = base.CreateProperty(member, memberSerialization);
-            if (property.PropertyName == "Name" || property.PropertyName == "Status")
+            if (includedNames.Contains(property.PropertyName))
             {
                 property.Ignored = false;
                 property.ShouldSerialize = _ => true;
             }
-
-            return property;
-        }
-    }
-
-    internal class SequenceIgnoreResolver : DefaultContractResolver
-    {
-        private static readonly string[] ignoredProperties = ["UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
-            "DateTime", "Expanded", "DateTimeProviders", "Horizon", "Parent", "InfoButtonColor", "Icon"];
-
-        private static readonly Type[] ignoredTypes = [typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand), typeof(Icon), typeof(Func<>), typeof(Action<>)];
-
-        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-        {
-            JsonProperty property = base.CreateProperty(member, memberSerialization);
-            if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Any(t => t.IsAssignableFrom(property.PropertyType)))
+            else if (excludedNames.Contains(property.PropertyName) || excludedTypes.Any(t => t.IsAssignableFrom(property.PropertyType)))
             {
                 property.ShouldSerialize = _ => false;
             }
 
             return property;
+        }
+
+        protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+        {
+            var properties = base.CreateProperties(type, memberSerialization);
+
+            if (typeof(ISequenceContainer).IsAssignableFrom(type))
+            {
+                properties.Add(new JsonProperty
+                {
+                    PropertyName = "IsContainer",
+                    PropertyType = typeof(bool),
+                    ValueProvider = new ConstantValueProvider(true),
+                    Readable = true,
+                    Ignored = false,
+                    Writable = false
+                });
+            }
+            else if (typeof(ISequenceEntity).IsAssignableFrom(type))
+            {
+                properties.Add(new JsonProperty
+                {
+                    PropertyName = "IsContainer",
+                    PropertyType = typeof(bool),
+                    ValueProvider = new ConstantValueProvider(false),
+                    Readable = true,
+                    Ignored = false,
+                    Writable = false
+                });
+            }
+
+            return properties;
         }
     }
 
@@ -109,6 +135,26 @@ namespace ninaAPI.Utility.Serialization
                 property.ShouldSerialize = _ => false;
             }
             return property;
+        }
+    }
+
+    public class ConstantValueProvider : IValueProvider
+    {
+        private readonly object _value;
+
+        public ConstantValueProvider(object value)
+        {
+            _value = value;
+        }
+
+        public object GetValue(object target)
+        {
+            return _value;
+        }
+
+        public void SetValue(object target, object value)
+        {
+            // Not needed for serialization
         }
     }
 }

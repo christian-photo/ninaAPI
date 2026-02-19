@@ -13,7 +13,7 @@
                 <StackPanel Orientation="Horizontal">
                     <logic:ExprStringControl
                         Width="600"
-                        Text="{Binding MessageExpression}"
+                        Text="{Binding MessageDefinition}"
                         Label="Message" />
                 </StackPanel>
             </nina:SequenceBlockView.SequenceItemContent>

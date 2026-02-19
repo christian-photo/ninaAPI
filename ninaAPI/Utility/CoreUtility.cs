@@ -30,6 +30,10 @@ using System.Globalization;
 using ninaAPI.Utility.Http;
 using System.Net;
 using ninaAPI.Utility.Serialization;
+using Newtonsoft.Json.Serialization;
+using NINA.Profile.Interfaces;
+using System.Windows.Input;
+using System.Drawing;
 
 namespace ninaAPI.Utility
 {
@@ -274,6 +278,25 @@ namespace ninaAPI.Utility
             }
 
             return (response, statusCode);
+        }
+    }
+
+    internal class SequenceIgnoreResolver : DefaultContractResolver
+    {
+        private static readonly string[] ignoredProperties = ["UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
+            "DateTime", "Expanded", "DateTimeProviders", "Horizon", "Parent", "InfoButtonColor", "Icon"];
+
+        private static readonly Type[] ignoredTypes = [typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(CommunityToolkit.Mvvm.Input.AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand), typeof(Icon), typeof(Func<>), typeof(Action<>)];
+
+        protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            Newtonsoft.Json.Serialization.JsonProperty property = base.CreateProperty(member, memberSerialization);
+            if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Any(t => t.IsAssignableFrom(property.PropertyType)))
+            {
+                property.ShouldSerialize = _ => false;
+            }
+
+            return property;
         }
     }
 

@@ -33,6 +33,8 @@ The event websocket now supports channels, which can be subscribed to per client
 - The error messages are now more consistent. They will always include the `Error` (the name of the status code) and optionally `Message` which may provide further information about the error.
 - Endpoints like `image-history` now support pagination
 - It is now possible to work with multiple captures, not just the last one
+- The instruction was upgraded to work with expressions
+- Containers in the sequence are now marked with a `IsContainer: true` property instead of a suffixed name
 
 ## 2.2.14.5
 

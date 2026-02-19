@@ -47,7 +47,7 @@ namespace ninaAPI.SequenceItems
         }
 
         [JsonProperty]
-        public string MessageExpression { get; set; }
+        public string MessageDefinition { get; set; }
 
         private IList<string> issues = new List<string>();
 
@@ -63,7 +63,7 @@ namespace ninaAPI.SequenceItems
 
         public override async Task Execute(IProgress<ApplicationStatus> progress, CancellationToken token)
         {
-            var message = ExpressionExpander.Expand(MessageExpression, SymbolBroker, Parent);
+            var message = ExpressionExpander.Expand(MessageDefinition, SymbolBroker, Parent);
             await WebSocketV2.SendEvent(new HttpResponse() { Response = message, Type = HttpResponse.TypeSocket }).WaitAsync(token);
             await (AdvancedAPI.V3 as V3Api).GetEventWebSocket().SendEvent(new WebSocketEvent()
             {
@@ -87,14 +87,14 @@ namespace ninaAPI.SequenceItems
 
         public override string ToString()
         {
-            return $"Category: {Category}, Item: {Name}, MessageExpression: {MessageExpression}, Message: {ExpressionExpander.Expand(MessageExpression, SymbolBroker, Parent)}";
+            return $"Category: {Category}, Item: {Name}, MessageExpression: {MessageDefinition}, Message: {ExpressionExpander.Expand(MessageDefinition, SymbolBroker, Parent)}";
         }
 
         public override object Clone()
         {
             return new SendMessageInstruction(this)
             {
-                MessageExpression = MessageExpression
+                MessageDefinition = MessageDefinition
             };
         }
     }
