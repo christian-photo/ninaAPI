@@ -36,6 +36,10 @@ The event websocket now supports channels, which can be subscribed to per client
 - The instruction was upgraded to work with expressions
 - Containers in the sequence are now marked with a `IsContainer: true` property instead of a suffixed name
 
+## 2.2.14.6
+
+- Make profile change value more robust
+
 ## 2.2.14.5
 
 - Add support for floats when updating profile settings (#85)

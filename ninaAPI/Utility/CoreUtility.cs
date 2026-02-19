@@ -29,7 +29,6 @@ using Newtonsoft.Json.Converters;
 using System.Globalization;
 using ninaAPI.Utility.Http;
 using System.Net;
-using ninaAPI.Utility.Serialization;
 using Newtonsoft.Json.Serialization;
 using NINA.Profile.Interfaces;
 using System.Windows.Input;
@@ -153,45 +152,46 @@ namespace ninaAPI.Utility
             }
         }
 
-        public static object CastString(this string str, Type type)
+        public static bool IsParameterOmitted(this IHttpContext context, string parameter)
         {
+            return !context.Request.QueryString.AllKeys.Contains(parameter);
+        }
+
+        public static object? CastString(this string str, Type type)
+        {
+            ArgumentNullException.ThrowIfNull(type);
+
+            // Handle null / empty for nullable types
             if (string.IsNullOrWhiteSpace(str))
             {
-                return null;
+                if (IsNullable(type))
+                    return null;
+
+                throw new InvalidCastException("Cannot convert null or empty string to non-nullable type.");
             }
 
-            str = str.Trim();
+            Type targetType = Nullable.GetUnderlyingType(type) ?? type;
 
-            Type underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-
-            if (underlyingType == typeof(int))
-                return int.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var i) ? i : 0;
-            if (underlyingType == typeof(double))
-                return double.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var d) ? d : 0.0;
-            if (underlyingType == typeof(bool))
-                return bool.TryParse(str, out var b) ? b : false;
-            if (underlyingType == typeof(long))
-                return long.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var l) ? l : 0L;
-            if (underlyingType == typeof(short))
-                return short.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var s) ? s : (short)0;
-            if (underlyingType == typeof(float))
-                return float.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var f) ? f : 0f;
-            if (underlyingType == typeof(decimal))
-                return decimal.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var m) ? m : 0m;
-            if (underlyingType == typeof(byte))
-                return byte.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var by) ? by : (byte)0;
-            if (underlyingType == typeof(DateTime))
-                return DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt) ? dt : DateTime.MinValue;
-            if (underlyingType == typeof(string))
-                return str;
-            if (underlyingType.IsEnum)
+            // Enum handling
+            if (targetType.IsEnum)
             {
-                if (int.TryParse(str, out int x))
-                    return Enum.ToObject(underlyingType, x);
-                return Enum.TryParse(underlyingType, str, true, out var result) ? result : Activator.CreateInstance(underlyingType);
+                if (int.TryParse(str, out var intValue))
+                    return Enum.ToObject(targetType, intValue);
+
+                return Enum.Parse(targetType, str, ignoreCase: true);
             }
 
-            return str;
+            // Guid
+            if (targetType == typeof(Guid))
+                return Guid.Parse(str);
+
+            // Use Convert for most primitives
+            return Convert.ChangeType(str, targetType, CultureInfo.InvariantCulture);
+        }
+
+        private static bool IsNullable(Type type)
+        {
+            return !type.IsValueType || Nullable.GetUnderlyingType(type) != null;
         }
 
         public static bool IsBetween(this short value, short min, short max)
