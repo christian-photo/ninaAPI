@@ -191,7 +191,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/profile/change-value")]
-        public void ProfileChangeValue([QueryField] string settingpath, [QueryField] object newValue)
+        public void ProfileChangeValue([QueryField] string settingpath, [QueryField] string newValue)
         {
             HttpResponse response = new HttpResponse();
 
@@ -201,7 +201,7 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Invalid path", 400));
                 }
-                else if (newValue is null)
+                else if (string.IsNullOrEmpty(newValue))
                 {
                     response = CoreUtility.CreateErrorTable(new Error("New value can't be null", 400));
                 }
@@ -214,8 +214,7 @@ namespace ninaAPI.WebService.V2
                     if (pathSplit.Length == 1)
                     {
                         PropertyInfo prop = position.GetType().GetProperty(settingpath);
-                        string sval = newValue.ToString();
-                        prop.SetValue(position, sval.CastString(prop.PropertyType));
+                        prop.SetValue(position, newValue.CastString(prop.PropertyType));
                     }
                     else
                     {
@@ -238,8 +237,7 @@ namespace ninaAPI.WebService.V2
                             }
                         }
                         PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
-                        string sval = newValue.ToString();
-                        prop.SetValue(position, sval.CastString(prop.PropertyType));
+                        prop.SetValue(position, newValue.CastString(prop.PropertyType));
                     }
 
                     response.Response = "Updated setting";

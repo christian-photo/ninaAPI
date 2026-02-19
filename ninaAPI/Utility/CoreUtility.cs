@@ -34,6 +34,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NINA.ViewModel.Sequencer;
+using System.Globalization;
 
 namespace ninaAPI.Utility
 {
@@ -219,45 +220,41 @@ namespace ninaAPI.Utility
             return !context.Request.QueryString.AllKeys.Contains(parameter);
         }
 
-        public static object CastString(this string str, Type type)
+        public static object? CastString(this string str, Type type)
         {
-            if (type == typeof(int) || type == typeof(int?))
+            ArgumentNullException.ThrowIfNull(type);
+
+            // Handle null / empty for nullable types
+            if (string.IsNullOrWhiteSpace(str))
             {
-                return int.Parse(str);
+                if (IsNullable(type))
+                    return null;
+
+                throw new InvalidCastException("Cannot convert null or empty string to non-nullable type.");
             }
-            if (type == typeof(double) || type == typeof(double?))
+
+            Type targetType = Nullable.GetUnderlyingType(type) ?? type;
+
+            // Enum handling
+            if (targetType.IsEnum)
             {
-                return double.Parse(str);
+                if (int.TryParse(str, out var intValue))
+                    return Enum.ToObject(targetType, intValue);
+
+                return Enum.Parse(targetType, str, ignoreCase: true);
             }
-            if (type == typeof(float) || type == typeof(float?))
-            {
-                return float.Parse(str);
-            }
-            if (type == typeof(decimal) || type == typeof(decimal?))
-            {
-                return decimal.Parse(str);
-            }
-            if (type == typeof(bool) || type == typeof(bool?))
-            {
-                return bool.Parse(str);
-            }
-            if (type == typeof(long) || type == typeof(long?))
-            {
-                return long.Parse(str);
-            }
-            if (type == typeof(short) || type == typeof(short?))
-            {
-                return short.Parse(str);
-            }
-            if (type.IsEnum)
-            {
-                if (int.TryParse(str, out int x))
-                {
-                    return Enum.ToObject(type, x);
-                }
-                return Enum.Parse(type, str);
-            }
-            return str;
+
+            // Guid
+            if (targetType == typeof(Guid))
+                return Guid.Parse(str);
+
+            // Use Convert for most primitives
+            return Convert.ChangeType(str, targetType, CultureInfo.InvariantCulture);
+        }
+
+        private static bool IsNullable(Type type)
+        {
+            return !type.IsValueType || Nullable.GetUnderlyingType(type) != null;
         }
 
         public static string[] GetFilesRecursively(string path)
