@@ -208,7 +208,7 @@ namespace ninaAPI.WebService.V2
                         }
                     }
                     PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
-                    prop.SetValue(position, value.CastString(prop.PropertyType));
+                    prop.SetValue(position, value.ConvertString(prop.PropertyType));
                     position.GetType().GetMethod("RaisePropertyChanged", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(position, new object[] { pathSplit[^1] });
 
                     response.Response = "Updated setting";

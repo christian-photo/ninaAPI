@@ -33,6 +33,7 @@ using Newtonsoft.Json.Serialization;
 using NINA.Profile.Interfaces;
 using System.Windows.Input;
 using System.Drawing;
+using System.ComponentModel;
 
 namespace ninaAPI.Utility
 {
@@ -157,41 +158,20 @@ namespace ninaAPI.Utility
             return !context.Request.QueryString.AllKeys.Contains(parameter);
         }
 
-        public static object? CastString(this string str, Type type)
+        public static object ConvertString(this string str, Type type)
         {
-            ArgumentNullException.ThrowIfNull(type);
+            // determine target (handle Nullable<T>)
+            var targetType = Nullable.GetUnderlyingType(type) ?? type;
 
-            // Handle null / empty for nullable types
-            if (string.IsNullOrWhiteSpace(str))
-            {
-                if (IsNullable(type))
-                    return null;
+            object converted;
 
-                throw new InvalidCastException("Cannot convert null or empty string to non-nullable type.");
-            }
+            var converter = TypeDescriptor.GetConverter(targetType);
+            if (converter != null && converter.CanConvertFrom(typeof(string)))
+                converted = converter.ConvertFromInvariantString(str);
+            else
+                converted = Convert.ChangeType(str, targetType, CultureInfo.InvariantCulture);
 
-            Type targetType = Nullable.GetUnderlyingType(type) ?? type;
-
-            // Enum handling
-            if (targetType.IsEnum)
-            {
-                if (int.TryParse(str, out var intValue))
-                    return Enum.ToObject(targetType, intValue);
-
-                return Enum.Parse(targetType, str, ignoreCase: true);
-            }
-
-            // Guid
-            if (targetType == typeof(Guid))
-                return Guid.Parse(str);
-
-            // Use Convert for most primitives
-            return Convert.ChangeType(str, targetType, CultureInfo.InvariantCulture);
-        }
-
-        private static bool IsNullable(Type type)
-        {
-            return !type.IsValueType || Nullable.GetUnderlyingType(type) != null;
+            return converted;
         }
 
         public static bool IsBetween(this short value, short min, short max)
