@@ -5,6 +5,7 @@ The changes for each individual (beta) release can be seen in each [release](htt
 ## 2.2.14.6
 
 - Make profile change value more robust
+- Fixed an issue where the target would not be correctly updated if it was not the first target
 
 ## 2.2.14.5
 

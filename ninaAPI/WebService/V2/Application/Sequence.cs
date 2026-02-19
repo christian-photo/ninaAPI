@@ -885,7 +885,7 @@ namespace ninaAPI.WebService.V2
                     }
                     else
                     {
-                        IDeepSkyObjectContainer container = targets[0];
+                        IDeepSkyObjectContainer container = targets[index];
                         container.Target.InputCoordinates.Coordinates = new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000);
                         container.Target.TargetName = name;
                         container.Target.PositionAngle = rotation;
