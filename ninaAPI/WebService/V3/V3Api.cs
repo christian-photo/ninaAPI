@@ -20,6 +20,7 @@ using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Application;
 using ninaAPI.WebService.V3.Application.Image;
 using ninaAPI.WebService.V3.Application.Profile;
+using ninaAPI.WebService.V3.Application.Sequence;
 using ninaAPI.WebService.V3.Equipment;
 using ninaAPI.WebService.V3.Equipment.Camera;
 using ninaAPI.WebService.V3.Equipment.Dome;
@@ -83,7 +84,8 @@ namespace ninaAPI.WebService.V3
                 new WeatherWatcher(eventHistory, AdvancedAPI.Controls.Weather),
                 new ProcessWatcher(eventHistory),
                 new ImageWatcher(eventHistory, AdvancedAPI.Controls.ImageSaveMediator, AdvancedAPI.Controls.Imaging),
-                new ProfileWatcher(eventHistory, AdvancedAPI.Controls.Profile)
+                new ProfileWatcher(eventHistory, AdvancedAPI.Controls.Profile),
+                new SequenceWatcher(eventHistory, AdvancedAPI.Controls.Sequence)
             ];
 
             foreach (EventWatcher watcher in watchers)

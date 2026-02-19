@@ -65,6 +65,8 @@ namespace ninaAPI.WebService.V3.Websocket.Event
 
         public const string SEQUENCE_ENTITY_FAILED = "sequence-entity-failed";
         public const string SEQUENCE_CUSTOM_EVENT = "sequence-custom-event";
+        public const string SEQUENCE_STARTED = "sequence-started";
+        public const string SEQUENCE_FINISHED = "sequence-finished";
 
         public static string DeviceConnected(Device device) => $"{device.ToString().ToLower()}-connected";
         public static string DeviceDisconnected(Device device) => $"{device.ToString().ToLower()}-disconnected";
