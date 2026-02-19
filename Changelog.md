@@ -2,6 +2,10 @@
 
 The changes for each individual (beta) release can be seen in each [release](https://github.com/christian-photo/ninaAPI/releases). This changelog will only cover the fully released versions.
 
+## 2.2.14.5
+
+- Add support for floats when updating profile settings (#85)
+
 ## 2.2.14.4
 
 - Add camera USB limit api endpoint
