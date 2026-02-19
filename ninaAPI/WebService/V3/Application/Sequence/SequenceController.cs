@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using NINA.Astrometry;
 using NINA.Core.Locale;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer;
@@ -28,7 +29,7 @@ using NINA.Sequencer.Serialization;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 
-namespace ninaAPI.WebService.V3.Application
+namespace ninaAPI.WebService.V3.Application.Sequence
 {
     public class SequenceController : WebApiController
     {
@@ -195,6 +196,39 @@ namespace ninaAPI.WebService.V3.Application
             await responseHandler.SendObject(HttpContext, new StringResponse("Sequence started"));
         }
 
-        // TODO: Update target endpoint
+        [Route(HttpVerbs.Put, "/target")]
+        public async Task SetTarget([JsonData] TargetUpdate target)
+        {
+            if (!sequence.Initialized)
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Sequence is not initialized");
+            }
+
+            var targets = sequence.GetAllTargetsInAdvancedSequence();
+            if (!target.TargetIndex.IsBetween(0, targets.Count - 1))
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Target index is out of range, minimum: 0, maximum: " + (targets.Count - 1));
+            }
+
+            IDeepSkyObjectContainer container = targets[target.TargetIndex];
+            container.Target.InputCoordinates.Coordinates = target.Coordinates.ToCoordinates();
+            container.Target.TargetName = target.TargetName;
+            container.Target.PositionAngle = target.Rotation;
+            container.Name = target.TargetName;
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("Target updated"));
+        }
+
+        [Route(HttpVerbs.Get, "/target")]
+        public async Task GetTargets()
+        {
+            if (!sequence.Initialized)
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Sequence is not initialized");
+            }
+
+            var targets = sequence.GetAllTargetsInAdvancedSequence();
+            await responseHandler.SendObject(HttpContext, targets);
+        }
     }
 }
