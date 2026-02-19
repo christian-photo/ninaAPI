@@ -11,10 +11,10 @@
         <nina:SequenceBlockView DataContext="{Binding}">
             <nina:SequenceBlockView.SequenceItemContent>
                 <StackPanel Orientation="Horizontal">
-                    <logic:ExprControl
+                    <logic:ExprStringControl
                         Width="600"
-                        Exp="{Binding MessageExpression}" 
-                        Label="Message"/>
+                        Text="{Binding MessageExpression}"
+                        Label="Message" />
                 </StackPanel>
             </nina:SequenceBlockView.SequenceItemContent>
         </nina:SequenceBlockView>
@@ -38,7 +38,7 @@
     <DataTemplate DataType="{x:Type local:SendErrorTrigger}">
         <nina:SequenceBlockView DataContext="{Binding}">
             <nina:SequenceBlockView.SequenceItemContent>
-                <StackPanel Orientation="Horizontal"></StackPanel>
+                <StackPanel Orientation="Horizontal" />
             </nina:SequenceBlockView.SequenceItemContent>
         </nina:SequenceBlockView>
     </DataTemplate>

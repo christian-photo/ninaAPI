@@ -16,7 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NINA.Core.Model;
-using NINA.Sequencer.Generators;
 using NINA.Sequencer.Logic;
 using NINA.Sequencer.SequenceItem;
 using NINA.Sequencer.Validations;
@@ -34,20 +33,21 @@ namespace ninaAPI.SequenceItems
     [ExportMetadata("Category", "Advanced API")]
     [Export(typeof(ISequenceItem))]
     [JsonObject(MemberSerialization.OptIn)]
-    [UsesExpressions]
-    public partial class SendMessageInstruction : SequenceItem, IValidatable
+    public class SendMessageInstruction : SequenceItem, IValidatable
     {
         [ImportingConstructor]
-        public SendMessageInstruction() { }
-
-        private SendMessageInstruction(SendMessageInstruction other) : this()
+        public SendMessageInstruction(ISymbolBroker broker)
         {
-            CopyMetaData(other);
+            this.SymbolBroker = broker;
         }
 
-        [IsExpression(DefaultString = "Test event")]
-        public partial string Message { get; set; }
+        private SendMessageInstruction(SendMessageInstruction cloneMe) : this(cloneMe.SymbolBroker)
+        {
+            CopyMetaData(cloneMe);
+        }
 
+        [JsonProperty]
+        public string MessageExpression { get; set; }
 
         private IList<string> issues = new List<string>();
 
@@ -63,12 +63,13 @@ namespace ninaAPI.SequenceItems
 
         public override async Task Execute(IProgress<ApplicationStatus> progress, CancellationToken token)
         {
-            await WebSocketV2.SendEvent(new HttpResponse() { Response = Message, Type = HttpResponse.TypeSocket }).WaitAsync(token);
+            var message = ExpressionExpander.Expand(MessageExpression, SymbolBroker, Parent);
+            await WebSocketV2.SendEvent(new HttpResponse() { Response = message, Type = HttpResponse.TypeSocket }).WaitAsync(token);
             await (AdvancedAPI.V3 as V3Api).GetEventWebSocket().SendEvent(new WebSocketEvent()
             {
                 Channel = WebSocketChannel.Sequence,
                 Event = WebSocketEvents.SEQUENCE_CUSTOM_EVENT,
-                Data = Message,
+                Data = message,
             }).WaitAsync(token);
         }
 
@@ -79,20 +80,22 @@ namespace ninaAPI.SequenceItems
             {
                 i.Add("WebSocket is not available");
             }
-            Expression.ValidateExpressions(i, MessageExpression);
 
             Issues = i;
             return i.Count == 0;
         }
 
-        public override void AfterParentChanged()
-        {
-            Validate();
-        }
-
         public override string ToString()
         {
-            return $"Category: {Category}, Item: {Name}, Message: {Message}";
+            return $"Category: {Category}, Item: {Name}, MessageExpression: {MessageExpression}, Message: {ExpressionExpander.Expand(MessageExpression, SymbolBroker, Parent)}";
+        }
+
+        public override object Clone()
+        {
+            return new SendMessageInstruction(this)
+            {
+                MessageExpression = MessageExpression
+            };
         }
     }
 }
