@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -214,7 +214,7 @@ namespace ninaAPI.WebService.V2
                     if (pathSplit.Length == 1)
                     {
                         PropertyInfo prop = position.GetType().GetProperty(settingpath);
-                        prop.SetValue(position, newValue.CastString(prop.PropertyType));
+                        prop.SetValue(position, newValue.ConvertString(prop.PropertyType));
                     }
                     else
                     {
@@ -237,7 +237,7 @@ namespace ninaAPI.WebService.V2
                             }
                         }
                         PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
-                        prop.SetValue(position, newValue.CastString(prop.PropertyType));
+                        prop.SetValue(position, newValue.ConvertString(prop.PropertyType));
                     }
 
                     response.Response = "Updated setting";
