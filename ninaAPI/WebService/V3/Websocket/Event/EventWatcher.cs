@@ -23,7 +23,7 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         private IEventSocket? eventSocket;
         private readonly EventHistoryManager eventHistory;
 
-        public bool IsActive => eventSocket != null && eventSocket.IsActive;
+        public bool IsActive => eventSocket != null && eventSocket.HasConnections;
 
         public EventWatcher(EventHistoryManager eventHistory)
         {
@@ -94,7 +94,7 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         /// <returns>True, if the event was actually sent to the websocket, false otherwise</returns>
         public async Task<bool> SubmitEvent(WebSocketEvent e)
         {
-            if (eventSocket?.IsActive ?? false)
+            if (eventSocket?.HasConnections ?? false)
             {
                 await eventSocket.SendEvent(e);
                 return true;

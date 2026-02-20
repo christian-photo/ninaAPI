@@ -174,14 +174,9 @@ namespace ninaAPI.Utility
             return converted;
         }
 
-        public static bool IsBetween(this short value, short min, short max)
-        {
-            return value >= min && value <= max;
-        }
-
         public static bool IsBetween(this short value, int min, int max)
         {
-            return IsBetween(value, (short)min, (short)max);
+            return value >= min && value <= max;
         }
 
         public static bool IsBetween(this int value, int min, int max)
@@ -195,6 +190,11 @@ namespace ninaAPI.Utility
         }
 
         public static bool IsBetween(this float value, float min, float max)
+        {
+            return IsBetween((decimal)value, (decimal)min, (decimal)max);
+        }
+
+        public static bool IsBetween(this double value, double min, double max)
         {
             return IsBetween((decimal)value, (decimal)min, (decimal)max);
         }

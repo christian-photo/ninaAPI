@@ -20,6 +20,6 @@ namespace ninaAPI.WebService.Interfaces
     {
         Task SendEvent(WebSocketEvent e);
         EventHistoryManager EventHistoryManager { get; }
-        bool IsActive { get; }
+        bool HasConnections { get; }
     }
 }

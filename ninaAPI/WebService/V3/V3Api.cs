@@ -34,6 +34,7 @@ using ninaAPI.WebService.V3.Equipment.Safety;
 using ninaAPI.WebService.V3.Equipment.Switch;
 using ninaAPI.WebService.V3.Equipment.Weather;
 using ninaAPI.WebService.V3.Websocket.Event;
+using ninaAPI.WebService.V3.Websocket.TPPA;
 
 namespace ninaAPI.WebService.V3
 {
@@ -64,7 +65,18 @@ namespace ninaAPI.WebService.V3
 
         private static EventHistoryManager eventHistory;
         private EventWebSocket eventSocket;
+        private TppaSocket tppaSocket;
         private static List<EventWatcher> watchers;
+
+
+        // TODO: Missing endpoints / watchers
+        // - Flat
+        // - Framing
+        // - Livestack
+        // - Target Scheduler
+        // - Mount control
+        // - Networked filterwheel
+        // - Networked rotator
 
         public static void StartEventWatchers()
         {
@@ -252,6 +264,7 @@ namespace ninaAPI.WebService.V3
         public WebServer ConfigureServer(WebServer server)
         {
             eventSocket = new EventWebSocket("/v3/ws/events", serializer, eventHistory);
+            tppaSocket = new TppaSocket("/v3/ws/tppa", AdvancedAPI.Controls.MessageBroker);
 
             foreach (EventWatcher watcher in watchers)
             {
@@ -262,6 +275,7 @@ namespace ninaAPI.WebService.V3
 
             // EMBEDIO WOULD CREATE A NEW INSTANCE OF THE CONTROLLER FOR EACH REQUEST
             return server.WithModule(eventSocket)
+                .WithModule(tppaSocket)
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.CameraUrlName}", m => m.WithController(() => cameraController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}", m => m.WithController(() => focuserController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.DomeUrlName}", m => m.WithController(() => domeController))

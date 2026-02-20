@@ -25,7 +25,7 @@ namespace ninaAPI.WebService.V3.Websocket.Event
     public class EventWebSocket : WebSocketModule, IEventSocket
     {
         public EventHistoryManager EventHistoryManager { get; }
-        public bool IsActive => ActiveContexts.Count > 0;
+        public bool HasConnections => ActiveContexts.Count > 0;
 
         private readonly ConcurrentDictionary<IWebSocketContext, ClientConfiguration> Clients = new();
         private readonly ISerializerService serializer;
@@ -66,21 +66,21 @@ namespace ninaAPI.WebService.V3.Websocket.Event
                 Logger.Debug($"Client {context.RemoteEndPoint} sent message: {json}");
                 message = serializer.Deserialize<ClientMessage>(json);
 
-                if (message.Type == "Subscribe")
+                if (message.Sender == "Subscribe") // TODO: Support lists of channels
                 {
                     Clients[context].SubscriptionManager.Subscribe(Enum.Parse<WebSocketChannel>(message.Data.ToString()));
                     await SendAsync(context, serializer.Serialize(ClientMessage.Reply(message, "Subscribed")));
                 }
-                else if (message.Type == "Unsubscribe")
+                else if (message.Sender == "Unsubscribe")
                 {
                     Clients[context].SubscriptionManager.Unsubscribe(Enum.Parse<WebSocketChannel>(message.Data.ToString()));
                     await SendAsync(context, serializer.Serialize(ClientMessage.Reply(message, "Unsubscribed")));
                 }
-                else if (message.Type == "AvailableChannels")
+                else if (message.Sender == "AvailableChannels")
                 {
                     await SendAsync(context, serializer.Serialize(ClientMessage.Reply(message, Enum.GetValues<WebSocketChannel>())));
                 }
-                else if (message.Type == "SubscribedChannels")
+                else if (message.Sender == "SubscribedChannels")
                 {
                     await SendAsync(context, serializer.Serialize(ClientMessage.Reply(message, Clients[context].SubscriptionManager.GetSubscribedChannels())));
                 }
@@ -114,7 +114,10 @@ namespace ninaAPI.WebService.V3.Websocket.Event
 
     public class ClientMessage
     {
-        public string Type { get; set; }
+        /// <summary>
+        /// Sender should not be sent by the client, that is only for the 
+        /// </summary>
+        public string Sender { get; set; }
         public string RequestId { get; set; }
         public object Data { get; set; }
 
@@ -122,7 +125,7 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         {
             return new ClientMessage()
             {
-                Type = "Server",
+                Sender = "Server",
                 RequestId = request.RequestId,
                 Data = data
             };
