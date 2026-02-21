@@ -68,6 +68,9 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         public const string SEQUENCE_STARTED = "sequence-started";
         public const string SEQUENCE_FINISHED = "sequence-finished";
 
+        public const string LIVESTACK_STATUS = "livestack-status-update";
+        public const string LIVESTACK_STACK_UPDATED = "livestack-stack-updated";
+
         public static string DeviceConnected(Device device) => $"{device.ToString().ToLower()}-connected";
         public static string DeviceDisconnected(Device device) => $"{device.ToString().ToLower()}-disconnected";
         public static string DeviceInfoUpdate(Device device) => $"{device.ToString().ToLower()}-info-update";

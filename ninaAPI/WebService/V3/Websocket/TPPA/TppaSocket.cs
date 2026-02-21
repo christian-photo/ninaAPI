@@ -27,6 +27,8 @@ namespace ninaAPI.WebService.V3.Websocket.TPPA
         public TppaSocket(string url, IMessageBroker messageBroker) : base(url, true)
         {
             this.messageBroker = messageBroker;
+            messageBroker.Subscribe("PolarAlignmentPlugin_PolarAlignment_AlignmentError", this);
+            messageBroker.Subscribe("PolarAlignmentPlugin_PolarAlignment_Progress", this);
         }
 
         // MessageBroker message

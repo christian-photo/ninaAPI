@@ -22,53 +22,10 @@ using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Plugin.Interfaces;
 using ninaAPI.Utility;
+using ninaAPI.WebService.Model;
 
 namespace ninaAPI.WebService.V2
 {
-    public class LiveStackResponse(bool isMonochrome, int? stackCount, int? redImages, int? greenImages, int? blueImages, string filter, string target, BitmapSource image)
-    {
-        public bool IsMonochrome { get; set; } = isMonochrome;
-        public int? StackCount { get; set; } = stackCount;
-        public int? RedStackCount { get; set; } = redImages;
-        public int? GreenStackCount { get; set; } = greenImages;
-        public int? BlueStackCount { get; set; } = blueImages;
-        public string Filter { get; set; } = filter;
-        public string Target { get; set; } = target;
-        public BitmapSource Image { get; set; } = image;
-    }
-
-    public class LiveStackHistory : IDisposable
-    {
-        public List<LiveStackResponse> Images { get; set; } = new List<LiveStackResponse>();
-
-        public void AddMono(string filter, int stackCount, string target, BitmapSource image)
-        {
-            Add(new LiveStackResponse(true, stackCount, null, null, null, filter, target, image));
-        }
-
-        public void AddColor(int redImages, int greenImages, int blueImages, string filter, string target, BitmapSource image)
-        {
-            Add(new LiveStackResponse(false, null, redImages, greenImages, blueImages, filter, target, image));
-        }
-
-        public void Add(LiveStackResponse image)
-        {
-            Images.RemoveAll(x => x.Filter == image.Filter && x.Target == image.Target); // Only keep the last stacked image for each filter and target
-            Images.Add(image);
-        }
-
-        public void Dispose()
-        {
-            Images.Clear();
-            Images = null;
-        }
-
-        public BitmapSource GetLast(string filter, string target)
-        {
-            return Images.LastOrDefault(x => x.Filter == filter && x.Target == target).Image;
-        }
-    }
-
     public class LiveStackWatcher : INinaWatcher, ISubscriber
     {
         public static LiveStackHistory LiveStackHistory { get; private set; }
@@ -100,7 +57,7 @@ namespace ninaAPI.WebService.V2
             });
         }
 
-         public async Task OnStackUpdateReceived(IMessage message)
+        public async Task OnStackUpdateReceived(IMessage message)
         {
             string filter = message.Content.GetType().GetProperty("Filter").GetValue(message.Content).ToString();
             string target = message.Content.GetType().GetProperty("Target").GetValue(message.Content).ToString();
@@ -152,29 +109,6 @@ namespace ninaAPI.WebService.V2
             AdvancedAPI.Controls.MessageBroker.Unsubscribe("Livestack_LivestackDockable_StatusBroadcast", this);
             LiveStackHistory.Dispose();
         }
-    }
-
-    public class LiveStackMessage(Guid correlatedGuid, string topic, object content) : IMessage
-    {
-        public Guid SenderId => Guid.Parse(AdvancedAPI.PluginId);
-
-        public string Sender => nameof(ninaAPI);
-
-        public DateTimeOffset SentAt => DateTimeOffset.Now;
-
-        public Guid MessageId => Guid.NewGuid();
-
-        public DateTimeOffset? Expiration => null;
-
-        public Guid? CorrelationId => correlatedGuid;
-
-        public int Version => 1;
-
-        public IDictionary<string, object> CustomHeaders => new Dictionary<string, object>();
-
-        public string Topic => topic;
-
-        public object Content => content;
     }
 
     public partial class ControllerV2

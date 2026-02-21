@@ -19,6 +19,7 @@ using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Application;
 using ninaAPI.WebService.V3.Application.Image;
+using ninaAPI.WebService.V3.Application.Livestack;
 using ninaAPI.WebService.V3.Application.Profile;
 using ninaAPI.WebService.V3.Application.Sequence;
 using ninaAPI.WebService.V3.Equipment;
@@ -63,6 +64,8 @@ namespace ninaAPI.WebService.V3
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
 
+        private readonly LivestackController livestackController;
+
         private static EventHistoryManager eventHistory;
         private EventWebSocket eventSocket;
         private TppaSocket tppaSocket;
@@ -97,7 +100,8 @@ namespace ninaAPI.WebService.V3
                 new ProcessWatcher(eventHistory),
                 new ImageWatcher(eventHistory, AdvancedAPI.Controls.ImageSaveMediator, AdvancedAPI.Controls.Imaging),
                 new ProfileWatcher(eventHistory, AdvancedAPI.Controls.Profile),
-                new SequenceWatcher(eventHistory, AdvancedAPI.Controls.Sequence)
+                new SequenceWatcher(eventHistory, AdvancedAPI.Controls.Sequence),
+                new LivestackWatcher(eventHistory, AdvancedAPI.Controls.MessageBroker),
             ];
 
             foreach (EventWatcher watcher in watchers)
@@ -258,6 +262,12 @@ namespace ninaAPI.WebService.V3
                 responseHandler
             );
 
+            livestackController = new LivestackController(
+                AdvancedAPI.Controls.MessageBroker,
+                AdvancedAPI.Controls.Profile,
+                responseHandler
+            );
+
             controller = new ControllerV3(responseHandler, processMediator);
         }
 
@@ -292,6 +302,7 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi("/v3/api/profile", m => m.WithController(() => profileController))
                 .WithWebApi("/v3/api/application", m => m.WithController(() => applicationController))
                 .WithWebApi("/v3/api/sequence", m => m.WithController(() => sequenceController))
+                .WithWebApi("/v3/api/livestack", m => m.WithController(() => livestackController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 
