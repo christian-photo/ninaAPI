@@ -81,21 +81,9 @@ namespace ninaAPI.Utility.Http
                 return DefaultValue;
             }
 
-            // determine target (handle Nullable<T>)
-            var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-
             try
             {
-                object converted;
-
-                var converter = TypeDescriptor.GetConverter(targetType);
-                if (converter != null && converter.CanConvertFrom(typeof(string)))
-                    converted = converter.ConvertFromInvariantString(raw);
-                else
-                    converted = Convert.ChangeType(raw, targetType, CultureInfo.InvariantCulture);
-
-                WasProvided = true;
-                return (T)converted;
+                return (T)raw.ConvertString(typeof(T));
             }
             catch
             {

@@ -79,10 +79,11 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         [Route(HttpVerbs.Post, "/cool")]
-        public async Task CameraCool()
+        public async Task CameraCool([JsonData] CoolCameraBody body)
         {
-            QueryParameter<double> temperatureParameter = new QueryParameter<double>("temperature", double.NaN, true);
-            QueryParameter<double> minutesParameter = new QueryParameter<double>("minutes", profile.ActiveProfile.CameraSettings.CoolingDuration, false, (minutes) => minutes >= 0);
+            Validator.ValidateObject(body, new ValidationContext(body));
+
+            var duration = body.Duration ?? profile.ActiveProfile.CameraSettings.CoolingDuration;
 
             if (!cam.GetInfo().Connected)
             {
@@ -93,11 +94,8 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 throw new HttpException(HttpStatusCode.Conflict, "Camera has no temperature control");
             }
 
-            temperatureParameter.Get(HttpContext);
-            minutesParameter.Get(HttpContext);
-
             Guid processId = processMediator.AddProcess(
-                async (token) => await cam.CoolCamera(temperatureParameter.Value, TimeSpan.FromMinutes(minutesParameter.Value), statusMediator.GetStatus(), token),
+                async (token) => await cam.CoolCamera(body.Temperature, TimeSpan.FromMinutes(duration), statusMediator.GetStatus(), token),
                 ApiProcessType.CameraCool
             );
             var result = processMediator.Start(processId);
@@ -108,9 +106,11 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         [Route(HttpVerbs.Post, "/warm")]
-        public async Task CameraWarm()
+        public async Task CameraWarm([JsonData] WarmCameraBody body)
         {
-            QueryParameter<double> minutesParameter = new QueryParameter<double>("minutes", profile.ActiveProfile.CameraSettings.WarmingDuration, false, (minutes) => minutes >= 0);
+            Validator.ValidateObject(body, new ValidationContext(body));
+
+            var duration = body.Duration ?? profile.ActiveProfile.CameraSettings.WarmingDuration;
 
             if (!cam.GetInfo().Connected)
             {
@@ -120,10 +120,9 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 throw new HttpException(HttpStatusCode.Conflict, "Camera has no temperature control");
             }
-            minutesParameter.Get(HttpContext);
 
             Guid processId = processMediator.AddProcess(
-                async (token) => await cam.WarmCamera(TimeSpan.FromMinutes(minutesParameter.Value), statusMediator.GetStatus(), token),
+                async (token) => await cam.WarmCamera(TimeSpan.FromMinutes(duration), statusMediator.GetStatus(), token),
                 ApiProcessType.CameraWarm
             );
             var result = processMediator.Start(processId);
@@ -151,9 +150,9 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         [Route(HttpVerbs.Put, "/settings/dew-heater")]
-        public async Task CameraDewHeater()
+        public async Task CameraDewHeater([JsonData] DewHeaterUpdateBody body)
         {
-            QueryParameter<bool> powerParameter = new QueryParameter<bool>("power", false, true);
+            Validator.ValidateObject(body, new ValidationContext(body));
 
             if (!cam.GetInfo().Connected)
             {
@@ -164,11 +163,9 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 throw new HttpException(HttpStatusCode.Conflict, "Camera has no dew heater");
             }
 
-            powerParameter.Get(HttpContext);
+            cam.SetDewHeater(body.Power);
 
-            cam.SetDewHeater(powerParameter.Value);
-
-            await responseHandler.SendObject(HttpContext, new StringResponse("Dew heater updated"));
+            await responseHandler.SendObject(HttpContext, new StringResponse("Dew heater power set"));
         }
 
         [Route(HttpVerbs.Put, "/settings/binning")]
@@ -178,7 +175,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 throw CommonErrors.DeviceNotConnected(Device.Camera);
             }
-            else if (!cam.GetInfo().BinningModes.Any(b => b.X == binning.X && b.Y == binning.Y))
+            else if (binning == null || !cam.GetInfo().BinningModes.Any(b => b.X == binning.X && b.Y == binning.Y))
             {
                 throw new HttpException(HttpStatusCode.BadRequest, "Invalid binning mode");
             }
@@ -207,20 +204,20 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         [Route(HttpVerbs.Put, "/settings/readout")]
-        public async Task CameraSetReadout()
+        public async Task CameraSetReadout([JsonData] ReadoutModeUpdateBody body)
         {
             int readoutModes = cam.GetInfo().ReadoutModes.Count();
-
-            QueryParameter<int> modeParameter = new QueryParameter<int>("mode", 0, true, (mode) => mode.IsBetween(0, readoutModes - 1));
 
             if (!cam.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Camera);
             }
+            else if (body.Mode >= readoutModes)
+            {
+                throw CommonErrors.ParameterOutOfRange(nameof(body.Mode), 0, readoutModes - 1);
+            }
 
-            int mode = modeParameter.Get(HttpContext);
-
-            cam.SetReadoutMode((short)mode);
+            cam.SetReadoutMode(body.Mode);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Readout mode updated"));
         }
@@ -426,5 +423,33 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
             return sensor;
         }
+    }
+
+    public class DewHeaterUpdateBody
+    {
+        [Required]
+        public bool Power { get; set; }
+    }
+
+    public class CoolCameraBody
+    {
+        [Required]
+        public double Temperature { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public double? Duration { get; set; }
+    }
+
+    public class WarmCameraBody
+    {
+        [Range(0, double.MaxValue)]
+        public double? Duration { get; set; }
+    }
+
+    public class ReadoutModeUpdateBody
+    {
+        [Required]
+        [Range(0, short.MaxValue)]
+        public short Mode { get; set; }
     }
 }

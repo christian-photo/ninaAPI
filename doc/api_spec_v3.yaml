@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.1.0
 info:
   title: Advanced API
   description: This is the API documentation for the NINA plugin Advanced API.
@@ -50,9 +50,13 @@ paths:
                 properties:
                   Version:
                     type: string
-                    enum:
-                      - 3.2.0.1058
-                      - "3.2 NIGHTLY #058"
+                    examples:
+                      - non-friendly:
+                          value: 3.2.0.1058
+                          summary: Non-friendly version
+                      - friendly:
+                          value: 3.2 NIGHTLY #058
+                          summary: Friendly version
                 required:
                   - Version
 
@@ -162,7 +166,7 @@ paths:
                   - Message
 
   /process/{id}/abort:
-    get:
+    post:
       tags:
         - Process
       summary: Process Abort
@@ -304,7 +308,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/camera/connect:
-    get:
+    post:
       tags:
         - Camera
       summary: Connect
@@ -318,69 +322,45 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
-                    example: Connected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "500":
-          description: Internal server error, Unknown error
+                    example: Canon eos 600d connected
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/disconnect:
-    get:
+    post:
       tags:
         - Camera
       summary: Disconnect
       description: This endpoint disconnects the camera.
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
-                    example: Disconnected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "500":
-          description: Internal server error, Unknown error
+                    example: Canon eos 600d disconnected
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/list-devices:
     get:
@@ -390,37 +370,37 @@ paths:
       description: List all devices which can be connected
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/rescan:
-    get:
+    post:
       tags:
         - Camera
-      summary: Rescan Devices
+      summary: Rescan for cameras
       description: Rescans for new devices, and returns a list of all available devices
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/settings/readout:
     put:
@@ -428,17 +408,14 @@ paths:
         - Camera
       summary: Set readout mode
       description: This endpoint sets the readout mode of the camera.
-      parameters:
-        - in: query
-          name: mode
-          description: The readout mode to set.
-          schema:
-            type: integer
-            minimum: 0
-          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadoutModeUpdateBody"
       responses:
-        200:
-          description: Successful response
+        "200":
+          description: Success
           content:
             application/json:
               schema:
@@ -447,8 +424,8 @@ paths:
                   Message:
                     type: string
                     example: Readout mode updated
-        400:
-          description: Invalid readout mode or parameter missing. This can happen if the mode is outside of the range of available readout modes.
+        "400":
+          description: Invalid readout mode
           content:
             application/json:
               schema:
@@ -459,9 +436,20 @@ paths:
                     example: Bad Request
                   Message:
                     type: string
-                    enum:
-                      - Parameter mode is invalid
-                      - Parameter mode is missing
+                    example: Parameter mode is out of range, expected <min> - <max>
+        "409":
+          description: Camera not connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Error:
+                    type: string
+                    example: Conflict
+                  Message:
+                    type: string
+                    example: Camera not connected
         default:
           description: Unhandled error
           content:
@@ -475,49 +463,36 @@ paths:
         - Camera
       summary: Cooling
       description: Cool the camera to a given temperature over a set peroid of time.
-      parameters:
-        - in: query
-          name: temperature
-          description: The temperature to cool the camera to.
-          required: true
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: minutes
-          description: The minimum duration to cool the camera. This will use the default cooling duration if not provided.
-          required: false
-          schema:
-            type: number
-            minimum: 0
-            format: double
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoolCameraBody"
       responses:
         "200":
           description: Cooling started
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Cooling started
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
           description: Conflict (Camera is not connected, Camera has no temperature control, Cooling already running)
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Error:
-                    type: string
-                    example: Conflict
-                  Message:
-                    type: string
-                    enum:
-                      - Camera is not connected
-                      - Camera has no temperature control
-                      - Cooling already running
+                oneOf:
+                  - type: object
+                    properties:
+                      Error:
+                        type: string
+                        example: Conflict
+                      Message:
+                        type: string
+                        enum:
+                          - Camera is not connected
+                          - Camera has no temperature control
+                          - Cooling already running
+                  - $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Unhandled error
           content:
@@ -531,18 +506,51 @@ paths:
         - Camera
       summary: Warming
       description: Warms the camera over a minimum duration.
-      parameters:
-        - in: query
-          name: minutes
-          description: The minimum duration to warm the camera. This will use the default warming duration if not provided.
-          required: false
-          schema:
-            type: number
-            minimum: 0
-            format: double
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WarmCameraBody"
       responses:
         "200":
           description: Warming started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessStart200"
+        "409":
+          description: Camera not connected / Camera has no temperature control
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      Error:
+                        type: string
+                        example: Conflict
+                      Message:
+                        type: string
+                        enum:
+                          - Camera not connected
+                          - Camera has no temperature control
+                  - $ref: "#/components/schemas/ProcessStart409"
+        default:
+          description: Unhandled error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /equipment/camera/abort-exposure:
+    post:
+      tags:
+        - Camera
+      summary: Exposure Abort
+      description: This endpoint aborts the current exposure.
+      responses:
+        "200":
+          description: Success
           content:
             application/json:
               schema:
@@ -550,9 +558,9 @@ paths:
                 properties:
                   Message:
                     type: string
-                    example: Warming started
+                    example: Exposure aborted
         "409":
-          description: Camera not connected / Camera has no temperature control
+          description: Camera not connected / Camera not exposing
           content:
             application/json:
               schema:
@@ -565,112 +573,36 @@ paths:
                     type: string
                     enum:
                       - Camera not connected
-                      - Camera has no temperature control
-        "500":
-          description: Internal server error, Unknown error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UnknownError"
-
-  /equipment/camera/abort-exposure:
-    get:
-      tags:
-        - Camera
-      summary: Exposure Abort
-      description: This endpoint aborts the current exposure.
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Exposure aborted
                       - Camera not exposing
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Camera not connected / Camera not exposing
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Camera not connected
-                      - Camera not exposing
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        "500":
-          description: Internal server error, Unknown error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
-  /equipment/camera/dew-heater:
-    get:
+  /equipment/camera/settings/dew-heater:
+    put:
       tags:
         - Camera
       summary: Dew Heater Control
-      description: This endpoint sets the dew heater.
-      parameters:
-        - in: query
-          name: power
-          description: Whether to turn the dew heater on or off.
-          required: true
-          schema:
-            type: boolean
+      description: Use this endpoint to toggle the dew heater on and off.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DewHeaterUpdateBody"
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
-                    example: Dew heater set
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                    example: Dew heater power set
         "409":
           description: Camera not connected / Camera has no dew heater
           content:
@@ -678,47 +610,42 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
-                    type: string
-                    example: ""
                   Error:
+                    type: string
+                    example: Conflict
+                  Message:
                     type: string
                     enum:
                       - Camera not connected
                       - Camera has no dew heater
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
-  /equipment/camera/set-binning:
-    get:
+  /equipment/camera/settings/binning:
+    put:
       tags:
         - Camera
       summary: Set Binning
       description: This endpoint sets the binning of the camera, if the specified binning is supported
-      parameters:
-        - in: query
-          name: binning
-          description: The binning mode
-          required: true
-          schema:
-            type: string
-            example: 2x2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                X:
+                  type: integer
+                  example: 2
+                Y:
+                  type: integer
+                  example: 2
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -739,37 +666,38 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "409":
-          description: Camera not connected / Invalid binning mode
+        "400":
+          description: Invalid binning mode
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  Response:
-                    type: string
-                    example: ""
                   Error:
                     type: string
-                    enum:
-                      - Camera not connected
-                      - Invalid binning mode
-                      - Binning must be specified
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
+                    example: Bad Request
+                  Message:
                     type: string
-                    example: "API"
-        "500":
-          description: Internal server error, Unknown error
+                    example: Invalid binning mode
+        "409":
+          description: Camera not connected
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                type: object
+                properties:
+                  Error:
+                    type: string
+                    example: Conflict
+                  Message:
+                    type: string
+                    example: Camera not connected
+        default:
+          description: Unhandled error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/capture:
     get:
@@ -856,7 +784,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -956,12 +884,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/capture/statistics:
     get:
@@ -971,7 +899,7 @@ paths:
       description: This endpoint returns the image statistics for the last captured image.
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1027,12 +955,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/info:
     get:
@@ -1042,17 +970,17 @@ paths:
       description: Get Dome information
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DomeInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/connect:
     get:
@@ -1069,7 +997,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1090,12 +1018,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/disconnect:
     get:
@@ -1105,7 +1033,7 @@ paths:
       description: Disconnect the Dome
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1126,12 +1054,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/list-devices:
     get:
@@ -1141,17 +1069,17 @@ paths:
       description: List all devices which can be connected
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/rescan:
     get:
@@ -1161,17 +1089,17 @@ paths:
       description: Rescans for new devices, and returns a list of all available devices
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/open:
     get:
@@ -1181,7 +1109,7 @@ paths:
       description: Open Dome Shutter
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1226,12 +1154,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/close:
     get:
@@ -1241,7 +1169,7 @@ paths:
       description: Close Dome Shutter
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1286,12 +1214,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/stop:
     get:
@@ -1301,7 +1229,7 @@ paths:
       description: Stop Dome movement.
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1344,12 +1272,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/set-follow:
     get:
@@ -1365,7 +1293,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1413,12 +1341,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/sync:
     get:
@@ -1428,7 +1356,7 @@ paths:
       description: Sync dome to telescope coordinates
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1471,12 +1399,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/slew:
     get:
@@ -1498,7 +1426,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1545,12 +1473,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/set-park-position:
     get:
@@ -1560,7 +1488,7 @@ paths:
       description: Sets the current dome position as park position, if supported
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1605,12 +1533,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/park:
     get:
@@ -1620,7 +1548,7 @@ paths:
       description: Parks the dome
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1665,12 +1593,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/home:
     get:
@@ -1680,7 +1608,7 @@ paths:
       description: Homes the dome
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1725,12 +1653,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/info:
     get:
@@ -1740,17 +1668,17 @@ paths:
       description: Get Filterwheel information
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/FWInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/connect:
     get:
@@ -1767,7 +1695,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1788,12 +1716,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/disconnect:
     get:
@@ -1803,7 +1731,7 @@ paths:
       description: Disconnect the filterwheel
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1824,12 +1752,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/list-devices:
     get:
@@ -1839,17 +1767,17 @@ paths:
       description: List all devices which can be connected
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/rescan:
     get:
@@ -1859,17 +1787,17 @@ paths:
       description: Rescans for new devices, and returns a list of all available devices
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/change-filter:
     get:
@@ -1886,7 +1814,7 @@ paths:
             type: integer
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1931,12 +1859,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/filter-info:
     get:
@@ -1953,7 +1881,7 @@ paths:
             type: integer
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -1982,12 +1910,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/info:
     get:
@@ -1997,17 +1925,17 @@ paths:
       description: Get information about the flat panel, Coverstate represents the following values&#58; 0&#58; Unknown, 1&#58; NeitherOpenNorClosed, 2&#58; Closed, 3&#58; Open, 4&#58; Error, 5&#58; Not present
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/FlatDeviceInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/connect:
     get:
@@ -2024,7 +1952,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2045,12 +1973,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/disconnect:
     get:
@@ -2060,7 +1988,7 @@ paths:
       description: Disconnect the flat panel
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2081,12 +2009,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/list-devices:
     get:
@@ -2096,17 +2024,17 @@ paths:
       description: List all devices which can be connected
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/rescan:
     get:
@@ -2116,17 +2044,17 @@ paths:
       description: Rescans for new devices, and returns a list of all available devices
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/set-light:
     get:
@@ -2143,7 +2071,7 @@ paths:
           description: The actual parameter name is "on", but for some reason the documentation automatically renames it to true...
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2187,12 +2115,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/set-cover:
     get:
@@ -2209,7 +2137,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2253,12 +2181,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/set-brightness:
     get:
@@ -2278,7 +2206,7 @@ paths:
             maximum: 100
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2322,12 +2250,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/info:
     get:
@@ -2337,17 +2265,17 @@ paths:
       description: Get the focuser info
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/FocuserInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/connect:
     get:
@@ -2364,7 +2292,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2385,12 +2313,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/disconnect:
     get:
@@ -2400,7 +2328,7 @@ paths:
       description: Disconnect the focuser
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2421,12 +2349,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/list-devices:
     get:
@@ -2436,17 +2364,17 @@ paths:
       description: List all devices which can be connected
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/rescan:
     get:
@@ -2456,17 +2384,17 @@ paths:
       description: Rescans for new devices, and returns a list of all available devices
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/move:
     get:
@@ -2483,7 +2411,7 @@ paths:
           description: Position to move to
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2504,12 +2432,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/auto-focus:
     get:
@@ -2526,7 +2454,7 @@ paths:
           description: Can be used to cancel a running autofocus (If it was started using the api)
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2571,12 +2499,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/last-af:
     get:
@@ -2586,17 +2514,17 @@ paths:
       description: Get last autofocus
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/FocuserLastAF"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/info:
     get:
@@ -2606,17 +2534,17 @@ paths:
       description: Get guider information
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/GuiderInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/connect:
     get:
@@ -2633,7 +2561,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2654,12 +2582,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/disconnect:
     get:
@@ -2669,7 +2597,7 @@ paths:
       description: Disconnect the guider
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2690,12 +2618,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/list-devices:
     get:
@@ -2705,17 +2633,17 @@ paths:
       description: List all devices which can be connected
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/rescan:
     get:
@@ -2725,17 +2653,17 @@ paths:
       description: Rescans for new devices, and returns a list of all available devices
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/start:
     get:
@@ -2752,7 +2680,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2795,12 +2723,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/stop:
     get:
@@ -2810,7 +2738,7 @@ paths:
       description: Stop guiding
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2853,12 +2781,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/clear-calibration:
     get:
@@ -2868,7 +2796,7 @@ paths:
       description: Clears the calibration data, forces the guider to recalibrate when it starts guiding
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2911,12 +2839,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/graph:
     get:
@@ -2926,17 +2854,17 @@ paths:
       description: Gets the last n guide steps needed to construct a graph, with n being the number of saved steps as configured on the graph in NINA
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/GuideStepsHistory"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/info:
     get:
@@ -2946,17 +2874,17 @@ paths:
       description: Get mount information
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/MountInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/connect:
     get:
@@ -2973,7 +2901,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -2994,12 +2922,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/disconnect:
     get:
@@ -3009,7 +2937,7 @@ paths:
       description: Disconnect the mount
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3030,12 +2958,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/list-devices:
     get:
@@ -3045,17 +2973,17 @@ paths:
       description: List all devices which can be connected
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/rescan:
     get:
@@ -3065,17 +2993,17 @@ paths:
       description: Rescans for new devices, and returns a list of all available devices
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/home:
     get:
@@ -3085,7 +3013,7 @@ paths:
       description: Home the mount
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3132,12 +3060,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/tracking:
     get:
@@ -3157,7 +3085,7 @@ paths:
             maximum: 4
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3203,12 +3131,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/park:
     get:
@@ -3218,7 +3146,7 @@ paths:
       description: Park the mount
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3263,12 +3191,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/unpark:
     get:
@@ -3278,7 +3206,7 @@ paths:
       description: Unpark the mount
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3323,12 +3251,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/flip:
     get:
@@ -3338,7 +3266,7 @@ paths:
       description: Performs a meridian flip to the current coordinates. This will only flip the mount if it is needed, it will not force the mount to flip
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3383,12 +3311,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/slew:
     get:
@@ -3438,7 +3366,7 @@ paths:
             format: double
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3486,12 +3414,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/slew/stop:
     get:
@@ -3503,7 +3431,7 @@ paths:
         Therefore the recommended use is to stop simple slews without center or rotate. With center or rotate, this may take a few seconds to complete.
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3546,12 +3474,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/set-park-position:
     get:
@@ -3561,7 +3489,7 @@ paths:
       description: Sets the current mount position as park position. This requires the mount to be unparked.
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3607,12 +3535,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/sync:
     get:
@@ -3637,7 +3565,7 @@ paths:
             format: double
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3682,12 +3610,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/info:
     get:
@@ -3697,17 +3625,17 @@ paths:
       description: Get rotator information
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/RotatorInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/connect:
     get:
@@ -3724,7 +3652,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3745,12 +3673,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/disconnect:
     get:
@@ -3760,7 +3688,7 @@ paths:
       description: Disconnect the rotator
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3781,12 +3709,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/list-devices:
     get:
@@ -3796,17 +3724,17 @@ paths:
       description: List all devices which can be connected
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/rescan:
     get:
@@ -3816,17 +3744,17 @@ paths:
       description: Rescans for new devices, and returns a list of all available devices
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/move:
     get:
@@ -3843,7 +3771,7 @@ paths:
             type: number
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3886,12 +3814,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/move-mechanical:
     get:
@@ -3908,7 +3836,7 @@ paths:
             type: number
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -3951,12 +3879,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/safetymonitor/info:
     get:
@@ -3966,17 +3894,17 @@ paths:
       description: Get safety monitor information
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/SafetyMonitorInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/safetymonitor/connect:
     get:
@@ -3993,7 +3921,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4014,12 +3942,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/safetymonitor/disconnect:
     get:
@@ -4029,7 +3957,7 @@ paths:
       description: Disconnect the safety monitor
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4050,12 +3978,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/safetymonitor/list-devices:
     get:
@@ -4065,17 +3993,17 @@ paths:
       description: List all devices which can be connected
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/safetymonitor/rescan:
     get:
@@ -4085,17 +4013,17 @@ paths:
       description: Rescans for new devices, and returns a list of all available devices
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/info:
     get:
@@ -4105,17 +4033,17 @@ paths:
       description: Get switch information
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/SwitchInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/connect:
     get:
@@ -4132,7 +4060,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4153,12 +4081,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/disconnect:
     get:
@@ -4168,7 +4096,7 @@ paths:
       description: Disconnect the switch
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4189,12 +4117,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/list-devices:
     get:
@@ -4204,17 +4132,17 @@ paths:
       description: List all devices which can be connected
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/rescan:
     get:
@@ -4224,17 +4152,17 @@ paths:
       description: Rescans for new devices, and returns a list of all available devices
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/set:
     get:
@@ -4259,7 +4187,7 @@ paths:
             format: double
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4302,12 +4230,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/weather/info:
     get:
@@ -4317,17 +4245,17 @@ paths:
       description: Get weather information
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/WeatherInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/weather/connect:
     get:
@@ -4344,7 +4272,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4365,12 +4293,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/weather/disconnect:
     get:
@@ -4380,7 +4308,7 @@ paths:
       description: Disconnect the weather
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4401,12 +4329,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/weather/list-devices:
     get:
@@ -4416,17 +4344,17 @@ paths:
       description: List all weather sources which can be connected
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /equipment/weather/rescan:
     get:
@@ -4436,17 +4364,17 @@ paths:
       description: Rescans for new weather sources, and returns a list of all available sources
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /application/switch-tab:
     get:
@@ -4471,7 +4399,7 @@ paths:
               - options
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4514,12 +4442,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /application/get-tab:
     get:
@@ -4529,7 +4457,7 @@ paths:
       description: Gets the current application tab
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4579,12 +4507,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /application/plugins:
     get:
@@ -4595,7 +4523,7 @@ paths:
         if you want to use an integrated plugin like livestack or TPPA
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4623,12 +4551,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /application/logs:
     get:
@@ -4658,7 +4586,7 @@ paths:
               - ERROR
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4699,12 +4627,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /application/screenshot:
     get:
@@ -4747,7 +4675,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4778,12 +4706,12 @@ paths:
                 description: Image in jpg format, when stream is set to true and the image quality is specified
                 type: array
                 format: binary
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /framing/info:
     get:
@@ -4793,17 +4721,17 @@ paths:
       description: Get framing assistant information
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/FramingAssistantInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /framing/set-source:
     get:
@@ -4829,7 +4757,7 @@ paths:
               - CACHE
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4872,12 +4800,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /framing/set-coordinates:
     get:
@@ -4902,7 +4830,7 @@ paths:
             format: double
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4923,12 +4851,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /framing/slew:
     get:
@@ -4954,7 +4882,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -4977,12 +4905,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /framing/set-rotation:
     get:
@@ -5000,7 +4928,7 @@ paths:
             format: double
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -5021,12 +4949,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /framing/determine-rotation:
     get:
@@ -5043,7 +4971,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -5087,12 +5015,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /image/{index}:
     get:
@@ -5214,7 +5142,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -5270,12 +5198,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /prepared-image:
     get:
@@ -5366,7 +5294,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             image/png:
               schema:
@@ -5400,12 +5328,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /image-history:
     get:
@@ -5449,7 +5377,7 @@ paths:
               - SNAPSHOT
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -5540,12 +5468,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /image/thumbnail/{index}:
     get:
@@ -5575,7 +5503,7 @@ paths:
               - SNAPSHOT
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             image/jpg:
               schema:
@@ -5604,12 +5532,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /profile/show:
     get:
@@ -5626,17 +5554,17 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProfileInfo"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /profile/change-value:
     get:
@@ -5661,7 +5589,7 @@ paths:
             example: 3.2
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -5706,12 +5634,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /profile/switch:
     get:
@@ -5728,7 +5656,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -5771,12 +5699,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /profile/horizon:
     get:
@@ -5786,7 +5714,7 @@ paths:
       description: Gets the horizon for the active profile
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -5815,12 +5743,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /sequence/json:
     get:
@@ -5830,7 +5758,7 @@ paths:
       description: Get sequence as json. This endpoint is generally advised to use over state since it gives more reliable results.
       responses:
         "200":
-          description: Successful response, best to try it out yourself
+          description: Success, best to try it out yourself
           content:
             application/json:
               schema:
@@ -5858,12 +5786,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /sequence/state:
     get:
@@ -5876,7 +5804,7 @@ paths:
         In general however I recommend using the json endpoint as it gives more reliable results, so use this if you do not need the extra functionality.
       responses:
         "200":
-          description: Successful response, best to try it out yourself
+          description: Success, best to try it out yourself
           content:
             application/json:
               schema:
@@ -5904,12 +5832,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /sequence/edit:
     get:
@@ -5941,7 +5869,7 @@ paths:
             example: "20"
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -5987,12 +5915,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /sequence/start:
     get:
@@ -6008,7 +5936,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6053,12 +5981,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /sequence/stop:
     get:
@@ -6068,7 +5996,7 @@ paths:
       description: Stop Advanced Sequence.
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6111,12 +6039,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /sequence/reset:
     get:
@@ -6126,7 +6054,7 @@ paths:
       description: Reset Advanced Sequence.
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6170,12 +6098,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /sequence/list-available:
     get:
@@ -6185,7 +6113,7 @@ paths:
       description: List available sequences.
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6207,12 +6135,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /sequence/set-target:
     get:
@@ -6258,7 +6186,7 @@ paths:
             minimum: 0
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6323,12 +6251,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal Server Error, Unknown Error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /sequence/load:
     get:
@@ -6346,7 +6274,7 @@ paths:
             example: Orion
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6392,12 +6320,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal Server Error, Unknown Error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
     post:
       tags:
         - Sequence
@@ -6405,7 +6333,7 @@ paths:
       description: Loads a sequence from a JSON supplied by the client in the request body
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6450,12 +6378,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal Server Error, Unknown Error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /event-history:
     get:
@@ -6465,7 +6393,7 @@ paths:
       description: Get event history
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6492,12 +6420,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /livestack/start:
     get:
@@ -6507,7 +6435,7 @@ paths:
       description: Starts Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to start the livestack.
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6528,12 +6456,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /livestack/stop:
     get:
@@ -6543,7 +6471,7 @@ paths:
       description: Stops Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to stop the livestack.
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6564,12 +6492,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /livestack/image/available:
     get:
@@ -6579,7 +6507,7 @@ paths:
       description: Livestack >= v1.0.0.9. Returns a list of available stacks, which can be retrieved
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6608,12 +6536,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /livestack/image/{target}/{filter}:
     get:
@@ -6668,7 +6596,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6699,12 +6627,12 @@ paths:
                 description: Image in jpg format, when stream is set to true and the image quality is specified
                 type: array
                 format: binary
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /flats/skyflat:
     get:
@@ -6792,7 +6720,7 @@ paths:
             minimum: 0
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -6846,12 +6774,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /flats/auto-brightness:
     get:
@@ -6948,7 +6876,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -7002,12 +6930,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /flats/auto-exposure:
     get:
@@ -7101,7 +7029,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -7155,12 +7083,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /flats/trained-dark-flat:
     get:
@@ -7213,7 +7141,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -7267,12 +7195,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /flats/trained-flat:
     get:
@@ -7325,7 +7253,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -7379,12 +7307,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /flats/status:
     get:
@@ -7394,7 +7322,7 @@ paths:
       description: Returns the current status of the flat taking process, Running or Finished.
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -7426,12 +7354,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
   /flats/stop:
     get:
@@ -7441,7 +7369,7 @@ paths:
       description: Stop a running flat taking process
       responses:
         "200":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -7463,7 +7391,7 @@ paths:
                     type: string
                     example: "API"
         "400":
-          description: Successful response
+          description: Success
           content:
             application/json:
               schema:
@@ -7484,12 +7412,12 @@ paths:
                   Type:
                     type: string
                     example: "API"
-        "500":
-          description: Internal server error, Unknown error
+        default:
+          description: Unhandled error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnknownError"
+                $ref: "#/components/schemas/Error"
 
 components:
   schemas:
@@ -7548,6 +7476,8 @@ components:
               type: integer
             YSize:
               type: integer
+            HasBattery:
+              type: boolean
             PixelSize:
               type: number
             Battery:
@@ -7560,7 +7490,8 @@ components:
               type: boolean
             Gains:
               type: array
-              items: {}
+              items:
+                type: integer
             CoolerOn:
               type: boolean
             CoolerPower:
@@ -7658,6 +7589,62 @@ components:
               type: string
             DeviceId:
               type: string
+          required:
+            - CanSetTemperature
+            - HasShutter
+            - Temperature
+            - Gain
+            - DefaultGain
+            - ElectronsPerADU
+            - BinX
+            - BitDepth
+            - BinY
+            - CanSetOffset
+            - CanGetGain
+            - OffsetMin
+            - OffsetMax
+            - Offset
+            - DefaultOffset
+            - USBLimit
+            - IsSubSampleEnabled
+            - CameraState
+            - XSize
+            - YSize
+            - PixelSize
+            - HasBattery
+            - Battery
+            - GainMin
+            - GainMax
+            - CanSetGain
+            - Gains
+            - CoolerOn
+            - CoolerPower
+            - HasDewHeater
+            - DewHeaterOn
+            - CanSubSample
+            - SubSampleX
+            - SubSampleY
+            - SubSampleWidth
+            - SubSampleHeight
+            - TemperatureSetPoint
+            - ReadoutMode
+            - ReadoutModeForSnapImages
+            - ReadoutModeForNormalImages
+            - IsExposing
+            - ExposureEndTime
+            - LastDownloadTime
+            - SensorType
+            - BayerOffsetX
+            - BayerOffsetY
+            - BinningModes
+            - ExposureMax
+            - ExposureMin
+            - LiveViewEnabled
+            - CanShowLiveView
+            - CanSetUSBLimit
+            - USBLimitMin
+            - USBLimitMax
+            - Connected
 
     DomeInfo:
       type: object
@@ -9967,46 +9954,42 @@ components:
           example: "API"
 
     DeviceList:
-      type: object
-      properties:
-        Response:
-          type: array
-          items:
-            type: object
-            properties:
-              HasSetupDialog:
-                type: boolean
-              Id:
-                type: string
-              Name:
-                type: string
-              DisplayName:
-                type: string
-              Category:
-                type: string
-              Connected:
-                type: boolean
-              Description:
-                type: string
-              DriverInfo:
-                type: string
-              DriverVersion:
-                type: string
-              SupportedActions:
-                type: array
-                items: {}
-        Error:
-          type: string
-          example: ""
-        StatusCode:
-          type: integer
-          example: 200
-        Success:
-          type: boolean
-          example: true
-        Type:
-          type: string
-          example: "API"
+      type: array
+      items:
+        type: object
+        properties:
+          HasSetupDialog:
+            type: boolean
+          Id:
+            type: string
+          Name:
+            type: string
+          DisplayName:
+            type: string
+          Category:
+            type: string
+          Connected:
+            type: boolean
+          Description:
+            type: string
+          DriverInfo:
+            type: string
+          DriverVersion:
+            type: string
+          SupportedActions:
+            type: array
+            items: {}
+        required:
+          - Id
+          - Name
+          - DisplayName
+          - Category
+          - Connected
+          - Description
+          - DriverInfo
+          - DriverVersion
+          - SupportedActions
+          - HasSetupDialog
 
     GuideStepsHistory:
       type: object
@@ -10091,6 +10074,42 @@ components:
         Type:
           type: string
 
+    DewHeaterUpdateBody:
+      type: object
+      properties:
+        Power:
+          type: boolean
+          example: true
+          description: Whether to turn the dew heater on or off.
+
+    ReadoutModeUpdateBody:
+      type: object
+      properties:
+        Mode:
+          type: integer
+          minimum: 0
+          description: The readout mode to set. This is the index of the readout mode in the list of readout modes
+
+    CoolCameraBody:
+      type: object
+      properties:
+        Temperature:
+          type: number
+        Duration:
+          type: number
+          minimum: 0
+          description: The duration over which the camera should cool down. If not specified, the default duration as set in NINA will be used
+      required:
+        - Temperature
+
+    WarmCameraBody:
+      type: object
+      properties:
+        Duration:
+          type: number
+          minimum: 0
+          description: The duration over which the camera should warm up. If not specified, the default duration as set in NINA will be used
+
     Error:
       type: object
       properties:
@@ -10120,13 +10139,51 @@ components:
       required:
         - Error
 
-    500Error:
+    ProcessStart409:
       type: object
       properties:
         Error:
           type: string
-          example: Internal Server Error
+          example: Conflict
         Message:
           type: string
+          example: Process could not be started because other processes conflict with it
+        Conflicts:
+          type: array
+          items:
+            type: object
+            properties:
+              ProcessId:
+                type: string
+                format: guid
+                description: The id of the conflicting process
+              Status:
+                type: string
+                enum: [Running, Finished, Pending]
+                example: Running
+              ProcessType:
+                type: string
+                example: CameraCool
+                description: The type of the conflicting process
+            required:
+              - ProcessId
+              - Status
+              - ProcessType
       required:
         - Error
+        - Message
+        - Conflicts
+
+    ProcessStart200:
+      type: object
+      properties:
+        ProcessId:
+          type: string
+          format: guid
+          description: The id that was assigned to the process
+        Status:
+          type: string
+          example: Running
+      required:
+        - ProcessId
+        - Status

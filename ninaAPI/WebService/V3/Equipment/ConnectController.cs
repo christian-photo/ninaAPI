@@ -127,7 +127,7 @@ namespace ninaAPI.WebService.V3.Equipment
             await responseHandler.SendObject(HttpContext, new StringResponse($"{chooser.SelectedDevice.DisplayName} disconnected"));
         }
 
-        [Route(HttpVerbs.Get, "/{device}/rescan")]
+        [Route(HttpVerbs.Post, "/{device}/rescan")]
         public async Task DeviceRescan(string device)
         {
             var chooser = GetDeviceChooserVM(device);

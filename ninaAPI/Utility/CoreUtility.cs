@@ -153,11 +153,6 @@ namespace ninaAPI.Utility
             }
         }
 
-        public static bool IsParameterOmitted(this IHttpContext context, string parameter)
-        {
-            return !context.Request.QueryString.AllKeys.Contains(parameter);
-        }
-
         public static object ConvertString(this string str, Type type)
         {
             // determine target (handle Nullable<T>)
@@ -237,7 +232,7 @@ namespace ninaAPI.Utility
             return new
             {
                 Error = HttpUtility.StatusCodeMessages[(int)HttpStatusCode.Conflict],
-                Message = $"Process {process.ProcessId} ({process.ProcessType}) could not be started because other processes conflict with it",
+                Message = "Process could not be started because other processes conflict with it",
                 Conflicts = conflicts
             };
         }
