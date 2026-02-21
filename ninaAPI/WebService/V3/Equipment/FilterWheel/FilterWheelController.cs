@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
 using EmbedIO;
@@ -86,6 +87,7 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
         [Route(HttpVerbs.Post, "/filter")]
         public async Task AddFilter([JsonData] FilterData filter)
         {
+            Validator.ValidateObject(filter, new ValidationContext(filter));
             // In the FilterData object, the position is not used, everything else is optional
             var filterPosition = profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count;
             FilterInfo filterInfo = new FilterInfo(

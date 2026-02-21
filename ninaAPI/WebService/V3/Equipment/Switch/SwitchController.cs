@@ -11,6 +11,7 @@
 
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -21,8 +22,6 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
-using Swan;
-using Swan.Validators;
 
 namespace ninaAPI.WebService.V3.Equipment.Switch
 {
@@ -71,8 +70,10 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
     public class SwitchSetValueConfig
     {
         [Range(0, short.MaxValue)]
+        [Required]
         public short SwitchId { get; set; }
 
+        [Required]
         public double Value { get; set; }
     }
 }

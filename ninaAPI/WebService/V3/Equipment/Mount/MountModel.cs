@@ -9,31 +9,27 @@
 
 #endregion "copyright"
 
+using System.ComponentModel.DataAnnotations;
 using NINA.Astrometry;
 using ninaAPI.WebService.V3.Model;
-using Swan.Validators;
 
 namespace ninaAPI.WebService.V3.Equipment.Mount
 {
     public class MountSlewConfig
     {
+        [Required]
         public HttpCoordinates Coordinates { get; set; }
 
         [Range(0, 360)]
         public double? PositionAngle { get; set; }
 
+        [Required]
         public SlewType SlewType { get; set; }
     }
 
     public class MountSyncConfig
     {
-        [Range(0, 360)]
-        public double RA { get; set; }
-
-        [Range(-90, 90)]
-        public double Dec { get; set; }
-
-        public Epoch Epoch { get; set; } = Epoch.J2000;
+        public HttpCoordinates Coordinates { get; set; }
 
         public bool SolveAndSync { get; set; }
     }

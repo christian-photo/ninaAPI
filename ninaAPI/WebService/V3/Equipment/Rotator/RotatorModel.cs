@@ -9,10 +9,14 @@
 
 #endregion "copyright"
 
+using System.ComponentModel.DataAnnotations;
+
 namespace ninaAPI.WebService.V3.Equipment.Rotator
 {
     public class RotatorMoveConfig
     {
+        [Required]
+        [Range(0, float.MaxValue)]
         public float Position { get; set; }
 
         public bool MoveMechanical { get; set; }

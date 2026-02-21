@@ -71,6 +71,9 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         public const string LIVESTACK_STATUS = "livestack-status-update";
         public const string LIVESTACK_STACK_UPDATED = "livestack-stack-updated";
 
+        public const string TPPA_ALIGNMENT_ERROR = "tppa-alignment-error";
+        public const string TPPA_PROGRESS_UPDATE = "tppa-progress-update";
+
         public static string DeviceConnected(Device device) => $"{device.ToString().ToLower()}-connected";
         public static string DeviceDisconnected(Device device) => $"{device.ToString().ToLower()}-disconnected";
         public static string DeviceInfoUpdate(Device device) => $"{device.ToString().ToLower()}-info-update";

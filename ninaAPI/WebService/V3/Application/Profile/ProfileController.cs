@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -83,14 +84,7 @@ namespace ninaAPI.WebService.V3.Application.Profile
         [Route(HttpVerbs.Patch, "/")]
         public async Task UpdateProfileValue([JsonData] ProfileValueChangeConfig config)
         {
-            if (string.IsNullOrEmpty(config.PathDescription))
-            {
-                throw new HttpException(HttpStatusCode.UnprocessableContent, "PathDescription is empty");
-            }
-            if (config.Value is null)
-            {
-                throw new HttpException(HttpStatusCode.UnprocessableContent, "Supplied value is null");
-            }
+            Validator.ValidateObject(config, new ValidationContext(config));
 
             string[] pathSplit = config.PathDescription.Split('-'); // e.g. 'CameraSettings-PixelSize' -> CameraSettings, PixelSize
             object position = AdvancedAPI.Controls.Profile.ActiveProfile;
@@ -143,7 +137,10 @@ namespace ninaAPI.WebService.V3.Application.Profile
     public class ProfileValueChangeConfig
     {
         // Again in the format CameraSettings-PixelSize
+        [Required(AllowEmptyStrings = false)]
         public string PathDescription { get; set; }
+
+        [Required]
         public object Value { get; set; }
     }
 }

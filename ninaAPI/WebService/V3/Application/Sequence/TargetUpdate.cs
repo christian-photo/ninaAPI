@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using System.ComponentModel.DataAnnotations;
 using ninaAPI.WebService.V3.Model;
 
 namespace ninaAPI.WebService.V3.Application.Sequence
@@ -18,9 +19,18 @@ namespace ninaAPI.WebService.V3.Application.Sequence
     /// </summary>
     public class TargetUpdate
     {
+        [Required]
         public string TargetName { get; set; }
+
+        [Required]
         public HttpCoordinates Coordinates { get; set; }
+
+        [Required]
+        [Range(0, 360)]
         public double Rotation { get; set; }
+
+        [Required]
+        [Range(0, int.MaxValue)]
         public int TargetIndex { get; set; }
     }
 }

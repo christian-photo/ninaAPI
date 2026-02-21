@@ -11,6 +11,7 @@
 
 
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -199,6 +200,8 @@ namespace ninaAPI.WebService.V3.Application.Sequence
         [Route(HttpVerbs.Put, "/target")]
         public async Task SetTarget([JsonData] TargetUpdate target)
         {
+            Validator.ValidateObject(target, new ValidationContext(target));
+
             if (!sequence.Initialized)
             {
                 throw new HttpException(HttpStatusCode.Conflict, "Sequence is not initialized");

@@ -130,7 +130,7 @@ namespace ninaAPI.WebService.V2
 
             try
             {
-                AdvancedAPI.Controls.MessageBroker.Publish(new LiveStackMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StopLiveStack", string.Empty));
+                AdvancedAPI.Controls.MessageBroker.Publish(new NINAMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StopLiveStack", string.Empty));
                 response.Response = "Live stack stopped";
             }
             catch (Exception ex)
@@ -149,7 +149,7 @@ namespace ninaAPI.WebService.V2
 
             try
             {
-                AdvancedAPI.Controls.MessageBroker.Publish(new LiveStackMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StartLiveStack", string.Empty));
+                AdvancedAPI.Controls.MessageBroker.Publish(new NINAMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StartLiveStack", string.Empty));
                 response.Response = "Live stack started";
             }
             catch (Exception ex)

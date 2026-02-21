@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using EmbedIO;
 using NINA.Core.Model.Equipment;
@@ -19,12 +20,20 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
 {
     public class FilterData
     {
+        [Required]
         public string Name { get; set; }
+
         public int? FocusOffset { get; set; }
+
         public short Position { get; set; }
+
+        [Range(0, double.MaxValue)]
         public double? AutoFocusExposureTime { get; set; }
+
         public bool? AutoFocusFilter { get; set; }
+
         public BinningMode AutoFocusBinning { get; set; }
+
         public int? AutoFocusGain { get; set; }
         public int? AutoFocusOffset { get; set; }
 

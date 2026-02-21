@@ -20,9 +20,9 @@ using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2;
-using ninaAPI.WebService.V3.Websocket.Event;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -168,7 +168,14 @@ namespace ninaAPI.WebService
         private async Task HandleUnhandledException(IHttpContext context, Exception exception)
         {
             Logger.Error(exception);
-            await HandleHttpException(context, CommonErrors.UnknwonError(exception));
+            if (exception is ArgumentException || exception is ValidationException)
+            {
+                await HandleHttpException(context, new HttpException(HttpStatusCode.BadRequest, exception.Message));
+            }
+            else
+            {
+                await HandleHttpException(context, CommonErrors.UnknwonError(exception));
+            }
         }
 
         private async Task HandleHttpException(IHttpContext context, IHttpException exception)

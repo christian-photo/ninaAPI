@@ -30,29 +30,6 @@ namespace ninaAPI.WebService.Model
         public BitmapSource Image { get; set; } = image;
     }
 
-    public class LiveStackMessage(Guid correlatedGuid, string topic, object content) : IMessage
-    {
-        public Guid SenderId => Guid.Parse(AdvancedAPI.PluginId);
-
-        public string Sender => nameof(ninaAPI);
-
-        public DateTimeOffset SentAt => DateTimeOffset.Now;
-
-        public Guid MessageId => Guid.NewGuid();
-
-        public DateTimeOffset? Expiration => null;
-
-        public Guid? CorrelationId => correlatedGuid;
-
-        public int Version => 1;
-
-        public IDictionary<string, object> CustomHeaders => new Dictionary<string, object>();
-
-        public string Topic => topic;
-
-        public object Content => content;
-    }
-
     public class LiveStackHistory : IDisposable
     {
         public List<LiveStackResponse> Images { get; set; } = new List<LiveStackResponse>();

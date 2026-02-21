@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -139,6 +140,8 @@ namespace ninaAPI.WebService.V3.Equipment
         [Route(HttpVerbs.Post, "/{device}/action")]
         public async Task DeviceAction(string device, [JsonData] ActionConfig config)
         {
+            Validator.ValidateObject(config, new ValidationContext(config));
+
             var deviceobj = GetDevice(device);
 
             if (!deviceobj.SupportedActions.Contains(config.Action))
@@ -238,6 +241,7 @@ namespace ninaAPI.WebService.V3.Equipment
 
     public class ActionConfig
     {
+        [Required(AllowEmptyStrings = false)]
         public string Action { get; set; }
         public string Parameters { get; set; }
     }

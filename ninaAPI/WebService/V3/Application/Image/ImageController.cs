@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -186,6 +187,8 @@ namespace ninaAPI.WebService.V3.Application.Image
         [Route(HttpVerbs.Post, "/{index}/platesolve")]
         public async Task ImageSolve(int index, [JsonData] PlatesolveConfig config)
         {
+            Validator.ValidateObject(config, new ValidationContext(config));
+
             IProfile profile = profileService.ActiveProfile;
 
             QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
@@ -238,6 +241,8 @@ namespace ninaAPI.WebService.V3.Application.Image
         [Route(HttpVerbs.Post, "/prepared/platesolve")]
         public async Task PreparedImageSolve([JsonData] PlatesolveConfig config)
         {
+            Validator.ValidateObject(config, new ValidationContext(config));
+
             IProfile profile = profileService.ActiveProfile;
 
             if (ImageWatcher.PreparedImage is null)

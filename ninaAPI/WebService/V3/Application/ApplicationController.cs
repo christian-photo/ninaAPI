@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -89,12 +90,9 @@ namespace ninaAPI.WebService.V3.Application
         [Route(HttpVerbs.Patch, "/log/settings")]
         public async Task UpdateLogLevel([JsonData] LoggerSettings settings)
         {
-            if (!settings.Level.HasValue)
-            {
-                throw new HttpException(HttpStatusCode.BadRequest, "Invalid log level");
-            }
+            Validator.ValidateObject(settings, new ValidationContext(settings));
 
-            Logger.SetLogLevel(settings.Level.Value);
+            Logger.SetLogLevel(settings.Level);
             await responseHandler.SendObject(HttpContext, new StringResponse("Log level updated"));
         }
 
@@ -110,11 +108,9 @@ namespace ninaAPI.WebService.V3.Application
         [Route(HttpVerbs.Put, "/tab")]
         public async Task SetApplicationTab([JsonData] ApplicationTabChangeRequest request)
         {
-            if (!request.Tab.HasValue)
-            {
-                throw new HttpException(HttpStatusCode.BadRequest, "Invalid tab");
-            }
-            applicationMediator.ChangeTab(request.Tab.Value);
+            Validator.ValidateObject(request, new ValidationContext(request));
+
+            applicationMediator.ChangeTab(request.Tab);
             await responseHandler.SendObject(HttpContext, new StringResponse("Tab changed"));
         }
 
@@ -184,12 +180,14 @@ namespace ninaAPI.WebService.V3.Application
 
     public class LoggerSettings
     {
-        public LogLevelEnum? Level { get; set; }
+        [Required]
+        public LogLevelEnum Level { get; set; }
     }
 
     public class ApplicationTabChangeRequest
     {
-        public ApplicationTab? Tab { get; set; }
+        [Required]
+        public ApplicationTab Tab { get; set; }
     }
 
     public class LogLine

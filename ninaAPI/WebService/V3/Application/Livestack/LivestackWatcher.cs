@@ -27,6 +27,7 @@ namespace ninaAPI.WebService.V3.Application.Livestack
         {
             this.messageBroker = messageBroker;
             liveStackHistory = new LiveStackHistory();
+            Channel = Utility.Http.WebSocketChannel.Livestack;
         }
 
         // TODO: Find possible values

@@ -11,6 +11,7 @@
 
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
 using EmbedIO;
@@ -73,6 +74,8 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
         [Route(HttpVerbs.Post, "/move")]
         public async Task RotatorMove([JsonData] RotatorMoveConfig config)
         {
+            Validator.ValidateObject(config, new ValidationContext(config));
+
             if (!rotator.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Rotator);

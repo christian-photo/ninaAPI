@@ -50,14 +50,14 @@ namespace ninaAPI.WebService.V3.Application.Livestack
         [Route(HttpVerbs.Post, "/start")]
         public async Task StartLivestack()
         {
-            await messageBroker.Publish(new LiveStackMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StartLiveStack", string.Empty));
+            await messageBroker.Publish(new NINAMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StartLiveStack", string.Empty));
             await responseHandler.SendObject(HttpContext, new StringResponse("Live stack started"));
         }
 
         [Route(HttpVerbs.Post, "/stop")]
         public async Task StopLivestack()
         {
-            await messageBroker.Publish(new LiveStackMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StopLiveStack", string.Empty));
+            await messageBroker.Publish(new NINAMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StopLiveStack", string.Empty));
             await responseHandler.SendObject(HttpContext, new StringResponse("Live stack stopped"));
         }
 

@@ -31,6 +31,7 @@ using ninaAPI.Utility.Http;
 using System.IO;
 using ninaAPI.WebService.V3.Model;
 using NINA.Equipment.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {
@@ -266,6 +267,8 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         [Route(HttpVerbs.Post, "/capture")]
         public async Task CameraCapture([JsonData] CaptureConfig config)
         {
+            Validator.ValidateObject(config, new ValidationContext(config));
+
             CameraInfo info = cam.GetInfo();
             IPlateSolveSettings settings = profile.ActiveProfile.PlateSolveSettings;
 
@@ -370,6 +373,8 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         [Route(HttpVerbs.Post, "/capture/{id}/platesolve")]
         public async Task CameraCaptureSolve(Guid id, [JsonData] PlatesolveConfig config)
         {
+            Validator.ValidateObject(config, new ValidationContext(config));
+
             var capture = captureMediator.GetCapture(id);
             if (capture == null)
             {

@@ -22,6 +22,7 @@ using ninaAPI.WebService.V3.Application.Image;
 using ninaAPI.WebService.V3.Application.Livestack;
 using ninaAPI.WebService.V3.Application.Profile;
 using ninaAPI.WebService.V3.Application.Sequence;
+using ninaAPI.WebService.V3.Application.TPPA;
 using ninaAPI.WebService.V3.Equipment;
 using ninaAPI.WebService.V3.Equipment.Camera;
 using ninaAPI.WebService.V3.Equipment.Dome;
@@ -35,7 +36,6 @@ using ninaAPI.WebService.V3.Equipment.Safety;
 using ninaAPI.WebService.V3.Equipment.Switch;
 using ninaAPI.WebService.V3.Equipment.Weather;
 using ninaAPI.WebService.V3.Websocket.Event;
-using ninaAPI.WebService.V3.Websocket.TPPA;
 
 namespace ninaAPI.WebService.V3
 {
@@ -65,17 +65,16 @@ namespace ninaAPI.WebService.V3
         private readonly ApiProcessMediator processMediator;
 
         private readonly LivestackController livestackController;
+        private readonly TppaController tppaController;
 
         private static EventHistoryManager eventHistory;
         private EventWebSocket eventSocket;
-        private TppaSocket tppaSocket;
         private static List<EventWatcher> watchers;
 
 
         // TODO: Missing endpoints / watchers
         // - Flat
         // - Framing
-        // - Livestack
         // - Target Scheduler
         // - Mount control
         // - Networked filterwheel
@@ -102,6 +101,7 @@ namespace ninaAPI.WebService.V3
                 new ProfileWatcher(eventHistory, AdvancedAPI.Controls.Profile),
                 new SequenceWatcher(eventHistory, AdvancedAPI.Controls.Sequence),
                 new LivestackWatcher(eventHistory, AdvancedAPI.Controls.MessageBroker),
+                new TppaWatcher(eventHistory, AdvancedAPI.Controls.MessageBroker),
             ];
 
             foreach (EventWatcher watcher in watchers)
@@ -268,13 +268,17 @@ namespace ninaAPI.WebService.V3
                 responseHandler
             );
 
+            tppaController = new TppaController(
+                AdvancedAPI.Controls.MessageBroker,
+                responseHandler
+            );
+
             controller = new ControllerV3(responseHandler, processMediator);
         }
 
         public WebServer ConfigureServer(WebServer server)
         {
             eventSocket = new EventWebSocket("/v3/ws/events", serializer, eventHistory);
-            tppaSocket = new TppaSocket("/v3/ws/tppa", AdvancedAPI.Controls.MessageBroker);
 
             foreach (EventWatcher watcher in watchers)
             {
@@ -285,7 +289,6 @@ namespace ninaAPI.WebService.V3
 
             // EMBEDIO WOULD CREATE A NEW INSTANCE OF THE CONTROLLER FOR EACH REQUEST
             return server.WithModule(eventSocket)
-                .WithModule(tppaSocket)
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.CameraUrlName}", m => m.WithController(() => cameraController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}", m => m.WithController(() => focuserController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.DomeUrlName}", m => m.WithController(() => domeController))
@@ -303,6 +306,7 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi("/v3/api/application", m => m.WithController(() => applicationController))
                 .WithWebApi("/v3/api/sequence", m => m.WithController(() => sequenceController))
                 .WithWebApi("/v3/api/livestack", m => m.WithController(() => livestackController))
+                .WithWebApi("/v3/api/tppa", m => m.WithController(() => tppaController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
         }
 

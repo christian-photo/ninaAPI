@@ -11,6 +11,7 @@
 
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
 using EmbedIO;
@@ -356,6 +357,8 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
         [Route(HttpVerbs.Patch, "/sync")]
         public async Task MountSync([JsonData] MountSyncConfig config)
         {
+            Validator.ValidateObject(config, new ValidationContext(config));
+
             if (!mount.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Mount);
@@ -382,7 +385,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             }
             else
             {
-                bool success = await mount.Sync(new Coordinates(Angle.ByDegree(config.RA), Angle.ByDegree(config.Dec), config.Epoch));
+                bool success = await mount.Sync(config.Coordinates.ToCoordinates());
 
                 if (!success)
                 {

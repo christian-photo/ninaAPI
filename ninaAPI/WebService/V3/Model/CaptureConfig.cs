@@ -10,7 +10,7 @@
 #endregion "copyright"
 
 
-using Swan.Validators;
+using System.ComponentModel.DataAnnotations;
 using NINA.Core.Model.Equipment;
 using NINA.Equipment.Equipment.MyCamera;
 using NINA.Profile.Interfaces;
