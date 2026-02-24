@@ -110,7 +110,7 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
-        private CancellationTokenSource FocuserToken;
+        private static CancellationTokenSource FocuserToken;
 
         [Route(HttpVerbs.Get, "/equipment/focuser/move")]
         public void FocuserMove([QueryField] int position)

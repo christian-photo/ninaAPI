@@ -15,7 +15,9 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
+using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
+using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Camera;
 using NINA.WPF.Base.ViewModel.Equipment.Dome;
@@ -30,6 +32,7 @@ using NINA.WPF.Base.ViewModel.Equipment.Telescope;
 using NINA.WPF.Base.ViewModel.Equipment.WeatherData;
 using ninaAPI.Utility;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,6 +40,51 @@ namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
+        [Route(HttpVerbs.Get, "/equipment/info")]
+        public void GetAllEquipmentInfo()
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
+                FInfo[] filters = profile.FilterWheelSettings.FilterWheelFilters.Select(f => new FInfo { Name = f.Name, Id = f.Position }).ToArray();
+
+                IFilterWheelMediator filterwheel = AdvancedAPI.Controls.FilterWheel;
+
+                FWInfo filterInfo = new FWInfo(filterwheel.GetInfo(), filters);
+
+                IGuiderMediator guider = AdvancedAPI.Controls.Guider;
+
+                IGuider g = (IGuider)guider.GetDevice();
+
+                GuideInfo guiderInfo = new GuideInfo(guider.GetInfo(), GuiderWatcher.lastGuideStep, g?.State);
+
+                response.Response = new Dictionary<string, object>()
+                {
+                    { "Camera", CameraInfoResponse.FromCam(AdvancedAPI.Controls.Camera) },
+                    { "Dome", new ExtendedDomeInfo(AdvancedAPI.Controls.Dome.GetInfo(), AdvancedAPI.Controls.DomeFollower) },
+                    { "FilterWheel", filterInfo },
+                    { "FlatDevice", AdvancedAPI.Controls.FlatDevice.GetInfo() },
+                    { "Focuser", AdvancedAPI.Controls.Focuser.GetInfo() },
+                    { "Guider", guiderInfo },
+                    { "Mount", new MountInfo(AdvancedAPI.Controls.Mount) },
+                    { "Rotator", AdvancedAPI.Controls.Rotator.GetInfo() },
+                    { "SafetyMonitor", AdvancedAPI.Controls.SafetyMonitor.GetInfo() },
+                    { "Switch", AdvancedAPI.Controls.Switch.GetInfo() },
+                    { "WeatherData", AdvancedAPI.Controls.Weather.GetInfo() },
+                };
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+
+
         [Route(HttpVerbs.Get, "/equipment/{device}/list-devices")]
         public void ListDevices(string device)
         {
