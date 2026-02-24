@@ -165,5 +165,6 @@ namespace ninaAPI.Utility.Http
         public static readonly ApiProcessType MountFlip = new("MountMeridianFlip", false, MountPark, MountSlew, MountHome, MountSolveAndSync);
         public static readonly ApiProcessType MountSolveAndSync = new("MountSolveAndSync", false, MountSlew, MountPark, MountHome, MountFlip, MountSolveAndSync);
         public static readonly ApiProcessType RotatorMove = new("RotatorMove", false);
+        public static readonly ApiProcessType FramingSolveRotation = new("FramingSolveRotation", false, RotatorMove, MountSlew, MountFlip, MountHome, MountPark, MountSolveAndSync, CameraCapture);
     }
 }

@@ -36,12 +36,11 @@ namespace ninaAPI.SequenceItems
     public class SendMessageInstruction : SequenceItem, IValidatable
     {
         [ImportingConstructor]
-        public SendMessageInstruction(ISymbolBroker broker)
+        public SendMessageInstruction()
         {
-            this.SymbolBroker = broker;
         }
 
-        private SendMessageInstruction(SendMessageInstruction cloneMe) : this(cloneMe.SymbolBroker)
+        private SendMessageInstruction(SendMessageInstruction cloneMe) : this()
         {
             CopyMetaData(cloneMe);
         }

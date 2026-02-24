@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -18,11 +18,13 @@ using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Application;
+using ninaAPI.WebService.V3.Application.Framing;
 using ninaAPI.WebService.V3.Application.Image;
 using ninaAPI.WebService.V3.Application.Livestack;
 using ninaAPI.WebService.V3.Application.Profile;
 using ninaAPI.WebService.V3.Application.Sequence;
 using ninaAPI.WebService.V3.Application.TPPA;
+using ninaAPI.WebService.V3.Application.TS;
 using ninaAPI.WebService.V3.Equipment;
 using ninaAPI.WebService.V3.Equipment.Camera;
 using ninaAPI.WebService.V3.Equipment.Dome;
@@ -61,6 +63,7 @@ namespace ninaAPI.WebService.V3
         private readonly ImageController imageController;
         private readonly ProfileController profileController;
         private readonly SequenceController sequenceController;
+        private readonly FramingController framingController;
         private readonly ControllerV3 controller;
         private readonly ApiProcessMediator processMediator;
 
@@ -75,7 +78,6 @@ namespace ninaAPI.WebService.V3
         // TODO: Missing endpoints / watchers
         // - Flat
         // - Framing
-        // - Target Scheduler
         // - Mount control
         // - Networked filterwheel
         // - Networked rotator
@@ -102,6 +104,7 @@ namespace ninaAPI.WebService.V3
                 new SequenceWatcher(eventHistory, AdvancedAPI.Controls.Sequence),
                 new LivestackWatcher(eventHistory, AdvancedAPI.Controls.MessageBroker),
                 new TppaWatcher(eventHistory, AdvancedAPI.Controls.MessageBroker),
+                new TSWatcher(eventHistory, AdvancedAPI.Controls.MessageBroker),
             ];
 
             foreach (EventWatcher watcher in watchers)
@@ -264,6 +267,14 @@ namespace ninaAPI.WebService.V3
                 responseHandler
             );
 
+            framingController = new FramingController(
+                AdvancedAPI.Controls.FramingAssistant,
+                AdvancedAPI.Controls.Camera,
+                AdvancedAPI.Controls.Profile,
+                processMediator,
+                responseHandler
+            );
+
             livestackController = new LivestackController(
                 AdvancedAPI.Controls.MessageBroker,
                 AdvancedAPI.Controls.Profile,
@@ -307,6 +318,7 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi("/v3/api/profile", m => m.WithController(() => profileController))
                 .WithWebApi("/v3/api/application", m => m.WithController(() => applicationController))
                 .WithWebApi("/v3/api/sequence", m => m.WithController(() => sequenceController))
+                .WithWebApi("/v3/api/framing", m => m.WithController(() => framingController))
                 .WithWebApi("/v3/api/livestack", m => m.WithController(() => livestackController))
                 .WithWebApi("/v3/api/tppa", m => m.WithController(() => tppaController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));

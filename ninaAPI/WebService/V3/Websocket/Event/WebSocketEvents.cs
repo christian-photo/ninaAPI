@@ -74,6 +74,12 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         public const string TPPA_ALIGNMENT_ERROR = "tppa-alignment-error";
         public const string TPPA_PROGRESS_UPDATE = "tppa-progress-update";
 
+        public const string TS_WAITSTART = "ts-wait-started";
+        public const string TS_NEWTARGETSTART = "ts-newtarget-started";
+        public const string TS_TARGETSTART = "ts-target-started";
+        public const string TS_STOP = "ts-container-stopped";
+        public const string TS_COMPLETE = "ts-target-complete";
+
         public static string DeviceConnected(Device device) => $"{device.ToString().ToLower()}-connected";
         public static string DeviceDisconnected(Device device) => $"{device.ToString().ToLower()}-disconnected";
         public static string DeviceInfoUpdate(Device device) => $"{device.ToString().ToLower()}-info-update";

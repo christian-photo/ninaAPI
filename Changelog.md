@@ -34,7 +34,9 @@ The event websocket now supports channels, which can be subscribed to per client
 - Endpoints like `image-history` now support pagination
 - It is now possible to work with multiple captures, not just the last one
 - The instruction was upgraded to work with expressions
+- The TPPA websocket was separated into the event websocket and endpoints to control TPPA
 - Containers in the sequence are now marked with a `IsContainer: true` property instead of a suffixed name
+- Many more changes behind the scenes to make it easier for contributers to work on the project
 
 ## 2.2.15.0
 
