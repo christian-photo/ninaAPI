@@ -34,6 +34,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NINA.ViewModel.Sequencer;
+using System.Globalization;
+using System.ComponentModel;
 
 namespace ninaAPI.Utility
 {
@@ -219,45 +221,20 @@ namespace ninaAPI.Utility
             return !context.Request.QueryString.AllKeys.Contains(parameter);
         }
 
-        public static object CastString(this string str, Type type)
+        public static object ConvertString(this string str, Type type)
         {
-            if (type == typeof(int) || type == typeof(int?))
-            {
-                return int.Parse(str);
-            }
-            if (type == typeof(double) || type == typeof(double?))
-            {
-                return double.Parse(str);
-            }
-            if (type == typeof(float) || type == typeof(float?))
-            {
-                return float.Parse(str);
-            }
-            if (type == typeof(decimal) || type == typeof(decimal?))
-            {
-                return decimal.Parse(str);
-            }
-            if (type == typeof(bool) || type == typeof(bool?))
-            {
-                return bool.Parse(str);
-            }
-            if (type == typeof(long) || type == typeof(long?))
-            {
-                return long.Parse(str);
-            }
-            if (type == typeof(short) || type == typeof(short?))
-            {
-                return short.Parse(str);
-            }
-            if (type.IsEnum)
-            {
-                if (int.TryParse(str, out int x))
-                {
-                    return Enum.ToObject(type, x);
-                }
-                return Enum.Parse(type, str);
-            }
-            return str;
+            // determine target (handle Nullable<T>)
+            var targetType = Nullable.GetUnderlyingType(type) ?? type;
+
+            object converted;
+
+            var converter = TypeDescriptor.GetConverter(targetType);
+            if (converter != null && converter.CanConvertFrom(typeof(string)))
+                converted = converter.ConvertFromInvariantString(str);
+            else
+                converted = Convert.ChangeType(str, targetType, CultureInfo.InvariantCulture);
+
+            return converted;
         }
 
         public static string[] GetFilesRecursively(string path)

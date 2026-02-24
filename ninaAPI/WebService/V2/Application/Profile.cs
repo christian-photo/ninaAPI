@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2024 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -191,7 +191,7 @@ namespace ninaAPI.WebService.V2
         }
 
         [Route(HttpVerbs.Get, "/profile/change-value")]
-        public void ProfileChangeValue([QueryField] string settingpath, [QueryField] object newValue)
+        public void ProfileChangeValue([QueryField] string settingpath, [QueryField] string newValue)
         {
             HttpResponse response = new HttpResponse();
 
@@ -201,7 +201,7 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Invalid path", 400));
                 }
-                else if (newValue is null)
+                else if (string.IsNullOrEmpty(newValue))
                 {
                     response = CoreUtility.CreateErrorTable(new Error("New value can't be null", 400));
                 }
@@ -214,8 +214,7 @@ namespace ninaAPI.WebService.V2
                     if (pathSplit.Length == 1)
                     {
                         PropertyInfo prop = position.GetType().GetProperty(settingpath);
-                        string sval = newValue.ToString();
-                        prop.SetValue(position, sval.CastString(prop.PropertyType));
+                        prop.SetValue(position, newValue.ConvertString(prop.PropertyType));
                     }
                     else
                     {
@@ -238,8 +237,7 @@ namespace ninaAPI.WebService.V2
                             }
                         }
                         PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
-                        string sval = newValue.ToString();
-                        prop.SetValue(position, sval.CastString(prop.PropertyType));
+                        prop.SetValue(position, newValue.ConvertString(prop.PropertyType));
                     }
 
                     response.Response = "Updated setting";
