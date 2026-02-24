@@ -13,6 +13,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -231,7 +232,34 @@ namespace ninaAPI.WebService.V3.Application.Sequence
             }
 
             var targets = sequence.GetAllTargetsInAdvancedSequence();
-            await responseHandler.SendObject(HttpContext, targets);
+            await responseHandler.SendObject(HttpContext, targets.Select(x => new SequenceTarget(x)));
+        }
+
+        [Route(HttpVerbs.Post, "/skip")]
+        public async Task SkipSequence()
+        {
+            QueryParameter<SequenceSkipType> typeParameter = new QueryParameter<SequenceSkipType>("type", SequenceSkipType.SkipCurrentItems, true);
+            SequenceSkipType type = typeParameter.Get(HttpContext);
+
+            if (!sequence.Initialized)
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Sequence is not initialized");
+            }
+            else if (!sequence.IsAdvancedSequenceRunning())
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Sequence not running");
+            }
+
+            ISequenceRootContainer root = sequence.GetSequenceRoot();
+
+            switch (type)
+            {
+                case SequenceSkipType.SkipCurrentItems: root.SkipCurrentRunningItems(); break;
+                case SequenceSkipType.SkipToImaging: root.Items[0].Skip(); break;
+                case SequenceSkipType.SkipToEnd: root.Items[0].Skip(); root.Items[1].Skip(); break;
+            }
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("Skipped in sequence"));
         }
     }
 }

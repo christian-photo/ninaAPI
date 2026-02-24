@@ -91,7 +91,10 @@ namespace ninaAPI.WebService.V3.Application.Profile
 
             if (pathSplit.Length == 1)
             {
-                position.GetType().GetProperty(config.PathDescription).SetValue(position, config.Value);
+                var prop = position.GetType().GetProperty(config.PathDescription);
+                // This is needed because (as an example) Newtonsoft.JSON by default deserializes to double, and an assignment to a float would fail
+                var converted = Convert.ChangeType(config.Value, prop.PropertyType);
+                prop.SetValue(position, converted);
             }
             else
             {
@@ -114,7 +117,9 @@ namespace ninaAPI.WebService.V3.Application.Profile
                     }
                 }
                 PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
-                prop.SetValue(position, config.Value);
+                // This is needed because (as an example) Newtonsoft.JSON by default deserializes to double, and an assignment to a float would fail
+                var converted = Convert.ChangeType(config.Value, prop.PropertyType);
+                prop.SetValue(position, converted);
             }
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Value was updated"));

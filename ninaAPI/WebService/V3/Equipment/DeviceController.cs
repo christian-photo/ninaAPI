@@ -21,6 +21,7 @@ using NINA.Equipment.Equipment;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
+using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Camera;
 using NINA.WPF.Base.ViewModel.Equipment.Dome;
@@ -35,13 +36,25 @@ using NINA.WPF.Base.ViewModel.Equipment.Telescope;
 using NINA.WPF.Base.ViewModel.Equipment.WeatherData;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.WebService.V3.Equipment.Camera;
+using ninaAPI.WebService.V3.Equipment.Dome;
+using ninaAPI.WebService.V3.Equipment.FilterWheel;
+using ninaAPI.WebService.V3.Equipment.FlatDevice;
+using ninaAPI.WebService.V3.Equipment.Focuser;
+using ninaAPI.WebService.V3.Equipment.Guider;
+using ninaAPI.WebService.V3.Equipment.Mount;
+using ninaAPI.WebService.V3.Equipment.Rotator;
+using ninaAPI.WebService.V3.Equipment.Safety;
+using ninaAPI.WebService.V3.Equipment.Switch;
+using ninaAPI.WebService.V3.Equipment.Weather;
 
 namespace ninaAPI.WebService.V3.Equipment
 {
-    public class ConnectController : WebApiController
+    public class DeviceController : WebApiController
     {
         private readonly ICameraMediator camera;
         private readonly IDomeMediator dome;
+        private readonly IDomeFollower domeFollower;
         private readonly IFilterWheelMediator filterWheel;
         private readonly IFlatDeviceMediator flatDevice;
         private readonly IFocuserMediator focuser;
@@ -51,11 +64,13 @@ namespace ninaAPI.WebService.V3.Equipment
         private readonly ISafetyMonitorMediator safetyMonitor;
         private readonly ISwitchMediator switchMediator;
         private readonly IWeatherDataMediator weatherData;
+        private readonly IProfileService profileService;
         private readonly ResponseHandler responseHandler;
 
-        public ConnectController(
+        public DeviceController(
             ICameraMediator camera,
             IDomeMediator dome,
+            IDomeFollower domeFollower,
             IFilterWheelMediator filterWheel,
             IFlatDeviceMediator flatDevice,
             IFocuserMediator focuser,
@@ -65,10 +80,12 @@ namespace ninaAPI.WebService.V3.Equipment
             ISafetyMonitorMediator safetyMonitor,
             ISwitchMediator switchMediator,
             IWeatherDataMediator weatherData,
+            IProfileService profileService,
             ResponseHandler responseHandler)
         {
             this.camera = camera;
             this.dome = dome;
+            this.domeFollower = domeFollower;
             this.filterWheel = filterWheel;
             this.flatDevice = flatDevice;
             this.focuser = focuser;
@@ -78,6 +95,7 @@ namespace ninaAPI.WebService.V3.Equipment
             this.safetyMonitor = safetyMonitor;
             this.switchMediator = switchMediator;
             this.weatherData = weatherData;
+            this.profileService = profileService;
             this.responseHandler = responseHandler;
         }
 
@@ -151,6 +169,25 @@ namespace ninaAPI.WebService.V3.Equipment
             string result = deviceobj.Action(config.Action, config.Parameters);
 
             await responseHandler.SendObject(HttpContext, new StringResponse(string.IsNullOrEmpty(result) ? "Action executed" : result));
+        }
+
+        [Route(HttpVerbs.Get, "/")]
+        public async Task GetEquipmentBundleInfo()
+        {
+            await responseHandler.SendObject(HttpContext, new
+            {
+                Camera = new CameraInfoResponse(camera),
+                Dome = new DomeInfoResponse(dome, domeFollower),
+                FilterWheel = new FilterWheelInfoResponse(filterWheel, profileService.ActiveProfile),
+                FlatDevice = new FlatInfoResponse(flatDevice),
+                Focuser = new FocuserInfoResponse(focuser),
+                Guider = new GuiderInfoResponse(guider),
+                Mount = new MountInfoResponse(mount),
+                Rotator = new RotatorInfoResponse(rotator),
+                SafetyMonitor = new SafetyInfoResponse(safetyMonitor),
+                Switch = new SwitchInfoResponse(switchMediator),
+                Weather = new WeatherInfoResponse(weatherData),
+            });
         }
 
         private IDevice GetDevice(string device)

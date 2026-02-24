@@ -55,7 +55,7 @@ namespace ninaAPI.WebService.V3
         private readonly SafetyController safetyController;
         private readonly SwitchController switchController;
         private readonly WeatherController weatherController;
-        private readonly ConnectController connectionController;
+        private readonly DeviceController connectionController;
 
         private readonly ApplicationController applicationController;
         private readonly ImageController imageController;
@@ -223,9 +223,10 @@ namespace ninaAPI.WebService.V3
                 responseHandler
             );
 
-            connectionController = new ConnectController(
+            connectionController = new DeviceController(
                 AdvancedAPI.Controls.Camera,
                 AdvancedAPI.Controls.Dome,
+                AdvancedAPI.Controls.DomeFollower,
                 AdvancedAPI.Controls.FilterWheel,
                 AdvancedAPI.Controls.FlatDevice,
                 AdvancedAPI.Controls.Focuser,
@@ -235,6 +236,7 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.SafetyMonitor,
                 AdvancedAPI.Controls.Switch,
                 AdvancedAPI.Controls.Weather,
+                AdvancedAPI.Controls.Profile,
                 responseHandler
             );
 

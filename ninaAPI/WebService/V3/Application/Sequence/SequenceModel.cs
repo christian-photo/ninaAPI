@@ -10,6 +10,16 @@
 #endregion "copyright"
 
 using System.ComponentModel.DataAnnotations;
+using NINA.Astrometry;
+using NINA.Astrometry.Interfaces;
+using NINA.Core.Enum;
+using NINA.Equipment.Interfaces;
+using NINA.Equipment.Interfaces.Mediator;
+using NINA.Profile.Interfaces;
+using NINA.Sequencer.Container;
+using NINA.Sequencer.Logic;
+using NINA.WPF.Base.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.WebService.V3.Model;
 
 namespace ninaAPI.WebService.V3.Application.Sequence
@@ -32,5 +42,26 @@ namespace ninaAPI.WebService.V3.Application.Sequence
         [Required]
         [Range(0, int.MaxValue)]
         public int TargetIndex { get; set; }
+    }
+
+    public enum SequenceSkipType
+    {
+        SkipCurrentItems,
+        SkipToImaging,
+        SkipToEnd,
+    }
+
+    public class SequenceTarget
+    {
+        public InputTarget Target { get; set; }
+        public string Name { get; set; }
+        public SequenceEntityStatus Status { get; set; }
+
+        public SequenceTarget(IDeepSkyObjectContainer copyMe)
+        {
+            this.Target = copyMe.Target;
+            this.Name = copyMe.Name;
+            this.Status = copyMe.Status;
+        }
     }
 }
