@@ -902,5 +902,57 @@ namespace ninaAPI.WebService.V2
 
             HttpContext.WriteToResponse(response);
         }
+
+        [Route(HttpVerbs.Get, "/sequence/skip")]
+        public void SequenceSkip([QueryField(true)] SequenceSkipType type)
+        {
+            HttpResponse response = new HttpResponse();
+
+            try
+            {
+                ISequenceMediator sequence = AdvancedAPI.Controls.Sequence;
+
+                if (!sequence.Initialized)
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence is not initialized", 409));
+                }
+                else if (!sequence.IsAdvancedSequenceRunning())
+                {
+                    response = CoreUtility.CreateErrorTable(new Error("Sequence not running", 409));
+                }
+                else
+                {
+                    var root = sequence.GetSequenceRoot();
+                    if (type == SequenceSkipType.CurrentItems)
+                    {
+                        root.SkipCurrentRunningItems();
+                    }
+                    else if (type == SequenceSkipType.ToEnd)
+                    {
+                        root.Items[0].Skip(); // Skip from start to imaging
+                        root.Items[1].Skip(); // Skip from imaging to end
+                    }
+                    else if (type == SequenceSkipType.ToImaging)
+                    {
+                        root.Items[0].Skip(); // Skip from start to imaging
+                    }
+                    response.Response = "Skipped";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
+            }
+
+            HttpContext.WriteToResponse(response);
+        }
+    }
+
+    public enum SequenceSkipType
+    {
+        CurrentItems,
+        ToEnd,
+        ToImaging
     }
 }

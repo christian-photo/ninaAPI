@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Advanced API
   description: This is the API documentation for the NINA plugin Advanced API. Please use streaming instead of the default base64 encoding for images, as base64 support will be removed in the near future!
-  version: 2.2.14
+  version: 2.2.15
 servers:
   - url: http://localhost:1888/v2/api
     description: V2 api server
@@ -23,7 +23,7 @@ paths:
                 properties:
                   Response:
                     type: string
-                    example: 2.2.11.0
+                    example: 2.2.15.0
                   Error:
                     type: string
                     example: ""
@@ -7084,6 +7084,77 @@ paths:
                     enum:
                       - Sequence is not initialized
                       - Sequence is already running
+                  StatusCode:
+                    type: integer
+                    example: 409
+                  Success:
+                    type: boolean
+                    example: false
+                  Type:
+                    type: string
+                    example: "API"
+        "500":
+          description: Internal server error, Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnknownError"
+
+  /sequence/skip:
+    get:
+      tags:
+        - Sequence
+      summary: Skip
+      description: Skip in the sequence. You can skip to the end container of the sequence, to the imaging container or the current running items.
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum:
+              - CurrentItems
+              - ToEnd
+              - ToImaging
+          required: true
+          description: Skip to the end, to the imaging or to the current running items
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: Skipped
+                  Error:
+                    type: string
+                    example: ""
+                  StatusCode:
+                    type: integer
+                    example: 200
+                  Success:
+                    type: boolean
+                    example: true
+                  Type:
+                    type: string
+                    example: "API"
+        "409":
+          description: Sequence not initialized / Sequence not running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                    example: ""
+                  Error:
+                    type: string
+                    enum:
+                      - Sequence is not initialized
+                      - Sequence not running
                   StatusCode:
                     type: integer
                     example: 409
