@@ -36,9 +36,14 @@ The event websocket now supports channels, which can be subscribed to per client
 - The instruction was upgraded to work with expressions
 - Containers in the sequence are now marked with a `IsContainer: true` property instead of a suffixed name
 
-## 2.2.14.6
+## 2.2.15.0
 
 - Make profile change value more robust
+- Fixed an issue where the target would not be correctly updated if it was not the first target
+- Fix an issue with the focuser move endpoint not being cancellable
+- Fix an issue where the mount info endpoint would fail
+- Add a new endpoint to get all equipment info bundled up `/equipment/info`
+- Add `sequence/skip` endpoint to skip the current running items, to the end or to the imaging container
 
 ## 2.2.14.5
 

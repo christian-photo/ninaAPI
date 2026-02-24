@@ -34,7 +34,7 @@ namespace ninaAPI.WebService.V2
 {
     public class MountInfo : TelescopeInfo
     {
-        public TrackingMode TrackingMode { get; set; }
+        public TrackingMode? TrackingMode { get; set; }
         public MountInfo(ITelescopeMediator t)
         {
             var info = t.GetInfo();
@@ -45,7 +45,7 @@ namespace ninaAPI.WebService.V2
                 thisType.GetProperty(prop.Name).SetValue(this, prop.GetValue(info));
             }
 
-            TrackingMode = (t.GetDevice() as ITelescope).TrackingMode;
+            TrackingMode = (t.GetDevice() as ITelescope)?.TrackingMode;
         }
     }
 
