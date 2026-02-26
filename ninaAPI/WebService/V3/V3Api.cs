@@ -38,6 +38,7 @@ using ninaAPI.WebService.V3.Equipment.Safety;
 using ninaAPI.WebService.V3.Equipment.Switch;
 using ninaAPI.WebService.V3.Equipment.Weather;
 using ninaAPI.WebService.V3.Websocket.Event;
+using ninaAPI.WebService.V3.Websocket.MountControl;
 
 namespace ninaAPI.WebService.V3
 {
@@ -74,10 +75,11 @@ namespace ninaAPI.WebService.V3
         private EventWebSocket eventSocket;
         private static List<EventWatcher> watchers;
 
+        private readonly MountControlSocket mountControlSocket;
+
 
         // TODO: Missing endpoints / watchers
         // - Flat
-        // - Framing
         // - Mount control
         // - Networked filterwheel
         // - Networked rotator
@@ -287,6 +289,8 @@ namespace ninaAPI.WebService.V3
             );
 
             controller = new ControllerV3(responseHandler, processMediator);
+
+            mountControlSocket = new MountControlSocket("/v3/ws/mount-control", AdvancedAPI.Controls.Mount, serializer);
         }
 
         public WebServer ConfigureServer(WebServer server)
@@ -302,6 +306,7 @@ namespace ninaAPI.WebService.V3
 
             // EMBEDIO WOULD CREATE A NEW INSTANCE OF THE CONTROLLER FOR EACH REQUEST
             return server.WithModule(eventSocket)
+                .WithModule(mountControlSocket)
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.CameraUrlName}", m => m.WithController(() => cameraController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}", m => m.WithController(() => focuserController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.DomeUrlName}", m => m.WithController(() => domeController))
