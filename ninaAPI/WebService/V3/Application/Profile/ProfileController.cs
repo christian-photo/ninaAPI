@@ -137,6 +137,50 @@ namespace ninaAPI.WebService.V3.Application.Profile
             indexType = indexProp.GetIndexParameters()[0].ParameterType;
             return true;
         }
+
+        [Route(HttpVerbs.Post, "/")]
+        public async Task CreateProfile()
+        {
+            profileService.Add();
+            await responseHandler.SendObject(HttpContext, profileService.Profiles.Last());
+        }
+
+        [Route(HttpVerbs.Post, "/clone")]
+        public async Task CloneProfile()
+        {
+            QueryParameter<Guid> idParameter = new QueryParameter<Guid>("id", Guid.Empty, true);
+            idParameter.Get(HttpContext);
+
+            ProfileMeta targetProfile = profileService.Profiles.FirstOrDefault(x => x.Id == idParameter.Value);
+            if (targetProfile is null)
+            {
+                throw new HttpException(HttpStatusCode.NotFound, "Profile with specified id not found");
+            }
+
+            bool success = profileService.Clone(targetProfile);
+            await responseHandler.SendObject(HttpContext, new StringResponse(success ? "Profile cloned" : "Profile clone failed"), success ? 200 : 500);
+        }
+
+        [Route(HttpVerbs.Delete, "/")]
+        public async Task DeleteProfile()
+        {
+            QueryParameter<Guid> idParameter = new QueryParameter<Guid>("id", Guid.Empty, true);
+            idParameter.Get(HttpContext);
+
+            ProfileMeta targetProfile = profileService.Profiles.FirstOrDefault(x => x.Id == idParameter.Value);
+            if (targetProfile is null)
+            {
+                throw new HttpException(HttpStatusCode.NotFound, "Profile with specified id not found");
+            }
+
+            if (targetProfile.Id == profileService.ActiveProfile.Id)
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Cannot delete active profile");
+            }
+
+            bool success = profileService.RemoveProfile(targetProfile);
+            await responseHandler.SendObject(HttpContext, new StringResponse(success ? "Profile deleted" : "Profile delete failed"), success ? 200 : 500);
+        }
     }
 
     public class ProfileValueChangeConfig

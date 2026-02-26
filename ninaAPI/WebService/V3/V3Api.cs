@@ -80,7 +80,6 @@ namespace ninaAPI.WebService.V3
 
         // TODO: Missing endpoints / watchers
         // - Flat
-        // - Mount control
         // - Networked filterwheel
         // - Networked rotator
 
