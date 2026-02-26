@@ -67,7 +67,7 @@ namespace ninaAPI.WebService.V3.Model
         public HttpCoordinates? Coordinates { get; set; }
 
         [Range(0, double.MaxValue)]
-        public double? PixelSize { get; set; }
+        public double? PixelSize { get; set; } // Do not document for capture
 
         public void UpdateDefaults(IProfile profile, ITelescopeMediator mount, ICameraMediator camera)
         {

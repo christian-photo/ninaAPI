@@ -205,7 +205,7 @@ namespace ninaAPI.Utility.Http
             return new ImageQueryParameterSet()
             {
                 Size = new SizeQueryParameter(new Size(1500, 1000), false),
-                Scale = new QueryParameter<float>("scale", 0.5f, false, (scale) => scale.IsBetween(0.1f, 1)),
+                Scale = new QueryParameter<float>("scale", 1f, false, (scale) => scale.IsBetween(0.1f, 1)),
                 Quality = new QueryParameter<int>("quality", 80, false, (quality) => quality.IsBetween(1, 100)),
                 Format = new QueryParameter<ImageFormat>("format", ImageFormat.JPEG, false),
                 Stretch = new QueryParameter<bool>("stretch", true, false),

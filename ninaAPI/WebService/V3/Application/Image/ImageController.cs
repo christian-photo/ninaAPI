@@ -42,6 +42,7 @@ namespace ninaAPI.WebService.V3.Application.Image
         private readonly IProfileService profileService;
         private readonly IPlateSolverFactory plateSolverFactory;
         private readonly ICameraMediator cameraMediator;
+        private readonly ITelescopeMediator mount;
         private readonly IApplicationStatusMediator statusMediator;
         private readonly ResponseHandler responseHandler;
 
@@ -49,6 +50,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             IProfileService profileService,
             IPlateSolverFactory plateSolverFactory,
             ICameraMediator cameraMediator,
+            ITelescopeMediator mount,
             IApplicationStatusMediator statusMediator,
             ResponseHandler responseHandler)
         {
@@ -56,6 +58,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             this.plateSolverFactory = plateSolverFactory;
             this.profileService = profileService;
             this.cameraMediator = cameraMediator;
+            this.mount = mount;
             this.statusMediator = statusMediator;
             this.responseHandler = responseHandler;
         }
@@ -184,7 +187,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             });
         }
 
-        [Route(HttpVerbs.Post, "/{index}/platesolve")]
+        [Route(HttpVerbs.Post, "/{index}/solve")]
         public async Task ImageSolve(int index, [JsonData] PlatesolveConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
@@ -200,6 +203,8 @@ namespace ninaAPI.WebService.V3.Application.Image
                 throw new HttpException(HttpStatusCode.NotFound, "Image does not exist");
             }
 
+            config.UpdateDefaults(profile, mount, cameraMediator);
+
             Coordinates coordinates = config.Coordinates.ToCoordinates();
             var result = await new PlateSolveService(
                 imageDataFactory,
@@ -212,6 +217,7 @@ namespace ninaAPI.WebService.V3.Application.Image
                     (double)config.PixelSize,
                     coordinates,
                     HttpContext.CancellationToken,
+                    profile,
                     p.BitDepth,
                     p.IsBayered);
 
@@ -250,6 +256,8 @@ namespace ninaAPI.WebService.V3.Application.Image
                 throw new HttpException(HttpStatusCode.NotFound, "No image prepared");
             }
 
+            config.UpdateDefaults(profile, mount, cameraMediator);
+
             Coordinates coordinates = config.Coordinates.ToCoordinates();
             var result = await new PlateSolveService(
                 imageDataFactory,
@@ -261,6 +269,7 @@ namespace ninaAPI.WebService.V3.Application.Image
                     config,
                     (double)config.PixelSize,
                     coordinates,
+                    profile,
                     HttpContext.CancellationToken);
 
             await responseHandler.SendObject(HttpContext, result);

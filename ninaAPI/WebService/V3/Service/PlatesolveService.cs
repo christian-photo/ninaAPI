@@ -40,34 +40,34 @@ namespace ninaAPI.WebService.V3.Service
         private readonly IPlateSolveSettings settings;
         private readonly IApplicationStatusMediator statusMediator;
 
-        public async Task<PlateSolveResult> PlateSolve(string imagePath, PlatesolveConfig config, double pixelSize, Coordinates coordinates, CancellationToken cts, int bitDepth = 16, bool isBayered = false)
+        public async Task<PlateSolveResult> PlateSolve(string imagePath, PlatesolveConfig config, double pixelSize, Coordinates coordinates, CancellationToken cts, IProfile profile, int bitDepth = 16, bool isBayered = false)
         {
             IImageData imageData = await Retry.Do(
                 async () => await imageDataFactory.CreateFromFile(
                     imagePath,
                     bitDepth,
                     isBayered,
-                    config.RawConverter ?? NINA.Core.Enum.RawConverterEnum.FREEIMAGE
+                    config.RawConverter ?? profile.CameraSettings.RawConverter
                 ),
                 TimeSpan.FromMilliseconds(200), 10
             );
 
-            return await PlateSolve(imageData, config, pixelSize, coordinates, cts);
+            return await PlateSolve(imageData, config, pixelSize, coordinates, profile, cts);
         }
 
-        public async Task<PlateSolveResult> PlateSolve(IImageData imageData, PlatesolveConfig config, double pixelSize, Coordinates coordinates, CancellationToken cts)
+        public async Task<PlateSolveResult> PlateSolve(IImageData imageData, PlatesolveConfig config, double pixelSize, Coordinates coordinates, IProfile profile, CancellationToken cts)
         {
             CaptureSolverParameter solverParameter = new CaptureSolverParameter()
             {
-                Attempts = config.Attempts ?? 1,
-                Binning = config.Binning ?? 1,
-                BlindFailoverEnabled = config.BlindFailoverEnabled ?? false,
+                Attempts = config.Attempts.Value,
+                Binning = config.Binning.Value,
+                BlindFailoverEnabled = config.BlindFailoverEnabled.Value,
                 Coordinates = coordinates,
-                DownSampleFactor = config.DownSampleFactor ?? 1,
-                FocalLength = config.FocalLength ?? 0,
-                MaxObjects = config.MaxObjects ?? 1,
-                Regions = config.Regions ?? 0,
-                SearchRadius = config.SearchRadius ?? 0,
+                DownSampleFactor = config.DownSampleFactor.Value,
+                FocalLength = config.FocalLength.Value,
+                MaxObjects = config.MaxObjects.Value,
+                Regions = config.Regions.Value,
+                SearchRadius = config.SearchRadius.Value,
                 PixelSize = pixelSize
             };
 

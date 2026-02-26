@@ -63,7 +63,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             {
                 CaptureSequence sequence = new CaptureSequence(
                     (double)Config.Duration,
-                    Config.ImageType,
+                    Config.ImageType.ToString(),
                     filterWheel.GetInfo().SelectedFilter,
                     Config.Binning,
                     1);
@@ -151,6 +151,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                     PixelSize,
                     coordinates,
                     token,
+                    profile.ActiveProfile,
                     BitDepth,
                     IsCaptureBayered);
 
