@@ -41,7 +41,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
             await responseHandler.SendObject(HttpContext, new FlatInfoResponse(flatDevice));
         }
 
-        [Route(HttpVerbs.Put, "/light")]
+        [Route(HttpVerbs.Patch, "/light")]
         public async Task FlatLight([JsonData] FlatLightUpdateBody body)
         {
             if (!flatDevice.GetInfo().Connected)
@@ -65,7 +65,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
             {
                 throw CommonErrors.DeviceNotConnected(Device.FlatDevice);
             }
-            else if (body.Brightness < flatDevice.GetInfo().MinBrightness || body.Brightness > flatDevice.GetInfo().MaxBrightness)
+            else if (!body.Brightness.IsBetween(flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness))
             {
                 throw CommonErrors.ParameterOutOfRange(nameof(body.Brightness), flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness);
             }
@@ -75,8 +75,8 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
             await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice brightness set"));
         }
 
-        [Route(HttpVerbs.Put, "/cover")]
-        public async Task FlatCover([JsonData] FlatCoverUpdateBody body)
+        [Route(HttpVerbs.Post, "/cover/open")]
+        public async Task FlatCoverOpen()
         {
             if (!flatDevice.GetInfo().Connected)
             {
@@ -87,16 +87,26 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw new HttpException(HttpStatusCode.Conflict, "Flatdevice does not support open/close");
             }
 
-            if (body.Open)
+            await flatDevice.OpenCover(appStatus.GetStatus(), HttpContext.CancellationToken);
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice cover open"));
+        }
+
+        [Route(HttpVerbs.Post, "/cover/close")]
+        public async Task FlatCoverClose()
+        {
+            if (!flatDevice.GetInfo().Connected)
             {
-                await flatDevice.OpenCover(appStatus.GetStatus(), HttpContext.CancellationToken);
+                throw CommonErrors.DeviceNotConnected(Device.FlatDevice);
             }
-            else
+            else if (!flatDevice.GetInfo().SupportsOpenClose)
             {
-                await flatDevice.CloseCover(appStatus.GetStatus(), HttpContext.CancellationToken);
+                throw new HttpException(HttpStatusCode.Conflict, "Flatdevice does not support open/close");
             }
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice cover set"));
+            await flatDevice.CloseCover(appStatus.GetStatus(), HttpContext.CancellationToken);
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice cover close"));
         }
     }
 
@@ -108,10 +118,5 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
     public class FlatBrightnessUpdateBody
     {
         public int Brightness { get; set; }
-    }
-
-    public class FlatCoverUpdateBody
-    {
-        public bool Open { get; set; }
     }
 }

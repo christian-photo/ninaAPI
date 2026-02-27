@@ -287,7 +287,7 @@ paths:
                   - Error
                   - Message
 
-  /equipment/camera/info:
+  /equipment/camera:
     get:
       tags:
         - Camera
@@ -326,13 +326,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Canon eos 600d connected
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -352,13 +346,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Canon eos 600d disconnected
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -423,13 +411,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: USB limit set
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -454,13 +436,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Readout mode updated
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -485,13 +461,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Readout mode updated
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -516,13 +486,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Readout mode updated
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -604,13 +568,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Exposure aborted
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -635,13 +593,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Dew heater power set
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -666,13 +618,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Binning set
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -996,7 +942,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/dome/info:
+  /equipment/dome:
     get:
       tags:
         - Dome
@@ -1035,13 +981,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Dome connected
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1061,13 +1001,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Dome disconnected
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1179,13 +1113,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Movement stopped
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1210,13 +1138,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Dome follower Updated
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1241,13 +1163,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Dome synced
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1362,7 +1278,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/filterwheel/info:
+  /equipment/filterwheel:
     get:
       tags:
         - FilterWheel
@@ -1401,13 +1317,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Filterwheel connected
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1427,13 +1337,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Filterwheel disconnected
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1554,13 +1458,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Message:
-                    type: string
-                    example: Filter removed
-                required:
-                  - Message
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1568,12 +1466,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/flatdevice/info:
+  /equipment/flatdevice:
     get:
       tags:
         - Flat Panel
       summary: Information
-      description: Get information about the flat panel, Coverstate represents the following values&#58; 0&#58; Unknown, 1&#58; NeitherOpenNorClosed, 2&#58; Closed, 3&#58; Open, 4&#58; Error, 5&#58; Not present
+      description: Get information about the flat panel
       responses:
         "200":
           description: Success
@@ -1589,14 +1487,14 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/connect:
-    get:
+    post:
       tags:
         - Flat Panel
       summary: Connect
-      description: Connect the flat panel
+      description: Connect to flatpanel
       parameters:
         - in: query
-          name: to
+          name: deviceId
           required: false
           description: The Id of the device that should be connected.
           schema:
@@ -1607,23 +1505,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Connected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1632,7 +1514,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/disconnect:
-    get:
+    post:
       tags:
         - Flat Panel
       summary: Disconnect
@@ -1643,23 +1525,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Disconnected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1688,7 +1554,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/rescan:
-    get:
+    post:
       tags:
         - Flat Panel
       summary: Rescan Devices
@@ -1707,65 +1573,24 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/flatdevice/set-light:
-    get:
+  /equipment/flatdevice/light:
+    patch:
       tags:
         - Flat Panel
-      summary: Set Light
-      description: Set the light on the flatdevice
-      parameters:
-        - in: query
-          name: on
-          schema:
-            type: boolean
-          required: true
-          description: The actual parameter name is "on", but for some reason the documentation automatically renames it to true...
+      summary: Toggle Light
+      description: Set the light on the flatdevice on or off
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlatLightUpdateBody"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: "Flatdevice light set"
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-
-        "409":
-          description: Flatdevice not connected
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: "Flatdevice not connected"
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1773,134 +1598,64 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/flatdevice/set-cover:
-    get:
-      tags:
-        - Flat Panel
-      summary: Set Cover
-      description: Set the cover to the specified position
-      parameters:
-        - name: closed
-          in: query
-          description: Indicates if the cover should be closed or open
-          required: true
-          schema:
-            type: boolean
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: "Flatdevice cover set"
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-
-        "409":
-          description: Flatdevice not connected
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: "Flatdevice not connected"
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /equipment/flatdevice/set-brightness:
-    get:
+  /equipment/flatdevice/brightness:
+    patch:
       tags:
         - Flat Panel
       summary: Set Brightness
-      description: Set Brightness
-      parameters:
-        - name: brightness
-          in: query
-          description: Brightness
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 0
-            maximum: 100
+      description: Set Brightness of the flatplanel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlatBrightnessUpdateBody"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: "Flatdevice brightness set"
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-
-        "409":
-          description: Flatdevice not connected
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: "Flatdevice not connected"
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/Error"
+
+  /equipment/flatdevice/cover/open:
+    post:
+      tags:
+        - Flat Panel
+      summary: Open Cover
+      description: Open the cover of the flatpanel
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /equipment/flatdevice/cover/close:
+    post:
+      tags:
+        - Flat Panel
+      summary: Close Cover
+      description: Close the cover of the flatpanel
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -7641,83 +7396,80 @@ components:
     FlatDeviceInfo:
       type: object
       properties:
-        Response:
-          type: object
-          properties:
-            CoverState:
-              type: string
-              enum:
-                - Unknown
-                - NeitherOpenNorClosed
-                - Closed
-                - Open
-                - Error
-                - NotPresent
-            LocalizedCoverState:
-              type: string
-            LocalizedLightOnState:
-              type: string
-            LightOn:
-              type: boolean
-            Brightness:
-              type: integer
-            SupportsOpenClose:
-              type: boolean
-            MinBrightness:
-              type: integer
-            MaxBrightness:
-              type: integer
-            SupportsOnOff:
-              type: boolean
-            SupportedActions:
-              type: array
-              items: {}
-            Connected:
-              type: boolean
-            Name:
-              type: string
-            DisplayName:
-              type: string
-            Description:
-              type: string
-            DriverInfo:
-              type: string
-            DriverVersion:
-              type: string
-            DeviceId:
-              type: string
-          required:
-            - CoverState
-            - LocalizedCoverState
-            - LocalizedLightOnState
-            - LightOn
-            - Brightness
-            - SupportsOpenClose
-            - MinBrightness
-            - MaxBrightness
-            - SupportsOnOff
-            - SupportedActions
-            - Connected
-            - Name
-            - DisplayName
-            - Description
-            - DriverInfo
-            - DriverVersion
-            - DeviceId
-        Error:
+        CoverState:
           type: string
-        StatusCode:
-          type: integer
-        Success:
+          enum:
+            - Unknown
+            - NeitherOpenNorClosed
+            - Closed
+            - Open
+            - Error
+            - NotPresent
+        LocalizedCoverState:
+          type: string
+          description: A translated version of the CoverState property
+        LocalizedLightOnState:
+          type: string
+          description: A translated version of the LightOn property
+        LightOn:
           type: boolean
-        Type:
+        Brightness:
+          type: integer
+        SupportsOpenClose:
+          type: boolean
+        MinBrightness:
+          type: integer
+        MaxBrightness:
+          type: integer
+        SupportsOnOff:
+          type: boolean
+        SupportedActions:
+          type: array
+          items:
+            type: string
+        Connected:
+          type: boolean
+        Name:
+          type: string
+        DisplayName:
+          type: string
+        Description:
+          type: string
+        DriverInfo:
+          type: string
+        DriverVersion:
+          type: string
+        DeviceId:
           type: string
       required:
-        - Response
-        - Error
-        - StatusCode
-        - Success
-        - Type
+        - CoverState
+        - LocalizedCoverState
+        - LocalizedLightOnState
+        - LightOn
+        - Brightness
+        - SupportsOpenClose
+        - MinBrightness
+        - MaxBrightness
+        - SupportsOnOff
+        - Connected
+
+    FlatLightUpdateBody:
+      type: object
+      properties:
+        TurnOn:
+          type: boolean
+          description: Whether the flat panel should be turned on or off (setting this to false will turn the flat panel off)
+      required:
+        - TurnOn
+
+    FlatBrightnessUpdateBody:
+      type: object
+      properties:
+        Brightness:
+          type: integer
+          description: The brightness to set the flat panel to. Has to be between MinBrightness and MaxBrightness
+      required:
+        - Brightness
 
     FocuserInfo:
       type: object
@@ -10136,3 +9888,11 @@ components:
       required:
         - ProcessId
         - Status
+
+    StringResponse:
+      type: object
+      properties:
+        Message:
+          type: string
+      required:
+        - Message
