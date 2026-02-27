@@ -48,17 +48,6 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             await responseHandler.SendObject(HttpContext, new FilterWheelInfoResponse(filterWheel, profile.ActiveProfile));
         }
 
-        [Route(HttpVerbs.Get, "/filter")]
-        public async Task GetFilterInfo()
-        {
-            QueryParameter<short> positionParameter = new QueryParameter<short>("position", 0, true, (position) => position.IsBetween(0, profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1));
-            short position = positionParameter.Get(HttpContext);
-
-            FilterData filter = FilterData.FromFilterPosition(position, profile.ActiveProfile);
-
-            await responseHandler.SendObject(HttpContext, filter);
-        }
-
         [Route(HttpVerbs.Put, "/filter")]
         public async Task SetFilter()
         {
@@ -88,10 +77,10 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
         public async Task AddFilter([JsonData] FilterData filter)
         {
             Validator.ValidateObject(filter, new ValidationContext(filter));
-            // In the FilterData object, the position is not used, everything else is optional
+            // In the FilterData object, the position is not used, everything else is optional except the name
             var filterPosition = profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count;
             FilterInfo filterInfo = new FilterInfo(
-                string.IsNullOrEmpty(filter.Name) ? $"Filter {filterPosition + 1}" : filter.Name,
+                filter.Name,
                 filter.FocusOffset ?? 0,
                 (short)filterPosition,
                 filter.AutoFocusExposureTime ?? -1,

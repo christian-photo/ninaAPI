@@ -31,7 +31,7 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
 
             CoreUtility.CopyProperties(info, this);
             CurrentFilter = info.SelectedFilter is not null ? FilterData.FromFilter(info.SelectedFilter) : null;
-            AvailableFilters = hasFilters ? profile.FilterWheelSettings.FilterWheelFilters.Select(f => FilterData.FromFilterShort(f))?.ToList() : null;
+            AvailableFilters = hasFilters ? profile.FilterWheelSettings.FilterWheelFilters.Select(f => FilterData.FromFilter(f))?.ToList() : null;
 
             SelectedFilter = null;
         }

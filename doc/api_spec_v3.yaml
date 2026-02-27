@@ -1383,14 +1383,14 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/connect:
-    get:
+    post:
       tags:
         - FilterWheel
       summary: Connect
-      description: Connect to Filterwheel
+      description: Connect to filterwheel
       parameters:
         - in: query
-          name: to
+          name: deviceId
           required: false
           description: The Id of the device that should be connected.
           schema:
@@ -1403,21 +1403,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
-                    example: Connected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                    example: Filterwheel connected
+                required:
+                  - Message
         default:
           description: Request could not be carried out
           content:
@@ -1426,11 +1416,11 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/disconnect:
-    get:
+    post:
       tags:
         - FilterWheel
       summary: Disconnect
-      description: Disconnect the filterwheel
+      description: This endpoint disconnects the filterwheel.
       responses:
         "200":
           description: Success
@@ -1439,21 +1429,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
-                    example: Disconnected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                    example: Filterwheel disconnected
+                required:
+                  - Message
         default:
           description: Request could not be carried out
           content:
@@ -1482,7 +1462,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/rescan:
-    get:
+    post:
       tags:
         - FilterWheel
       summary: Rescan Devices
@@ -1501,16 +1481,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/filterwheel/change-filter:
-    get:
+  /equipment/filterwheel/filter:
+    put:
       tags:
         - FilterWheel
       summary: Change Filter
-      description: Change Filter
+      description: Change the active filter in the filterwheel
       parameters:
         - in: query
-          name: filterId
-          description: The filter to change to.
+          name: position
+          description: The position of the target filter in the filterwheel
           required: true
           schema:
             type: integer
@@ -1520,64 +1500,51 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Filter changed
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Filterwheel not connected / Filter not available
+          description: Process conflict
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Filterwheel not connected
-                      - Filter not available
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
-  /equipment/filterwheel/filter-info:
-    get:
+    post:
       tags:
         - FilterWheel
-      summary: Filter Information
-      description: Get Filterwheel Filter
+      summary: Create Filter
+      description: Create a new filter in the filterwheel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFilterBody"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomFilterDataFull"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - FilterWheel
+      summary: Remove Filter
+      description: Remove a filter from the filterwheel
       parameters:
         - in: query
-          name: filterId
-          description: The filter to get.
+          name: position
+          description: The filter to delete.
           required: true
           schema:
             type: integer
@@ -1587,31 +1554,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FilterInfo"
-        "409":
-          description: Error
-          content:
-            application/json:
-              schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Filterwheel not connected
-                      - Filter not available
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                    example: Filter removed
+                required:
+                  - Message
         default:
           description: Request could not be carried out
           content:
@@ -7475,46 +7424,116 @@ components:
               items:
                 type: string
             SelectedFilter:
-              type: object
-              properties:
-                Name:
-                  type: string
-                Id:
-                  type: integer
+              $ref: "#/components/schemas/CustomFilterDataFull"
+              description: Currently selected filter
             AvailableFilters:
               type: array
               items:
-                type: object
-                properties:
-                  Name:
-                    type: string
-                  Id:
-                    type: integer
-                required:
-                  - Name
-                  - Id
+                $ref: "#/components/schemas/CustomFilterDataFull"
           required:
             - Connected
-            - Name
-            - DisplayName
-            - Description
-            - DriverInfo
-            - DriverVersion
-            - DeviceId
-        Error:
+            - IsMoving
+
+    CustomFilterDataFull:
+      type: object
+      properties:
+        Name:
           type: string
-        StatusCode:
+          description: Name of the filter
+        FocusOffset:
           type: integer
-        Success:
+          description: Focus offset in steps
+        Position:
+          type: integer
+          description: Position of the filter in the filterwheel
+        AutoFocusExposureTime:
+          type: integer
+          description: Exposure time for autofocus
+        AutoFocusFilter:
           type: boolean
-        Type:
-          type: string
+          description: Whether the filter is used for autofocus
+        AutoFocusBinning:
+          type: object
+          properties:
+            Name:
+              type: string
+              example: 2x2
+            X:
+              type: integer
+              example: 2
+            Y:
+              type: integer
+              example: 2
+          required:
+            - X
+            - Y
+        AutoFocusGain:
+          type: integer
+          description: Gain for autofocus
+        AutoFocusOffset:
+          type: integer
+          description: Offset for autofocus
       required:
-        - Response
-        - Error
-        - StatusCode
-        - Success
-        - Type
+        - Name
+        - FocusOffset
+        - Position
+        - AutoFocusExposureTime
+        - AutoFocusFilter
+        - AutoFocusBinning
+        - AutoFocusGain
+        - AutoFocusOffset
+
+    CustomFilterDataShort:
+      type: object
+      properties:
+        Name:
+          type: string
+          description: Name of the filter
+        Position:
+          type: integer
+          description: Position of the filter in the filterwheel
+      required:
+        - Name
+        - Position
+
+    CreateFilterBody:
+      type: object
+      properties:
+        Name:
+          type: string
+          description: Name of the filter
+        FocusOffset:
+          type: integer
+          description: Focus offset in steps. The default value is 0.
+        AutoFocusExposureTime:
+          type: integer
+          description: Exposure time for autofocus
+        AutoFocusFilter:
+          type: boolean
+          description: Whether the filter is used for autofocus
+        AutoFocusBinning:
+          type: object
+          properties:
+            Name:
+              type: string
+              example: 2x2
+            X:
+              type: integer
+              example: 2
+            Y:
+              type: integer
+              example: 2
+          required:
+            - X
+            - Y
+        AutoFocusGain:
+          type: integer
+          description: Gain for autofocus
+        AutoFocusOffset:
+          type: integer
+          description: Offset for autofocus
+      required:
+        - Name
 
     FilterInfo:
       type: object
