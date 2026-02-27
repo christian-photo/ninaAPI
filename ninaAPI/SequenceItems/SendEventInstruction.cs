@@ -33,14 +33,14 @@ namespace ninaAPI.SequenceItems
     [ExportMetadata("Category", "Advanced API")]
     [Export(typeof(ISequenceItem))]
     [JsonObject(MemberSerialization.OptIn)]
-    public class SendMessageInstruction : SequenceItem, IValidatable
+    public class SendEventInstruction : SequenceItem, IValidatable
     {
         [ImportingConstructor]
-        public SendMessageInstruction()
+        public SendEventInstruction()
         {
         }
 
-        private SendMessageInstruction(SendMessageInstruction cloneMe) : this()
+        private SendEventInstruction(SendEventInstruction cloneMe) : this()
         {
             CopyMetaData(cloneMe);
         }
@@ -91,7 +91,7 @@ namespace ninaAPI.SequenceItems
 
         public override object Clone()
         {
-            return new SendMessageInstruction(this)
+            return new SendEventInstruction(this)
             {
                 MessageDefinition = MessageDefinition
             };

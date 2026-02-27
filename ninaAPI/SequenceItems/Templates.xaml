@@ -7,7 +7,7 @@
     xmlns:mini="clr-namespace:NINA.View.Sequencer.MiniSequencer;assembly=NINA.Sequencer"
     xmlns:nina="clr-namespace:NINA.View.Sequencer;assembly=NINA.Sequencer">
 
-    <DataTemplate DataType="{x:Type local:SendMessageInstruction}">
+    <DataTemplate DataType="{x:Type local:SendEventInstruction}">
         <nina:SequenceBlockView DataContext="{Binding}">
             <nina:SequenceBlockView.SequenceItemContent>
                 <StackPanel Orientation="Horizontal">
@@ -20,7 +20,7 @@
         </nina:SequenceBlockView>
     </DataTemplate>
 
-    <DataTemplate x:Key="ninaAPI.SequenceItems.SendMessageInstruction_Mini">
+    <DataTemplate x:Key="ninaAPI.SequenceItems.SendEventInstruction_Mini">
         <mini:MiniSequenceItem>
             <mini:MiniSequenceItem.SequenceItemContent>
                 <StackPanel Orientation="Horizontal">
