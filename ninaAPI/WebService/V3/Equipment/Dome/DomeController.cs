@@ -11,17 +11,20 @@
 
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using NINA.Core.Enum;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Dome;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.WebService.V3.Model;
 using Swan;
 
 namespace ninaAPI.WebService.V3.Equipment.Dome
@@ -51,7 +54,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, info);
         }
 
-        [Route(HttpVerbs.Post, "/open-shutter")]
+        [Route(HttpVerbs.Post, "/shutter/open")]
         public async Task DomeOpenShutter()
         {
             if (!dome.GetInfo().Connected)
@@ -74,7 +77,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/close-shutter")]
+        [Route(HttpVerbs.Post, "/shutter/close")]
         public async Task DomeCloseShutter()
         {
             if (!dome.GetInfo().Connected)
@@ -106,6 +109,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             }
             else if (!dome.GetInfo().Slewing)
             {
+                // TODO: Check if this conflicts with shutter open/close
                 throw new HttpException(HttpStatusCode.Conflict, "Dome is not slewing");
             }
 
@@ -116,9 +120,9 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
         }
 
         [Route(HttpVerbs.Post, "/set-follow")]
-        public async Task DomeSetFollow()
+        public async Task DomeSetFollow([JsonData] DomeFollowBody body)
         {
-            QueryParameter<bool> enabledParameter = new QueryParameter<bool>("enabled", false, true);
+            Validator.ValidateObject(body, new ValidationContext(body));
 
             if (!dome.GetInfo().Connected)
             {
@@ -129,9 +133,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
                 throw new HttpException(HttpStatusCode.Conflict, "Dome driver cannot follow");
             }
 
-            bool enabled = enabledParameter.Get(HttpContext);
-
-            if (enabled)
+            if (body.ShouldFollow)
             {
                 await dome.EnableFollowing(System.Threading.CancellationToken.None);
             }
@@ -144,13 +146,13 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
         }
 
         [Route(HttpVerbs.Post, "/sync")]
-        public async Task DomeSync()
+        public async Task DomeSync([JsonData] DomeSyncBody body)
         {
             if (!dome.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Dome);
             }
-            else if (!mount.GetInfo().Connected)
+            else if (!mount.GetInfo().Connected && (body?.Coordinates == null || body?.SideOfPier == null))
             {
                 throw CommonErrors.DeviceNotConnected(Device.Mount);
             }
@@ -159,20 +161,24 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
                 throw new HttpException(HttpStatusCode.Conflict, "Dome is currently slewing");
             }
 
-            bool success = await dome.SyncToScopeCoordinates(mount.GetInfo().Coordinates, mount.GetInfo().SideOfPier, System.Threading.CancellationToken.None);
+            bool success = await dome.SyncToScopeCoordinates(
+                body?.Coordinates?.ToCoordinates() ?? mount.GetInfo().Coordinates,
+                body?.SideOfPier ?? mount.GetInfo().SideOfPier,
+                System.Threading.CancellationToken.None
+            );
 
             if (!success)
             {
                 throw new HttpException(HttpStatusCode.InternalServerError, "Dome sync failed");
             }
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Dome synced with mount"));
+            await responseHandler.SendObject(HttpContext, new StringResponse("Dome synced"));
         }
 
         [Route(HttpVerbs.Post, "/slew")]
-        public async Task DomeSlew()
+        public async Task DomeSlew([JsonData] DomeSlewBody body)
         {
-            QueryParameter<double> azimuthParameter = new QueryParameter<double>("azimuth", double.NaN, true, (azimuth) => azimuth.IsBetween(0, 360));
+            Validator.ValidateObject(body, new ValidationContext(body));
 
             if (!dome.GetInfo().Connected)
             {
@@ -183,10 +189,8 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
                 throw new HttpException(HttpStatusCode.Conflict, "Dome is currently slewing");
             }
 
-            double azimuth = azimuthParameter.Get(HttpContext);
-
             Guid processId = processMediator.AddProcess(
-                async (token) => await dome.SlewToAzimuth(azimuth, token),
+                async (token) => await dome.SlewToAzimuth(body.Azimuth, token),
                 ApiProcessType.DomeSlew
             );
             var result = processMediator.Start(processId);
@@ -196,7 +200,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Patch, "/set-park")]
+        [Route(HttpVerbs.Patch, "/park")]
         public async Task DomeSetPark()
         {
             if (!dome.GetInfo().Connected)
@@ -245,7 +249,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/find-home")]
+        [Route(HttpVerbs.Post, "/home")]
         public async Task DomeFindHome()
         {
             if (!dome.GetInfo().Connected)
@@ -279,5 +283,24 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
 
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
+    }
+
+    public class DomeFollowBody
+    {
+        [Required]
+        public bool ShouldFollow { get; set; }
+    }
+
+    public class DomeSyncBody
+    {
+        public HttpCoordinates Coordinates { get; set; }
+        public PierSide SideOfPier { get; set; }
+    }
+
+    public class DomeSlewBody
+    {
+        [Required]
+        [Range(0, 360)]
+        public double Azimuth { get; set; }
     }
 }

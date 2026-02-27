@@ -292,7 +292,7 @@ paths:
       tags:
         - Camera
       summary: Information
-      description: This endpoint returns relevant information about the camera.
+      description: This endpoint returns information about the camera.
       responses:
         "200":
           description: Camera Info
@@ -1001,7 +1001,7 @@ paths:
       tags:
         - Dome
       summary: Information
-      description: Get Dome information
+      description: This endpoint returns information about the dome.
       responses:
         "200":
           description: Success
@@ -1017,14 +1017,14 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/dome/connect:
-    get:
+    post:
       tags:
         - Dome
       summary: Connect
       description: Connect to Dome
       parameters:
         - in: query
-          name: to
+          name: deviceId
           required: false
           description: The Id of the device that should be connected.
           schema:
@@ -1037,21 +1037,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
-                    example: Connected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                    example: Dome connected
+                required:
+                  - Message
         default:
           description: Request could not be carried out
           content:
@@ -1060,11 +1050,11 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/dome/disconnect:
-    get:
+    post:
       tags:
         - Dome
       summary: Disconnect
-      description: Disconnect the Dome
+      description: This endpoint disconnects the dome.
       responses:
         "200":
           description: Success
@@ -1073,21 +1063,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
-                    example: Disconnected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                    example: Dome disconnected
+                required:
+                  - Message
         default:
           description: Request could not be carried out
           content:
@@ -1116,10 +1096,10 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/dome/rescan:
-    get:
+    post:
       tags:
         - Dome
-      summary: Rescan Devices
+      summary: Rescan for domes
       description: Rescans for new devices, and returns a list of all available devices
       responses:
         "200":
@@ -1135,59 +1115,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/dome/open:
-    get:
+  /equipment/dome/shutter/open:
+    post:
       tags:
         - Dome
       summary: Open Shutter
-      description: Open Dome Shutter
+      description: Open Dome Shutter. This will verify that the dome is connected and the shutter is not already open or opening.
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Shutter opening
-                      - Shutter already open
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Dome not connected
+          description: Process conflict
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Dome not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -1195,59 +1141,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/dome/close:
-    get:
+  /equipment/dome/shutter/close:
+    post:
       tags:
         - Dome
       summary: Close Shutter
-      description: Close Dome Shutter
+      description: Close Dome Shutter. This will verify that the dome is connected and the shutter is not already closed or closing.
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Shutter closing
-                      - Shutter already closed
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Dome not connected
+          description: Process conflict
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Dome not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -1255,12 +1167,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/dome/stop:
-    get:
+  /equipment/dome/stop-movement:
+    post:
       tags:
         - Dome
       summary: Stop Dome Movement
-      description: Stop Dome movement.
+      description: Stops any Dome movement, even if it was not started by the api.
       responses:
         "200":
           description: Success
@@ -1269,43 +1181,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
                     example: Movement stopped
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Dome not connected
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Dome not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                required:
+                  - Message
         default:
           description: Request could not be carried out
           content:
@@ -1314,17 +1194,16 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/dome/set-follow:
-    get:
+    post:
       tags:
         - Dome
-      summary: Set Dome Follow
+      summary: Set Dome follow
       description: Start or stop the dome to follow the telescope
-      parameters:
-        - in: query
-          name: enabled
-          description: Enable or disable dome follow
-          schema:
-            type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DomeFollowBody"
       responses:
         "200":
           description: Success
@@ -1333,48 +1212,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
-                    enum:
-                      - Following enabled
-                      - Following disabled
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Dome not connected
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Dome not connected
-                      - Dome shutter not open
-                      - Mount not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                    example: Dome follower Updated
+                required:
+                  - Message
         default:
           description: Request could not be carried out
           content:
@@ -1383,11 +1225,16 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/dome/sync:
-    get:
+    post:
       tags:
         - Dome
       summary: Sync Dome To Telescope
-      description: Sync dome to telescope coordinates
+      description: Sync dome to provided coordinates or the telescope coordinates if none are provided. Checks if the dome is connected, not slewing and (if no coordinates are provided) if the telescope is connected
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DomeSyncBody"
       responses:
         "200":
           description: Success
@@ -1396,43 +1243,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
-                    example: Dome Sync Started
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Dome not connected
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Dome not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                    example: Dome synced
+                required:
+                  - Message
         default:
           description: Request could not be carried out
           content:
@@ -1441,72 +1256,29 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/dome/slew:
-    get:
+    post:
       tags:
         - Dome
       summary: Slew
       description: Slew dome to specified azimuth
-      parameters:
-        - in: query
-          name: azimuth
-          description: Azimuth in degrees
-          schema:
-            type: number
-            format: float
-        - in: query
-          name: waitToFinish
-          description: Wait until slew is finished
-          schema:
-            type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DomeSlewBody"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Dome Slew Started
-                      - Dome Slew finished
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Dome not connected / parked
+          description: Process conflict
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Dome not connected
-                      - Dome is parked
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -1514,8 +1286,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/dome/set-park-position:
-    get:
+  /equipment/dome/park:
+    patch:
       tags:
         - Dome
       summary: Set Park Position
@@ -1528,105 +1300,35 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Message:
                     type: string
                     example: Park position set
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Dome not connected / parked
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Dome not connected
-                      - Dome can not set park position
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                required:
+                  - Message
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
-  /equipment/dome/park:
-    get:
+    post:
       tags:
         - Dome
       summary: Park
-      description: Parks the dome
+      description: Parks the dome. Checks that the dome is not parked or slewing
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Parking
-                      - Dome already parked
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Dome not connected
+                $ref: "#/components/schemas/ProcessStart200"
+        "409":
+          description: Process conflict
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Dome not connected
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -1639,54 +1341,20 @@ paths:
       tags:
         - Dome
       summary: Home
-      description: Homes the dome
+      description: Moves the dome to its home position. Checks that the dome is not parked or slewing
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Homing
-                      - Dome already homed
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Dome not connected
+                $ref: "#/components/schemas/ProcessStart200"
+        "409":
+          description: Process conflict
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Dome not connected
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -7514,6 +7182,7 @@ components:
               type: boolean
             PixelSize:
               type: number
+              description: Pixel size in microns
             Battery:
               type: integer
             GainMin:
@@ -7560,6 +7229,7 @@ components:
               type: boolean
             ExposureEndTime:
               type: string
+              format: datetime
             LastDownloadTime:
               type: number
             SensorType:
@@ -7683,77 +7353,100 @@ components:
     DomeInfo:
       type: object
       properties:
-        Response:
-          type: object
-          properties:
-            ShutterStatus:
-              type: string
-              enum:
-                - ShutterNone
-                - ShutterOpen
-                - ShutterClosed
-                - ShutterOpening
-                - ShutterClosing
-                - ShutterError
-            DriverCanFollow:
-              type: boolean
-            CanSetShutter:
-              type: boolean
-            CanSetPark:
-              type: boolean
-            CanSetAzimuth:
-              type: boolean
-            CanSyncAzimuth:
-              type: boolean
-            CanPark:
-              type: boolean
-            CanFindHome:
-              type: boolean
-            AtPark:
-              type: boolean
-            AtHome:
-              type: boolean
-            DriverFollowing:
-              type: boolean
-            Slewing:
-              type: boolean
-            Azimuth:
-              type: integer
-            SupportedActions:
-              type: array
-              items: {}
-            Connected:
-              type: boolean
-            Name:
-              type: string
-            DisplayName:
-              type: string
-            Description:
-              type: string
-            DriverInfo:
-              type: string
-            DriverVersion:
-              type: string
-            DeviceId:
-              type: string
-            IsFollowing:
-              type: boolean
-            IsSynchronized:
-              type: boolean
-        Error:
+        ShutterStatus:
           type: string
-        StatusCode:
-          type: integer
-        Success:
+          description: Indicates the current state of the dome shutter
+          enum:
+            - ShutterNone
+            - ShutterOpen
+            - ShutterClosed
+            - ShutterOpening
+            - ShutterClosing
+            - ShutterError
+        DriverCanFollow:
           type: boolean
-        Type:
+        CanSetShutter:
+          type: boolean
+        CanSetPark:
+          type: boolean
+        CanSetAzimuth:
+          type: boolean
+        CanSyncAzimuth:
+          type: boolean
+        CanPark:
+          type: boolean
+        CanFindHome:
+          type: boolean
+        AtPark:
+          type: boolean
+        AtHome:
+          type: boolean
+        DriverFollowing:
+          type: boolean
+        ApplicationFollowing:
+          type: boolean
+        Slewing:
+          type: boolean
+        FollowingType:
           type: string
+          description: Indicates the type of dome following
+        Azimuth:
+          type: number
+          format: double
+        Altitude:
+          type: number
+          format: double
+        AzimuthDMS:
+          type: string
+          description: The azimuth in a degree - minute - seconds format
+        AltitudeDMS:
+          type: string
+          description: The altitude in a degree - minute - seconds format
+        SupportedActions:
+          type: array
+          items:
+            type: string
+        Connected:
+          type: boolean
+        Name:
+          type: string
+        DisplayName:
+          type: string
+        Description:
+          type: string
+        DriverInfo:
+          type: string
+        DriverVersion:
+          type: string
+        DeviceId:
+          type: string
+        IsFollowing:
+          type: boolean
+        IsSynchronized:
+          type: boolean
       required:
-        - Response
-        - Error
-        - StatusCode
-        - Success
-        - Type
+        - IsFollowing
+        - IsSynchronized
+        - FollowingType
+        - AzimuthDMS
+        - AltitudeDMS
+        - ShutterStatus
+        - DriverCanFollow
+        - CanSetShutter
+        - CanSetPark
+        - CanSetAzimuth
+        - CanSyncAzimuth
+        - CanPark
+        - CanFindHome
+        - AtPark
+        - AtHome
+        - DriverFollowing
+        - ApplicationFollowing
+        - Slewing
+        - Azimuth
+        - Altitude
+        - SupportedActions
+        - Connected
 
     FWInfo:
       type: object
@@ -10182,6 +9875,36 @@ components:
         Height:
           type: integer
           description: The height of the image
+
+    DomeFollowBody:
+      type: object
+      properties:
+        ShouldFollow:
+          type: boolean
+          description: Whether the dome should follow the scope
+
+    DomeSyncBody:
+      type: object
+      properties:
+        Coordinates:
+          $ref: "#/components/schemas/HttpCoordinates"
+          description: The coordinates to sync to
+        SideOfPier:
+          type: string
+          enum:
+            - PierEast
+            - PierWest
+          description: The side of the pier to sync to
+
+    DomeSlewBody:
+      type: object
+      properties:
+        Azimuth:
+          description: Azimuth in degrees
+          type: number
+          minimum: 0
+          maximum: 360
+          format: double
 
     PlatesolveConfig:
       type: object
