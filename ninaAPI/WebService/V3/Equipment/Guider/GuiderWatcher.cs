@@ -34,7 +34,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
     {
         private readonly IGuiderMediator guider;
 
-        public static int GuideStepHistoryLength { get; set; } = 100;
+        public static int GuideStepHistoryLength { get; set; } = 500;
         public static ThreadSafeList<GuideStep> GuideStepHistory { get; } = new();
 
         public GuiderWatcher(EventHistoryManager history, IGuiderMediator guider) : base(history)

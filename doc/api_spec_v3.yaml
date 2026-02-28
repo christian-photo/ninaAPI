@@ -1901,12 +1901,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/guider/info:
+  /equipment/guider:
     get:
       tags:
         - Guider
       summary: Information
-      description: Get guider information
+      description: Get guider information. For guiding information either use the websocket stream or the /equipment/guider/guiding/graph endpoint
       responses:
         "200":
           description: Success
@@ -1929,7 +1929,7 @@ paths:
       description: Connect to Guider
       parameters:
         - in: query
-          name: to
+          name: deviceId
           required: false
           description: The Id of the device that should be connected.
           schema:
@@ -1940,23 +1940,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Connected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1976,23 +1960,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Disconnected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2021,7 +1989,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/guider/rescan:
-    get:
+    post:
       tags:
         - Guider
       summary: Rescan Devices
@@ -2040,64 +2008,30 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/guider/start:
-    get:
+  /equipment/guider/guiding/start:
+    post:
       tags:
         - Guider
       summary: Start Guiding
-      description: Start guiding
-      parameters:
-        - in: query
-          name: calibrate
-          description: Whether to force the guider to calibrate before start guiding
-          required: false
-          schema:
-            type: boolean
+      description: Start guiding, optionally with a forced calibration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuiderStartGuidingBody"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Guiding started
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Guider not connected
+          description: Process conflict
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Guider not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -2105,8 +2039,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/guider/stop:
-    get:
+  /equipment/guider/guiding/stop:
+    post:
       tags:
         - Guider
       summary: Stop Guiding
@@ -2117,45 +2051,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Guiding stopped
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Guider not connected
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Guider not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2163,8 +2059,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/guider/clear-calibration:
-    get:
+  /equipment/guider/guiding/calibration:
+    delete:
       tags:
         - Guider
       summary: Clear Calibration
@@ -2175,45 +2071,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Calibration cleared
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Guider not connected
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Guider not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2221,12 +2079,29 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/guider/graph:
+  /equipment/guider/guiding:
     get:
       tags:
         - Guider
       summary: Graph
-      description: Gets the last n guide steps needed to construct a graph, with n being the number of saved steps as configured on the graph in NINA
+      description: Gets the last n guide steps
+      parameters:
+        - in: query
+          name: page
+          required: false
+          description: The page to get
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: page-size
+          required: false
+          description: The page size. If set to -1 the first page (page 0) will contain all items
+          schema:
+            type: integer
+            minimum: -1
+            default: 20
       responses:
         "200":
           description: Success
@@ -2234,6 +2109,55 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GuideStepsHistory"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - Guider
+      summary: Set History Length
+      description: Sets the length of the guide history
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuidingHistoryLengthBody"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /equipment/guider/guiding/dither:
+    post:
+      tags:
+        - Guider
+      summary: Dither
+      description: Start a dither
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessStart200"
+        "409":
+          description: Process conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -7738,137 +7662,158 @@ components:
     GuiderInfo:
       type: object
       properties:
-        Response:
-          type: object
-          properties:
-            Connected:
-              type: boolean
-            Name:
-              type: string
-            DisplayName:
-              type: string
-            Description:
-              type: string
-            DriverInfo:
-              type: string
-            DriverVersion:
-              type: string
-            DeviceId:
-              type: string
-            CanClearCalibration:
-              type: boolean
-            CanSetShiftRate:
-              type: boolean
-            CanGetLockPosition:
-              type: boolean
-            SupportedActions:
-              type: array
-              items: {}
-            RMSError:
-              type: object
-              properties:
-                RA:
-                  type: object
-                  properties:
-                    Pixel:
-                      type: integer
-                    Arcseconds:
-                      type: integer
-                  required:
-                    - Pixel
-                    - Arcseconds
-                Dec:
-                  type: object
-                  properties:
-                    Pixel:
-                      type: integer
-                    Arcseconds:
-                      type: integer
-                  required:
-                    - Pixel
-                    - Arcseconds
-                Total:
-                  type: object
-                  properties:
-                    Pixel:
-                      type: integer
-                    Arcseconds:
-                      type: integer
-                  required:
-                    - Pixel
-                    - Arcseconds
-                PeakRA:
-                  type: object
-                  properties:
-                    Pixel:
-                      type: integer
-                    Arcseconds:
-                      type: integer
-                  required:
-                    - Pixel
-                    - Arcseconds
-                PeakDec:
-                  type: object
-                  properties:
-                    Pixel:
-                      type: integer
-                    Arcseconds:
-                      type: integer
-                  required:
-                    - Pixel
-                    - Arcseconds
-              required:
-                - RA
-                - Dec
-                - Total
-                - PeakRA
-                - PeakDec
-            PixelScale:
-              type: number
-            LastGuideStep:
-              type: object
-              properties:
-                RADistanceRaw:
-                  type: number
-                DECDistanceRaw:
-                  type: number
-                RADuration:
-                  type: number
-                DECDuration:
-                  type: number
-              required:
-                - RADistanceRaw
-                - DECDistanceRaw
-                - RADuration
-                - DECDuration
-            State:
-              type: string
-              enum:
-                - Looping
-                - LostLock
-                - Guiding
-                - Stopped
-                - Calibrating
-          required:
-            - Connected
-            - CanClearCalibration
-            - CanSetShiftRate
-            - CanGetLockPosition
-            - PixelScale
-        Error:
-          type: string
-        StatusCode:
-          type: integer
-        Success:
+        Connected:
           type: boolean
-        Type:
+        Name:
           type: string
+        DisplayName:
+          type: string
+        Description:
+          type: string
+        DriverInfo:
+          type: string
+        DriverVersion:
+          type: string
+        DeviceId:
+          type: string
+        CanClearCalibration:
+          type: boolean
+        CanSetShiftRate:
+          type: boolean
+        CanGetLockPosition:
+          type: boolean
+        SupportedActions:
+          type: array
+          items:
+            type: string
+        RMSError:
+          description: The RMS Error of all datapoints in the GuideStepHistory. The values depend on the value range selection for the guide charts
+          $ref: "#/components/schemas/RMSError"
+        PixelScale:
+          type: number
+        State:
+          type: string
+          enum:
+            - Looping
+            - LostLock
+            - Guiding
+            - Stopped
+            - Calibrating
       required:
-        - Response
-        - Error
-        - StatusCode
-        - Success
-        - Type
+        - Connected
+        - CanClearCalibration
+        - CanSetShiftRate
+        - CanGetLockPosition
+        - PixelScale
+
+    RMSUnit:
+      type: object
+      properties:
+        Pixel:
+          type: integer
+        Arcseconds:
+          type: integer
+      required:
+        - Pixel
+        - Arcseconds
+
+    RMSError:
+      type: object
+      properties:
+        RA:
+          $ref: "#/components/schemas/RMSUnit"
+        Dec:
+          $ref: "#/components/schemas/RMSUnit"
+        Total:
+          $ref: "#/components/schemas/RMSUnit"
+        PeakRA:
+          $ref: "#/components/schemas/RMSUnit"
+        PeakDec:
+          $ref: "#/components/schemas/RMSUnit"
+      required:
+        - RA
+        - Dec
+        - Total
+        - PeakRA
+        - PeakDec
+
+    RMS:
+      type: object
+      properties:
+        RA:
+          type: number
+        Dec:
+          type: number
+        Total:
+          type: number
+        RAText:
+          type: string
+        DecText:
+          type: string
+        TotalText:
+          type: string
+        PeakRAText:
+          type: string
+        PeakDecText:
+          type: string
+        Scale:
+          type: number
+        PeakRA:
+          type: number
+        PeakDec:
+          type: number
+        DataPoints:
+          type: integer
+      required:
+        - RA
+        - Dec
+        - Total
+        - PeakRA
+        - PeakDec
+        - Scale
+        - RAText
+        - DecText
+        - TotalText
+        - PeakRAText
+        - PeakDecText
+
+    GuiderStartGuidingBody:
+      type: object
+      properties:
+        ForceCalibration:
+          type: boolean
+      required:
+        - ForceCalibration
+
+    GuideStep:
+      type: object
+      properties:
+        RADistanceRaw:
+          type: number
+        DECDistanceRaw:
+          type: number
+        RADuration:
+          type: number
+        DECDuration:
+          type: number
+      required:
+        - RADistanceRaw
+        - DECDistanceRaw
+        - RADuration
+        - DECDuration
+
+    GuideStepsHistory:
+      type: array
+      items:
+        $ref: "#/components/schemas/GuideStep"
+
+    GuidingHistoryLengthBody:
+      type: object
+      properties:
+        Length:
+          type: integer
+      required:
+        - Length
 
     MountInfo:
       type: object
@@ -9489,89 +9434,6 @@ components:
           - DriverVersion
           - SupportedActions
           - HasSetupDialog
-
-    GuideStepsHistory:
-      type: object
-      properties:
-        Response:
-          type: object
-          properties:
-            RMS:
-              type: object
-              properties:
-                RA:
-                  type: number
-                Dec:
-                  type: number
-                Total:
-                  type: number
-                RAText:
-                  type: string
-                DecText:
-                  type: string
-                TotalText:
-                  type: string
-                PeakRAText:
-                  type: string
-                PeakDecText:
-                  type: string
-                Scale:
-                  type: number
-                PeakRA:
-                  type: number
-                PeakDec:
-                  type: number
-                DataPoints:
-                  type: integer
-            Interval:
-              type: integer
-            MaxY:
-              type: integer
-            MinY:
-              type: integer
-            MaxDurationY:
-              type: integer
-            MinDurationY:
-              type: integer
-            GuideSteps:
-              type: array
-              items:
-                type: object
-                properties:
-                  Id:
-                    type: integer
-                  IdOffsetLeft:
-                    type: number
-                  IdOffsetRight:
-                    type: number
-                  RADistanceRaw:
-                    type: number
-                  RADistanceRawDisplay:
-                    type: number
-                  RADuration:
-                    type: integer
-                  DECDistanceRaw:
-                    type: number
-                  DECDistanceRawDisplay:
-                    type: number
-                  DECDuration:
-                    type: integer
-                  Dither:
-                    type: string
-            HistorySize:
-              type: integer
-            PixelScale:
-              type: number
-            Scale:
-              type: integer
-        Error:
-          type: string
-        StatusCode:
-          type: integer
-        Success:
-          type: boolean
-        Type:
-          type: string
 
     CaptureConfig:
       type: object
