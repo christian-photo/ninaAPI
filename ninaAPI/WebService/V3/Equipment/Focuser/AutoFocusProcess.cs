@@ -11,13 +11,16 @@
 
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.ViewModel;
+using NINA.WPF.Base.Utility.AutoFocus;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using OxyPlot.Series;
 
 namespace ninaAPI.WebService.V3.Equipment.Focuser
 {
@@ -50,18 +53,18 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
                 {
                     Status = Status,
                     Duration = autoFocusVM.AutoFocusDuration,
-                    AcquiredPoints = autoFocusVM.FocusPoints,
+                    AcquiredPoints = autoFocusVM.FocusPoints.Select(x => new FocusPoint() { Position = x.X, Value = x.Y, Error = x.ErrorY }),
                     LastPoint = autoFocusVM.LastAutoFocusPoint,
-                    FinalPoint = autoFocusVM.FinalFocusPoint,
-                    GaussianFitting = autoFocusVM.GaussianFitting,
-                    HyperbolicFitting = autoFocusVM.HyperbolicFitting,
-                    TrendlineFitting = autoFocusVM.TrendlineFitting,
-                    QuadraticFitting = autoFocusVM.QuadraticFitting,
+                    FinalPoint = new FocusPoint() { Position = autoFocusVM.FinalFocusPoint.X, Value = autoFocusVM.FinalFocusPoint.Y, Error = double.NaN },
+                    // GaussianFitting = autoFocusVM.GaussianFitting,
+                    // HyperbolicFitting = autoFocusVM.HyperbolicFitting,
+                    // TrendlineFitting = autoFocusVM.TrendlineFitting,
+                    // QuadraticFitting = autoFocusVM.QuadraticFitting,
                 };
             }
             else
             {
-                progress = new StatusResponse(Status.ToString());
+                progress = new StatusResponse(Status);
             }
 
             return progress;

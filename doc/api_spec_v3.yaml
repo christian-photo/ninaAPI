@@ -131,39 +131,14 @@ paths:
                           - Finished
                     required:
                       - Status
-                  - type: object
-        "400":
-          description: Invalid process ID format
+                  - $ref: "#/components/schemas/AutoFocusProcessProgress"
+                  - $ref: "#/components/schemas/MeridianFlipProcessProgress"
+        default:
+          description: Request could not be carried out
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Error:
-                    type: string
-                    example: Bad Request
-                  Message:
-                    type: string
-                    example: ID could not be parsed
-                required:
-                  - Error
-                  - Message
-        "404":
-          description: Process not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Error:
-                    type: string
-                    example: Not Found
-                  Message:
-                    type: string
-                    example: Process not found
-                required:
-                  - Error
-                  - Message
+                $ref: "#/components/schemas/Error"
 
   /process/{id}/abort:
     post:
@@ -7450,6 +7425,49 @@ components:
         - BacklashCompensation
         - Duration
 
+    AutoFocusProcessProgress:
+      type: object
+      properties:
+        Status:
+          type: string
+          enum:
+            - Pending
+            - Running
+            - Finished
+        Duration:
+          type: string
+          format: time-span
+        AcquiredPoints:
+          type: array
+          items:
+            $ref: "#/components/schemas/FocusPoint"
+        LastPoint:
+          type: object
+          properties:
+            Focuspoint:
+              type: object
+              properties:
+                X:
+                  type: number
+                Y:
+                  type: number
+            Timestamp:
+              type: string
+              format: date-time
+            Temperature:
+              type: number
+            Filter:
+              type: string
+          required:
+            - Focuspoint
+            - Timestamp
+            - Temperature
+            - Filter
+        FinalPoint:
+          $ref: "#/components/schemas/FocusPoint"
+      required:
+        - Status
+
     FocusPoint:
       type: object
       properties:
@@ -8002,6 +8020,24 @@ components:
         - StatusCode
         - Success
         - Type
+
+    MeridianFlipProcessProgress:
+      type: object
+      properties:
+        Status:
+          type: string
+          enum:
+            - Pending
+            - Running
+            - Finished
+        FlipStatus:
+          $ref: "#/components/schemas/ApplicationStatus"
+        TotalSteps:
+          type: integer
+        CurrentStep:
+          $ref: "#/components/schemas/WorkflowStep"
+      required:
+        - Status
 
     RotatorInfo:
       type: object
@@ -9673,6 +9709,58 @@ components:
           description: The duration over which the camera should warm up. If not specified, the default duration as set in NINA will be used
       required:
         - Duration
+
+    ApplicationStatus:
+      type: object
+      properties:
+        Source:
+          type: string
+        Status:
+          type: string
+        Progress:
+          type: number
+        MaxProgress:
+          type: integer
+        ProgressType:
+          type: string
+          enum:
+            - Percent
+            - ValueOfMaxValue
+        Status2:
+          type: string
+        Progress2:
+          type: number
+        MaxProgress2:
+          type: integer
+        ProgressType2:
+          type: string
+          enum:
+            - Percent
+            - ValueOfMaxValue
+        Status3:
+          type: string
+        Progress3:
+          type: number
+        MaxProgress3:
+          type: integer
+        ProgressType3:
+          type: string
+          enum:
+            - Percent
+            - ValueOfMaxValue
+
+    WorkflowStep:
+      type: object
+      properties:
+        Id:
+          type: string
+          description: A unique identifier for the step
+        Title:
+          type: string
+          description: The title of the step
+        Finished:
+          type: boolean
+          description: Whether the step has finished
 
     Error:
       type: object

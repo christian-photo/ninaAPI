@@ -79,7 +79,7 @@ namespace ninaAPI.Utility.Http
         /// <returns></returns>
         public virtual object GetProgress()
         {
-            return new StatusResponse(Status.ToString());
+            return new StatusResponse(Status);
         }
 
         public ApiProcessStatus Status

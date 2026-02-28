@@ -206,9 +206,9 @@ namespace ninaAPI.Utility
         public string Message { get; set; } = message;
     }
 
-    public class StatusResponse(string status)
+    public class StatusResponse(ApiProcessStatus status)
     {
-        public string Status { get; set; } = status;
+        public ApiProcessStatus Status { get; set; } = status;
     }
 
     public class ResponseFactory
