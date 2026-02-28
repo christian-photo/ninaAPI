@@ -1663,7 +1663,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/focuser/info:
+  /equipment/focuser:
     get:
       tags:
         - Focuser
@@ -1684,14 +1684,14 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/focuser/connect:
-    get:
+    post:
       tags:
         - Focuser
       summary: Connect
       description: Connect to Focuser
       parameters:
         - in: query
-          name: to
+          name: deviceId
           required: false
           description: The Id of the device that should be connected.
           schema:
@@ -1702,23 +1702,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Connected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1727,7 +1711,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/focuser/disconnect:
-    get:
+    post:
       tags:
         - Focuser
       summary: Disconnect
@@ -1738,23 +1722,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Disconnected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1783,7 +1751,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/focuser/rescan:
-    get:
+    post:
       tags:
         - Focuser
       summary: Rescan Devices
@@ -1803,41 +1771,54 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/focuser/move:
-    get:
+    post:
       tags:
         - Focuser
       summary: Move
-      description: Move the focuser
-      parameters:
-        - in: query
-          name: position
-          schema:
-            type: integer
-          required: true
-          description: Position to move to
+      description: Move the focuser to a specified position
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FocuserMoveBody"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Move started
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
+        "409":
+          description: Process conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessStart409"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /equipment/focuser/temp-comp:
+    patch:
+      tags:
+        - Focuser
+      summary: Temperature Compensation
+      description: Enables or disables temperature compensation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FocuserTempCompBody"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -1846,65 +1827,24 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/focuser/auto-focus:
-    get:
+    post:
       tags:
         - Focuser
       summary: Auto Focus
-      description: Start an AF
-      parameters:
-        - in: query
-          name: cancel
-          schema:
-            type: boolean
-          required: false
-          description: Can be used to cancel a running autofocus (If it was started using the api)
+      description: Start an AF. When getting the progress of the process, the response will contain additional autofocus information
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Autofocus started
-                      - Autofocus canceled
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Focuser not connected
+          description: Process conflict
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Focuser not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -1912,19 +1852,48 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/focuser/last-af:
+  /equipment/focuser/auto-focus/list-reports:
     get:
       tags:
         - Focuser
-      summary: Get Last Autofocus
-      description: Get last autofocus
+      summary: List Autofocus Reports
+      description: List all autofocus reports
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FocuserLastAF"
+                type: array
+                items:
+                  $ref: "#/components/schemas/AutoFocusReportListEntry"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /equipment/focuser/auto-focus/get-report:
+    get:
+      tags:
+        - Focuser
+      summary: Get Autofocus Report
+      description: Get an autofocus report based on the filename
+      parameters:
+        - in: query
+          name: filename
+          required: true
+          description: The filename of the report to get
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutoFocusReport"
         default:
           description: Request could not be carried out
           content:
@@ -7371,70 +7340,205 @@ components:
     FocuserInfo:
       type: object
       properties:
-        Response:
-          type: object
-          properties:
-            Position:
-              type: integer
-            StepSize:
-              type: integer
-            Temperature:
-              type: number
-            IsMoving:
-              type: boolean
-            IsSettling:
-              type: boolean
-            TempComp:
-              type: boolean
-            TempCompAvailable:
-              type: boolean
-            SupportedActions:
-              type: array
-              items: {}
-            Connected:
-              type: boolean
-            Name:
-              type: string
-            DisplayName:
-              type: string
-            Description:
-              type: string
-            DriverInfo:
-              type: string
-            DriverVersion:
-              type: string
-            DeviceId:
-              type: string
-          required:
-            - Position
-            - StepSize
-            - Temperature
-            - IsMoving
-            - IsSettling
-            - TempComp
-            - TempCompAvailable
-            - SupportedActions
-            - Connected
-            - Name
-            - DisplayName
-            - Description
-            - DriverInfo
-            - DriverVersion
-            - DeviceId
-        Error:
-          type: string
-        StatusCode:
+        Position:
           type: integer
-        Success:
+        StepSize:
+          type: integer
+        Temperature:
+          type: number
+        IsMoving:
           type: boolean
-        Type:
+        IsSettling:
+          type: boolean
+        TempComp:
+          type: boolean
+        TempCompAvailable:
+          type: boolean
+        SupportedActions:
+          type: array
+          items:
+            type: string
+        Connected:
+          type: boolean
+        Name:
+          type: string
+        DisplayName:
+          type: string
+        Description:
+          type: string
+        DriverInfo:
+          type: string
+        DriverVersion:
+          type: string
+        DeviceId:
           type: string
       required:
-        - Response
+        - Position
+        - StepSize
+        - Temperature
+        - IsMoving
+        - IsSettling
+        - TempComp
+        - TempCompAvailable
+        - Connected
+
+    FocuserMoveBody:
+      type: object
+      properties:
+        Position:
+          type: integer
+      required:
+        - Position
+
+    FocuserTempCompBody:
+      type: object
+      properties:
+        CompensationEnabled:
+          type: boolean
+      required:
+        - CompensationEnabled
+
+    AutoFocusReportListEntry:
+      type: object
+      properties:
+        Filename:
+          type: string
+        Date:
+          type: string
+          format: date-time
+      required:
+        - Filename
+        - Date
+
+    AutoFocusReport:
+      type: object
+      properties:
+        Version:
+          type: integer
+        Filter:
+          type: string
+        AutoFocuserName:
+          type: string
+        StarDetectorName:
+          type: string
+        Timestamp:
+          type: string
+          format: date-time
+        Temperature:
+          type: number
+        Method:
+          type: string
+        Fitting:
+          type: string
+        InitialFocusPoint:
+          $ref: "#/components/schemas/FocusPoint"
+        CalculatedFocusPoint:
+          $ref: "#/components/schemas/FocusPoint"
+        PreviousFocusPoint:
+          $ref: "#/components/schemas/FocusPoint"
+        MeasurePoints:
+          type: array
+          items:
+            $ref: "#/components/schemas/FocusPoint"
+        Intersections:
+          type: object
+          properties:
+            TrendLineIntersection:
+              $ref: "#/components/schemas/FocusPoint"
+            GaussianMaximum:
+              $ref: "#/components/schemas/FocusPoint"
+            HyperbolicMinimum:
+              $ref: "#/components/schemas/FocusPoint"
+            QuadraticMinimum:
+              $ref: "#/components/schemas/FocusPoint"
+          required:
+            - TrendLineIntersection
+            - GaussianMaximum
+            - HyperbolicMinimum
+            - QuadraticMinimum
+        Fittings:
+          type: object
+          properties:
+            Gaussian:
+              type: string
+            Hyperbolic:
+              type: string
+            Quadratic:
+              type: string
+            LeftTrend:
+              type: string
+            RightTrend:
+              type: string
+          required:
+            - Gaussian
+            - Hyperbolic
+            - Quadratic
+            - LeftTrend
+            - RightTrend
+        RSquares:
+          type: object
+          properties:
+            Hyperbolic:
+              type: number
+            Quadratic:
+              type: number
+            LeftTrend:
+              type: number
+            RightTrend:
+              type: number
+          required:
+            - Hyperbolic
+            - Quadratic
+            - LeftTrend
+            - RightTrend
+        BacklashCompensation:
+          type: object
+          properties:
+            BacklashCompensationModel:
+              type: string
+            BacklashIN:
+              type: integer
+            BacklashOUT:
+              type: integer
+          required:
+            - BacklashCompensationModel
+            - BacklashIN
+            - BacklashOUT
+        Duration:
+          type: string
+          format: time-span
+      required:
+        - Version
+        - Filter
+        - AutoFocuserName
+        - StarDetectorName
+        - Timestamp
+        - Temperature
+        - Method
+        - Fitting
+        - InitialFocusPoint
+        - CalculatedFocusPoint
+        - PreviousFocusPoint
+        - MeasurePoints
+        - Intersections
+        - Fittings
+        - RSquares
+        - BacklashCompensation
+        - Duration
+
+    FocusPoint:
+      type: object
+      properties:
+        Position:
+          type: number
+        Value:
+          type: number
+        Error:
+          type: number
+      required:
+        - Position
+        - Value
         - Error
-        - StatusCode
-        - Success
-        - Type
 
     FocuserLastAF:
       type: object

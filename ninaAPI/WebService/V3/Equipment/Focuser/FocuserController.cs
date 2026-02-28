@@ -11,6 +11,7 @@
 
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -23,6 +24,7 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.ViewModel;
+using NINA.WPF.Base.Utility.AutoFocus;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 
@@ -56,15 +58,15 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
         [Route(HttpVerbs.Get, "/")]
         public async Task FocuserInfo()
         {
-            var info = focuser.GetInfo();
-
-            await responseHandler.SendObject(HttpContext, info);
+            await responseHandler.SendObject(HttpContext, new FocuserInfoResponse(focuser));
         }
 
 
         [Route(HttpVerbs.Post, "/move")]
-        public async Task FocuserMove([QueryField] int position)
+        public async Task FocuserMove([JsonData] FocuserMoveBody body)
         {
+            Validator.ValidateObject(body, new ValidationContext(body));
+
             if (!focuser.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Focuser);
@@ -73,7 +75,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             {
                 throw new HttpException(HttpStatusCode.Conflict, "Focuser is moving");
             }
-            var processId = processMediator.AddProcess(async (token) => await focuser.MoveFocuser(position, token), ApiProcessType.FocuserMove);
+            var processId = processMediator.AddProcess(async (token) => await focuser.MoveFocuser(body.Position, token), ApiProcessType.FocuserMove);
             var result = processMediator.Start(processId);
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
@@ -82,8 +84,10 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
         }
 
         [Route(HttpVerbs.Patch, "/temp-comp")]
-        public async Task FocuserTemperatureCompensation([QueryField] bool compensation)
+        public async Task FocuserTemperatureCompensation([JsonData] FocuserTempCompBody body)
         {
+            Validator.ValidateObject(body, new ValidationContext(body));
+
             if (!focuser.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Focuser);
@@ -93,7 +97,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
                 throw new HttpException(HttpStatusCode.Conflict, "Temperature compensation not available");
             }
 
-            focuser.ToggleTempComp(compensation);
+            focuser.ToggleTempComp(body.CompensationEnabled);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Temperature compensation set"));
         }
@@ -154,5 +158,17 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             string json = await Retry.Do(() => File.ReadAllText(file), TimeSpan.FromMilliseconds(50), 5);
             await responseHandler.SendRaw(HttpContext, json);
         }
+    }
+
+    public class FocuserMoveBody
+    {
+        [Required]
+        public int Position { get; set; }
+    }
+
+    public class FocuserTempCompBody
+    {
+        [Required]
+        public bool CompensationEnabled { get; set; }
     }
 }
