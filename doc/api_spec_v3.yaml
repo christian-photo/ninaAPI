@@ -2540,7 +2540,7 @@ paths:
       tags:
         - Rotator
       summary: Connect
-      description: Connect to mount
+      description: Connect to rotator
       parameters:
         - in: query
           name: deviceId
@@ -2692,7 +2692,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/safetymonitor/info:
+  /equipment/safet:
     get:
       tags:
         - Safety Monitor
@@ -2712,15 +2712,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/safetymonitor/connect:
-    get:
+  /equipment/safety/connect:
+    post:
       tags:
         - Safety Monitor
       summary: Connect
       description: Connect to safety monitor
       parameters:
         - in: query
-          name: to
+          name: deviceId
           required: false
           description: The Id of the device that should be connected.
           schema:
@@ -2731,23 +2731,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Connected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2755,8 +2739,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/safetymonitor/disconnect:
-    get:
+  /equipment/safety/disconnect:
+    post:
       tags:
         - Safety Monitor
       summary: Disconnect
@@ -2767,23 +2751,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Disconnected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2791,7 +2759,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/safetymonitor/list-devices:
+  /equipment/safety/list-devices:
     get:
       tags:
         - Safety Monitor
@@ -2811,8 +2779,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/safetymonitor/rescan:
-    get:
+  /equipment/safety/rescan:
+    post:
       tags:
         - Safety Monitor
       summary: Rescan Devices
@@ -7760,7 +7728,8 @@ components:
               type: boolean
             SupportedActions:
               type: array
-              items: {}
+              items:
+                type: string
             Connected:
               type: boolean
             Name:
@@ -7777,14 +7746,7 @@ components:
               type: string
           required:
             - IsSafe
-            - SupportedActions
             - Connected
-            - Name
-            - DisplayName
-            - Description
-            - DriverInfo
-            - DriverVersion
-            - DeviceId
         Error:
           type: string
         StatusCode:
