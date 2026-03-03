@@ -130,6 +130,7 @@ namespace ninaAPI.WebService.V3
 
             cameraController = new CameraController(
                 AdvancedAPI.Controls.Camera,
+                AdvancedAPI.Controls.Mount,
                 AdvancedAPI.Controls.Profile,
                 AdvancedAPI.Controls.Imaging,
                 AdvancedAPI.Controls.ImageSaveMediator,
@@ -249,6 +250,7 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.Profile,
                 AdvancedAPI.Controls.PlateSolver,
                 AdvancedAPI.Controls.Camera,
+                AdvancedAPI.Controls.Mount,
                 AdvancedAPI.Controls.StatusMediator,
                 responseHandler
             );
@@ -306,6 +308,7 @@ namespace ninaAPI.WebService.V3
             // EMBEDIO WOULD CREATE A NEW INSTANCE OF THE CONTROLLER FOR EACH REQUEST
             return server.WithModule(eventSocket)
                 .WithModule(mountControlSocket)
+                .WithWebApi("/v3/api/equipment", m => m.WithController(() => connectionController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.CameraUrlName}", m => m.WithController(() => cameraController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}", m => m.WithController(() => focuserController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.DomeUrlName}", m => m.WithController(() => domeController))
@@ -317,7 +320,6 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.SafetyMonitorUrlName}", m => m.WithController(() => safetyController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.SwitchUrlName}", m => m.WithController(() => switchController))
                 .WithWebApi($"/v3/api/equipment/{EquipmentConstants.WeatherUrlName}", m => m.WithController(() => weatherController))
-                .WithWebApi("/v3/api/equipment", m => m.WithController(() => connectionController))
                 .WithWebApi("/v3/api/image", m => m.WithController(() => imageController))
                 .WithWebApi("/v3/api/profile", m => m.WithController(() => profileController))
                 .WithWebApi("/v3/api/application", m => m.WithController(() => applicationController))
