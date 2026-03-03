@@ -16,8 +16,7 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
     public class RotatorMoveConfig
     {
         [Required]
-        [Range(0, float.MaxValue)]
-        public float Position { get; set; }
+        public float Position { get; set; } // TODO: Check what the limits are
 
         public bool MoveMechanical { get; set; }
     }
@@ -26,6 +25,7 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
     {
         public float SkyAngle { get; set; }
 
+        [Required]
         public bool SolveAndSync { get; set; }
     }
 }

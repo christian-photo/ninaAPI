@@ -203,15 +203,9 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
                 throw new HttpException(HttpStatusCode.Conflict, "Mount not parked");
             }
 
-            Guid processId = processMediator.AddProcess(
-                async (token) => await mount.UnparkTelescope(statusMediator.GetStatus(), token),
-                ApiProcessType.MountPark // I think it should work if we leave it at that
-            );
-            var result = processMediator.Start(processId);
+            await mount.UnparkTelescope(statusMediator.GetStatus(), HttpContext.CancellationToken);
 
-            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
-
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            await responseHandler.SendObject(HttpContext, new StringResponse("Unparked"));
         }
 
         [Route(HttpVerbs.Post, "/flip")]

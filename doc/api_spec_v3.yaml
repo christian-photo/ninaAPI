@@ -492,7 +492,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -523,7 +525,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -633,7 +637,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -1042,7 +1048,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -1068,7 +1076,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -1169,7 +1179,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -1219,7 +1231,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -1245,7 +1259,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -1385,7 +1401,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -1768,7 +1786,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -1819,7 +1839,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -2006,7 +2028,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -2128,11 +2152,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Process conflict
+          description: Can't dither
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -2261,11 +2287,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Mount not connected / Mount parked
+          description: Can't home
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -2312,11 +2340,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Mount not connected
+          description: Can't park
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -2354,13 +2384,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart200"
-        "409":
-          description: Mount not connected
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2387,11 +2411,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Mount not connected / parked
+          description: Can't flip
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -2418,11 +2444,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Mount not connected / parked
+          description: Can't slew
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -2454,10 +2482,10 @@ paths:
     patch:
       tags:
         - Mount
-      summary: Sync
+      summary: Sync mount
       description:
-        Sync the scope, either by manually supplying the coordinates or by solving and syncing. If the coordinates are omitted, a platesolve will be performed.
-        if the coordinates are provided, the scope will be synced and no process will be started. Using solve and sync will always start a process
+        Sync the scope, either by manually supplying the coordinates or by solving and syncing.
+        if the coordinates are provided, the scope will be synced and no process will be started. Using solve and sync will always start a process and sync the rotator as well
       requestBody:
         content:
           application/json:
@@ -2477,7 +2505,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProcessStart409"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -2485,7 +2515,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/rotator/info:
+  /equipment/rotator:
     get:
       tags:
         - Rotator
@@ -2506,14 +2536,14 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/rotator/connect:
-    get:
+    post:
       tags:
         - Rotator
       summary: Connect
-      description: Connect to Rotator
+      description: Connect to mount
       parameters:
         - in: query
-          name: to
+          name: deviceId
           required: false
           description: The Id of the device that should be connected.
           schema:
@@ -2524,23 +2554,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Connected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2549,7 +2563,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/rotator/disconnect:
-    get:
+    post:
       tags:
         - Rotator
       summary: Disconnect
@@ -2560,23 +2574,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Disconnected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2605,7 +2603,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/rotator/rescan:
-    get:
+    post:
       tags:
         - Rotator
       summary: Rescan Devices
@@ -2625,63 +2623,31 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/rotator/move:
-    get:
+    post:
       tags:
         - Rotator
       summary: Move
       description: Move the rotator
-      parameters:
-        - in: query
-          name: position
-          description: The position to move to
-          required: true
-          schema:
-            type: number
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RotatorMoveConfig"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Rotator move started
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
-          description: Rotator not connected
+          description: Process conflict
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Rotator not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -2689,64 +2655,36 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/rotator/move-mechanical:
-    get:
+  /equipment/rotator/sync:
+    patch:
       tags:
         - Rotator
-      summary: Move Mechanically
-      description: Move the rotator mechanically
-      parameters:
-        - in: query
-          name: position
-          description: The position to move to
-          required: true
-          schema:
-            type: number
+      summary: Sync
+      description:
+        Sync the rotator, either by manually supplying the sky angle or by solving and syncing. If the sky angle is omitted, a platesolve will be performed.
+        if the sky angle is provided, the rotator will be synced and no process will be started. Using solve and sync will always start a process
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RotatorSyncConfig"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Rotator move started
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart200"
+                  - $ref: "#/components/schemas/StringResponse"
         "409":
-          description: Rotator not connected
+          description: Can't sync
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Rotator not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -7724,6 +7662,8 @@ components:
         SolveAndSync:
           type: boolean
           default: false
+      required:
+        - SolveAndSync
 
     MeridianFlipProcessProgress:
       type: object
@@ -7746,70 +7686,69 @@ components:
     RotatorInfo:
       type: object
       properties:
-        Response:
-          type: object
-          properties:
-            CanReverse:
-              type: boolean
-            Reverse:
-              type: boolean
-            MechanicalPosition:
-              type: integer
-            Position:
-              type: integer
-            StepSize:
-              type: number
-            IsMoving:
-              type: boolean
-            Synced:
-              type: boolean
-            SupportedActions:
-              type: array
-              items: {}
-            Connected:
-              type: boolean
-            Name:
-              type: string
-            DisplayName:
-              type: string
-            Description:
-              type: string
-            DriverInfo:
-              type: string
-            DriverVersion:
-              type: string
-            DeviceId:
-              type: string
-          required:
-            - CanReverse
-            - Reverse
-            - MechanicalPosition
-            - Position
-            - StepSize
-            - IsMoving
-            - Synced
-            - SupportedActions
-            - Connected
-            - Name
-            - DisplayName
-            - Description
-            - DriverInfo
-            - DriverVersion
-            - DeviceId
-        Error:
-          type: string
-        StatusCode:
-          type: integer
-        Success:
+        CanReverse:
           type: boolean
-        Type:
+        Reverse:
+          type: boolean
+        MechanicalPosition:
+          type: integer
+        Position:
+          type: integer
+        StepSize:
+          type: number
+        IsMoving:
+          type: boolean
+        Synced:
+          type: boolean
+        SupportedActions:
+          type: array
+          items:
+            type: string
+        Connected:
+          type: boolean
+        Name:
+          type: string
+        DisplayName:
+          type: string
+        Description:
+          type: string
+        DriverInfo:
+          type: string
+        DriverVersion:
+          type: string
+        DeviceId:
           type: string
       required:
-        - Response
-        - Error
-        - StatusCode
-        - Success
-        - Type
+        - CanReverse
+        - Reverse
+        - MechanicalPosition
+        - Position
+        - StepSize
+        - IsMoving
+        - Synced
+        - Connected
+
+    RotatorMoveConfig:
+      type: object
+      properties:
+        MoveMechanical:
+          type: boolean
+          default: false
+        Position:
+          type: number
+      required:
+        - Position
+
+    RotatorSyncConfig:
+      type: object
+      properties:
+        SkyAngle:
+          type: number
+        SolveAndSync:
+          type: boolean
+          default: false
+      required:
+        - SolveAndSync
 
     SafetyMonitorInfo:
       type: object

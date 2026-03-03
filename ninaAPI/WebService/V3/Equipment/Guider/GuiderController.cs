@@ -17,15 +17,10 @@ using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
-using Google.Protobuf.WellKnownTypes;
-using NINA.Equipment.Equipment;
-using NINA.Equipment.Equipment.MyGuider;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
-using NINA.WPF.Base.ViewModel.Equipment.Guider;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
-using static NINA.Equipment.Equipment.GuideStepsHistory;
 
 namespace ninaAPI.WebService.V3.Equipment.Guider
 {
