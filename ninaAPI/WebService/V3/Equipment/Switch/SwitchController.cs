@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -41,7 +41,7 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
         [Route(HttpVerbs.Get, "/")]
         public async Task SwitchInfo()
         {
-            await responseHandler.SendObject(HttpContext, @switch.GetInfo());
+            await responseHandler.SendObject(HttpContext, new SwitchInfoResponse(@switch));
         }
 
         [Route(HttpVerbs.Patch, "/")]
@@ -64,6 +64,8 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
 
             // TODO: Check if this needs to be a process
             await @switch.SetSwitchValue(config.SwitchId, config.Value, statusMediator.GetStatus(), System.Threading.CancellationToken.None);
+
+            await responseHandler.SendObject(HttpContext, new StringResponse("Switch value updated"));
         }
     }
 

@@ -2692,7 +2692,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/safet:
+  /equipment/safety:
     get:
       tags:
         - Safety Monitor
@@ -2799,7 +2799,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/switch/info:
+  /equipment/switch:
     get:
       tags:
         - Switch
@@ -2818,16 +2818,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - Switch
+      summary: Set Value
+      description: Set switch value
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SwitchSetValueConfig"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/connect:
-    get:
+    post:
       tags:
         - Switch
       summary: Connect
-      description: Connect to Switch
+      description: Connect to switch
       parameters:
         - in: query
-          name: to
+          name: deviceId
           required: false
           description: The Id of the device that should be connected.
           schema:
@@ -2838,23 +2861,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Connected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2863,7 +2870,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/switch/disconnect:
-    get:
+    post:
       tags:
         - Switch
       summary: Disconnect
@@ -2874,23 +2881,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Disconnected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2919,7 +2910,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/switch/rescan:
-    get:
+    post:
       tags:
         - Switch
       summary: Rescan Devices
@@ -2931,79 +2922,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeviceList"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /equipment/switch/set:
-    get:
-      tags:
-        - Switch
-      summary: Set Value
-      description: Set switch value
-      parameters:
-        - in: query
-          name: index
-          description: The index of the switch to set
-          required: true
-          schema:
-            type: integer
-            format: short
-        - in: query
-          name: value
-          description: The value to set
-          required: true
-          schema:
-            type: number
-            format: double
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Switch value updated
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Switch not connected
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Switch not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
         default:
           description: Request could not be carried out
           content:
@@ -7765,100 +7683,92 @@ components:
     SwitchInfo:
       type: object
       properties:
-        Response:
-          type: object
-          properties:
-            WritableSwitches:
-              type: array
-              items:
-                type: object
-                properties:
-                  Maximum:
-                    type: integer
-                  Minimum:
-                    type: integer
-                  StepSize:
-                    type: number
-                  TargetValue:
-                    type: integer
-                  Id:
-                    type: integer
-                  Name:
-                    type: string
-                  Description:
-                    type: string
-                  Value:
-                    type: integer
-                required:
-                  - Maximum
-                  - Minimum
-                  - StepSize
-                  - TargetValue
-                  - Id
-                  - Name
-                  - Description
-                  - Value
-            ReadonlySwitches:
-              type: array
-              items:
-                type: object
-                properties:
-                  Id:
-                    type: integer
-                  Name:
-                    type: string
-                  Description:
-                    type: string
-                  Value:
-                    type: integer
-                required:
-                  - Id
-                  - Name
-                  - Description
-                  - Value
-            SupportedActions:
-              type: array
-              items:
-                type: string
-            Connected:
-              type: boolean
-            Name:
-              type: string
-            DisplayName:
-              type: string
-            Description:
-              type: string
-            DriverInfo:
-              type: string
-            DriverVersion:
-              type: string
-            DeviceId:
-              type: string
-          required:
-            - WritableSwitches
-            - ReadonlySwitches
-            - SupportedActions
-            - Connected
-            - Name
-            - DisplayName
-            - Description
-            - DriverInfo
-            - DriverVersion
-            - DeviceId
-        Error:
-          type: string
-        StatusCode:
-          type: integer
-        Success:
+        WritableSwitches:
+          type: array
+          items:
+            $ref: "#/components/schemas/WriteableSwitch"
+        ReadonlySwitches:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadonlySwitch"
+        SupportedActions:
+          type: array
+          items:
+            type: string
+        Connected:
           type: boolean
-        Type:
+        Name:
+          type: string
+        DisplayName:
+          type: string
+        Description:
+          type: string
+        DriverInfo:
+          type: string
+        DriverVersion:
+          type: string
+        DeviceId:
           type: string
       required:
-        - Response
-        - Error
-        - StatusCode
-        - Success
-        - Type
+        - Connected
+
+    WriteableSwitch:
+      type: object
+      properties:
+        Maximum:
+          type: number
+        Minimum:
+          type: number
+        StepSize:
+          type: number
+        TargetValue:
+          type: number
+        Id:
+          type: integer
+        Name:
+          type: string
+        Description:
+          type: string
+        Value:
+          type: number
+      required:
+        - Maximum
+        - Minimum
+        - StepSize
+        - TargetValue
+        - Id
+        - Name
+        - Description
+        - Value
+
+    ReadonlySwitch:
+      type: object
+      properties:
+        Id:
+          type: integer
+        Name:
+          type: string
+        Description:
+          type: string
+        Value:
+          type: number
+      required:
+        - Id
+        - Name
+        - Description
+        - Value
+
+    SwitchSetValueConfig:
+      type: object
+      properties:
+        SwitchId:
+          type: integer
+          minimum: 0
+        Value:
+          type: number
+      required:
+        - SwitchId
+        - Value
 
     WeatherInfo:
       type: object

@@ -33,7 +33,7 @@ namespace ninaAPI.WebService.V3.Equipment.Safety
         [Route(HttpVerbs.Get, "/")]
         public async Task SafetyInfo()
         {
-            await responseHandler.SendObject(HttpContext, safety.GetInfo());
+            await responseHandler.SendObject(HttpContext, new SafetyInfoResponse(safety));
         }
     }
 }
