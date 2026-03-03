@@ -13,6 +13,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
@@ -87,8 +88,6 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             this.responseHandler = responseHandler;
         }
 
-        // TODO: Still need to port over the manual mount move socket
-
         [Route(HttpVerbs.Get, "/")]
         public async Task MountInfo()
         {
@@ -132,9 +131,9 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
         }
 
         [Route(HttpVerbs.Patch, "/tracking")]
-        public async Task MountTrackingUpdate()
+        public async Task MountTrackingUpdate([JsonData] UpdateTrackingModeBody body)
         {
-            QueryParameter<TrackingMode> trackingModeParameter = new QueryParameter<TrackingMode>("mode", TrackingMode.Sidereal, true);
+            Validator.ValidateObject(body, new ValidationContext(body));
 
             if (!mount.GetInfo().Connected)
             {
@@ -145,24 +144,19 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
                 throw new HttpException(HttpStatusCode.Conflict, "Mount parked");
             }
 
-            TrackingMode mode = trackingModeParameter.Get(HttpContext);
-
             if (!mount.GetInfo().TrackingEnabled)
             {
                 mount.SetTrackingEnabled(true);
             }
 
-            bool success = mount.SetTrackingMode(mode);
+            bool success = mount.SetTrackingMode(body.TrackingMode);
 
             if (!success)
             {
                 throw new HttpException(HttpStatusCode.InternalServerError, "Tracking mode could not be set");
             }
 
-            await responseHandler.SendObject(HttpContext, new
-            {
-                TrackingMode = mode
-            });
+            await responseHandler.SendObject(HttpContext, new StringResponse("Tracking mode updated"));
         }
 
         [Route(HttpVerbs.Post, "/park")]
@@ -243,9 +237,9 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             {
                 throw new HttpException(HttpStatusCode.Conflict, "Recenter is enabled but camera is disconnected");
             }
-            else if (config.AutofocusAfterFlip && !focuser.GetInfo().Connected)
+            else if (config.AutofocusAfterFlip && (!focuser.GetInfo().Connected || !camera.GetInfo().Connected))
             {
-                throw new HttpException(HttpStatusCode.Conflict, "Autofocus is enabled but focuser is disconnected");
+                throw new HttpException(HttpStatusCode.Conflict, "Autofocus is enabled but focuser and/or camera is disconnected");
             }
 
             Guid processId = processMediator.AddProcess(MeridianFlipProcess.Create(flipVMFactory.Create(), mount, statusMediator));
@@ -321,7 +315,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/stop-slew")]
+        [Route(HttpVerbs.Post, "/slew/stop")]
         public async Task MountStopSlew()
         {
             if (!mount.GetInfo().Connected)
@@ -366,6 +360,10 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             else if (mount.GetInfo().Slewing)
             {
                 throw new HttpException(HttpStatusCode.Conflict, "Mount slewing");
+            }
+            else if (!config.SolveAndSync && config.Coordinates == null)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "Either coordinates or solve and sync must be provided");
             }
 
             if (config.SolveAndSync)

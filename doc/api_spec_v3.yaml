@@ -1924,7 +1924,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/guider/disconnect:
-    get:
+    post:
       tags:
         - Guider
       summary: Disconnect
@@ -2140,7 +2140,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/mount/info:
+  /equipment/mount:
     get:
       tags:
         - Mount
@@ -2161,14 +2161,14 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/mount/connect:
-    get:
+    post:
       tags:
         - Mount
       summary: Connect
-      description: Connect to Mount
+      description: Connect to mount
       parameters:
         - in: query
-          name: to
+          name: deviceId
           required: false
           description: The Id of the device that should be connected.
           schema:
@@ -2179,23 +2179,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Connected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2204,7 +2188,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/mount/disconnect:
-    get:
+    post:
       tags:
         - Mount
       summary: Disconnect
@@ -2215,23 +2199,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Disconnected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2260,7 +2228,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/mount/rescan:
-    get:
+    post:
       tags:
         - Mount
       summary: Rescan Devices
@@ -2280,7 +2248,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/mount/home:
-    get:
+    post:
       tags:
         - Mount
       summary: Home
@@ -2291,49 +2259,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Homing
-                      - Mount already homed
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
           description: Mount not connected / Mount parked
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Mount not connected
-                      - Mount parked
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -2342,69 +2274,23 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/mount/tracking:
-    get:
+    patch:
       tags:
         - Mount
       summary: Tracking Mode
       description: Set tracking mode
-      parameters:
-        - in: query
-          name: mode
-          description: The tracking mode to set. 0&#58; Siderial, 1&#58; Lunar, 2&#58; Solar, 3&#58; King, 4&#58; Stopped
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 0
-            maximum: 4
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTrackingModeBody"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Tracking mode changed
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Mount not connected / Mount parked / Invalid tracking mode
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Mount not connected
-                      - Mount parked
-                      - Invalid tracking mode
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2413,7 +2299,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/mount/park:
-    get:
+    post:
       tags:
         - Mount
       summary: Park
@@ -2424,47 +2310,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Parking
-                      - Mount already parked
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
           description: Mount not connected
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Mount not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - Mount
+      summary: Set Park
+      description: Sets the current mount position as park position. This requires the mount to be unparked.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2473,7 +2343,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/mount/unpark:
-    get:
+    post:
       tags:
         - Mount
       summary: Unpark
@@ -2484,47 +2354,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Unparking
-                      - Mount not parked
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
           description: Mount not connected
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Mount not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -2533,58 +2369,29 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/mount/flip:
-    get:
+    post:
       tags:
         - Mount
       summary: Flip
       description: Performs a meridian flip to the current coordinates. This will only flip the mount if it is needed, it will not force the mount to flip
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MountFlipConfig"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Flipping
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
           description: Mount not connected / parked
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Mount not connected
-                      - Mount parked
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -2593,101 +2400,29 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/mount/slew:
-    get:
+    post:
       tags:
         - Mount
       summary: Slew
       description: Performs a slew to the provided coordinates
-      parameters:
-        - in: query
-          name: ra
-          description: The RA angle of the target in degree
-          required: true
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: dec
-          description: The Dec angle of the target in degree
-          required: true
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: waitForResult
-          description: Whether to wait for the slew to finish
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: center
-          description: Whether to center the telescope on the target
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: rotate
-          description: Whether to perform a center and rotate
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: rotationAngle
-          description: The rotation angle in degree
-          required: false
-          schema:
-            type: number
-            format: double
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MountSlewConfig"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Started Slew
-                      - Slew finished
-                      - Slew failed
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart200"
         "409":
           description: Mount not connected / parked
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Mount not connected
-                      - Mount parked
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -2696,119 +2431,18 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/mount/slew/stop:
-    get:
+    post:
       tags:
         - Mount
       summary: Stop Slew
-      description:
-        Stops any slew, even if it was not started using the api. However this is mainly useful for slews you issued yourself, since it doesn't completely abort slew&centers started by NINA.
-        Therefore the recommended use is to stop simple slews without center or rotate. With center or rotate, this may take a few seconds to complete.
+      description: Stops any slew, even if it was not started using the api. If you started a slew using the api, you should use the process id to stop it
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: "Stopped slew"
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Mount not connected
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Mount not connected
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /equipment/mount/set-park-position:
-    get:
-      tags:
-        - Mount
-      summary: Set Park Position
-      description: Sets the current mount position as park position. This requires the mount to be unparked.
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: "Park position set"
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Can't update park position
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Mount not connected
-                      - Mount can not set park position
-                      - Park position update failed
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2817,73 +2451,33 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/mount/sync:
-    get:
+    patch:
       tags:
         - Mount
       summary: Sync
-      description: Sync the scope, either by manually supplying the coordinates or by solving and syncing. If the coordinates are omitted, a platesolve will be performed.
-      parameters:
-        - in: query
-          name: ra
-          required: false
-          description: Right ascension in degrees
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: dec
-          required: false
-          description: Declination in degrees
-          schema:
-            type: number
-            format: double
+      description:
+        Sync the scope, either by manually supplying the coordinates or by solving and syncing. If the coordinates are omitted, a platesolve will be performed.
+        if the coordinates are provided, the scope will be synced and no process will be started. Using solve and sync will always start a process
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MountSyncConfig"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: "Synced"
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart200"
+                  - $ref: "#/components/schemas/StringResponse"
+        "409":
           description: Can't sync
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Mount not connected
-                      - Mount is parked
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/ProcessStart409"
         default:
           description: Request could not be carried out
           content:
@@ -7836,190 +7430,300 @@ components:
     MountInfo:
       type: object
       properties:
-        Response:
-          type: object
-          properties:
-            SiderealTime:
-              type: number
-            RightAscension:
-              type: number
-            Declination:
-              type: number
-            SiteLatitude:
-              type: number
-            SiteLongitude:
-              type: number
-            SiteElevation:
-              type: number
-            RightAscensionString:
-              type: string
-            DeclinationString:
-              type: string
-            Coordinates:
-              type: object
-              properties:
-                RA:
-                  type: number
-                RAString:
-                  type: string
-                RADegrees:
-                  type: number
-                Dec:
-                  type: number
-                DecString:
-                  type: string
-                Epoch:
-                  type: string
-                  enum:
-                    - JNOW
-                    - B1950
-                    - J2000
-                    - J2050
-                DateTime:
-                  type: object
-                  properties:
-                    Now:
-                      type: string
-                    UtcNow:
-                      type: string
-                  required:
-                    - Now
-                    - UtcNow
-              required:
-                - RA
-                - RAString
-                - RADegrees
-                - Dec
-                - DecString
-                - Epoch
-                - DateTime
-            TimeToMeridianFlip:
-              type: number
-            SideOfPier:
-              type: string
-              enum:
-                - pierEast
-                - pierWest
-                - pierUnknown
-            Altitude:
-              type: number
-            AltitudeString:
-              type: string
-            Azimuth:
-              type: number
-            AzimuthString:
-              type: string
-            SiderealTimeString:
-              type: string
-            HoursToMeridianString:
-              type: string
-            AtPark:
-              type: boolean
-            TrackingRate:
-              type: object
-            TrackingEnabled:
-              type: boolean
-            TrackingModes:
-              type: array
-              items:
-                type: string
-                enum:
-                  - Siderial
-                  - Lunar
-                  - Solar
-                  - King
-                  - Custom
-                  - Stopped
-            AtHome:
-              type: boolean
-            CanFindHome:
-              type: boolean
-            CanPark:
-              type: boolean
-            CanSetPark:
-              type: boolean
-            CanSetTrackingEnabled:
-              type: boolean
-            CanSetDeclinationRate:
-              type: boolean
-            CanSetRightAscensionRate:
-              type: boolean
-            EquatorialSystem:
-              type: string
-              enum:
-                - JNOW
-                - B1950
-                - J2000
-                - J2050
-            HasUnknownEpoch:
-              type: boolean
-            TimeToMeridianFlipString:
-              type: string
-            Slewing:
-              type: boolean
-            GuideRateRightAscensionArcsecPerSec:
-              type: number
-            GuideRateDeclinationArcsecPerSec:
-              type: number
-            CanMovePrimaryAxis:
-              type: boolean
-            CanMoveSecondaryAxis:
-              type: boolean
-            PrimaryAxisRates:
-              type: array
-              items:
-                type: object
-            SecondaryAxisRates:
-              type: array
-              items:
-                type: object
-            SupportedActions:
-              type: array
-              items:
-                type: string
-            AlignmentMode:
-              type: string
-              enum:
-                - AltAz
-                - Polar
-                - GermanPolar
-            CanPulseGuide:
-              type: boolean
-            IsPulseGuiding:
-              type: boolean
-            CanSetPierSide:
-              type: boolean
-            CanSlew:
-              type: boolean
-            UTCDate:
-              type: string
-            Connected:
-              type: boolean
-            Name:
-              type: string
-            DisplayName:
-              type: string
-            DeviceId:
-              type: string
-          required:
-            - Connected
-            - Name
-            - DisplayName
-            - DeviceId
-        Error:
+        SiderealTime:
+          type: number
+        RightAscension:
+          type: number
+        Declination:
+          type: number
+        SiteLatitude:
+          type: number
+        SiteLongitude:
+          type: number
+        SiteElevation:
+          type: number
+        RightAscensionString:
           type: string
-        StatusCode:
-          type: integer
-        Success:
+        DeclinationString:
+          type: string
+        Coordinates:
+          $ref: "#/components/schemas/NINACoordinates"
+        TimeToMeridianFlip:
+          type: number
+        SideOfPier:
+          type: string
+          enum:
+            - pierEast
+            - pierWest
+            - pierUnknown
+        Altitude:
+          type: number
+        AltitudeString:
+          type: string
+        Azimuth:
+          type: number
+        AzimuthString:
+          type: string
+        SiderealTimeString:
+          type: string
+        HoursToMeridianString:
+          type: string
+        AtPark:
           type: boolean
-        Type:
+        TrackingRate:
+          $ref: "#/components/schemas/TrackingRate"
+        TrackingEnabled:
+          type: boolean
+        TrackingModes:
+          type: array
+          items:
+            type: string
+            enum:
+              - Siderial
+              - Lunar
+              - Solar
+              - King
+              - Custom
+              - Stopped
+        AtHome:
+          type: boolean
+        CanFindHome:
+          type: boolean
+        CanPark:
+          type: boolean
+        CanSetPark:
+          type: boolean
+        CanSetTrackingEnabled:
+          type: boolean
+        CanSetDeclinationRate:
+          type: boolean
+        CanSetRightAscensionRate:
+          type: boolean
+        EquatorialSystem:
+          type: string
+          enum:
+            - JNOW
+            - B1950
+            - J2000
+            - J2050
+        HasUnknownEpoch:
+          type: boolean
+        TimeToMeridianFlipString:
+          type: string
+        TargetCoordinates:
+          $ref: "#/components/schemas/NINACoordinates"
+        TargetSideOfPier:
+          $ref: "#/components/schemas/PierSide"
+        Slewing:
+          type: boolean
+        GuideRateRightAscensionArcsecPerSec:
+          type: number
+        GuideRateDeclinationArcsecPerSec:
+          type: number
+        CanMovePrimaryAxis:
+          type: boolean
+        CanMoveSecondaryAxis:
+          type: boolean
+        PrimaryAxisRates:
+          type: array
+          items:
+            type: object
+            format: (double, double)
+        SecondaryAxisRates:
+          type: array
+          items:
+            type: object
+            format: (double, double)
+        SupportedActions:
+          type: array
+          items:
+            type: string
+        AlignmentMode:
+          $ref: "#/components/schemas/AlignmentMode"
+        CanPulseGuide:
+          type: boolean
+        IsPulseGuiding:
+          type: boolean
+        CanSetPierSide:
+          type: boolean
+        CanSlew:
+          type: boolean
+        CanSlewAltAz:
+          type: boolean
+        UTCDate:
+          type: string
+        Connected:
+          type: boolean
+        Name:
+          type: string
+        DisplayName:
+          type: string
+        DeviceId:
           type: string
       required:
-        - Response
-        - Error
-        - StatusCode
-        - Success
-        - Type
+        - SideriealTime
+        - RightAscension
+        - Declination
+        - SiteLatitude
+        - SiteLongitude
+        - SiteElevation
+        - TimeToMeridianFlip
+        - SideOfPier
+        - Altitude
+        - AltitudeString
+        - Azimuth
+        - AzimuthString
+        - AtPark
+        - TrackingRate
+        - TrackingEnabled
+        - AtHome
+        - CanFindHome
+        - CanPark
+        - CanSetPark
+        - CanSetTrackingEnabled
+        - CanSetDeclinationRate
+        - CanSetRightAscensionRate
+        - EquatorialSystem
+        - HasUnknownEpoch
+        - Slewing
+        - GuideRateRightAscensionArcsecPerSec
+        - GuideRateDeclinationArcsecPerSec
+        - CanMovePrimaryAxis
+        - CanMoveSecondaryAxis
+        - AlignmentMode
+        - CanPulseGuide
+        - IsPulseGuiding
+        - CanSetPierSide
+        - CanSlew
+        - CanSlewAltAz
+        - UTCDate
+        - Connected
+
+    AlignmentMode:
+      type: string
+      enum:
+        - AltAz
+        - Polar
+        - GermanPolar
+
+    PierSide:
+      type: string
+      enum:
+        - pierEast
+        - pierWest
+        - pierUnknown
+
+    TrackingMode:
+      type: string
+      enum:
+        - Sidereal
+        - Lunar
+        - Solar
+        - King
+        - Custom
+        - Stopped
+
+    TrackingRate:
+      type: object
+      properties:
+        TrackingMode:
+          $ref: "#/components/schemas/TrackingMode"
+        CustomRightAscensionRate:
+          type: number
+        CustomDeclinationRate:
+          type: number
+      required:
+        - TrackingMode
+
+    NINACoordinates:
+      type: object
+      properties:
+        RA:
+          type: number
+        RAString:
+          type: string
+        RADegrees:
+          type: number
+        Dec:
+          type: number
+        DecString:
+          type: string
+        Epoch:
+          type: string
+          enum:
+            - JNOW
+            - B1950
+            - J2000
+            - J2050
+        DateTime:
+          type: object
+          properties:
+            Now:
+              type: string
+            UtcNow:
+              type: string
+          required:
+            - Now
+            - UtcNow
+      required:
+        - RA
+        - RAString
+        - RADegrees
+        - Dec
+        - DecString
+        - Epoch
+        - DateTime
+
+    UpdateTrackingModeBody:
+      type: object
+      properties:
+        TrackingMode:
+          $ref: "#/components/schemas/TrackingMode"
+      required:
+        - TrackingMode
+
+    MountFlipConfig:
+      type: object
+      properties:
+        Recenter:
+          type: boolean
+          default: false
+          description: Recenter the mount after flipping. Requires a camera to be connected
+        AutofocusAfterFlip:
+          type: boolean
+          default: false
+          description: Autofocus the mount after flipping. Requires a camera and focuser to be connected
+
+    MountSlewConfig:
+      type: object
+      properties:
+        Coordinates:
+          $ref: "#/components/schemas/HttpCoordinates"
+        PositionAngle:
+          type: number
+          minimum: 0
+          maximum: 360
+        SlewType:
+          $ref: "#/components/schemas/SlewType"
+      required:
+        - Coordinates
+        - SlewType
+
+    SlewType:
+      type: string
+      enum:
+        - Slew
+        - Center
+        - Rotate
+
+    MountSyncConfig:
+      type: object
+      properties:
+        Coordinates:
+          $ref: "#/components/schemas/HttpCoordinates"
+        SolveAndSync:
+          type: boolean
+          default: false
 
     MeridianFlipProcessProgress:
       type: object

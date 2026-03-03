@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,7 +10,7 @@
 #endregion "copyright"
 
 using System.ComponentModel.DataAnnotations;
-using NINA.Astrometry;
+using NINA.Equipment.Interfaces;
 using ninaAPI.WebService.V3.Model;
 
 namespace ninaAPI.WebService.V3.Equipment.Mount
@@ -45,5 +45,11 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
         Slew,
         Center,
         Rotate
+    }
+
+    public class UpdateTrackingModeBody
+    {
+        [Required]
+        public TrackingMode TrackingMode { get; set; }
     }
 }
