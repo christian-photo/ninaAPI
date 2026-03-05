@@ -12,24 +12,21 @@
 using System;
 using System.IO;
 using System.Windows.Media.Imaging;
-using NetVips;
 using ninaAPI.Utility;
-using ninaAPI.Utility.Http;
 
 namespace ninaAPI.WebService.V3.Service
 {
     public abstract class ImageWriter(BitmapSource img)
     {
-        // TODO: Check if the larger package size is worth the small improvement in transfer speeds
         public static ImageWriter GetImageWriter(BitmapSource image, ImageFormat format)
         {
             return format switch
             {
-                ImageFormat.AVIF => new AvifWriter(image),
-                ImageFormat.JXL => new JxlWriter(image),
+                // ImageFormat.AVIF => new AvifWriter(image),
+                // ImageFormat.JXL => new JxlWriter(image),
                 ImageFormat.JPEG => new JpegWriter(image),
                 ImageFormat.PNG => new PngWriter(image),
-                ImageFormat.WEBP => new WebpWriter(image),
+                // ImageFormat.WEBP => new WebpWriter(image),
                 _ => throw new NotImplementedException(),
             };
         }
@@ -40,41 +37,34 @@ namespace ninaAPI.WebService.V3.Service
         public abstract byte[] Encode(int quality);
         public abstract string MimeType { get; protected set; }
 
-        protected static Image BitmapSourceToVipsImage(BitmapSource bitmapSource)
-        {
-            // Ensure the bitmap is in BGRA32 format
-            if (bitmapSource.Format != System.Windows.Media.PixelFormats.Bgra32)
-            {
-                var converted = new FormatConvertedBitmap();
-                converted.BeginInit();
-                converted.Source = bitmapSource;
-                converted.DestinationFormat = System.Windows.Media.PixelFormats.Bgra32;
-                converted.EndInit();
-                bitmapSource = converted;
-            }
+        // protected static Image BitmapSourceToVipsImage(BitmapSource bitmapSource)
+        // {
+        //     if (bitmapSource.Format != PixelFormats.Rgb24)
+        //     {
+        //         var converted = new FormatConvertedBitmap();
+        //         converted.BeginInit();
+        //         converted.Source = bitmapSource;
+        //         converted.DestinationFormat = PixelFormats.Rgb24;
+        //         converted.EndInit();
+        //         bitmapSource = converted;
+        //     }
 
-            int width = bitmapSource.PixelWidth;
-            int height = bitmapSource.PixelHeight;
-            int stride = width * 4;
+        //     int width = bitmapSource.PixelWidth;
+        //     int height = bitmapSource.PixelHeight;
+        //     int stride = width * 3; // 3 bytes per pixel, no alpha
+        //     byte[] pixels = new byte[height * stride];
+        //     bitmapSource.CopyPixels(pixels, stride, 0);
 
-            byte[] pixels = new byte[height * stride];
-            bitmapSource.CopyPixels(pixels, stride, 0);
+        //     var vipsImage = Image.NewFromMemory(
+        //         pixels,
+        //         width,
+        //         height,
+        //         bands: 3,
+        //         format: Enums.BandFormat.Uchar
+        //     );
 
-            // Create image with BGRA interpretation
-            var vipsImage = Image.NewFromMemory(
-                pixels,
-                width,
-                height,
-                bands: 4,
-                format: Enums.BandFormat.Uchar
-            );
-
-            // Set interpretation to sRGB
-            vipsImage = vipsImage.Copy(interpretation: Enums.Interpretation.Srgb);
-
-            // Swap B and R channels to get proper RGB
-            return vipsImage.Bandjoin(vipsImage[2], vipsImage[1], vipsImage[0], vipsImage[3]);
-        }
+        //     return vipsImage.Copy(interpretation: Enums.Interpretation.Srgb);
+        // }
     }
 
     public class JpegWriter(BitmapSource image) : ImageWriter(image)
@@ -108,56 +98,56 @@ namespace ninaAPI.WebService.V3.Service
         public override string MimeType { get; protected set; } = "image/png";
     }
 
-    public class WebpWriter(BitmapSource image) : ImageWriter(image)
-    {
-        public override byte[] Encode(int quality)
-        {
-            using var vipsImage = BitmapSourceToVipsImage(image);
+    // public class WebpWriter(BitmapSource image) : ImageWriter(image)
+    // {
+    //     public override byte[] Encode(int quality)
+    //     {
+    //         using var vipsImage = BitmapSourceToVipsImage(image);
 
-            // WebP with additional options
-            return vipsImage.WebpsaveBuffer(
-                q: quality,
-                lossless: quality >= 100,  // Use lossless for quality 100
-                nearLossless: quality >= 95,  // Near-lossless for very high quality
-                effort: 4  // 0-6, higher = better compression but slower
-            );
-        }
+    //         // WebP with additional options
+    //         return vipsImage.WebpsaveBuffer(
+    //             q: quality,
+    //             lossless: quality >= 100,  // Use lossless for quality 100
+    //             nearLossless: quality >= 95,  // Near-lossless for very high quality
+    //             effort: 4  // 0-6, higher = better compression but slower
+    //         );
+    //     }
 
-        public override string MimeType { get; protected set; } = "image/webp";
-    }
+    //     public override string MimeType { get; protected set; } = "image/webp";
+    // }
 
-    public class AvifWriter(BitmapSource image) : ImageWriter(image)
-    {
-        public override byte[] Encode(int quality)
-        {
-            using var vipsImage = BitmapSourceToVipsImage(image);
+    // public class AvifWriter(BitmapSource image) : ImageWriter(image)
+    // {
+    //     public override byte[] Encode(int quality)
+    //     {
+    //         using var vipsImage = BitmapSourceToVipsImage(image);
 
-            // AVIF with additional options
-            return vipsImage.HeifsaveBuffer(
-                q: quality,
-                lossless: quality >= 100,
-                compression: Enums.ForeignHeifCompression.Av1, // Why is this sooo slow??
-                effort: 4  // encoding effort
-            );
-        }
+    //         // AVIF with additional options
+    //         return vipsImage.HeifsaveBuffer(
+    //             q: quality,
+    //             lossless: quality >= 100,
+    //             compression: Enums.ForeignHeifCompression.Av1, // Why is this sooo slow??
+    //             effort: 4  // encoding effort
+    //         );
+    //     }
 
-        public override string MimeType { get; protected set; } = "image/avif";
-    }
+    //     public override string MimeType { get; protected set; } = "image/avif";
+    // }
 
-    public class JxlWriter(BitmapSource image) : ImageWriter(image)
-    {
-        public override byte[] Encode(int quality)
-        {
-            using var vipsImage = BitmapSourceToVipsImage(image);
+    // public class JxlWriter(BitmapSource image) : ImageWriter(image)
+    // {
+    //     public override byte[] Encode(int quality)
+    //     {
+    //         using var vipsImage = BitmapSourceToVipsImage(image);
 
-            // AVIF with additional options
-            return vipsImage.JxlsaveBuffer(
-                q: quality,
-                lossless: quality >= 100,
-                effort: 4  // encoding effort
-            );
-        }
+    //         // AVIF with additional options
+    //         return vipsImage.JxlsaveBuffer(
+    //             q: quality,
+    //             lossless: quality >= 100,
+    //             effort: 4  // encoding effort
+    //         );
+    //     }
 
-        public override string MimeType { get; protected set; } = "image/jxl";
-    }
+    //     public override string MimeType { get; protected set; } = "image/jxl";
+    // }
 }

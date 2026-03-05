@@ -219,9 +219,7 @@ namespace ninaAPI.Utility.Http
         public static ImageQueryParameterSet ByProfile(IProfile profile)
         {
             var set = Default();
-            set.Stretch = new QueryParameter<bool>("stretch", profile.ImageSettings.AutoStretch, false);
             set.StretchFactor = new QueryParameter<double>("stretch-factor", profile.ImageSettings.AutoStretchFactor, false);
-            set.Debayer = new QueryParameter<bool>("debayer", profile.ImageSettings.DebayerImage, false);
             set.BlackClipping = new QueryParameter<double>("black-clipping", profile.ImageSettings.BlackClipping, false);
             set.UnlinkedStretch = new QueryParameter<bool>("unlinked-stretch", profile.ImageSettings.UnlinkedStretch, false);
             set.RawConverter = new QueryParameter<RawConverterEnum>("raw-converter", profile.CameraSettings.RawConverter, false);

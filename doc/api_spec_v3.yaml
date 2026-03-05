@@ -661,108 +661,18 @@ paths:
             type: string
             format: guid
             example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
-        - in: query
-          name: width
-          required: false
-          schema:
-            type: integer
-            exclusiveMinimum: 0
-            description: The width of the image to be returned
-        - in: query
-          name: height
-          required: false
-          schema:
-            type: integer
-            exclusiveMinimum: 0
-            description: The height of the image to be returned
-        - in: query
-          name: scale
-          required: false
-          schema:
-            type: number
-            minimum: 0.1
-            maximum: 1
-            description: The scale of the image to be returned
-        - in: query
-          name: quality
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            description: The quality of the image to be returned. The default is 80
-        - in: query
-          name: format
-          required: false
-          schema:
-            type: string
-            enum:
-              - JPEG
-              - PNG
-              - WEBP
-              - AVIF
-              - JXL
-            description: The format of the image to be returned. The default is JPEG
-        - in: query
-          name: stretch
-          required: false
-          schema:
-            type: boolean
-            description: Whether to stretch the image. If not specified, the api will decide based on the profile settings
-        - in: query
-          name: stretch-factor
-          required: false
-          schema:
-            type: number
-            minimum: 0
-            description: The stretch factor to be used. If not specified, the auto stretch factor from the profile will be used
-        - in: query
-          name: debayer
-          required: false
-          schema:
-            type: boolean
-            description: Whether to debayer the image. If not specified, the api will decide based on the profile settings
-        - in: query
-          name: bayer-pattern
-          required: false
-          schema:
-            type: string
-            enum:
-              - Monochrome
-              - Color
-              - RGGB
-              - CYMG
-              - CMYG2
-              - LRGB
-              - BGGR
-              - GBRG
-              - GRBG
-              - GBGR
-              - RGBG
-              - BGRG
-            description: The bayer pattern to be used. If not specified, the bayer pattern from the profile will be used
-        - in: query
-          name: unlinked-stretch
-          required: false
-          schema:
-            type: boolean
-            description: Whether to use the unlinked stretch algorithm. If not specified, the api will decide based on the profile settings
-        - in: query
-          name: black-clipping
-          required: false
-          schema:
-            type: number
-            minimum: 0
-            description: The black clipping value to be used. If not specified, the black clipping value from the profile will be used
-        - in: query
-          name: raw-converter
-          required: false
-          schema:
-            type: string
-            enum:
-              - DCRAW
-              - FREEIMAGE
-            description: The raw converter to be used. If not specified, the raw converter from the profile will be used
+        - $ref: "#/components/parameters/ImageWidth"
+        - $ref: "#/components/parameters/ImageHeight"
+        - $ref: "#/components/parameters/ImageScale"
+        - $ref: "#/components/parameters/ImageQuality"
+        - $ref: "#/components/parameters/ImageFormat"
+        - $ref: "#/components/parameters/ImageStretchEnabled"
+        - $ref: "#/components/parameters/ImageStretchFactor"
+        - $ref: "#/components/parameters/ImageDebayerEnabled"
+        - $ref: "#/components/parameters/BayerPattern"
+        - $ref: "#/components/parameters/ImageUnlinkedStretchEnabled"
+        - $ref: "#/components/parameters/ImageBlackClipping"
+        - $ref: "#/components/parameters/RawConverter"
       responses:
         "200":
           description: Capture found
@@ -775,21 +685,6 @@ paths:
             image/png:
               schema:
                 description: Image in png format
-                type: string
-                format: binary
-            image/webp:
-              schema:
-                description: Image in webp format
-                type: string
-                format: binary
-            image/avif:
-              schema:
-                description: Image in avif format
-                type: string
-                format: binary
-            image/jxl:
-              schema:
-                description: Image in jxl format
                 type: string
                 format: binary
         default:
@@ -6112,6 +6007,139 @@ paths:
                 $ref: "#/components/schemas/Error"
 
 components:
+  parameters:
+    ImageFormat:
+      name: format
+      in: query
+      description: Image format
+      required: false
+      schema:
+        type: string
+        enum:
+          - JPEG
+          - PNG
+          - AVIF
+          - JXL
+        default: JPEG
+    ImageQuality:
+      name: quality
+      in: query
+      description: Image quality
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 100
+        default: 80
+    ImageScale:
+      name: scale
+      in: query
+      description: Image scale. Scales both axes by the same amount maintaining aspect ratio and not distorting the image
+      required: false
+      schema:
+        type: number
+        minimum: 0
+        maximum: 100
+        default: 100
+    ImageWidth:
+      name: width
+      in: query
+      description:
+        Image width. If both width and height are specified, the image will be scaled to fit the specified size **not** preserving aspect ratio.
+        If only one of width or height is specified, the other will be calculated to preserve aspect ratio.
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+    ImageHeight:
+      name: height
+      in: query
+      description:
+        Image height. If both width and height are specified, the image will be scaled to fit the specified size **not** preserving aspect ratio.
+        If only one of width or height is specified, the other will be calculated to preserve aspect ratio.
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+    ImageStretchEnabled:
+      in: query
+      name: stretch
+      description: Whether to stretch the image
+      required: false
+      schema:
+        type: boolean
+        default: true
+    ImageStretchFactor:
+      in: query
+      name: stretch-factor
+      description: The stretch factor to be used. If not specified, the auto stretch factor from the profile will be used
+      required: false
+      schema:
+        type: number
+        minimum: 0
+    ImageDebayerEnabled:
+      in: query
+      name: debayer
+      description: Whether to debayer the image
+      required: false
+      schema:
+        type: boolean
+        default: false
+    ImageUnlinkedStretchEnabled:
+      in: query
+      name: unlinked-stretch
+      description: Whether to perform an unlinked stretch on the image, requires stretch to be true
+      required: false
+      schema:
+        type: boolean
+        default: false
+    ImageBlackClipping:
+      in: query
+      name: black-clipping
+      description: The black clipping value to be used. If not specified, the black clipping value from the profile will be used
+      required: false
+      schema:
+        type: number
+    RawConverter:
+      in: query
+      name: raw-converter
+      description: The raw converter to be used. If not specified, the raw converter from the profile will be used
+      required: false
+      schema:
+        type: string
+        enum:
+          - DCRAW
+          - FREEIMAGE
+    BayerPattern:
+      in: query
+      name: bayer-pattern
+      description: The bayer pattern to be used. If not specified, first the auto bayer pattern from the profile will be used (if not set to auto), then the sensor type will be used. By default monochrome
+      required: false
+      schema:
+        type: string
+        default: Monochrome
+        enum:
+          - Monochrome
+          - Color
+          - RGGB
+          - CYMG
+          - CMYG2
+          - LRGB
+          - BGGR
+          - GBRG
+          - GRBG
+          - GBGR
+          - RGBG
+          - BGRG
+    ProcessIdPath:
+      name: id
+      in: path
+      description: Process ID
+      required: true
+      schema:
+        type: string
+        format: guid
+        example:
   schemas:
     CameraInfo:
       type: object
