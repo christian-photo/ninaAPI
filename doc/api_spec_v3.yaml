@@ -376,6 +376,7 @@ paths:
       summary: Set USB limit
       description: This endpoint sets the USB limit of the camera.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -401,6 +402,7 @@ paths:
       summary: Set readout mode
       description: This endpoint sets the readout mode of the camera.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -426,6 +428,7 @@ paths:
       summary: Set readout mode for normal images
       description: This endpoint sets the readout mode of the camera for normal images.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -451,6 +454,7 @@ paths:
       summary: Set readout mode for snapshots
       description: This endpoint sets the readout mode of the camera for snapshots.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -476,6 +480,7 @@ paths:
       summary: Cooling
       description: Cool the camera to a given temperature over a set peroid of time.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -509,6 +514,7 @@ paths:
       summary: Warming
       description: Warms the camera over a minimum duration.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -562,6 +568,7 @@ paths:
       summary: Dew Heater Control
       description: Use this endpoint to toggle the dew heater on and off.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -587,6 +594,7 @@ paths:
       summary: Set Binning
       description: This endpoint sets the binning of the camera, if the specified binning is supported
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -612,6 +620,7 @@ paths:
       summary: Start a capture
       description: This endpoint starts a capture. The capture will be cached on the disk and can be retrieved using its id.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -800,6 +809,7 @@ paths:
             format: guid
             example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1008,6 +1018,7 @@ paths:
       summary: Set Dome follow
       description: Start or stop the dome to follow the telescope
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1033,6 +1044,7 @@ paths:
       summary: Sync Dome To Telescope
       description: Sync dome to provided coordinates or the telescope coordinates if none are provided. Checks if the dome is connected, not slewing and (if no coordinates are provided) if the telescope is connected
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1058,6 +1070,7 @@ paths:
       summary: Slew
       description: Slew dome to specified azimuth
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1311,6 +1324,7 @@ paths:
       summary: Create Filter
       description: Create a new filter in the filterwheel
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1468,6 +1482,7 @@ paths:
       summary: Toggle Light
       description: Set the light on the flatdevice on or off
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1493,6 +1508,7 @@ paths:
       summary: Set Brightness
       description: Set Brightness of the flatplanel
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1665,6 +1681,7 @@ paths:
       summary: Move
       description: Move the focuser to a specified position
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1698,6 +1715,7 @@ paths:
       summary: Temperature Compensation
       description: Enables or disables temperature compensation
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1907,6 +1925,7 @@ paths:
       summary: Start Guiding
       description: Start guiding, optionally with a forced calibration
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2015,6 +2034,7 @@ paths:
       summary: Set History Length
       description: Sets the length of the guide history
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2203,6 +2223,7 @@ paths:
       summary: Tracking Mode
       description: Set tracking mode
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2294,6 +2315,7 @@ paths:
       summary: Flip
       description: Performs a meridian flip to the current coordinates. This will only flip the mount if it is needed, it will not force the mount to flip
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2327,6 +2349,7 @@ paths:
       summary: Slew
       description: Performs a slew to the provided coordinates
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2382,6 +2405,7 @@ paths:
         Sync the scope, either by manually supplying the coordinates or by solving and syncing.
         if the coordinates are provided, the scope will be synced and no process will be started. Using solve and sync will always start a process and sync the rotator as well
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2524,6 +2548,7 @@ paths:
       summary: Move
       description: Move the rotator
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2559,6 +2584,7 @@ paths:
         Sync the rotator, either by manually supplying the sky angle or by solving and syncing. If the sky angle is omitted, a platesolve will be performed.
         if the sky angle is provided, the rotator will be synced and no process will be started. Using solve and sync will always start a process
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2719,6 +2745,7 @@ paths:
       summary: Set Value
       description: Set switch value
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2931,27 +2958,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /application/switch-tab:
+  /application/tab:
     get:
       tags:
         - Application
-      summary: Switch Tab
-      description: Switches the application tab
-      parameters:
-        - in: query
-          name: tab
-          description: The tab to switch to
-          required: true
-          schema:
-            type: string
-            enum:
-              - equipment
-              - skyatlas
-              - framing
-              - flatwizard
-              - sequencer
-              - imaging
-              - options
+      summary: Get Current Tab
+      description: Get the tab that is currently selected in NINA
       responses:
         "200":
           description: Success
@@ -2960,108 +2972,32 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
-                    type: string
-                    example: Switched tab
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Invalid application tab
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Invalid application tab
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                  CurrentTab:
+                    $ref: "#/components/schemas/ApplicationTabEnum"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
-  /application/get-tab:
-    get:
+    put:
       tags:
         - Application
-      summary: Get Tab
-      description: Gets the current application tab
+      summary: Set Tab
+      description: Set the tab that is currently selected in NINA
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationTabChangeRequest"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - equipment
-                      - skyatlas
-                      - framing
-                      - flatwizard
-                      - sequencer
-                      - imaging
-                      - options
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Invalid application tab
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Invalid application tab
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -3082,30 +3018,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: array
-                    format: string
-                    example:
-                      [
-                        "Advanced API",
-                        "Livestack",
-                        "Three Point Polar Alignment",
-                        "Touch 'N' Stars",
-                      ]
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                type: array
+                items:
+                  type: string
+                  examples:
+                    - Advanced API
+                    - Livestack
+                    - Three Point Polar Alignment
+                    - Touch 'N' Stars
         default:
           description: Request could not be carried out
           content:
@@ -3113,32 +3033,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /application/logs:
+  /application/plugin/settings:
     get:
       tags:
         - Application
-      summary: Logs
-      description: Get a list of the last N log entries, this will ignore the header of the file. The endpoint is limited by the log level set in NINA
-      parameters:
-        - in: query
-          name: lineCount
-          description: Return the last N lines of the log file, with N being the lineCount
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - in: query
-          name: level
-          description: Filter the log entries by level. This uses the provided level as a minimum level, so level INFO will return INFO, WARNING and ERROR entries
-          required: false
-          schema:
-            type: string
-            enum:
-              - TRACE
-              - DEBUG
-              - INFO
-              - WARNING
-              - ERROR
+      summary: Plugin Settings (Advanced API)
+      description: Get the Advanced API plugin settings
       responses:
         "200":
           description: Success
@@ -3147,41 +3047,85 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        Timestamp:
-                          type: string
-                          example: "2025-05-04T14:57:39.5079"
-                        Level:
-                          type: string
-                          example: "INFO"
-                        Source:
-                          type: string
-                          example: "CameraChooserVM.cs"
-                        Member:
-                          type: string
-                          example: "GetEquipment"
-                        Line:
-                          type: string
-                          example: "279"
-                        Message:
-                          type: string
-                          example: "Found 2 ASCOM Cameras"
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
+                  AccessControlHeaderEnabled:
                     type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                  ShouldCreateThumbnails:
+                    type: boolean
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /application/log/settings:
+    get:
+      tags:
+        - Application
+      summary: Log Settings
+      description: Get the log settings
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoggerSettings"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - Application
+      summary: Log Settings
+      description: Update the log settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoggerSettings"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /application/log:
+    get:
+      tags:
+        - Application
+      summary: Logs
+      description: Get a list of the last N log entries, this will ignore the header of the file. The endpoint is limited by the log level set in NINA
+      parameters:
+        - $ref: "#/components/parameters/PagerPage"
+        - $ref: "#/components/parameters/PagerPageSize"
+        - in: query
+          name: level
+          description: Filter the log entries by level. This uses the provided level as a minimum level, so level INFO will return INFO, WARNING and ERROR entries. This is limited by the log level set in NINA
+          required: false
+          schema:
+            $ref: "#/components/schemas/LogLevelEnum"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LogLine"
         default:
           description: Request could not be carried out
           content:
@@ -3196,70 +3140,23 @@ paths:
       summary: Screenshot
       description: Takes a screenshot
       parameters:
-        - in: query
-          name: resize
-          description: Whether to resize the screenshot.
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: quality
-          description: The quality of the screenshot, ranging from 1 (worst) to 100 (best). -1 or omitted for png
-          required: false
-          schema:
-            type: integer
-            format: int32
-        - in: query
-          name: size
-          description: The size of the screenshot ([width]x[height]). Requires resize to be true.
-          required: false
-          schema:
-            type: string
-        - in: query
-          name: scale
-          description: The scale of the screenshot. Requires resize to be true.
-          required: false
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: stream
-          description: Stream the image to the client. This will stream the image in image/jpg or image/png format.
-          required: false
-          schema:
-            type: boolean
+        - $ref: "#/components/parameters/ImageScale"
+        - $ref: "#/components/parameters/ImageWidth"
+        - $ref: "#/components/parameters/ImageHeight"
+        - $ref: "#/components/parameters/ImageFormat"
       responses:
         "200":
           description: Success
           content:
-            application/json:
+            image/jpeg:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: "<base64 encoded image>"
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                description: Image in jpeg format
+                type: string
+                format: binary
             image/png:
               schema:
-                description: Image in png format, when stream is set to true and the image quality is not specified or set to -1
-                type: array
-                format: binary
-            image/jpg:
-              schema:
-                description: Image in jpg format, when stream is set to true and the image quality is specified
-                type: array
+                description: Image in png format
+                type: string
                 format: binary
         default:
           description: Request could not be carried out
@@ -6108,6 +6005,24 @@ components:
         type: string
         format: guid
         example:
+
+    PagerPage:
+      in: query
+      name: page
+      description: Page number, starts at 0
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    PagerPageSize:
+      in: query
+      name: page-size
+      description: Page size. If set to -1, the whole list is returned
+      required: false
+      schema:
+        type: integer
+        default: 20
   schemas:
     CameraInfo:
       type: object
@@ -7845,6 +7760,70 @@ components:
         - WindGust
         - WindSpeed
         - Connected
+
+    ApplicationTabEnum:
+      type: string
+      enum:
+        - Equipment
+        - Skyatlas
+        - FramingAssistant
+        - Flatwizard
+        - Sequence
+        - Imaging
+        - Options
+
+    ApplicationTabChangeRequest:
+      type: object
+      properties:
+        Tab:
+          $ref: "#/components/schemas/ApplicationTabEnum"
+      required:
+        - Tab
+
+    LogLevelEnum:
+      type: string
+      enum:
+        - TRACE
+        - DEBUG
+        - INFO
+        - WARNING
+        - ERROR
+
+    LogLine:
+      type: object
+      properties:
+        Timestamp:
+          type: string
+          example: "2025-05-04T14:57:39.5079"
+        Level:
+          $ref: "#/components/schemas/LogLevelEnum"
+        Source:
+          type: string
+          example: "CameraChooserVM.cs"
+        Member:
+          type: string
+          example: "GetEquipment"
+        Line:
+          type: string
+          example: "279"
+        Message:
+          type: string
+          example: "Found 2 ASCOM Cameras"
+      required:
+        - Timestamp
+        - Level
+        - Source
+        - Member
+        - Line
+        - Message
+
+    LoggerSettings:
+      type: object
+      properties:
+        Level:
+          $ref: "#/components/schemas/LogLevelEnum"
+      required:
+        - Level
 
     FramingAssistantInfo:
       type: object

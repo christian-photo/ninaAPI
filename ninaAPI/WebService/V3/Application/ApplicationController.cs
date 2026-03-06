@@ -16,11 +16,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using EmbedIO;
 using EmbedIO.Routing;
@@ -54,9 +52,9 @@ namespace ninaAPI.WebService.V3.Application
         [Route(HttpVerbs.Get, "/log")]
         public async Task GetLogEntries()
         {
-            QueryParameter<int> lineCount = new QueryParameter<int>("lineCount", 100, false);
+            PagerParameterSet pagerParameter = PagerParameterSet.Default();
             QueryParameter<LogLevelEnum> logLevel = new QueryParameter<LogLevelEnum>("level", LogLevelEnum.INFO, false);
-            lineCount.Get(HttpContext);
+            pagerParameter.Evaluate(HttpContext);
             logLevel.Get(HttpContext);
 
             string currentLogFile = Directory.GetFiles(Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "Logs")).OrderByDescending(File.GetCreationTime).First();
@@ -70,11 +68,10 @@ namespace ninaAPI.WebService.V3.Application
                 logLines = content.Split('\n');
             }
 
-            List<string> filteredLogLines = logLines.Where(line => IsLineAboveLevel(line, logLevel.Value)).ToList();
-            filteredLogLines = filteredLogLines.TakeLast(lineCount.Value).ToList();
+            List<string> filteredLogLines = logLines.Where(line => IsLineAboveLevel(line, logLevel.Value)).Reverse().ToList();
+            filteredLogLines = new Pager<string>(filteredLogLines).GetPage(pagerParameter.PageParameter.Value, pagerParameter.PageSizeParameter.Value);
 
             List<LogLine> parsed = filteredLogLines.Select(LogLine.Parse).ToList();
-            parsed.Reverse();
 
             await responseHandler.SendObject(HttpContext, parsed);
         }
