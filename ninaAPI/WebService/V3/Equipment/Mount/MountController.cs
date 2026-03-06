@@ -88,13 +88,13 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             this.responseHandler = responseHandler;
         }
 
-        [Route(HttpVerbs.Get, "/")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.MountUrlName}")]
         public async Task MountInfo()
         {
             await responseHandler.SendObject(HttpContext, new MountInfoResponse(mount));
         }
 
-        [Route(HttpVerbs.Post, "/home")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/home")]
         public async Task MountHome()
         {
             if (!mount.GetInfo().Connected)
@@ -130,7 +130,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Patch, "/tracking")]
+        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.MountUrlName}/tracking")]
         public async Task MountTrackingUpdate([JsonData] UpdateTrackingModeBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
@@ -159,7 +159,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             await responseHandler.SendObject(HttpContext, new StringResponse("Tracking mode updated"));
         }
 
-        [Route(HttpVerbs.Post, "/park")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/park")]
         public async Task MountPark()
         {
             if (!mount.GetInfo().Connected)
@@ -191,7 +191,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/unpark")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/unpark")]
         public async Task MountUnpark()
         {
             if (!mount.GetInfo().Connected)
@@ -208,7 +208,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             await responseHandler.SendObject(HttpContext, new StringResponse("Unparked"));
         }
 
-        [Route(HttpVerbs.Post, "/flip")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/flip")]
         public async Task MountFlip([JsonData] MountFlipConfig config)
         {
             if (!mount.GetInfo().Connected)
@@ -244,7 +244,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/slew")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/slew")]
         public async Task MountSlew([JsonData] MountSlewConfig config)
         {
             if (!mount.GetInfo().Connected)
@@ -309,7 +309,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/slew/stop")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/slew/stop")]
         public async Task MountStopSlew()
         {
             if (!mount.GetInfo().Connected)
@@ -325,7 +325,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             await responseHandler.SendObject(HttpContext, new StringResponse("Stopped slew"));
         }
 
-        [Route(HttpVerbs.Patch, "/park")]
+        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.MountUrlName}/park")]
         public async Task MountSetPark()
         {
             if (!mount.GetInfo().Connected)
@@ -342,7 +342,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             await responseHandler.SendObject(HttpContext, new StringResponse("Park position set"));
         }
 
-        [Route(HttpVerbs.Patch, "/sync")]
+        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.MountUrlName}/sync")]
         public async Task MountSync([JsonData] MountSyncConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));

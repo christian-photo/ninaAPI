@@ -46,7 +46,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             this.processMediator = processMediator;
         }
 
-        [Route(HttpVerbs.Get, "/")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.DomeUrlName}")]
         public async Task DomeInfo()
         {
             DomeInfoResponse info = new DomeInfoResponse(dome, domeFollower);
@@ -54,7 +54,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, info);
         }
 
-        [Route(HttpVerbs.Post, "/shutter/open")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/shutter/open")]
         public async Task DomeOpenShutter()
         {
             if (!dome.GetInfo().Connected)
@@ -77,7 +77,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/shutter/close")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/shutter/close")]
         public async Task DomeCloseShutter()
         {
             if (!dome.GetInfo().Connected)
@@ -100,7 +100,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/stop-movement")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/stop-movement")]
         public async Task DomeStopMovement()
         {
             if (!dome.GetInfo().Connected)
@@ -119,7 +119,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, new StringResponse("Dome movement stopped"));
         }
 
-        [Route(HttpVerbs.Post, "/set-follow")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/set-follow")]
         public async Task DomeSetFollow([JsonData] DomeFollowBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
@@ -145,7 +145,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, new StringResponse("Dome follower updated"));
         }
 
-        [Route(HttpVerbs.Post, "/sync")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/sync")]
         public async Task DomeSync([JsonData] DomeSyncBody body)
         {
             if (!dome.GetInfo().Connected)
@@ -175,7 +175,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, new StringResponse("Dome synced"));
         }
 
-        [Route(HttpVerbs.Post, "/slew")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/slew")]
         public async Task DomeSlew([JsonData] DomeSlewBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
@@ -200,7 +200,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Patch, "/park")]
+        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.DomeUrlName}/park")]
         public async Task DomeSetPark()
         {
             if (!dome.GetInfo().Connected)
@@ -218,7 +218,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, new StringResponse("Park position set"));
         }
 
-        [Route(HttpVerbs.Post, "/park")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/park")]
         public async Task DomePark()
         {
             if (!dome.GetInfo().Connected)
@@ -249,7 +249,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/home")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/home")]
         public async Task DomeFindHome()
         {
             if (!dome.GetInfo().Connected)

@@ -2824,7 +2824,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/weather/info:
+  /equipment/weather:
     get:
       tags:
         - Weather
@@ -2845,14 +2845,14 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/weather/connect:
-    get:
+    post:
       tags:
         - Weather
       summary: Connect
       description: Connect to weather source
       parameters:
         - in: query
-          name: to
+          name: deviceId
           required: false
           description: The Id of the device that should be connected.
           schema:
@@ -2863,23 +2863,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Connected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2888,7 +2872,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/weather/disconnect:
-    get:
+    post:
       tags:
         - Weather
       summary: Disconnect
@@ -2899,23 +2883,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Disconnected
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -2944,7 +2912,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /equipment/weather/rescan:
-    get:
+    post:
       tags:
         - Weather
       summary: Rescan Sources
@@ -7801,91 +7769,82 @@ components:
     WeatherInfo:
       type: object
       properties:
-        Response:
-          type: object
-          properties:
-            AveragePeriod:
-              type: integer
-            CloudCover:
-              type: integer
-            DewPoint:
-              type: number
-            Humidity:
-              type: integer
-            Pressure:
-              type: integer
-            RainRate:
-              type: string
-            SkyBrightness:
-              type: string
-            SkyQuality:
-              type: string
-            SkyTemperature:
-              type: string
-            StarFWHM:
-              type: string
-            Temperature:
-              type: number
-            WindDirection:
-              type: integer
-            WindGust:
-              type: string
-            WindSpeed:
-              type: number
-            SupportedActions:
-              type: array
-              items: {}
-            Connected:
-              type: boolean
-            Name:
-              type: string
-            DisplayName:
-              type: string
-            Description:
-              type: string
-            DriverInfo:
-              type: string
-            DriverVersion:
-              type: string
-            DeviceId:
-              type: string
-          required:
-            - AveragePeriod
-            - CloudCover
-            - DewPoint
-            - Humidity
-            - Pressure
-            - RainRate
-            - SkyBrightness
-            - SkyQuality
-            - SkyTemperature
-            - StarFWHM
-            - Temperature
-            - WindDirection
-            - WindGust
-            - WindSpeed
-            - SupportedActions
-            - Connected
-            - Name
-            - DisplayName
-            - Description
-            - DriverInfo
-            - DriverVersion
-            - DeviceId
-        Error:
-          type: string
-        StatusCode:
-          type: integer
-        Success:
+        AveragePeriod:
+          type: number
+          description: Time period, in hours, over which to average sensor readings
+        CloudCover:
+          type: number
+          description: Percent of sky covered by clouds
+        DewPoint:
+          type: number
+          description: Atmospheric dew point reported in °C
+        Humidity:
+          type: number
+          description: Atmospheric humidity in percent (%)
+        Pressure:
+          type: number
+          description: Atmospheric presure in hectoPascals (hPa)
+        RainRate:
+          type: number
+          description: Rain rate in mm per hour
+        SkyBrightness:
+          type: number
+          description: Sky brightness in Lux
+        SkyQuality:
+          type: number
+          description: Sky quality measured in magnitudes per square arc second
+        SkyTemperature:
+          type: number
+          description: Sky temperature in °C
+        StarFWHM:
+          type: number
+          description: Seeing reported as star full width half maximum (arc seconds)
+        Temperature:
+          type: number
+          description: Ambient air temperature in °C
+        WindDirection:
+          type: number
+          description: Wind direction (degrees, 0..360.0)
+        WindGust:
+          type: number
+          description: Wind gust (m/s) Peak 3 second wind speed over the prior 2 minutes
+        WindSpeed:
+          type: number
+          description: Wind Speed in meters per second
+        SupportedActions:
+          type: array
+          items:
+            type: string
+        Connected:
           type: boolean
-        Type:
+        Name:
+          type: string
+        DisplayName:
+          type: string
+        Description:
+          type: string
+        DriverInfo:
+          type: string
+        DriverVersion:
+          type: string
+        DeviceId:
           type: string
       required:
-        - Response
-        - Error
-        - StatusCode
-        - Success
-        - Type
+        - AveragePeriod
+        - CloudCover
+        - DewPoint
+        - Humidity
+        - Pressure
+        - RainRate
+        - SkyBrightness
+        - SkyQuality
+        - SkyTemperature
+        - StarFWHM
+        - Temperature
+        - WindDirection
+        - WindGust
+        - WindSpeed
+        - Connected
 
     FramingAssistantInfo:
       type: object

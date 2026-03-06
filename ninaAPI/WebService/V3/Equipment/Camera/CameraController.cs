@@ -73,7 +73,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             this.captureMediator = new CaptureMediator(camera, filterWheel, profile, imaging, imageSave, status, processMediator);
         }
 
-        [Route(HttpVerbs.Get, "/")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.CameraUrlName}")]
         public async Task CameraInfo()
         {
             CameraInfoResponse info = new CameraInfoResponse(cam);
@@ -82,7 +82,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Post, "/cool")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.CameraUrlName}/cool")]
         public async Task CameraCool([JsonData] CoolCameraBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
@@ -110,7 +110,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Post, "/warm")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.CameraUrlName}/warm")]
         public async Task CameraWarm([JsonData] WarmCameraBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
@@ -138,7 +138,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Post, "/abort-exposure")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.CameraUrlName}/abort-exposure")]
         public async Task AbortExposure()
         {
             if (!cam.GetInfo().Connected)
@@ -156,7 +156,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Put, "/settings/dew-heater")]
+        [Route(HttpVerbs.Put, $"/{EquipmentConstants.CameraUrlName}/settings/dew-heater")]
         public async Task CameraDewHeater([JsonData] DewHeaterUpdateBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
@@ -176,7 +176,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Put, "/settings/binning")]
+        [Route(HttpVerbs.Put, $"/{EquipmentConstants.CameraUrlName}/settings/binning")]
         public async Task CameraSetBinning([JsonData] BinningMode binning)
         {
             if (!cam.GetInfo().Connected)
@@ -194,7 +194,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Put, "/settings/usb-limit")]
+        [Route(HttpVerbs.Put, $"/{EquipmentConstants.CameraUrlName}/settings/usb-limit")]
         public async Task CameraSetBinning([JsonData] USBLimitUpdateBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
@@ -215,7 +215,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Put, "/settings/readout")]
+        [Route(HttpVerbs.Put, $"/{EquipmentConstants.CameraUrlName}/settings/readout")]
         public async Task CameraSetReadout([JsonData] ReadoutModeUpdateBody body)
         {
             int readoutModes = cam.GetInfo().ReadoutModes.Count();
@@ -235,7 +235,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Put, "/settings/readout/image")]
+        [Route(HttpVerbs.Put, $"/{EquipmentConstants.CameraUrlName}/settings/readout/image")]
         public async Task CameraSetReadoutNormal()
         {
             int readoutModes = cam.GetInfo().ReadoutModes.Count();
@@ -255,7 +255,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Put, "/settings/readout/snapshot")]
+        [Route(HttpVerbs.Put, $"/{EquipmentConstants.CameraUrlName}/settings/readout/snapshot")]
         public async Task CameraSetReadoutSnapshot()
         {
             int readoutModes = cam.GetInfo().ReadoutModes.Count();
@@ -276,7 +276,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
 
         // Documented
-        [Route(HttpVerbs.Post, "/capture")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.CameraUrlName}/capture")]
         public async Task CameraCapture([JsonData] CaptureConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
@@ -327,7 +327,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Get, "/capture/{id}")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.CameraUrlName}/capture/{{id}}")]
         public async Task CameraCaptureImage(Guid id)
         {
             ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile.ActiveProfile);
@@ -354,7 +354,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Get, "/capture/{id}/analysis")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.CameraUrlName}/capture/{{id}}/analysis")]
         public async Task CameraCaptureStats(Guid id)
         {
             QueryParameter<RawConverterEnum> rawConverterParameter = new QueryParameter<RawConverterEnum>("raw-converter", profile.ActiveProfile.CameraSettings.RawConverter, false);
@@ -385,7 +385,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         }
 
         // Documented
-        [Route(HttpVerbs.Post, "/capture/{id}/solve")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.CameraUrlName}/capture/{{id}}/solve")]
         public async Task CameraCaptureSolve(Guid id, [JsonData] PlatesolveConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
@@ -418,7 +418,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         /// </summary>
         /// <param name="id">The id of the capture that will be removed</param>
         /// <returns></returns>
-        [Route(HttpVerbs.Delete, "/capture/{id}")]
+        [Route(HttpVerbs.Delete, $"/{EquipmentConstants.CameraUrlName}/capture/{{id}}")]
         public async Task CameraRemoveCapture(Guid id)
         {
             var capture = captureMediator.GetCapture(id) ?? throw new HttpException(HttpStatusCode.NotFound, "Capture not found");

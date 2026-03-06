@@ -42,13 +42,13 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             this.processMediator = processMediator;
         }
 
-        [Route(HttpVerbs.Get, "/")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.FilterWheelUrlName}/info")]
         public async Task FilterWheelInfo()
         {
             await responseHandler.SendObject(HttpContext, new FilterWheelInfoResponse(filterWheel, profile.ActiveProfile));
         }
 
-        [Route(HttpVerbs.Put, "/filter")]
+        [Route(HttpVerbs.Put, $"/{EquipmentConstants.FilterWheelUrlName}/filter")]
         public async Task SetFilter()
         {
             QueryParameter<short> positionParameter = new QueryParameter<short>("position", 0, true, (position) => position.IsBetween(0, profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1));
@@ -73,7 +73,7 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/filter")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.FilterWheelUrlName}/filter")]
         public async Task AddFilter([JsonData] FilterData filter)
         {
             Validator.ValidateObject(filter, new ValidationContext(filter));
@@ -94,7 +94,7 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             await responseHandler.SendObject(HttpContext, FilterData.FromFilter(filterInfo));
         }
 
-        [Route(HttpVerbs.Delete, "/filter")]
+        [Route(HttpVerbs.Delete, $"/{EquipmentConstants.FilterWheelUrlName}/filter")]
         public async Task RemoveFilter()
         {
             QueryParameter<short> positionParameter = new QueryParameter<short>("position", 0, true, (position) => position.IsBetween(0, profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1));

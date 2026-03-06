@@ -65,13 +65,13 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
             this.responseHandler = responseHandler;
         }
 
-        [Route(HttpVerbs.Get, "/")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.RotatorUrlName}")]
         public async Task RotatorInfo()
         {
             await responseHandler.SendObject(HttpContext, new RotatorInfoResponse(rotator));
         }
 
-        [Route(HttpVerbs.Post, "/move")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.RotatorUrlName}/home")]
         public async Task RotatorMove([JsonData] RotatorMoveConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
@@ -109,7 +109,7 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Patch, "/sync")]
+        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.RotatorUrlName}/park")]
         public async Task RotatorSync([JsonData] RotatorSyncConfig config)
         {
             if (!rotator.GetInfo().Connected)

@@ -55,14 +55,14 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             this.autofocusFactory = autofocusFactory;
         }
 
-        [Route(HttpVerbs.Get, "/")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.FocuserUrlName}")]
         public async Task FocuserInfo()
         {
             await responseHandler.SendObject(HttpContext, new FocuserInfoResponse(focuser));
         }
 
 
-        [Route(HttpVerbs.Post, "/move")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.FocuserUrlName}/move")]
         public async Task FocuserMove([JsonData] FocuserMoveBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
@@ -83,7 +83,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Patch, "/temp-comp")]
+        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.FocuserUrlName}/temp-comp")]
         public async Task FocuserTemperatureCompensation([JsonData] FocuserTempCompBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
@@ -104,7 +104,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
 
         private IAutoFocusVM autoFocusVM;
 
-        [Route(HttpVerbs.Post, "/auto-focus")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.FocuserUrlName}/auto-focus")]
         public async Task StartAutoFocus()
         {
             if (!focuser.GetInfo().Connected)
@@ -130,7 +130,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Get, "/auto-focus/list-reports")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.FocuserUrlName}/auto-focus/list-reports")]
         public async Task AutoFocusListReports()
         {
             var files = FileSystemHelper.GetFilesRecursively(FileSystemHelper.GetAutofocusFolder());
@@ -143,7 +143,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             await responseHandler.SendObject(HttpContext, response);
         }
 
-        [Route(HttpVerbs.Get, "/auto-focus/get-report")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.FocuserUrlName}/auto-focus/get-report")]
         public async Task AutoFocusGetReport()
         {
             QueryParameter<string> filenameParameter = new QueryParameter<string>("filename", string.Empty, true);

@@ -29,7 +29,7 @@ namespace ninaAPI.WebService.V3.Equipment.Weather
             this.responseHandler = responseHandler;
         }
 
-        [Route(HttpVerbs.Get, "/")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.WeatherUrlName}")]
         public async Task WeatherInfo()
         {
             await responseHandler.SendObject(HttpContext, weather.GetInfo());

@@ -35,13 +35,13 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
             this.responseHandler = responseHandler;
         }
 
-        [Route(HttpVerbs.Get, "/")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.FlatDeviceUrlName}")]
         public async Task FlatInfo()
         {
             await responseHandler.SendObject(HttpContext, new FlatInfoResponse(flatDevice));
         }
 
-        [Route(HttpVerbs.Patch, "/light")]
+        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.FlatDeviceUrlName}/light")]
         public async Task FlatLight([JsonData] FlatLightUpdateBody body)
         {
             if (!flatDevice.GetInfo().Connected)
@@ -58,7 +58,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
             await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice light set"));
         }
 
-        [Route(HttpVerbs.Patch, "/brightness")]
+        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.FlatDeviceUrlName}/brightness")]
         public async Task FlatBrightness([JsonData] FlatBrightnessUpdateBody body)
         {
             if (!flatDevice.GetInfo().Connected)
@@ -75,7 +75,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
             await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice brightness set"));
         }
 
-        [Route(HttpVerbs.Post, "/cover/open")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.FlatDeviceUrlName}/cover/open")]
         public async Task FlatCoverOpen()
         {
             if (!flatDevice.GetInfo().Connected)
@@ -92,7 +92,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
             await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice cover open"));
         }
 
-        [Route(HttpVerbs.Post, "/cover/close")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.FlatDeviceUrlName}/cover/close")]
         public async Task FlatCoverClose()
         {
             if (!flatDevice.GetInfo().Connected)

@@ -30,7 +30,7 @@ namespace ninaAPI.WebService.V3.Equipment.Safety
             this.responseHandler = responseHandler;
         }
 
-        [Route(HttpVerbs.Get, "/")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.SafetyMonitorUrlName}")]
         public async Task SafetyInfo()
         {
             await responseHandler.SendObject(HttpContext, new SafetyInfoResponse(safety));

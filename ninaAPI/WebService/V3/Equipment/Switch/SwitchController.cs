@@ -38,13 +38,13 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
             this.responseHandler = responseHandler;
         }
 
-        [Route(HttpVerbs.Get, "/")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.SwitchUrlName}")]
         public async Task SwitchInfo()
         {
             await responseHandler.SendObject(HttpContext, new SwitchInfoResponse(@switch));
         }
 
-        [Route(HttpVerbs.Patch, "/")]
+        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.SwitchUrlName}")]
         public async Task SwitchSetValue([JsonData] SwitchSetValueConfig config)
         {
             if (!@switch.GetInfo().Connected)

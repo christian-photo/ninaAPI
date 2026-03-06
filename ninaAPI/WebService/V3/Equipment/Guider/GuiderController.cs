@@ -39,13 +39,13 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
             this.responseHandler = responseHandler;
         }
 
-        [Route(HttpVerbs.Get, "/")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.GuiderUrlName}")]
         public async Task GuiderInfo()
         {
             await responseHandler.SendObject(HttpContext, new GuiderInfoResponse(guider));
         }
 
-        [Route(HttpVerbs.Post, "/guiding/start")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.GuiderUrlName}/guiding/start")]
         public async Task StartGuiding([JsonData] GuiderStartGuidingBody body)
         {
             if (!guider.GetInfo().Connected)
@@ -64,7 +64,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, "/guiding/stop")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.GuiderUrlName}/guiding/stop")]
         public async Task StopGuiding()
         {
             if (!guider.GetInfo().Connected)
@@ -77,7 +77,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
             await responseHandler.SendObject(HttpContext, new StringResponse("Guiding stopped"));
         }
 
-        [Route(HttpVerbs.Post, "/guiding/dither")]
+        [Route(HttpVerbs.Post, $"/{EquipmentConstants.GuiderUrlName}/guiding/dither")]
         public async Task Dither()
         {
             if (!guider.GetInfo().Connected)
@@ -96,7 +96,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
             await responseHandler.SendObject(HttpContext, response, statusCode);
         }
 
-        [Route(HttpVerbs.Delete, "/guiding/calibration")]
+        [Route(HttpVerbs.Delete, $"/{EquipmentConstants.GuiderUrlName}/guiding/calibration")]
         public async Task ClearCalibration()
         {
             if (!guider.GetInfo().Connected)
@@ -113,7 +113,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
             await responseHandler.SendObject(HttpContext, new StringResponse("Calibration cleared"));
         }
 
-        [Route(HttpVerbs.Get, "/guiding")]
+        [Route(HttpVerbs.Get, $"/{EquipmentConstants.GuiderUrlName}/guiding")]
         public async Task GuidingGraph()
         {
             var pagerParameter = PagerParameterSet.Default();
@@ -124,7 +124,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
             await responseHandler.SendObject(HttpContext, steps.GetPage(pagerParameter.PageParameter.Value, pagerParameter.PageSizeParameter.Value));
         }
 
-        [Route(HttpVerbs.Patch, "/guiding")]
+        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.GuiderUrlName}/guiding")]
         public async Task SetGuidingHistoryLength([JsonData] GuidingHistoryLengthBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
