@@ -26,7 +26,7 @@ namespace ninaAPI.WebService.V3.Model
         public string TargetName { get; set; }
         public int Gain { get; set; }
         public int Offset { get; set; }
-        public DateTime Date { get; set; }
+        public DateTime ExposureSave { get; set; }
         public string TelescopeName { get; set; }
         public double FocalLength { get; set; }
         public double StDev { get; set; }
@@ -59,7 +59,7 @@ namespace ninaAPI.WebService.V3.Model
                 CameraName = e.MetaData.Camera.Name,
                 Gain = e.MetaData.Camera.Gain,
                 Offset = e.MetaData.Camera.Offset,
-                Date = DateTime.Now,
+                ExposureSave = DateTime.Now,
                 TelescopeName = e.MetaData.Telescope.Name,
                 FocalLength = e.MetaData.Telescope.FocalLength,
                 StDev = e.Statistics.StDev,

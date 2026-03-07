@@ -29,6 +29,7 @@ namespace ninaAPI.WebService.V3.Application.Framing
         public string DSOName { get; set; } = framing.DSO.Name;
         public double FieldOfView { get; set; } = framing.FieldOfView;
         public double FocalLength { get; set; } = framing.FocalLength;
+        public double? PositionAngle { get; set; } = framing.Rectangle?.DSOPositionAngle;
         public int HorizontalPanels { get; set; } = framing.HorizontalPanels;
         public int VerticalPanels { get; set; } = framing.VerticalPanels;
         public SkySurveySource FramingSource { get; set; } = framing.FramingAssistantSource;

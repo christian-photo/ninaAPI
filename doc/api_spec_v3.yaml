@@ -820,7 +820,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CaptureAnalysis"
+                $ref: "#/components/schemas/PlatesolveResult"
         default:
           description: Request could not be carried out
           content:
@@ -3165,7 +3165,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /framing/info:
+  /framing:
     get:
       tags:
         - Framing Assistant
@@ -3177,81 +3177,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FramingAssistantInfo"
+                $ref: "#/components/schemas/FramingInfoContainer"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
-  /framing/set-source:
-    get:
+    patch:
       tags:
         - Framing Assistant
-      summary: Set Source
-      description: Set framing assistant source. This requires the framing assistant to be initalized, which can by achieved by openening it once.
-      parameters:
-        - in: query
-          name: source
-          description: The source to set
-          required: true
-          schema:
-            type: string
-            enum:
-              - NASA
-              - SKYSERVER
-              - STSCI
-              - ESO
-              - HIPS2FITS
-              - SKYATLAS
-              - FILE
-              - CACHE
+      summary: Update
+      description: Update framing assistant configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FramingUpdate"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Source updated
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Invalid source
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Invalid source
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/FramingInfoContainer"
         default:
           description: Request could not be carried out
           content:
@@ -3259,214 +3209,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /framing/set-coordinates:
-    get:
-      tags:
-        - Framing Assistant
-      summary: Set Coordinates
-      description: Set framing assistant coordinates. This requires the framing assistant to be initalized, which can by achieved by openening it once.
-      parameters:
-        - in: query
-          name: RAangle
-          description: The RA angle to set
-          required: true
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: DecAngle
-          description: The Dec angle to set
-          required: true
-          schema:
-            type: number
-            format: double
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Coordinates updated
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /framing/slew:
-    get:
-      tags:
-        - Framing Assistant
-      summary: Slew
-      description: Slew the mount to the current coordinates. This requires the framing assistant to be initalized, which can by achieved by openening it once.
-      parameters:
-        - in: query
-          name: slew_option
-          description: The slew option to use. Possible values&#58; Center, Rotate. If this is omitted, it is a simple slew.
-          required: false
-          schema:
-            type: string
-            enum:
-              - Center
-              - Rotate
-        - in: query
-          name: waitForResult
-          description: Whether to wait for the slew to finish
-          required: false
-          schema:
-            type: boolean
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    enum:
-                      - Slew started
-                      - Slew finished
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /framing/set-rotation:
-    get:
-      tags:
-        - Framing Assistant
-      summary: Set Rotation
-      description: Set framing assistant rotation. This requires the framing assistant to be initalized, which can by achieved by openening it once.
-      parameters:
-        - in: query
-          name: rotation
-          description: The rotation to set
-          required: true
-          schema:
-            type: number
-            format: double
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Rotation updated
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /framing/determine-rotation:
-    get:
+  /framing/solve-rotation:
+    post:
       tags:
         - Framing Assistant
       summary: Determine Rotation
-      description: Determine rotation from camera. This does nothing else than what the button in the framing assistant does. If waitForResult is set to true, the method will wait until the rotation is determined. This will only work if an image is loaded in the framing assistant
-      parameters:
-        - in: query
-          name: waitForResult
-          description: Whether to wait for the result.
-          required: false
-          schema:
-            type: boolean
+      description: Determine rotation from camera. This does exactly what the button in the framing assistant does. This will only work if an image is loaded in the framing assistant
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: object
-                    properties:
-                      Response:
-                        type: string
-                        example: Determine rotation started
-                      Error:
-                        type: string
-                        example: ""
-                      StatusCode:
-                        type: integer
-                        example: 200
-                      Success:
-                        type: boolean
-                        example: true
-                      Type:
-                        type: string
-                        example: "API"
-                  - $ref: "#/components/schemas/FramingAssistantInfo"
-        "400":
+                $ref: "#/components/schemas/ProcessStart200"
+        "409":
           description: Process could not be started
           content:
             application/json:
               schema:
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Could not start process
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
@@ -3488,168 +3251,33 @@ paths:
           schema:
             type: integer
             format: int32
-        - in: query
-          name: resize
-          description: Whether to resize the image.
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: quality
-          description: The quality of the image, ranging from 1 (worst) to 100 (best). -1 or omitted for png
-          required: false
-          schema:
-            type: integer
-            format: int32
-        - in: query
-          name: size
-          description: The size of the image ([width]x[height]). Requires resize to be true.
-          required: false
-          schema:
-            type: string
-        - in: query
-          name: scale
-          description: The scale of the image. Requires resize to be true.
-          required: false
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: factor
-          description: The stretch factor to apply, between 0 and 1. Defaults to what is configured in the profile.
-          required: false
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: blackClipping
-          description: The black clipping to apply. Defaults to what is configured in the profile.
-          required: false
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: unlinked
-          description: Indicates if the stretch should be unlinked. Defaults to what is configured in the profile.
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: stream
-          description: Stream the image to the client. This will stream the image in image/jpg or image/png format.
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: debayer
-          description: Indicates if the image should be debayered
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: bayerPattern
-          description:
-            What bayer pattern to use for debayering, if debayer is true. If this is not specified, the api will try to use the bayer pattern that is configured in the profile as its first option,
-            if that is set to Auto, the api will try to use the bayer pattern reported by the camera if it is connected. The fallback value is Monochrome.
-          required: false
-          schema:
-            type: string
-            enum:
-              - Monochrome
-              - Color
-              - RGGB
-              - CMYG
-              - CMYG2
-              - LRGB
-              - BGGR
-              - GBRG
-              - GRBG
-              - GRGB
-              - GBGR
-              - RGBG
-              - BGRG
-        - in: query
-          name: autoPrepare
-          description: Setting this to true will leave all processing up to NINA and you will recieve exactly the same image as you see in NINA. All other parameters related to image processing will have no effect.
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: imageType
-          description: Filter the image history by image type. This is useful if you got the index of an image using the history with a filter and now want to get the image. E.g. the 3rd flat in the image history is the 3rd flat in the image endpoint.
-          required: false
-          schema:
-            type: string
-            enum:
-              - LIGHT
-              - FLAT
-              - DARK
-              - BIAS
-              - SNAPSHOT
-        - in: query
-          name: raw_fits
-          description: Whether to send the image (without streaming) as a raw FITS format. Will return an error if the image is not of type FITS.
-          required: false
-          schema:
-            type: boolean
+        - $ref: "#/components/parameters/ImageType"
+        - $ref: "#/components/parameters/ImageWidth"
+        - $ref: "#/components/parameters/ImageHeight"
+        - $ref: "#/components/parameters/ImageScale"
+        - $ref: "#/components/parameters/ImageQuality"
+        - $ref: "#/components/parameters/ImageFormat"
+        - $ref: "#/components/parameters/ImageStretchEnabled"
+        - $ref: "#/components/parameters/ImageStretchFactor"
+        - $ref: "#/components/parameters/ImageDebayerEnabled"
+        - $ref: "#/components/parameters/BayerPattern"
+        - $ref: "#/components/parameters/ImageUnlinkedStretchEnabled"
+        - $ref: "#/components/parameters/ImageBlackClipping"
+        - $ref: "#/components/parameters/RawConverter"
       responses:
         "200":
           description: Success
           content:
-            application/json:
+            image/jpeg:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: "<base64 encoded image>"
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                description: Image in jpeg format
+                type: string
+                format: binary
             image/png:
               schema:
-                description: Image in png format, when stream is set to true and the image quality is not specified or set to -1
-                type: array
+                description: Image in png format
+                type: string
                 format: binary
-            image/jpg:
-              schema:
-                description: Image in jpg format, when stream is set to true and the image quality is specified
-                type: array
-                format: binary
-        "400":
-          description: Invalid image index / invalid bayer pattern / image is not a FITS file
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Index out of range
-                      - Invalid bayer pattern
-                      - Image is not a FITS file
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
         default:
           description: Request could not be carried out
           content:
@@ -3657,282 +3285,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /prepared-image:
-    get:
-      tags:
-        - Image
-      summary: Get Prepared Image
-      description: Get the last prepared image. This is the image that is shown in NINA in the image dockable.
-      parameters:
-        - in: query
-          name: resize
-          description: Whether to resize the image.
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: quality
-          description: The quality of the image, ranging from 1 (worst) to 100 (best). -1 or omitted for png
-          required: false
-          schema:
-            type: integer
-            format: int32
-        - in: query
-          name: size
-          description: The size of the image ([width]x[height]). Requires resize to be true.
-          required: false
-          schema:
-            type: string
-        - in: query
-          name: scale
-          description: The scale of the image. Requires resize to be true.
-          required: false
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: factor
-          description: The stretch factor to apply, between 0 and 1. Defaults to what is configured in the profile.
-          required: false
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: blackClipping
-          description: The black clipping to apply. Defaults to what is configured in the profile.
-          required: false
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: unlinked
-          description: Indicates if the stretch should be unlinked. Defaults to what is configured in the profile.
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: debayer
-          description: Indicates if the image should be debayered
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: bayerPattern
-          description:
-            What bayer pattern to use for debayering, if debayer is true. If this is not specified, the api will try to use the bayer pattern that is configured in the profile as its first option,
-            if that is set to Auto, the api will try to use the bayer pattern reported by the camera if it is connected. The fallback value is Monochrome.
-          required: false
-          schema:
-            type: string
-            enum:
-              - Monochrome
-              - Color
-              - RGGB
-              - CMYG
-              - CMYG2
-              - LRGB
-              - BGGR
-              - GBRG
-              - GRBG
-              - GRGB
-              - GBGR
-              - RGBG
-              - BGRG
-        - in: query
-          name: autoPrepare
-          description: Setting this to true will leave all processing up to NINA and you will recieve exactly the same image as you see in NINA. All other parameters related to image processing will have no effect.
-          required: false
-          schema:
-            type: boolean
-      responses:
-        "200":
-          description: Success
-          content:
-            image/png:
-              schema:
-                description: Image in png format, when stream is set to true and the image quality is not specified or set to -1
-                type: array
-                format: binary
-            image/jpg:
-              schema:
-                description: Image in jpg format, when stream is set to true and the image quality is specified
-                type: array
-                format: binary
-        "400":
-          description: Invalid image index / invalid bayer pattern / image is not a FITS file
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Invalid bayer pattern
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /image-history:
-    get:
-      tags:
-        - Image
-      summary: Get Image History
-      description: Get image history. Only one parameter is required
-      parameters:
-        - in: query
-          name: all
-          description: Whether to get all images or only the current image
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: index
-          description: The index of the image to get
-          required: false
-          schema:
-            type: integer
-            format: int32
-        - in: query
-          name: count
-          description: Whether to count the number of images
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: imageType
-          description:
-            Filter by image type. This will restrict the result to images of the specified type, meaning that count for example will only count images of the specified type.
-            If this is omitted, all images are included.
-          required: false
-          schema:
-            type: string
-            enum:
-              - LIGHT
-              - FLAT
-              - DARK
-              - BIAS
-              - SNAPSHOT
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    oneOf:
-                      - type: array
-                        items:
-                          type: object
-                          properties:
-                            ExposureTime:
-                              type: number
-                            ImageType:
-                              type: string
-                              enum:
-                                - LIGHT
-                                - FLAT
-                                - DARK
-                                - BIAS
-                                - SNAPSHOT
-                            Filter:
-                              type: string
-                            RmsText:
-                              type: string
-                            Temperature:
-                              type: string
-                            CameraName:
-                              type: string
-                            Gain:
-                              type: integer
-                            Offset:
-                              type: integer
-                            Date:
-                              type: string
-                            TelescopeName:
-                              type: string
-                            FocalLength:
-                              type: number
-                            StDev:
-                              type: number
-                            Mean:
-                              type: number
-                            Median:
-                              type: number
-                            Stars:
-                              type: integer
-                            HFR:
-                              type: number
-                            IsBayered:
-                              type: boolean
-                      - type: integer
-                        description: The number of images
-                        example: 1
-                        minimum: 0
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Invalid image index
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Index out of range
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /image/thumbnail/{index}:
+  /image/{index}/thumbnail:
     get:
       tags:
         - Image
       summary: Get Thumbnail
-      description: Get the thumbnail of an image. This requies Create Thumbnails to be enabled in NINA. Otherwise, use the image endpoint and resize the image. This thumbnail has a width of 256px.
+      description: Get thumbnail of image. Requires "Should creat thumbnails" to be enabled in the plugin settings.
       parameters:
         - in: path
           name: index
@@ -3941,49 +3299,155 @@ paths:
           schema:
             type: integer
             format: int32
-        - in: query
-          name: imageType
-          description: Filter the image history by image type. This is useful if you got the index of an image using the history with a filter and now want to get the image. E.g. the 3rd flat in the image history is the 3rd flat in the image endpoint.
-          required: false
-          schema:
-            type: string
-            enum:
-              - LIGHT
-              - FLAT
-              - DARK
-              - BIAS
-              - SNAPSHOT
+        - $ref: "#/components/parameters/ImageType"
       responses:
         "200":
           description: Success
           content:
-            image/jpg:
+            image/jpeg:
               schema:
-                description: Image in jpg format, when stream is set to true and the image quality is specified
-                type: array
+                description: Image in jpeg format
+                type: string
                 format: binary
-        "400":
-          description: No thumbnails available
+            image/png:
+              schema:
+                description: Image in png format
+                type: string
+                format: binary
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /image/{index}/raw:
+    get:
+      tags:
+        - Image
+      summary: Get Raw Image
+      description: Get the raw image data of the image. If the image is a fits, the headers will be populated with metadata before sending the image.
+      parameters:
+        - in: path
+          name: index
+          description: The index of the image to get
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - $ref: "#/components/parameters/ImageType"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/octet-stream:
+              schema:
+                description: The image in its raw format
+                type: string
+                format: binary
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /image/{index}/prefix:
+    patch:
+      tags:
+        - Image
+      summary: Prefix Image Name
+      description: Prefix the filename of the image with a provided string
+      parameters:
+        - in: path
+          name: index
+          description: The index of the image to prefix
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - $ref: "#/components/parameters/ImageType"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImagePrefixBody"
+      responses:
+        "200":
+          description: Success
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  Response:
+                  OldFilename:
                     type: string
-                    example: ""
-                  Error:
+                    description: The filename of the image before the prefix was applied
+                  NewFilename:
                     type: string
-                    example: "No thumbnails available"
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                    description: The filename of the image after the prefix was applied
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /image/{index}/solve:
+    post:
+      tags:
+        - Image
+      summary: Solve Image
+      description: Solve the image
+      parameters:
+        - in: path
+          name: index
+          description: The index of the image to solve
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - $ref: "#/components/parameters/ImageType"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlatesolveConfig"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatesolveResult"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /image/history:
+    get:
+      tags:
+        - Image
+      summary: Get Image History
+      description: Get the image history, each entry contains metadata about the image
+      parameters:
+        - $ref: "#/components/parameters/ImageType"
+        - $ref: "#/components/parameters/PagerPage"
+        - $ref: "#/components/parameters/PagerPageSize"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ImageResponse"
         default:
           description: Request could not be carried out
           content:
@@ -5873,6 +5337,13 @@ paths:
 
 components:
   parameters:
+    ImageType:
+      name: imageType
+      in: query
+      description: Use for filtering the image history by image type
+      required: false
+      schema:
+        $ref: "#/components/schemas/ImageTypeEnum"
     ImageFormat:
       name: format
       in: query
@@ -6250,6 +5721,65 @@ components:
             - USBLimitMin
             - USBLimitMax
             - Connected
+
+    PlatesolveResult:
+      type: object
+      properties:
+        SolveTime:
+          type: string
+          format: date-time
+          example: "2025-05-04T14:57:39.5079"
+        Orientation:
+          type: number
+          description: Deprecated, use PositionAngle instead
+          deprecated: true
+        PositionAngle:
+          type: number
+          format: double
+          description: The position angle of the frame in degrees
+        Pixscale:
+          type: number
+          format: double
+          description: The pixel scale of the frame in arcseconds
+        Radius:
+          type: number
+          format: double
+          description: The radius of the frame in arcseconds
+        Coordinates:
+          $ref: "#/components/schemas/NINACoordinates"
+        Flipped:
+          type: boolean
+          description: Indicates if the frame is flipped
+        Success:
+          type: boolean
+          description: Indicates if the plate solve was successful
+        RaErrorString:
+          type: string
+          description: The RA error in a HMS format
+        RaPixError:
+          type: number
+          format: double
+          description: The RA error in pixels
+        DecPixError:
+          type: number
+          format: double
+          description: The Dec error in pixels
+        DecErrorString:
+          type: string
+          description: The Dec error in a DMS format
+      required:
+        - SolveTime
+        - Orientation
+        - PositionAngle
+        - Pixscale
+        - Radius
+        - Coordinates
+        - Flipped
+        - Success
+        - RaErrorString
+        - RaPixError
+        - DecPixError
+        - DecErrorString
 
     DomeInfo:
       type: object
@@ -7825,113 +7355,206 @@ components:
       required:
         - Level
 
-    FramingAssistantInfo:
+    FramingInfoContainer:
       type: object
       properties:
-        Response:
-          type: object
-          properties:
-            BoundHeight:
-              type: integer
-            BoundWidth:
-              type: integer
-            CameraHeight:
-              type: integer
-            CameraWidth:
-              type: integer
-            CameraPixelSize:
-              type: integer
-            DecDegrees:
-              type: integer
-            DecMinutes:
-              type: integer
-            DecSeconds:
-              type: integer
-            RAHours:
-              type: integer
-            RAMinutes:
-              type: integer
-            RASeconds:
-              type: integer
-            FieldOfView:
-              type: integer
-            FocalLength:
-              type: integer
-            HorizontalPanels:
-              type: integer
-            VerticalPanels:
-              type: integer
-            Rectangle:
-              type: object
-              properties:
-                OriginalX:
-                  type: integer
-                OriginalY:
-                  type: integer
-                Id:
-                  type: integer
-                DSOPositionAngle:
-                  type: integer
-                OriginalOffset:
-                  type: integer
-                RotationOffset:
-                  type: integer
-                Rotation:
-                  type: integer
-                TotalRotation:
-                  type: integer
-                X:
-                  type: integer
-                Y:
-                  type: integer
-                Width:
-                  type: integer
-                Height:
-                  type: integer
-              required:
-                - OriginalX
-                - OriginalY
-                - Id
-                - DSOPositionAngle
-                - OriginalOffset
-                - RotationOffset
-                - Rotation
-                - TotalRotation
-                - X
-                - Y
-                - Width
-                - Height
-          required:
-            - BoundHeight
-            - BoundWidth
-            - CameraHeight
-            - CameraWidth
-            - CameraPixelSize
-            - DecDegrees
-            - DecMinutes
-            - DecSeconds
-            - RAHours
-            - RAMinutes
-            - RASeconds
-            - FieldOfView
-            - FocalLength
-            - HorizontalPanels
-            - VerticalPanels
-            - Rectangle
-        Error:
-          type: string
-        StatusCode:
+        BoundHeight:
+          type: number
+        BoundWidth:
+          type: number
+        CameraHeight:
           type: integer
-        Success:
-          type: boolean
-        Type:
+        CameraWidth:
+          type: integer
+        CameraPixelSize:
+          type: number
+        Coordinates:
+          $ref: "#/components/schemas/NINACoordinates"
+        DSOName:
           type: string
+        FieldOfView:
+          type: number
+        FocalLength:
+          type: number
+        PositionAngle:
+          type: number
+        HorizontalPanels:
+          type: integer
+        VerticalPanels:
+          type: integer
+        FramingSource:
+          $ref: "#/components/schemas/SkySurveySource"
       required:
-        - Response
-        - Error
-        - StatusCode
-        - Success
-        - Type
+        - BoundHeight
+        - BoundWidth
+        - CameraHeight
+        - CameraWidth
+        - CameraPixelSize
+        - Coordinates
+        - DSOName
+        - FieldOfView
+        - FocalLength
+        - HorizontalPanels
+        - VerticalPanels
+        - FramingSource
+
+    FramingUpdate:
+      type: object
+      properties:
+        BoundHeight:
+          type: number
+        BoundWidth:
+          type: number
+        CameraHeight:
+          type: integer
+        CameraWidth:
+          type: integer
+        CameraPixelSize:
+          type: number
+        Coordinates:
+          $ref: "#/components/schemas/HttpCoordinates"
+        DSOName:
+          type: string
+        FieldOfView:
+          type: number
+        FocalLength:
+          type: number
+        PositionAngle:
+          type: number
+        HorizontalPanels:
+          type: integer
+        VerticalPanels:
+          type: integer
+        FramingSource:
+          $ref: "#/components/schemas/SkySurveySource"
+
+    SkySurveySource:
+      type: string
+      enum:
+        - NASA
+        - SKYSERVER
+        - STSCI
+        - ESO
+        - HIPS2FITS
+        - SKYATLAS
+        - FILE
+        - CACHE
+
+    ImageTypeEnum:
+      type: string
+      enum:
+        - LIGHT
+        - FLAT
+        - BIAS
+        - DARK
+        - SNAPSHOT
+
+    ImagePrefixBody:
+      type: object
+      properties:
+        Prefix:
+          type: string
+          description: The prefix to add to the image name
+          example: Good_
+      required:
+        - Prefix
+
+    ImageResponse:
+      type: object
+      properties:
+        ExposureTime:
+          type: number
+          description: The exposure time of the image in seconds
+        ImageType:
+          $ref: "#/components/schemas/ImageTypeEnum"
+        Filter:
+          type: string
+          description: The filter used to take the image
+        RmsText:
+          type: string
+          description: The rms of the image
+        Temperature:
+          type: number
+          description: The temperature of the camera
+        CameraName:
+          type: string
+          description: The name of the camera
+        TargetName:
+          type: string
+          description: The name of the target
+        Gain:
+          type: integer
+          description: The gain of the camera
+        Offset:
+          type: integer
+          description: The offset of the camera
+        ExposureSave:
+          type: string
+          format: date-time
+          description: The time the image was saved
+        TelescopeName:
+          type: string
+          description: The name of the telescope
+        FocalLength:
+          type: number
+          description: The focal length of the telescope
+        StDev:
+          type: number
+          description: The standard deviation of the image
+        Mean:
+          type: number
+          description: The mean of the image
+        Median:
+          type: number
+          description: The median of the image
+        Min:
+          type: number
+          description: The minimum value of the image
+        Max:
+          type: number
+          description: The maximum value of the image
+        Stars:
+          type: integer
+          description: The number of stars detected in the image
+        HFR:
+          type: number
+          description: The hfr of the image
+        HFRStDev:
+          type: number
+          description: The standard deviation of the hfr
+        IsBayered:
+          type: boolean
+          description: Indicates if the image is bayered
+        BitDepth:
+          type: integer
+          description: The bit depth of the image
+        Filename:
+          type: string
+          description: The filename of the image
+      required:
+        - ExposureTime
+        - ImageType
+        - Filter
+        - RmsText
+        - Temperature
+        - CameraName
+        - TargetName
+        - Gain
+        - Offset
+        - ExposureSave
+        - TelescopeName
+        - FocalLength
+        - StDev
+        - Mean
+        - Median
+        - Min
+        - Max
+        - Stars
+        - HFR
+        - HFRStDev
+        - IsBayered
+        - BitDepth
+        - Filename
 
     ProfileInfo:
       type: object

@@ -155,17 +155,22 @@ namespace ninaAPI.WebService.V3.Application.Image
         }
 
         [Route(HttpVerbs.Patch, "/{index}/prefix")]
-        public async Task AddPrefix(int index)
+        public async Task AddPrefix(int index, [JsonData] ImagePrefixBody body)
         {
-            QueryParameter<string> prefixParameter = new QueryParameter<string>("prefix", "", true, (prefix) => prefix.IndexOfAny(Path.GetInvalidFileNameChars()) < 0);
+            Validator.ValidateObject(body, new ValidationContext(body));
+
+            if (body.Prefix.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "Prefix contains invalid characters");
+            }
+
             QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
             imageTypeParameter.Get(HttpContext);
-            prefixParameter.Get(HttpContext);
 
             ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
 
             string oldPath = p.GetPath();
-            string newPath = Path.Join(Path.GetDirectoryName(oldPath), prefixParameter.Value + Path.GetFileName(oldPath));
+            string newPath = Path.Join(Path.GetDirectoryName(oldPath), body.Prefix + Path.GetFileName(oldPath));
 
             if (!File.Exists(p.GetPath()))
             {
@@ -177,8 +182,10 @@ namespace ninaAPI.WebService.V3.Application.Image
                 File.Move(p.GetPath(), newPath);
                 p.SetPath(newPath);
             }
-
-            // Not sure how to treat the action if the file already exist, so we just return a success
+            else
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "File already exists");
+            }
 
             await responseHandler.SendObject(HttpContext, new
             {
@@ -187,7 +194,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             });
         }
 
-        [Route(HttpVerbs.Post, "/{index}/solve")]
+        [Route(HttpVerbs.Get, "/{index}/solve")]
         public async Task ImageSolve(int index, [JsonData] PlatesolveConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
@@ -244,7 +251,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             await responseHandler.SendBytes(HttpContext, writer.Encode(imageQuery.Quality.Value), writer.MimeType);
         }
 
-        [Route(HttpVerbs.Post, "/prepared/platesolve")]
+        [Route(HttpVerbs.Post, "/prepared/solve")]
         public async Task PreparedImageSolve([JsonData] PlatesolveConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
@@ -313,5 +320,11 @@ namespace ninaAPI.WebService.V3.Application.Image
 
             return history.ElementAt(index);
         }
+    }
+
+    public class ImagePrefixBody
+    {
+        [Required]
+        public string Prefix { get; set; }
     }
 }
