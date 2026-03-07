@@ -24,6 +24,7 @@ using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Utility.Http;
 using NINA.Image.FileFormat.FITS;
 using NINA.Image.Interfaces;
 using NINA.PlateSolving;
@@ -149,9 +150,9 @@ namespace ninaAPI.WebService.V2
                 return;
             lock (imageLock)
             {
-                string thumbnailFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}");
+                string thumbnailFile = FileSystemHelper.GetThumbnailFolder();
                 Directory.CreateDirectory(thumbnailFile);
-                thumbnailFile = Path.Combine(thumbnailFile, $"{Images.Count - 1}.jpg");
+                thumbnailFile = Path.Combine(thumbnailFile, $"v2-{Images.Count - 1}.jpg");
                 var img = BitmapHelper.ScaleBitmap(e.Image, 256 / e.Image.Width);
 
                 JpegBitmapEncoder encoder = new JpegBitmapEncoder();

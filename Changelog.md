@@ -2,6 +2,42 @@
 
 The changes for each individual (beta) release can be seen in each [release](https://github.com/christian-photo/ninaAPI/releases). This changelog will only cover the fully released versions.
 
+## 3.0.0.0
+
+### Processes
+
+Longer running processes like slewing, capturing or autofocusing now return a `ProcessId` in their response that can be used to:
+
+- Check the status of the process
+- Cancel the process
+- Await the process
+
+### Endpoints
+
+The structure of the endpoints is similar to before, but http verbs are now actually used, like `GET` for device information, `POST` for starting a process, ...
+
+### Websocket
+
+The event websocket now supports channels, which can be subscribed to per client. These channels include:
+
+- `Equipment`
+- `Capture`
+- `Livestack`
+- `Autofocus`
+- `Process`
+- `Guiding`
+
+### Other changes
+
+- The response wrapper was removed in favor of smaller responses. All additional information is now carried by the status code
+- The error messages are now more consistent. They will always include the `Error` (the name of the status code) and optionally `Message` which may provide further information about the error.
+- Endpoints like `image-history` now support pagination
+- It is now possible to work with multiple captures, not just the last one
+- The instruction was upgraded to work with expressions
+- The TPPA websocket was separated into the event websocket and endpoints to control TPPA
+- Containers in the sequence are now marked with a `IsContainer: true` property instead of a suffixed name
+- Many more changes behind the scenes to make it easier for contributers to work on the project
+
 ## 2.2.15.0
 
 - Make profile change value more robust

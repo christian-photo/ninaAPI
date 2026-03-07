@@ -1,4 +1,4 @@
-﻿#region "copyright"
+#region "copyright"
 
 /*
     Copyright © 2025 Christian Palm (christian@palm-family.de)
@@ -18,41 +18,30 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using ninaAPI.WebService;
-using System.Net.NetworkInformation;
-using NINA.Core.Utility;
 using System.Threading.Tasks;
-using NINA.Profile.Interfaces;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.Input;
-using System.Drawing;
-using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NINA.ViewModel.Sequencer;
+using Newtonsoft.Json.Converters;
 using System.Globalization;
+using ninaAPI.Utility.Http;
+using System.Net;
+using Newtonsoft.Json.Serialization;
+using NINA.Profile.Interfaces;
+using System.Windows.Input;
+using System.Drawing;
 using System.ComponentModel;
 
 namespace ninaAPI.Utility
 {
-    public static class DelayedAction
-    {
-        public static void Execute(TimeSpan delay, Action action)
-        {
-            Task.Delay(delay).ContinueWith(t => action());
-        }
-    }
-
     public static class CoreUtility
     {
         static CoreUtility()
         {
             options.Converters.Add(new JsonStringEnumConverter());
-            sequenceOptions.ContractResolver = new SequenceIgnoreResolver();
         }
 
         public static ISequenceRootContainer GetSequenceRoot(this ISequenceMediator sequence)
@@ -68,85 +57,32 @@ namespace ninaAPI.Utility
             return targets;
         }
 
+        /// <summary>
+        /// Copies properties from source to target. Ensures that:
+        /// - Properties in the source type exist in the target type
+        /// - Properties in the source type have the same type as the ones in the target type
+        /// - Properties can actually be written
+        /// - Properties are public and instance members (not static)
+        /// </summary>
+        public static void CopyProperties(object source, object target)
+        {
+            var sourceType = source.GetType();
+            var targetType = target.GetType();
+
+            foreach (var property in sourceType.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            {
+                var targetProperty = targetType.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
+                if (targetProperty != null && targetProperty.CanWrite && targetProperty.PropertyType == property.PropertyType)
+                {
+                    targetProperty.SetValue(target, property.GetValue(source));
+                }
+            }
+        }
+
         private static ApplicationStatus Status;
         public static Progress<ApplicationStatus> GetStatus(this IApplicationStatusMediator mediator)
         {
             return new Progress<ApplicationStatus>(p => Status = p);
-        }
-
-        private static readonly Lazy<Dictionary<string, string>> lazyNames = new Lazy<Dictionary<string, string>>(() =>
-        {
-            var names = new Dictionary<string, string>()
-            {
-                { "LOCALHOST", "localhost" }
-            };
-
-            string hostName = Dns.GetHostName();
-            if (!string.IsNullOrEmpty(hostName))
-            {
-                names.Add("HOSTNAME", hostName);
-            }
-
-            string ipv4 = GetIPv4Address();
-            if (!string.IsNullOrEmpty(ipv4))
-            {
-                names.Add("IPADRESS", ipv4);
-            }
-
-            return names;
-        });
-
-        public static Dictionary<string, string> GetLocalNames()
-        {
-            return lazyNames.Value;
-        }
-
-        public static bool IsPortAvailable(int port)
-        {
-            bool isPortAvailable = true;
-
-            IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
-            IPEndPoint[] ipEndPoints = ipGlobalProperties.GetActiveTcpListeners();
-
-            foreach (IPEndPoint endPoint in ipEndPoints)
-            {
-                if (endPoint.Port == port)
-                {
-                    isPortAvailable = false;
-                    break;
-                }
-            }
-
-            return isPortAvailable;
-        }
-
-        public static int GetNearestAvailablePort(int startPort)
-        {
-            using var watch = MyStopWatch.Measure();
-            int port = startPort;
-            while (!IsPortAvailable(port))
-            {
-                port++;
-            }
-            return port;
-        }
-
-        private static string GetIPv4Address()
-        {
-            string localIP;
-            try
-            {
-                using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
-                socket.Connect("8.8.8.8", 65530);
-                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                localIP = endPoint.Address.ToString();
-            }
-            catch (Exception)
-            {
-                localIP = "127.0.0.1";
-            }
-
-            return localIP;
         }
 
         public static HttpResponse CreateErrorTable(string message, int code = 500)
@@ -166,7 +102,7 @@ namespace ninaAPI.Utility
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
         };
 
-        private static readonly JsonSerializerSettings sequenceOptions = new JsonSerializerSettings()
+        private static readonly JsonSerializerSettings sequenceSerializerSettings = new JsonSerializerSettings()
         {
             Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
             {
@@ -174,13 +110,16 @@ namespace ninaAPI.Utility
             },
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             NullValueHandling = NullValueHandling.Ignore,
+            Converters = { new StringEnumConverter() },
+            ContractResolver = new SequenceIgnoreResolver(),
+            FloatFormatHandling = FloatFormatHandling.String,
         };
 
         public static void WriteSequenceResponse(this IHttpContext context, object json)
         {
             context.Response.ContentType = MimeType.Json;
 
-            string text = JsonConvert.SerializeObject(json, sequenceOptions);
+            string text = JsonConvert.SerializeObject(json, sequenceSerializerSettings);
 
             var bytes = System.Text.Encoding.UTF8.GetBytes(text);
 
@@ -196,16 +135,6 @@ namespace ninaAPI.Utility
         {
             context.Response.ContentType = MimeType.Json;
 
-            /*
-            HttpResponse response = (HttpResponse)json;
-            context.Response.StatusCode = response.StatusCode;
-            response.StatusCode = null;
-            if (!string.IsNullOrEmpty(response.Error)) {
-                response.Response = response.Error;
-                response.Error = null;
-            }
-            */
-
             string text = System.Text.Json.JsonSerializer.Serialize(json, options);
             var bytes = System.Text.Encoding.UTF8.GetBytes(text);
 
@@ -214,11 +143,6 @@ namespace ninaAPI.Utility
             {
                 writer.Write(text);
             }
-        }
-
-        public static bool IsParameterOmitted(this IHttpContext context, string parameter)
-        {
-            return !context.Request.QueryString.AllKeys.Contains(parameter);
         }
 
         public static object ConvertString(this string str, Type type)
@@ -237,15 +161,32 @@ namespace ninaAPI.Utility
             return converted;
         }
 
-        public static string[] GetFilesRecursively(string path)
+        public static bool IsBetween(this short value, int min, int max)
         {
-            List<string> files = [.. Directory.GetFiles(path)];
-            foreach (string dir in Directory.GetDirectories(path))
-            {
-                files.AddRange(GetFilesRecursively(dir));
-            }
-            return [.. files];
+            return value >= min && value <= max;
         }
+
+        public static bool IsBetween(this int value, int min, int max)
+        {
+            return value >= min && value <= max;
+        }
+
+        public static bool IsBetween(this decimal value, decimal min, decimal max)
+        {
+            return value >= min && value <= max;
+        }
+
+        public static bool IsBetween(this float value, float min, float max)
+        {
+            return IsBetween((decimal)value, (decimal)min, (decimal)max);
+        }
+
+        public static bool IsBetween(this double value, double min, double max)
+        {
+            return IsBetween((decimal)value, (decimal)min, (decimal)max);
+        }
+
+        public static readonly List<string> IMAGE_TYPES = ["LIGHT", "FLAT", "BIAS", "DARK", "SNAPSHOT"];
     }
 
     public class HttpResponse
@@ -260,21 +201,93 @@ namespace ninaAPI.Utility
         public string Type { get; set; } = TypeAPI;
     }
 
-    public class SequenceIgnoreResolver : DefaultContractResolver
+    public class StringResponse(string message)
+    {
+        public string Message { get; set; } = message;
+    }
+
+    public class StatusResponse(ApiProcessStatus status)
+    {
+        public ApiProcessStatus Status { get; set; } = status;
+    }
+
+    public class ResponseFactory
+    {
+        public static object CreateProcessResponse(ApiProcessStartResult result, Guid id)
+        {
+            return new { Status = result.ToString(), ProcessId = id };
+        }
+
+        public static object CreateProcessConflictsResponse(ApiProcessMediator mediator, ApiProcess process)
+        {
+            var conflicts = mediator.CheckForConflicts(process.ProcessType, process.ProcessId);
+            return new
+            {
+                Error = HttpUtility.StatusCodeMessages[(int)HttpStatusCode.Conflict],
+                Message = "Process could not be started because other processes conflict with it",
+                Conflicts = conflicts
+            };
+        }
+
+        public static (object, int) CreateProcessStartedResponse(ApiProcessStartResult result, ApiProcessMediator mediator, ApiProcess process)
+        {
+            object response;
+            int statusCode = 200;
+
+            if (result == ApiProcessStartResult.Conflict)
+            {
+                response = CreateProcessConflictsResponse(mediator, process);
+                statusCode = (int)HttpStatusCode.Conflict;
+            }
+            else
+            {
+                response = CreateProcessResponse(result, process.ProcessId);
+            }
+
+            return (response, statusCode);
+        }
+    }
+
+    internal class SequenceIgnoreResolver : DefaultContractResolver
     {
         private static readonly string[] ignoredProperties = ["UniversalPolarAlignmentVM", "Latitude", "Longitude", "Elevation", "AltitudeSite", "ShiftTrackingRate",
             "DateTime", "Expanded", "DateTimeProviders", "Horizon", "Parent", "InfoButtonColor", "Icon"];
 
-        private static readonly Type[] ignoredTypes = [typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand), typeof(Icon), typeof(Func<>), typeof(Action<>)];
+        private static readonly Type[] ignoredTypes = [typeof(IProfile), typeof(IProfileService), typeof(CustomHorizon), typeof(ICommand), typeof(CommunityToolkit.Mvvm.Input.AsyncRelayCommand), typeof(CommunityToolkit.Mvvm.Input.RelayCommand), typeof(Icon), typeof(Func<>), typeof(Action<>)];
 
         protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             Newtonsoft.Json.Serialization.JsonProperty property = base.CreateProperty(member, memberSerialization);
-            if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Contains(property.PropertyType))
+            if (ignoredProperties.Contains(property.PropertyName) || ignoredTypes.Any(t => t.IsAssignableFrom(property.PropertyType)))
             {
                 property.ShouldSerialize = _ => false;
             }
+
             return property;
         }
+    }
+
+    public enum Device
+    {
+        Camera,
+        Dome,
+        Filterwheel,
+        FlatDevice,
+        Focuser,
+        Guider,
+        Mount,
+        Rotator,
+        Safetymonitor,
+        Switch,
+        Weather,
+    }
+
+    public enum ImageFormat
+    {
+        // JXL,
+        // AVIF,
+        JPEG,
+        PNG,
+        // WEBP
     }
 }
