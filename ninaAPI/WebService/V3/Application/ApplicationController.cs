@@ -76,23 +76,6 @@ namespace ninaAPI.WebService.V3.Application
             await responseHandler.SendObject(HttpContext, parsed);
         }
 
-        [Route(HttpVerbs.Get, "/log/settings")]
-        public async Task GetLogSettings()
-        {
-            await responseHandler.SendObject(HttpContext,
-                new LoggerSettings() { Level = profileService.ActiveProfile.ApplicationSettings.LogLevel }
-            );
-        }
-
-        [Route(HttpVerbs.Patch, "/log/settings")]
-        public async Task UpdateLogLevel([JsonData] LoggerSettings settings)
-        {
-            Validator.ValidateObject(settings, new ValidationContext(settings));
-
-            Logger.SetLogLevel(settings.Level);
-            await responseHandler.SendObject(HttpContext, new StringResponse("Log level updated"));
-        }
-
         [Route(HttpVerbs.Get, "/tab")]
         public async Task GetApplicationTab()
         {
@@ -173,12 +156,6 @@ namespace ninaAPI.WebService.V3.Application
             }
             return false;
         }
-    }
-
-    public class LoggerSettings
-    {
-        [Required]
-        public LogLevelEnum Level { get; set; }
     }
 
     public class ApplicationTabChangeRequest

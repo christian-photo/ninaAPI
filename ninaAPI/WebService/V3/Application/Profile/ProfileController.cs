@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using NINA.Equipment.Interfaces;
 using NINA.Profile;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
@@ -41,7 +42,7 @@ namespace ninaAPI.WebService.V3.Application.Profile
         [Route(HttpVerbs.Get, "/")]
         public async Task GetActiveProfileMeta()
         {
-            var active = profileService.Profiles.First(x => x.Id == profileService.ActiveProfile.Id);
+            var active = profileService.Profiles.First(x => x.IsActive);
 
             await responseHandler.SendObject(HttpContext, active);
         }
@@ -55,14 +56,13 @@ namespace ninaAPI.WebService.V3.Application.Profile
         [Route(HttpVerbs.Get, "/settings")]
         public async Task GetActiveProfileSettings()
         {
-            // Maybe a bit verbose like this, also the filters are not using the api format, could be worth checking
-            await responseHandler.SendObject(HttpContext, profileService.ActiveProfile);
+            await responseHandler.SendObject(HttpContext, new ProfileDTO(profileService.ActiveProfile));
         }
 
         [Route(HttpVerbs.Get, "/horizon")]
         public async Task GetProfileHorizon()
         {
-            await responseHandler.SendObject(HttpContext, new HorizonResponse(AdvancedAPI.Controls.Profile.ActiveProfile.AstrometrySettings.Horizon));
+            await responseHandler.SendObject(HttpContext, new HorizonResponse(profileService.ActiveProfile.AstrometrySettings.Horizon));
         }
 
         [Route(HttpVerbs.Put, "/")]
@@ -77,11 +77,14 @@ namespace ninaAPI.WebService.V3.Application.Profile
                 throw new HttpException(HttpStatusCode.NotFound, "Profile with specified id not found");
             }
 
-            bool success = profileService.SelectProfile(targetProfile);
-            await responseHandler.SendObject(HttpContext, new StringResponse(success ? "Profile changed" : "Profile change failed"), success ? 200 : 500);
+            if (!profileService.SelectProfile(targetProfile))
+            {
+                throw new HttpException(HttpStatusCode.InternalServerError, "Profile change failed");
+            }
+            await responseHandler.SendObject(HttpContext, new StringResponse("Profile changed"));
         }
 
-        [Route(HttpVerbs.Patch, "/")]
+        [Route(HttpVerbs.Patch, "/settings")]
         public async Task UpdateProfileValue([JsonData] ProfileValueChangeConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
@@ -157,8 +160,11 @@ namespace ninaAPI.WebService.V3.Application.Profile
                 throw new HttpException(HttpStatusCode.NotFound, "Profile with specified id not found");
             }
 
-            bool success = profileService.Clone(targetProfile);
-            await responseHandler.SendObject(HttpContext, new StringResponse(success ? "Profile cloned" : "Profile clone failed"), success ? 200 : 500);
+            if (!profileService.Clone(targetProfile))
+            {
+                throw new HttpException(HttpStatusCode.InternalServerError, "Profile clone failed");
+            }
+            await responseHandler.SendObject(HttpContext, new StringResponse("Profile cloned"));
         }
 
         [Route(HttpVerbs.Delete, "/")]
@@ -178,8 +184,11 @@ namespace ninaAPI.WebService.V3.Application.Profile
                 throw new HttpException(HttpStatusCode.Conflict, "Cannot delete active profile");
             }
 
-            bool success = profileService.RemoveProfile(targetProfile);
-            await responseHandler.SendObject(HttpContext, new StringResponse(success ? "Profile deleted" : "Profile delete failed"), success ? 200 : 500);
+            if (!profileService.RemoveProfile(targetProfile))
+            {
+                throw new HttpException(HttpStatusCode.InternalServerError, "Profile delete failed");
+            }
+            await responseHandler.SendObject(HttpContext, new StringResponse("Profile deleted"));
         }
     }
 

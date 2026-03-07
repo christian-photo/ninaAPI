@@ -753,33 +753,17 @@ paths:
           name: raw-converter
           required: false
           schema:
-            type: string
-            enum:
-              - DCRAW
-              - FREEIMAGE
-            description: The raw converter to be used. If not specified, the raw converter from the profile will be used
+            $ref: "#/components/schemas/RawConverterEnum"
         - in: query
           name: star-sensitivity
           required: false
           schema:
-            type: string
-            enum:
-              - Normal
-              - High
-              - Highest
-            description: The star sensitivity to be used. If not specified, the star sensitivity from the profile will be used
+            $ref: "#/components/schemas/StarSensitivityEnum"
         - in: query
           name: noise-reduction
           required: false
           schema:
-            type: string
-            enum:
-              - None
-              - Median
-              - Normal
-              - High
-              - Highest
-            description: The noise reduction to be used. If not specified, the noise reduction from the profile will be used
+            $ref: "#/components/schemas/NoiseReductionEnum"
       responses:
         "200":
           description: Success
@@ -3058,56 +3042,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /application/log/settings:
-    get:
-      tags:
-        - Application
-      summary: Log Settings
-      description: Get the log settings
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LoggerSettings"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-    patch:
-      tags:
-        - Application
-      summary: Log Settings
-      description: Update the log settings
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/LoggerSettings"
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StringResponse"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
   /application/log:
     get:
       tags:
         - Application
       summary: Logs
-      description: Get a list of the last N log entries, this will ignore the header of the file. The endpoint is limited by the log level set in NINA
+      description: Get a list of the last N log entries, this will ignore the header of the file. The endpoint is limited by the log level set in NINA. To change the log leve use the profile/settings endpoint
       parameters:
         - $ref: "#/components/parameters/PagerPage"
         - $ref: "#/components/parameters/PagerPageSize"
@@ -3455,19 +3395,175 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /profile/show:
+  /profile:
     get:
       tags:
         - Profile
-      summary: Show Profile
-      description: Shows the profile
+      summary: Get Profile Meta
+      description: Get the profile meta instance for the active profile
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileMeta"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - Profile
+      summary: Change Profile
+      description: Change the active profile
       parameters:
         - in: query
-          name: active
-          description: Whether to show the active profile or a list of all available profiles
-          required: false
+          name: id
+          description: The id of the profile to change to
+          required: true
           schema:
-            type: boolean
+            type: string
+            format: guid
+            example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Profile
+      summary: Create Profile
+      description: Create a new profile
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileMeta"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - Profile
+      summary: Delete Profile
+      description: Delete a profile, this can't be the active profile. This cannot be undone
+      parameters:
+        - in: query
+          name: id
+          description: The id of the profile to delete
+          required: true
+          schema:
+            type: string
+            format: guid
+            example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /profile/list:
+    get:
+      tags:
+        - Profile
+      summary: Get Profile List
+      description: Get all available profiles
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProfileMeta"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /profile/horizon:
+    get:
+      tags:
+        - Profile
+      summary: Get Horizon
+      description: Get the horizon for the active profile
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HorizonResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /profile/clone:
+    post:
+      tags:
+        - Profile
+      summary: Clone Profile
+      description: Clone a profile
+      parameters:
+        - in: query
+          name: id
+          description: The id of the profile to clone
+          required: true
+          schema:
+            type: string
+            format: guid
+            example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /profile/settings:
+    get:
+      tags:
+        - Profile
+      summary: Get Profile Settings
+      description: Get the settings for the active profile
       responses:
         "200":
           description: Success
@@ -3481,184 +3577,23 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
-  /profile/change-value:
-    get:
+    patch:
       tags:
         - Profile
-      summary: Change Profile Value
-      description: Changes a value in the profile
-      parameters:
-        - in: query
-          name: settingpath
-          description: The path to the setting to change. (eg. CameraSettings-PixelSize). This refers the the profile structure like it is recieved when using /profile/show?active=true. Seperate each object with a dash (-)
-          required: true
-          schema:
-            type: string
-            example: CameraSettings-PixelSize
-        - in: query
-          name: newValue
-          description: The new value to set
-          required: true
-          schema:
-            type: object
-            example: 3.2
+      summary: Change Setting
+      description: Change a setting for the active profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileValueChangeConfig"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Updated setting
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Invalid path / Invalid value
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Invalid path
-                      - New value can't be null
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /profile/switch:
-    get:
-      tags:
-        - Profile
-      summary: Switch Profile
-      description: Switches the profile
-      parameters:
-        - in: query
-          name: profileid
-          description: The id of the profile to switch to. This id can be retrieved using show with active=false
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Successfully switched profile
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Profile not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: No profile with specified id found!
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /profile/horizon:
-    get:
-      tags:
-        - Profile
-      summary: Horizon
-      description: Gets the horizon for the active profile
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: object
-                    properties:
-                      Altitudes:
-                        type: array
-                        items:
-                          type: number
-                      Azimuths:
-                        type: array
-                        items:
-                          type: number
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -5442,31 +5377,14 @@ components:
       description: The raw converter to be used. If not specified, the raw converter from the profile will be used
       required: false
       schema:
-        type: string
-        enum:
-          - DCRAW
-          - FREEIMAGE
+        $ref: "#/components/schemas/RawConverterEnum"
     BayerPattern:
       in: query
       name: bayer-pattern
       description: The bayer pattern to be used. If not specified, first the auto bayer pattern from the profile will be used (if not set to auto), then the sensor type will be used. By default monochrome
       required: false
       schema:
-        type: string
-        default: Monochrome
-        enum:
-          - Monochrome
-          - Color
-          - RGGB
-          - CYMG
-          - CMYG2
-          - LRGB
-          - BGGR
-          - GBRG
-          - GRBG
-          - GBGR
-          - RGBG
-          - BGRG
+        $ref: "#/components/schemas/BayerPatternEnum"
     ProcessIdPath:
       name: id
       in: path
@@ -5495,6 +5413,29 @@ components:
         type: integer
         default: 20
   schemas:
+    RawConverterEnum:
+      type: string
+      enum:
+        - DCRAW
+        - FREEIMAGE
+
+    BayerPatternEnum:
+      type: string
+      default: Monochrome
+      enum:
+        - Monochrome
+        - Color
+        - RGGB
+        - CYMG
+        - CMYG2
+        - LRGB
+        - BGGR
+        - GBRG
+        - GRBG
+        - GBGR
+        - RGBG
+        - BGRG
+
     CameraInfo:
       type: object
       properties:
@@ -7556,944 +7497,1377 @@ components:
         - BitDepth
         - Filename
 
+    ProfileValueChangeConfig:
+      type: object
+      properties:
+        PathDescription:
+          type: string
+          description: The path to the value to change, e.g. CameraSettings-PixelSize
+        Value:
+          type: object
+          description: The value to change to
+      required:
+        - PathDescription
+        - Value
+
+    ProfileMeta:
+      type: object
+      properties:
+        Id:
+          type: string
+          format: guid
+          description: A unique identifier for the profile
+        LastUsed:
+          type: string
+          format: date-time
+          description: The last time the profile was used
+        Name:
+          type: string
+          description: The name of the profile
+        Description:
+          type: string
+          description: The description of the profile
+        Location:
+          type: string
+          description: The location of the profile
+        IsActive:
+          type: boolean
+          description: Indicates if the profile is active
+      required:
+        - Id
+        - LastUsed
+        - Name
+        - Description
+        - Location
+        - IsActive
+
+    HorizonResponse:
+      type: object
+      properties:
+        Altitudes:
+          type: array
+          items:
+            type: number
+            format: double
+        Azimuths:
+          type: array
+          items:
+            type: number
+            format: double
+      required:
+        - Altitudes
+        - Azimuths
+
+    NotificationWorkAreaEnum:
+      type: string
+      enum:
+        - PrimaryScreen
+        - SameScreenAsApplication
+        - Application
+
+    NotificationCornerEnum:
+      type: string
+      enum:
+        - TopLeft
+        - TopRight
+        - BottomLeft
+        - BottomRight
+
+    CameraBulbModeEnum:
+      type: string
+      enum:
+        - NATIVE
+        - SERIALPORT
+        - SERIALRELAY
+        - TELESCOPESNAPPORT
+
+    ColorSchema:
+      type: object
+      properties:
+        Name:
+          type: string
+        PrimaryColor:
+          type: string
+          format: hex
+        SecondaryColor:
+          type: string
+          format: hex
+        BorderColor:
+          type: string
+          format: hex
+        BackgroundColor:
+          type: string
+          format: hex
+        SecondaryBackgroundColor:
+          type: string
+          format: hex
+        TertiaryBackgroundColor:
+          type: string
+          format: hex
+        ButtonBackgroundColor:
+          type: string
+          format: hex
+        ButtonBackgroundSelectedColor:
+          type: string
+          format: hex
+        ButtonForegroundColor:
+          type: string
+          format: hex
+        ButtonForegroundDisabledColor:
+          type: string
+          format: hex
+        CrosshairColor:
+          type: string
+          format: hex
+        NotificationWarningColor:
+          type: string
+          format: hex
+        NotificationErrorColor:
+          type: string
+          format: hex
+        NotificationWarningTextColor:
+          type: string
+          format: hex
+        NotificationErrorTextColor:
+          type: string
+          format: hex
+        SequencerExpressionTextColor:
+          type: string
+          format: hex
+      required:
+        - Name
+        - PrimaryColor
+        - SecondaryColor
+        - BorderColor
+        - BackgroundColor
+        - SecondaryBackgroundColor
+        - TertiaryBackgroundColor
+        - ButtonBackgroundColor
+        - ButtonBackgroundSelectedColor
+        - ButtonForegroundColor
+        - ButtonForegroundDisabledColor
+        - CrosshairColor
+        - NotificationWarningColor
+        - NotificationErrorColor
+        - NotificationWarningTextColor
+        - NotificationErrorTextColor
+        - SequencerExpressionTextColor
+
+    StarSensitivityEnum:
+      type: string
+      enum:
+        - Normal
+        - High
+        - Highest
+
+    NoiseReductionEnum:
+      type: string
+      enum:
+        - None
+        - Median
+        - Normal
+        - High
+        - Highest
+
+    FileTypeEnum:
+      type: string
+      enum:
+        - TIFF
+        - FITS
+        - XISF
+        - TIFF_ZIP
+        - TIFF_LZW
+        - RAW
+
+    PlateSolverEnum:
+      type: string
+      enum:
+        - ASTROMETRY_NET
+        - LOCAL
+        - ASPS
+        - ASTAP
+        - PLATESOLVE3
+        - PINPOINT
+
+    RotatorRangeTypeEnum:
+      type: string
+      enum:
+        - FULL
+        - HALF
+        - QUARTER
+
+    TrainedFlatExposureSetting:
+      type: object
+      properties:
+        Filter:
+          type: integer
+          description: The filter position
+        Binning:
+          $ref: "#/components/schemas/BinningMode"
+        Gain:
+          type: integer
+        Offset:
+          type: integer
+        Brightness:
+          type: integer
+        Time:
+          type: number
+          description: The exposure time
+      required:
+        - Filter
+        - Binning
+        - Gain
+        - Offset
+        - Brightness
+        - Time
+
+    ImageHistoryDataEnum:
+      type: string
+      enum:
+        - NONE
+        - HFR
+        - Stars
+        - Median
+        - Mean
+        - StDev
+        - MAD
+        - Temperature
+        - Rms
+
     ProfileInfo:
       type: object
       properties:
-        Response:
+        Name:
+          type: string
+        Description:
+          type: string
+        Id:
+          type: string
+          format: guid
+        Location:
+          type: string
+        LastUsed:
+          type: string
+          format: date-time
+        ApplicationSettings:
+          type: object
+          properties:
+            Culture:
+              type: string
+            DevicePollingInterval:
+              type: number
+            PageSize:
+              type: integer
+            LogLevel:
+              $ref: "#/components/schemas/LogLevelEnum"
+            SkySurveyCacheDirectory:
+              type: string
+            NotificationWorkArea:
+              $ref: "#/components/schemas/NotificationWorkAreaEnum"
+            NotificationCorner:
+              $ref: "#/components/schemas/NotificationCornerEnum"
+          required:
+            - Culture
+            - DevicePollingInterval
+            - PageSize
+            - LogLevel
+            - SkySurveyCacheDirectory
+            - NotificationWorkArea
+            - NotificationCorner
+        AstrometrySettings:
+          type: object
+          properties:
+            Latitude:
+              type: number
+            Longitude:
+              type: number
+            Elevation:
+              type: number
+            HorizonFilePath:
+              type: string
+            Observer:
+              type: string
+            Observatory:
+              type: string
+            Site:
+              type: string
+          required:
+            - Latitude
+            - Longitude
+            - Elevation
+            - HorizonFilePath
+            - Observer
+            - Observatory
+            - Site
+        CameraSettings:
+          type: object
+          properties:
+            Id:
+              type: string
+              format: guid
+            LastDeviceName:
+              type: string
+            PixelSize:
+              type: number
+            BayerPattern:
+              $ref: "#/components/schemas/BayerPatternEnum"
+            BulbMode:
+              $ref: "#/components/schemas/CameraBulbModeEnum"
+            SerialPort:
+              type: string
+            BitDepth:
+              type: number
+            RawConverter:
+              $ref: "#/components/schemas/RawConverterEnum"
+            MinFlatExposureTime:
+              type: number
+            MaxFlatExposureTime:
+              type: number
+            FileCameraFolder:
+              type: string
+            FileCameraExtension:
+              type: string
+            FileCameraUseBulbMode:
+              type: boolean
+            FileCameraIsBayered:
+              type: boolean
+            FileCameraAlwaysListen:
+              type: boolean
+            FileCameraDownloadDelay:
+              type: number
+            FLIEnableFloodFlush:
+              type: boolean
+            FLIFloodDuration:
+              type: number
+            FLIFlushCount:
+              type: integer
+            FLIEnableSnapshotFloodFlush:
+              type: boolean
+            FLIFloodBin:
+              $ref: "#/components/schemas/BinningMode"
+            BitScaling:
+              type: boolean
+            CoolingDuration:
+              type: number
+            WarmingDuration:
+              type: number
+            Temperature:
+              type: number
+            BinningX:
+              type: integer
+            BinningY:
+              type: integer
+            Gain:
+              type: integer
+            Offset:
+              type: integer
+            ReadoutMode:
+              type: integer
+            ReadoutModeForSnapImages:
+              type: integer
+            ReadoutModeForNormalImages:
+              type: integer
+            QhyIncludeOverscan:
+              type: boolean
+            Timeout:
+              type: integer
+            DewHeaterOn:
+              type: boolean
+            ASCOMAllowUnevenPixelDimension:
+              type: boolean
+            MirrorLockupDelay:
+              type: number
+            AtikGainPreset:
+              type: integer
+            AtikExposureSpeed:
+              type: integer
+            AtikWindowHeaterPowerLevel:
+              type: integer
+            BinAverageEnabled:
+              type: boolean
+            TrackingCameraASCOMServerEnabled:
+              type: boolean
+            TrackingCameraASCOMServerPipeName:
+              type: string
+            TrackingCameraASCOMServerLoggingEnabled:
+              type: boolean
+            SBIGUseExternalCcdTracker:
+              type: boolean
+            TouptekAlikeUltraMode:
+              type: boolean
+            TouptekAlikeHighFullwell:
+              type: boolean
+            TouptekAlikeLEDLights:
+              type: boolean
+            TouptekAlikeDewHeaterStrength:
+              type: integer
+            GenericCameraDewHeaterStrength:
+              type: integer
+            GenericCameraFanSpeed:
+              type: integer
+            ZwoAsiMonoBinMode:
+              type: boolean
+            ASCOMCreate32BitData:
+              type: boolean
+            BadPixelCorrection:
+              type: boolean
+            BadPixelCorrectionThreshold:
+              type: integer
+          required:
+            - BitDepth
+            - BulbMode
+            - Id
+            - LastDeviceName
+            - PixelSize
+            - RawConverter
+            - SerialPort
+            - MinFlatExposureTime
+            - MaxFlatExposureTime
+            - FileCameraFolder
+            - FileCameraUseBulbMode
+            - FileCameraIsBayered
+            - FileCameraExtension
+            - FileCameraAlwaysListen
+            - FileCameraDownloadDelay
+            - BayerPattern
+            - FLIEnableFloodFlush
+            - FLIEnableSnapshotFloodFlush
+            - FLIFloodDuration
+            - FLIFlushCount
+            - FLIFloodBin
+            - BitScaling
+            - CoolingDuration
+            - WarmingDuration
+            - QhyIncludeOverscan
+            - Timeout
+            - ASCOMAllowUnevenPixelDimension
+            - MirrorLockupDelay
+            - TrackingCameraASCOMServerPipeName
+            - SBIGUseExternalCcdTracker
+            - TouptekAlikeUltraMode
+            - TouptekAlikeHighFullwell
+            - TouptekAlikeLEDLights
+            - TouptekAlikeDewHeaterStrength
+            - GenericCameraDewHeaterStrength
+            - GenericCameraFanSpeed
+            - ASCOMCreate32BitData
+            - BadPixelCorrection
+            - BadPixelCorrectionThreshold
+        ColorSchemaSettings:
+          type: object
+          properties:
+            AltColorSchema:
+              $ref: "#/components/schemas/ColorSchema"
+            ColorSchema:
+              $ref: "#/components/schemas/ColorSchema"
+        DomeSettings:
+          type: object
+          properties:
+            Id:
+              type: string
+              format: guid
+            LastDeviceName:
+              type: string
+            ScopePositionEastWest_mm:
+              type: number
+            ScopePositionNorthSouth_mm:
+              type: number
+            ScopePositionUpDown_mm:
+              type: number
+            DomeRadius_mm:
+              type: number
+            GemAxis_mm:
+              type: number
+            LateralAxis_mm:
+              type: number
+            AzimuthTolerance_degrees:
+              type: integer
+            FindHomeBeforePark:
+              type: boolean
+            DomeSyncTimeoutSeconds:
+              type: integer
+            SynchronizeDuringMountSlew:
+              type: boolean
+            SyncSlewDomeWhenMountSlews:
+              type: boolean
+            RotateDegrees:
+              type: number
+            CloseOnUnsafe:
+              type: boolean
+            ParkMountBeforeShutterMove:
+              type: boolean
+            RefuseUnsafeShutterMove:
+              type: boolean
+            RefuseUnparkWithoutShutterOpen:
+              type: boolean
+            RefuseUnsafeShutterOpenSansSafetyDevice:
+              type: boolean
+            ParkDomeBeforeShutterMove:
+              type: boolean
+            MountType:
+              type: string
+              enum:
+                - EQUATORIAL
+                - FORK_ON_WEDGE
+            DecOffsetHorizontal_mm:
+              type: integer
+            SettleTimeSeconds:
+              type: integer
+          required:
+            - Id
+            - LastDeviceName
+            - ScopePositionEastWest_mm
+            - ScopePositionNorthSouth_mm
+            - ScopePositionUpDown_mm
+            - DomeRadius_mm
+            - GemAxis_mm
+            - LateralAxis_mm
+            - AzimuthTolerance_degrees
+            - FindHomeBeforePark
+            - DomeSyncTimeoutSeconds
+            - SynchronizeDuringMountSlew
+            - SyncSlewDomeWhenMountSlews
+            - RotateDegrees
+            - CloseOnUnsafe
+            - ParkMountBeforeShutterMove
+            - RefuseUnsafeShutterMove
+            - RefuseUnparkWithoutShutterOpen
+            - RefuseUnsafeShutterOpenSansSafetyDevice
+            - ParkDomeBeforeShutterMove
+            - MountType
+            - DecOffsetHorizontal_mm
+            - SettleTimeSeconds
+        FilterWheelSettings:
+          type: object
+          properties:
+            Id:
+              type: string
+              format: guid
+            LastDeviceName:
+              type: string
+            DisableGuidingOnFilterChange:
+              type: boolean
+            Unidirectional:
+              type: boolean
+          required:
+            - Id
+            - LastDeviceName
+            - DisableGuidingOnFilterChange
+            - Unidirectional
+        FlatWizardSettings:
+          type: object
+          properties:
+            FlatCount:
+              type: integer
+            HistogramMeanTarget:
+              type: number
+            HistogramTolerance:
+              type: number
+            DarkFlatCount:
+              type: integer
+            OpenForDarkFlats:
+              type: boolean
+            OpenWhenDone:
+              type: boolean
+            AltitudeSite:
+              type: string
+              enum:
+                - EAST
+                - WEST
+            FlatWizardMode:
+              type: string
+              enum:
+                - DYNAMICEXPOSURE
+                - DYNAMICBRIGHTNESS
+                - SKYFLAT
+          required:
+            - FlatCount
+            - HistogramMeanTarget
+            - HistogramTolerance
+            - DarkFlatCount
+            - OpenForDarkFlats
+            - OpenWhenDone
+            - AltitudeSite
+            - FlatWizardMode
+        FocuserSettings:
+          type: object
+          properties:
+            AutoFocusExposureTime:
+              type: number
+            AutoFocusInitialOffsetSteps:
+              type: integer
+            AutoFocusStepSize:
+              type: integer
+            Id:
+              type: string
+            LastDeviceName:
+              type: string
+            UseFilterWheelOffsets:
+              type: boolean
+            AutoFocusDisableGuiding:
+              type: boolean
+            FocuserSettleTime:
+              type: integer
+            AutoFocusTotalNumberOfAttempts:
+              type: integer
+            AutoFocusNumberOfFramesPerPoint:
+              type: integer
+            AutoFocusInnerCropRatio:
+              type: number
+            AutoFocusOuterCropRatio:
+              type: number
+            AutoFocusUseBrightestStars:
+              type: integer
+            BacklashIn:
+              type: integer
+            BacklashOut:
+              type: integer
+            AutoFocusBinning:
+              type: integer
+            AutoFocusCurveFitting:
+              type: string
+              enum:
+                - TRENDLINES
+                - PARABOLIC
+                - TRENDPARABOLIC
+                - HYPERBOLIC
+                - TRENDHYPERBOLIC
+            AutoFocusMethod:
+              type: string
+              enum:
+                - STARHFR
+                - CONTRASTDETECTION
+            ContrastDetectionMethod:
+              type: string
+              enum:
+                - Sobel
+                - Laplace
+                - Statistics
+            BacklashCompensationModel:
+              type: string
+              enum:
+                - ABSOLUTE
+                - OVERSHOOT
+            AutoFocusTimeoutSeconds:
+              type: integer
+            RSquaredThreshold:
+              type: number
+            ManualStepSmallMultiplier:
+              type: number
+            ManualStepLargeMultiplier:
+              type: number
+          required:
+            - AutoFocusExposureTime
+            - AutoFocusInitialOffsetSteps
+            - AutoFocusStepSize
+            - Id
+            - LastDeviceName
+            - UseFilterWheelOffsets
+            - AutoFocusDisableGuiding
+            - FocuserSettleTime
+            - AutoFocusTotalNumberOfAttempts
+            - AutoFocusNumberOfFramesPerPoint
+            - AutoFocusInnerCropRatio
+            - AutoFocusOuterCropRatio
+            - AutoFocusUseBrightestStars
+            - BacklashIn
+            - BacklashOut
+            - AutoFocusBinning
+            - AutoFocusCurveFitting
+            - AutoFocusMethod
+            - ContrastDetectionMethod
+            - BacklashCompensationModel
+            - AutoFocusTimeoutSeconds
+            - RSquaredThreshold
+            - ManualStepSmallMultiplier
+            - ManualStepLargeMultiplier
+        GuiderSettings:
+          type: object
+          properties:
+            GuiderName:
+              type: string
+            LastDeviceName:
+              type: string
+            DitherPixels:
+              type: number
+            DitherRAOnly:
+              type: boolean
+            PHD2GuiderScale:
+              type: string
+              enum:
+                - PIXELS
+                - ARCSECONDS
+            MaxY:
+              type: number
+            PHD2HistorySize:
+              type: integer
+            PHD2ServerPort:
+              type: integer
+            PHD2ServerUrl:
+              type: string
+            PHD2InstanceNumber:
+              type: integer
+            SettleTime:
+              type: integer
+            SettlePixels:
+              type: number
+            SettleTimeout:
+              type: integer
+            PHD2Path:
+              type: string
+            AutoRetryStartGuiding:
+              type: boolean
+            AutoRetryStartGuidingTimeoutSeconds:
+              type: integer
+            MetaGuideUseIpAddressAny:
+              type: boolean
+            MetaGuidePort:
+              type: integer
+            MGENFocalLength:
+              type: integer
+            MGENPixelMargin:
+              type: integer
+            MetaGuideMinIntensity:
+              type: integer
+            MetaGuideDitherSettleSeconds:
+              type: integer
+            MetaGuideLockWhenGuiding:
+              type: boolean
+            PHD2ROIPct:
+              type: integer
+            PHD2ProfileId:
+              type: integer
+            SkyGuardServerPort:
+              type: integer
+            SkyGuardServerUrl:
+              type: string
+            SkyGuardPath:
+              type: string
+            SkyGuardCallbackPort:
+              type: integer
+            SkyGuardTimeLapsChecked:
+              type: boolean
+            SkyGuardValueMaxGuiding:
+              type: number
+            SkyGuardTimeLapsGuiding:
+              type: number
+            SkyGuardTimeLapsDitherChecked:
+              type: boolean
+            SkyGuardValueMaxDithering:
+              type: number
+            SkyGuardTimeLapsDithering:
+              type: number
+            SkyGuardTimeOutGuiding:
+              type: number
+            GuideChartRightAscensionColor:
+              type: string
+              format: hex
+            GuideChartDeclinationColor:
+              type: string
+              format: hex
+            GuideChartShowCorrections:
+              type: boolean
+          required:
+            - GuiderName
+            - LastDeviceName
+            - DitherPixels
+            - DitherRAOnly
+            - PHD2GuiderScale
+            - MaxY
+            - PHD2HistorySize
+            - PHD2ServerPort
+            - PHD2ServerUrl
+            - PHD2InstanceNumber
+            - SettleTime
+            - SettlePixels
+            - SettleTimeout
+            - PHD2Path
+            - AutoRetryStartGuiding
+            - AutoRetryStartGuidingTimeoutSeconds
+            - MetaGuideUseIpAddressAny
+            - MetaGuidePort
+            - MGENFocalLength
+            - MGENPixelMargin
+            - MetaGuideMinIntensity
+            - MetaGuideDitherSettleSeconds
+            - MetaGuideLockWhenGuiding
+            - PHD2ROIPct
+            - SkyGuardServerPort
+            - SkyGuardServerUrl
+            - SkyGuardPath
+            - SkyGuardCallbackPort
+            - SkyGuardTimeLapsChecked
+            - SkyGuardValueMaxGuiding
+            - SkyGuardTimeLapsGuiding
+            - SkyGuardTimeLapsDitherChecked
+            - SkyGuardValueMaxDithering
+            - SkyGuardTimeLapsDithering
+            - SkyGuardTimeOutGuiding
+            - GuideChartRightAscensionColor
+            - GuideChartDeclinationColor
+            - GuideChartShowCorrections
+        ImageFileSettings:
+          type: object
+          properties:
+            FilePath:
+              type: string
+            FilePattern:
+              type: string
+            FilePatternDARK:
+              type: string
+            FilePatternBIAS:
+              type: string
+            FilePatternFLAT:
+              type: string
+            FileType:
+              $ref: "#/components/schemas/FileTypeEnum"
+            TIFFCompressionType:
+              type: string
+              enum:
+                - NONE
+                - ZIP
+                - LZW
+            XISFCompressionType:
+              type: string
+              enum:
+                - NONE
+                - LZ4
+                - LZ4HC
+                - ZLIB
+                - ZSTD
+            XISFChecksumType:
+              type: string
+              enum:
+                - NONE
+                - SHA1
+                - SHA256
+                - SHA512
+                - SHA3_256
+                - SHA3_512
+            XISFByteShuffling:
+              type: boolean
+            FITSCompressionType:
+              type: string
+              enum:
+                - NONE
+                - RICE
+                - GZIP1
+                - GZIP2
+                - PLIO
+                - HCOMPRESS
+            FITSAddFzExtension:
+              type: boolean
+            FITSUseLegacyWriter:
+              type: boolean
+          required:
+            - FilePath
+            - FilePattern
+            - FilePatternDARK
+            - FilePatternBIAS
+            - FilePatternFLAT
+            - FileType
+            - TIFFCompressionType
+            - XISFCompressionType
+            - XISFChecksumType
+            - XISFByteShuffling
+            - FITSCompressionType
+            - FITSAddFzExtension
+            - FITSUseLegacyWriter
+        ImageSettings:
+          type: object
+          properties:
+            AnnotateImage:
+              type: boolean
+            DebayerImage:
+              type: boolean
+            DebayeredHFR:
+              type: boolean
+            UnlinkedStretch:
+              type: boolean
+            AnnotateUnlimitedStars:
+              type: boolean
+            AutoStretchFactor:
+              type: number
+            BlackClipping:
+              type: number
+            StarSensitivity:
+              $ref: "#/components/schemas/StarSensitivityEnum"
+            NoiseReduction:
+              $ref: "#/components/schemas/NoiseReductionEnum"
+            DetectStars:
+              type: boolean
+            AutoStretch:
+              type: boolean
+        MeridianFlipSettings:
+          type: object
+          properties:
+            MinutesAfterMeridian:
+              type: number
+              description: The earliest time a flip should happen
+            MaxMinutesAfterMeridian:
+              type: number
+              description: The latest time a flip should happen
+            PauseTimeBeforeMeridian:
+              type: number
+            Recenter:
+              type: boolean
+            SettleTime:
+              type: integer
+            UseSideOfPier:
+              type: boolean
+            AutoFocusAfterFlip:
+              type: boolean
+            RotateImageAfterFlip:
+              type: boolean
+          required:
+            - MinutesAfterMeridian
+            - MaxMinutesAfterMeridian
+            - PauseTimeBeforeMeridian
+            - Recenter
+            - SettleTime
+            - UseSideOfPier
+            - AutoFocusAfterFlip
+            - RotateImageAfterFlip
+        PlanetariumSettings:
+          type: object
+          properties:
+            StellariumHost:
+              type: string
+            StellariumPort:
+              type: integer
+            CdCHost:
+              type: string
+            CdCPort:
+              type: integer
+            TSXHost:
+              type: string
+            TSXPort:
+              type: integer
+            TSXUseSelectedObject:
+              type: boolean
+            HNSKYHost:
+              type: string
+            HNSKYPort:
+              type: integer
+            C2AHost:
+              type: string
+            C2APort:
+              type: integer
+            SkytechXHost:
+              type: string
+            SkytechXPort:
+              type: integer
+            PreferredPlanetarium:
+              type: string
+              enum:
+                - CDC
+                - STELLARIUM
+                - THESKYX
+                - HNSKY
+                - C2A
+                - SKYTECHX
+          required:
+            - StellariumHost
+            - StellariumPort
+            - CdCHost
+            - CdCPort
+            - TSXHost
+            - TSXPort
+            - TSXUseSelectedObject
+            - HNSKYHost
+            - HNSKYPort
+            - C2AHost
+            - C2APort
+            - SkytechXHost
+            - SkytechXPort
+            - PreferredPlanetarium
+        PlateSolveSettings:
+          type: object
+          properties:
+            AstrometryURL:
+              type: string
+            AstrometryAPIKey:
+              type: string
+            BlindSolverType:
+              $ref: "#/components/schemas/PlateSolverEnum"
+            CygwinLocation:
+              type: string
+            ExposureTime:
+              type: number
+            Gain:
+              type: integer
+            Binning:
+              type: integer
+            PlateSolveFilter:
+              $ref: "#/components/schemas/CustomFilterDataShort"
+            PlateSolverType:
+              $ref: "#/components/schemas/PlateSolverEnum"
+            PS2Location:
+              type: string
+            PS3Location:
+              type: string
+            Regions:
+              type: integer
+            SearchRadius:
+              type: number
+            Threshold:
+              type: number
+            RotationTolerance:
+              type: number
+            ReattemptDelay:
+              type: number
+            NumberOfAttempts:
+              type: integer
+            AspsLocation:
+              type: string
+            ASTAPLocation:
+              type: string
+            DownSampleFactor:
+              type: integer
+            MaxObjects:
+              type: integer
+            Sync:
+              type: boolean
+            SlewToTarget:
+              type: boolean
+            BlindFailoverEnabled:
+              type: boolean
+            TheSkyXHost:
+              type: string
+            TheSkyXPort:
+              type: integer
+            PinPointCatalogType:
+              type: string
+              enum:
+                - ppGSCACT
+                - ppTycho2
+                - ppUSNO_A
+                - ppUCAC2
+                - ppUSNO_B
+                - ppUCAC3
+                - ppUCAC4
+                - ppAtlas
+            PinPointCatalogRoot:
+              type: string
+            PinPointMaxMagnitude:
+              type: number
+            PinPointExpansion:
+              type: number
+            PinPointAllSkyApiKey:
+              type: string
+            PinPointAllSkyApiHost:
+              type: string
+          required:
+            - StellariumHost
+            - StellariumPort
+            - CdCHost
+            - CdCPort
+            - TSXHost
+            - TSXPort
+            - TSXUseSelectedObject
+            - HNSKYHost
+            - HNSKYPort
+            - C2AHost
+            - C2APort
+            - SkytechXHost
+            - SkytechXPort
+            - PreferredPlanetarium
+            - PinPointCatalogType
+            - PinPointCatalogRoot
+            - PinPointMaxMagnitude
+            - PinPointExpansion
+            - PinPointAllSkyApiKey
+            - PinPointAllSkyApiHost
+        RotatorSettings:
+          type: object
+          properties:
+            Id:
+              type: string
+            LastDeviceName:
+              type: string
+            Reverse2:
+              type: boolean
+              description: Historically N.I.N.A. was expressing rotation in clockwise orientation As this was changed to follow the standard of counter clockwise orientation, the reverse setting is flipped for migration purposes
+            RangeType:
+              $ref: "#/components/schemas/RotatorRangeTypeEnum"
+            RangeStartMechanicalPosition:
+              type: number
+          required:
+            - Id
+            - LastDeviceName
+            - Reverse2
+            - RangeType
+            - RangeStartMechanicalPosition
+        FlatDeviceSettings:
+          type: object
+          properties:
+            Id:
+              type: string
+            LastDeviceName:
+              type: string
+            Name:
+              type: string
+            PortName:
+              type: string
+            SettleTime:
+              type: integer
+            TrainedFlatExposureSettings:
+              type: array
+              items:
+                $ref: "#/components/schemas/TrainedFlatExposureSetting"
+          required:
+            - Id
+            - LastDeviceName
+            - PortName
+            - SettleTime
+            - TrainedFlatExposureSettings
+        SequenceSettings:
+          type: object
+          properties:
+            EstimatedDownloadTime:
+              type: string
+              format: time-span
+            TemplatePath:
+              type: string
+            TimeSpanInTicks:
+              type: integer
+              format: int64
+            ParkMountAtSequenceEnd:
+              type: boolean
+            CloseDomeShutterAtSequenceEnd:
+              type: boolean
+            ParkDomeAtSequenceEnd:
+              type: boolean
+            WarmCamAtSequenceEnd:
+              type: boolean
+            SequenceCompleteCommand:
+              type: string
+            DefaultSequenceFolder:
+              type: string
+            StartupSequenceTemplate:
+              type: string
+            SequencerTemplatesFolder:
+              type: string
+            SequencerTargetsFolder:
+              type: string
+            CollapseSequencerTemplatesByDefault:
+              type: boolean
+            CoolCameraAtSequenceStart:
+              type: boolean
+            UnparMountAtSequenceStart:
+              type: boolean
+            OpenDomeShutterAtSequenceStart:
+              type: boolean
+            DoMeridianFlip:
+              type: boolean
+            DisableSimpleSequencer:
+              type: boolean
+            ExcludeExposureCountFromHasChanges:
+              type: boolean
+              description: Exclude changes to exposure count when checking for changes to a sequence
+          required:
+            - TemplatePath
+            - ParkMountAtSequenceEnd
+            - CloseDomeShutterAtSequenceEnd
+            - ParkDomeAtSequenceEnd
+            - WarmCamAtSequenceEnd
+            - TimeSpanInTicks
+            - DefaultSequenceFolder
+            - SequencerTemplatesFolder
+            - SequencerTargetsFolder
+            - StartupSequenceTemplate
+            - CoolCameraAtSequenceStart
+            - UnparMountAtSequenceStart
+            - OpenDomeShutterAtSequenceStart
+            - CollapseSequencerTemplatesByDefault
+            - DoMeridianFlip
+            - DisableSimpleSequencer
+            - ExcludeExposureCountFromHasChanges
+        SwitchSettings:
+          type: object
+          properties:
+            Id:
+              type: string
+            LastDeviceName:
+              type: string
+          required:
+            - Id
+            - LastDeviceName
+        TelescopeSettings:
           type: object
           properties:
             Name:
               type: string
-            Description:
+            MountName:
               type: string
+            FocalLength:
+              type: number
+            FocalRatio:
+              type: number
             Id:
               type: string
-            LastUsed:
+            LastDeviceName:
               type: string
-            ApplicationSettings:
-              type: object
-              properties:
-                Culture:
-                  type: string
-                DevicePollingInterval:
-                  type: integer
-                PageSize:
-                  type: integer
-                LogLevel:
-                  type: string
-                  enum:
-                    - ERROR
-                    - WARNING
-                    - INFO
-                    - DEBUG
-                    - TRACE
-            AstrometrySettings:
-              type: object
-              properties:
-                Latitude:
-                  type: number
-                Longitude:
-                  type: number
-                Elevation:
-                  type: integer
-                HorizonFilePath:
-                  type: string
-            CameraSettings:
-              type: object
-              properties:
-                BitDepth:
-                  type: integer
-                BulbMode:
-                  type: string
-                  enum:
-                    - NATIVE
-                    - SERIALPORT
-                    - SERIALRELAY
-                    - TELESCOPESNAPPORT
-                Id:
-                  type: string
-                PixelSize:
-                  type: integer
-                RawConverter:
-                  type: string
-                  enum:
-                    - DCRAW
-                    - FREEIMAGE
-                SerialPort:
-                  type: string
-                MinFlatExposureTime:
-                  type: number
-                MaxFlatExposureTime:
-                  type: integer
-                FileCameraFolder:
-                  type: string
-                FileCameraUseBulbMode:
-                  type: boolean
-                FileCameraIsBayered:
-                  type: boolean
-                FileCameraExtension:
-                  type: string
-                FileCameraAlwaysListen:
-                  type: boolean
-                FileCameraDownloadDelay:
-                  type: integer
-                BayerPattern:
-                  type: string
-                  enum:
-                    - None
-                    - Auto
-                    - RGGB
-                    - BGGR
-                    - GBRG
-                    - GRBG
-                    - GRGB
-                    - GBGR
-                    - RGBG
-                    - BGRG
-                FLIEnableFloodFlush:
-                  type: boolean
-                FLIEnableSnapshotFloodFlush:
-                  type: boolean
-                FLIFloodDuration:
-                  type: integer
-                FLIFlushCount:
-                  type: integer
-                BitScaling:
-                  type: boolean
-                CoolingDuration:
-                  type: integer
-                WarmingDuration:
-                  type: integer
-                Temperature:
-                  type: integer
-                Gain:
-                  type: integer
-                Offset:
-                  type: integer
-                QhyIncludeOverscan:
-                  type: boolean
-                Timeout:
-                  type: integer
-                DewHeaterOn:
-                  type: boolean
-                ASCOMAllowUnevenPixelDimension:
-                  type: boolean
-                MirrorLockupDelay:
-                  type: integer
-                BinAverageEnabled:
-                  type: boolean
-                TrackingCameraASCOMServerEnabled:
-                  type: boolean
-                TrackingCameraASCOMServerPipeName:
-                  type: string
-                TrackingCameraASCOMServerLoggingEnabled:
-                  type: boolean
-                SBIGUseExternalCcdTracker:
-                  type: boolean
-                AtikGainPreset:
-                  type: integer
-                AtikExposureSpeed:
-                  type: integer
-                AtikWindowHeaterPowerLevel:
-                  type: integer
-                TouptekAlikeUltraMode:
-                  type: boolean
-                TouptekAlikeHighFullwell:
-                  type: boolean
-                TouptekAlikeLEDLights:
-                  type: boolean
-                TouptekAlikeDewHeaterStrength:
-                  type: integer
-                GenericCameraDewHeaterStrength:
-                  type: integer
-                GenericCameraFanSpeed:
-                  type: integer
-                ZwoAsiMonoBinMode:
-                  type: boolean
-                ASCOMCreate32BitData:
-                  type: boolean
-                BadPixelCorrection:
-                  type: boolean
-                BadPixelCorrectionThreshold:
-                  type: integer
-            ColorSchemaSettings:
-              type: object
-              properties:
-                AltColorSchema:
-                  type: string
-                ColorSchema:
-                  type: string
-            DomeSettings:
-              type: object
-              properties:
-                Id:
-                  type: string
-                ScopePositionEastWest_mm:
-                  type: integer
-                ScopePositionNorthSouth_mm:
-                  type: integer
-                ScopePositionUpDown_mm:
-                  type: integer
-                DomeRadius_mm:
-                  type: integer
-                GemAxis_mm:
-                  type: integer
-                LateralAxis_mm:
-                  type: integer
-                AzimuthTolerance_degrees:
-                  type: integer
-                FindHomeBeforePark:
-                  type: boolean
-                DomeSyncTimeoutSeconds:
-                  type: integer
-                SynchronizeDuringMountSlew:
-                  type: boolean
-                SyncSlewDomeWhenMountSlews:
-                  type: boolean
-                RotateDegrees:
-                  type: integer
-                CloseOnUnsafe:
-                  type: boolean
-                ParkMountBeforeShutterMove:
-                  type: boolean
-                RefuseUnsafeShutterMove:
-                  type: boolean
-                RefuseUnsafeShutterOpenSansSafetyDevice:
-                  type: boolean
-                ParkDomeBeforeShutterMove:
-                  type: boolean
-                MountType:
-                  type: string
-                  enum:
-                    - EQUATORIAL
-                    - FORK_ON_WEDGE
-                DecOffsetHorizontal_mm:
-                  type: integer
-                SettleTimeSeconds:
-                  type: integer
-            FilterWheelSettings:
-              type: object
-              properties:
-                FilterWheelFilters:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      Name:
-                        type: string
-                      FocusOffset:
-                        type: integer
-                      Position:
-                        type: integer
-                      AutoFocusExposureTime:
-                        type: integer
-                      AutoFocusFilter:
-                        type: boolean
-                      FlatWizardFilterSettings:
-                        type: object
-                        properties:
-                          FlatWizardMode:
-                            type: string
-                            enum:
-                              - DYNAMICEXPOSURE
-                              - DYNAMICBRIGHTNESS
-                              - SKYFLAT
-                          HistogramMeanTarget:
-                            type: number
-                          HistogramTolerance:
-                            type: number
-                          MaxFlatExposureTime:
-                            type: integer
-                          MinFlatExposureTime:
-                            type: number
-                          MaxAbsoluteFlatDeviceBrightness:
-                            type: integer
-                          MinAbsoluteFlatDeviceBrightness:
-                            type: integer
-                          Gain:
-                            type: integer
-                          Offset:
-                            type: integer
-                          Binning:
-                            type: object
-                            properties:
-                              Name:
-                                type: string
-                              X:
-                                type: integer
-                              Y:
-                                type: integer
-                      AutoFocusBinning:
-                        type: object
-                        properties:
-                          Name:
-                            type: string
-                          X:
-                            type: integer
-                          Y:
-                            type: integer
-                      AutoFocusGain:
-                        type: integer
-                      AutoFocusOffset:
-                        type: integer
-                Id:
-                  type: string
-                DisableGuidingOnFilterChange:
-                  type: boolean
-                Unidirectional:
-                  type: boolean
-            FlatWizardSettings:
-              type: object
-              properties:
-                FlatCount:
-                  type: integer
-                HistogramMeanTarget:
-                  type: number
-                HistogramTolerance:
-                  type: number
-                DarkFlatCount:
-                  type: integer
-                OpenForDarkFlats:
-                  type: boolean
-                AltitudeSite:
-                  type: integer
-                FlatWizardMode:
-                  type: string
-                  enum:
-                    - DYNAMICEXPOSURE
-                    - DYNAMICBRIGHTNESS
-                    - SKYFLAT
-            FocuserSettings:
-              type: object
-              properties:
-                AutoFocusExposureTime:
-                  type: integer
-                AutoFocusInitialOffsetSteps:
-                  type: integer
-                AutoFocusStepSize:
-                  type: integer
-                Id:
-                  type: string
-                UseFilterWheelOffsets:
-                  type: boolean
-                AutoFocusDisableGuiding:
-                  type: boolean
-                FocuserSettleTime:
-                  type: integer
-                AutoFocusTotalNumberOfAttempts:
-                  type: integer
-                AutoFocusNumberOfFramesPerPoint:
-                  type: integer
-                AutoFocusInnerCropRatio:
-                  type: integer
-                AutoFocusOuterCropRatio:
-                  type: integer
-                AutoFocusUseBrightestStars:
-                  type: integer
-                BacklashIn:
-                  type: integer
-                BacklashOut:
-                  type: integer
-                AutoFocusBinning:
-                  type: integer
-                AutoFocusCurveFitting:
-                  type: string
-                  enum:
-                    - TRENDLINES
-                    - PARABOLIC
-                    - TRENDPARABOLIC
-                    - HYPERBOLIC
-                    - TRENDHYPERBOLIC
-                AutoFocusMethod:
-                  type: string
-                  enum:
-                    - STARHFR
-                    - CONTRASTDETECTION
-                ContrastDetectionMethod:
-                  type: string
-                  enum:
-                    - Sobel
-                    - Laplace
-                    - Statistics
-                BacklashCompensationModel:
-                  type: string
-                  enum:
-                    - ABSOLUTE
-                    - OVERSHOOT
-                AutoFocusTimeoutSeconds:
-                  type: integer
-                RSquaredThreshold:
-                  type: number
-            FramingAssistantSettings:
-              type: object
-              properties:
-                CameraHeight:
-                  type: integer
-                CameraWidth:
-                  type: integer
-                FieldOfView:
-                  type: integer
-                Opacity:
-                  type: number
-                LastSelectedImageSource:
-                  type: string
-                  enum:
-                    - NASA
-                    - SKYSERVER
-                    - STSCI
-                    - ESO
-                    - HIPS2FITS
-                    - SKYATLAS
-                    - FILE
-                    - CACHE
-                LastRotationAngle:
-                  type: integer
-                SaveImageInOfflineCache:
-                  type: boolean
-            GuiderSettings:
-              type: object
-              properties:
-                GuiderName:
-                  type: string
-                DitherPixels:
-                  type: integer
-                DitherRAOnly:
-                  type: boolean
-                PHD2GuiderScale:
-                  type: string
-                  enum:
-                    - PIXELS
-                    - ARCSECONDS
-                MaxY:
-                  type: integer
-                PHD2HistorySize:
-                  type: integer
-                PHD2ServerPort:
-                  type: integer
-                PHD2ServerUrl:
-                  type: string
-                PHD2InstanceNumber:
-                  type: integer
-                SettleTime:
-                  type: integer
-                SettlePixels:
-                  type: number
-                SettleTimeout:
-                  type: integer
-                PHD2Path:
-                  type: string
-                AutoRetryStartGuiding:
-                  type: boolean
-                AutoRetryStartGuidingTimeoutSeconds:
-                  type: integer
-                MetaGuideUseIpAddressAny:
-                  type: boolean
-                MetaGuidePort:
-                  type: integer
-                MGENFocalLength:
-                  type: integer
-                MGENPixelMargin:
-                  type: integer
-                MetaGuideMinIntensity:
-                  type: integer
-                MetaGuideDitherSettleSeconds:
-                  type: integer
-                MetaGuideLockWhenGuiding:
-                  type: boolean
-                PHD2ROIPct:
-                  type: integer
-                SkyGuardServerPort:
-                  type: integer
-                SkyGuardServerUrl:
-                  type: string
-                SkyGuardPath:
-                  type: string
-                SkyGuardCallbackPort:
-                  type: integer
-                SkyGuardTimeLapsChecked:
-                  type: boolean
-                SkyGuardValueMaxGuiding:
-                  type: integer
-                SkyGuardTimeLapsGuiding:
-                  type: integer
-                SkyGuardTimeLapsDitherChecked:
-                  type: boolean
-                SkyGuardValueMaxDithering:
-                  type: integer
-                SkyGuardTimeLapsDithering:
-                  type: integer
-                SkyGuardTimeOutGuiding:
-                  type: integer
-                GuideChartRightAscensionColor:
-                  type: object
-                  properties:
-                    A:
-                      type: integer
-                    R:
-                      type: integer
-                    G:
-                      type: integer
-                    B:
-                      type: integer
-                    ScA:
-                      type: integer
-                    ScR:
-                      type: integer
-                    ScG:
-                      type: integer
-                    ScB:
-                      type: integer
-                GuideChartDeclinationColor:
-                  type: object
-                  properties:
-                    A:
-                      type: integer
-                    R:
-                      type: integer
-                    G:
-                      type: integer
-                    B:
-                      type: integer
-                    ScA:
-                      type: integer
-                    ScR:
-                      type: integer
-                    ScG:
-                      type: integer
-                    ScB:
-                      type: integer
-                GuideChartShowCorrections:
-                  type: boolean
-            ImageFileSettings:
-              type: object
-              properties:
-                FilePath:
-                  type: string
-                FilePattern:
-                  type: string
-                FilePatternDARK:
-                  type: string
-                FilePatternBIAS:
-                  type: string
-                FilePatternFLAT:
-                  type: string
-                FileType:
-                  type: string
-                  enum:
-                    - TIFF
-                    - FITS
-                    - XISF
-                    - TIFF_ZIP
-                    - TIFF_LZW
-                    - RAW
-                TIFFCompressionType:
-                  type: string
-                  enum:
-                    - NONE
-                    - ZIP
-                    - LZW
-                XISFCompressionType:
-                  type: string
-                  enum:
-                    - NONE
-                    - LZ4
-                    - LZ4HC
-                    - ZLIB
-                XISFChecksumType:
-                  type: string
-                  enum:
-                    - NONE
-                    - SHA1
-                    - SHA256
-                    - SHA512
-                    - SHA3_256
-                    - SHA3_512
-                XISFByteShuffling:
-                  type: boolean
-                FITSCompressionType:
-                  type: string
-                  enum:
-                    - NONE
-                    - RICE
-                    - GZIP1
-                    - GZIP2
-                    - PLIO
-                    - HCOMPRESS
-                FITSAddFzExtension:
-                  type: boolean
-                FITSUseLegacyWriter:
-                  type: boolean
-            ImageSettings:
-              type: object
-              properties:
-                AnnotateImage:
-                  type: boolean
-                DebayerImage:
-                  type: boolean
-                DebayeredHFR:
-                  type: boolean
-                UnlinkedStretch:
-                  type: boolean
-                AnnotateUnlimitedStars:
-                  type: boolean
-                AutoStretchFactor:
-                  type: number
-                BlackClipping:
-                  type: number
-                StarSensitivity:
-                  type: string
-                  enum:
-                    - Normal
-                    - High
-                    - Highest
-                NoiseReduction:
-                  type: string
-                  enum:
-                    - None
-                    - Median
-                    - Normal
-                    - High
-                    - Highest
-                DetectStars:
-                  type: boolean
-                AutoStretch:
-                  type: boolean
-            MeridianFlipSettings:
-              type: object
-              properties:
-                MinutesAfterMeridian:
-                  type: integer
-                MaxMinutesAfterMeridian:
-                  type: integer
-                PauseTimeBeforeMeridian:
-                  type: integer
-                Recenter:
-                  type: boolean
-                SettleTime:
-                  type: integer
-                UseSideOfPier:
-                  type: boolean
-                AutoFocusAfterFlip:
-                  type: boolean
-                RotateImageAfterFlip:
-                  type: boolean
-            PlanetariumSettings:
-              type: object
-              properties:
-                StellariumHost:
-                  type: string
-                StellariumPort:
-                  type: integer
-                CdCHost:
-                  type: string
-                CdCPort:
-                  type: integer
-                TSXHost:
-                  type: string
-                TSXPort:
-                  type: integer
-                TSXUseSelectedObject:
-                  type: boolean
-                HNSKYHost:
-                  type: string
-                HNSKYPort:
-                  type: integer
-                C2AHost:
-                  type: string
-                C2APort:
-                  type: integer
-                SkytechXHost:
-                  type: string
-                SkytechXPort:
-                  type: integer
-                PreferredPlanetarium:
-                  type: string
-                  enum:
-                    - CDC
-                    - STELLARIUM
-                    - THESKYX
-                    - HNSKY
-                    - C2A
-                    - SKYTECHX
-            PlateSolveSettings:
-              type: object
-              properties:
-                AstrometryURL:
-                  type: string
-                AstrometryAPIKey:
-                  type: string
-                BlindSolverType:
-                  type: string
-                  enum:
-                    - ASTROMETRY_NET
-                    - LOCAL
-                    - ASPS
-                    - ASTAP
-                    - PLATESOLVE3
-                    - PINPOINT
-                CygwinLocation:
-                  type: string
-                ExposureTime:
-                  type: integer
-                Gain:
-                  type: integer
-                Binning:
-                  type: integer
-                PlateSolverType:
-                  type: string
-                  enum:
-                    - ASTROMETRY_NET
-                    - LOCAL
-                    - PLATESOLVE2
-                    - PLATESOLVE3
-                    - ASPS
-                    - ASTAP
-                    - TSX_IMAGELINK
-                    - PINPONT
-                PS2Location:
-                  type: string
-                PS3Location:
-                  type: string
-                Regions:
-                  type: integer
-                SearchRadius:
-                  type: integer
-                Threshold:
-                  type: integer
-                RotationTolerance:
-                  type: integer
-                ReattemptDelay:
-                  type: integer
-                NumberOfAttempts:
-                  type: integer
-                AspsLocation:
-                  type: string
-                ASTAPLocation:
-                  type: string
-                DownSampleFactor:
-                  type: integer
-                MaxObjects:
-                  type: integer
-                Sync:
-                  type: boolean
-                SlewToTarget:
-                  type: boolean
-                BlindFailoverEnabled:
-                  type: boolean
-                TheSkyXHost:
-                  type: string
-                TheSkyXPort:
-                  type: integer
-                PinPointCatalogType:
-                  type: string
-                  enum:
-                    - ppGSCACT
-                    - ppTycho2
-                    - ppUSNO_A
-                    - ppUCAC2
-                    - ppUSNO_B
-                    - ppUCAC3
-                    - ppUCAC4
-                    - ppAtlas
-                PinPointCatalogRoot:
-                  type: string
-                PinPointMaxMagnitude:
-                  type: integer
-                PinPointExpansion:
-                  type: integer
-                PinPointAllSkyApiKey:
-                  type: string
-                PinPointAllSkyApiHost:
-                  type: string
-            RotatorSettings:
-              type: object
-              properties:
-                Id:
-                  type: string
-                Reverse2:
-                  type: boolean
-                RangeType:
-                  type: string
-                  enum:
-                    - FULL
-                    - HALF
-                    - QUARTER
-                RangeStartMechanicalPosition:
-                  type: integer
-            FlatDeviceSettings:
-              type: object
-              properties:
-                Id:
-                  type: string
-                PortName:
-                  type: string
-                SettleTime:
-                  type: integer
-                TrainedFlatExposureSettings:
-                  type: array
-                  items: {}
-            SequenceSettings:
-              type: object
-              properties:
-                EstimatedDownloadTime:
-                  type: string
-                TemplatePath:
-                  type: string
-                TimeSpanInTicks:
-                  type: integer
-                ParkMountAtSequenceEnd:
-                  type: boolean
-                CloseDomeShutterAtSequenceEnd:
-                  type: boolean
-                ParkDomeAtSequenceEnd:
-                  type: boolean
-                WarmCamAtSequenceEnd:
-                  type: boolean
-                DefaultSequenceFolder:
-                  type: string
-                StartupSequenceTemplate:
-                  type: string
-                SequencerTemplatesFolder:
-                  type: string
-                SequencerTargetsFolder:
-                  type: string
-                CollapseSequencerTemplatesByDefault:
-                  type: boolean
-                CoolCameraAtSequenceStart:
-                  type: boolean
-                UnparMountAtSequenceStart:
-                  type: boolean
-                OpenDomeShutterAtSequenceStart:
-                  type: boolean
-                DoMeridianFlip:
-                  type: boolean
-                DisableSimpleSequencer:
-                  type: boolean
-            SwitchSettings:
-              type: object
-              properties:
-                Id:
-                  type: string
-            TelescopeSettings:
-              type: object
-              properties:
-                Name:
-                  type: string
-                MountName:
-                  type: string
-                FocalLength:
-                  type: integer
-                FocalRatio:
-                  type: integer
-                Id:
-                  type: string
-                SettleTime:
-                  type: integer
-                SnapPortStart:
-                  type: string
-                SnapPortStop:
-                  type: string
-                NoSync:
-                  type: boolean
-                TimeSync:
-                  type: boolean
-                PrimaryReversed:
-                  type: boolean
-                SecondaryReversed:
-                  type: boolean
-                TelescopeLocationSyncDirection:
-                  type: string
-                  enum:
-                    - PROMPT
-                    - TOAPPLICATION
-                    - TOTELESCOPE
-                    - NOSYNC
-            WeatherDataSettings:
-              type: object
-              properties:
-                Id:
-                  type: string
-                OpenWeatherMapAPIKey:
-                  type: string
-                TheWeatherCompanyAPIKey:
-                  type: string
-                WeatherUndergroundAPIKey:
-                  type: string
-                WeatherUndergroundStation:
-                  type: string
-            SnapShotControlSettings:
-              type: object
-              properties:
-                ExposureDuration:
-                  type: integer
-                Gain:
-                  type: integer
-                Save:
-                  type: boolean
-                Loop:
-                  type: boolean
-            SafetyMonitorSettings:
-              type: object
-              properties:
-                Id:
-                  type: string
-            AlpacaSettings:
-              type: object
-              properties:
-                NumberOfPolls:
-                  type: integer
-                PollInterval:
-                  type: integer
-                DiscoveryPort:
-                  type: integer
-                DiscoveryDuration:
-                  type: integer
-                ResolveDnsName:
-                  type: boolean
-                UseIPv4:
-                  type: boolean
-                UseIPv6:
-                  type: boolean
-                UseHttps:
-                  type: boolean
-            ImageHistorySettings:
-              type: object
-              properties:
-                ImageHistoryLeftSelected:
-                  type: string
-                  enum:
-                    - NONE
-                    - HFR
-                    - Stars
-                    - Median
-                    - Mean
-                    - StDev
-                    - MAD
-                    - Temperature
-                    - Rms
-                ImageHistoryRightSelected:
-                  type: string
-                  enum:
-                    - NONE
-                    - HFR
-                    - Stars
-                    - Median
-                    - Mean
-                    - StDev
-                    - MAD
-                    - Temperature
-                    - Rms
-        Error:
-          type: string
-        StatusCode:
-          type: integer
-          example: 200
-        Success:
-          type: boolean
-          example: true
-        Type:
-          type: string
-          example: "API"
+            SettleTime:
+              type: integer
+            SnapPortStart:
+              type: string
+            SnapPortStop:
+              type: string
+            NoSync:
+              type: boolean
+            TimeSync:
+              type: boolean
+            PrimaryReversed:
+              type: boolean
+            SecondaryReversed:
+              type: boolean
+            TelescopeLocationSyncDirection:
+              type: string
+              enum:
+                - PROMPT
+                - TOAPPLICATION
+                - TOTELESCOPE
+                - NOSYNC
+          required:
+            - Name
+            - MountName
+            - FocalLength
+            - FocalRatio
+            - Id
+            - LastDeviceName
+            - SettleTime
+            - SnapPortStart
+            - SnapPortStop
+            - NoSync
+            - TimeSync
+            - PrimaryReversed
+            - SecondaryReversed
+            - TelescopeLocationSyncDirection
+        WeatherDataSettings:
+          type: object
+          properties:
+            Id:
+              type: string
+            LastDeviceName:
+              type: string
+            OpenWeatherMapAPIKey:
+              type: string
+            TheWeatherCompanyAPIKey:
+              type: string
+            WeatherUndergroundAPIKey:
+              type: string
+            WeatherUndergroundStation:
+              type: string
+        SnapShotControlSettings:
+          type: object
+          properties:
+            ExposureDuration:
+              type: number
+            Gain:
+              type: integer
+            Save:
+              type: boolean
+            SnapShotFilter:
+              $ref: "#/components/schemas/CustomFilterDataShort"
+            Loop:
+              type: boolean
+          required:
+            - ExposureDuration
+            - Gain
+            - Save
+            - Loop
+        SafetyMonitorSettings:
+          type: object
+          properties:
+            Id:
+              type: string
+            LastDeviceName:
+              type: string
+        GnssSettings:
+          type: object
+          properties:
+            GnssSource:
+              type: string
+              enum:
+                - NmeaSerial
+                - PegausAstroUranusMeteo
+                - PrimaLuceLabEagle
+                - Gpsd
+            GpsdHost:
+              type: string
+            GpsdPort:
+              type: integer
+          required:
+            - GnssSource
+            - GpsdHost
+            - GpsdPort
+        AlpacaSettings:
+          type: object
+          properties:
+            NumberOfPolls:
+              type: integer
+            PollInterval:
+              type: integer
+            DiscoveryPort:
+              type: integer
+            DiscoveryDuration:
+              type: number
+            ResolveDnsName:
+              type: boolean
+            UseIPv4:
+              type: boolean
+            UseIPv6:
+              type: boolean
+            UseHttps:
+              type: boolean
+          required:
+            - NumberOfPolls
+            - PollInterval
+            - DiscoveryPort
+            - DiscoveryDuration
+            - ResolveDnsName
+            - UseIPv4
+            - UseIPv6
+            - UseHttps
+        ImageHistorySettings:
+          type: object
+          properties:
+            ImageHistoryLeftSelected:
+              $ref: "#/components/schemas/ImageHistoryDataEnum"
+            ImageHistoryRightSelected:
+              $ref: "#/components/schemas/ImageHistoryDataEnum"
+      required:
+        - Name
+        - Description
+        - Id
+        - LastUsed
+        - Location
+        - ApplicationSettings
+        - AstrometrySettings
+        - CameraSettings
+        - ColorSchemaSettings
+        - DomeSettings
+        - FilterWheelSettings
+        - FlatWizardSettings
+        - FocuserSettings
+        - GuiderSettings
+        - ImageFileSettings
+        - ImageSettings
+        - MeridianFlipSettings
+        - PlanetariumSettings
+        - PlateSolveSettings
+        - RotatorSettings
+        - FlatDeviceSettings
+        - SequenceSettings
+        - SwitchSettings
+        - TelescopeSettings
+        - WeatherDataSettings
+        - SnapShotControlSettings
+        - SafetyMonitorSettings
+        - GnssSettings
+        - AlpacaSettings
+        - ImageHistorySettings
 
     SequenceBaseJson:
       type: object
