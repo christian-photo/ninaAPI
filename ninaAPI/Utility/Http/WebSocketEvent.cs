@@ -11,13 +11,16 @@
 
 
 using System;
+using Newtonsoft.Json;
 
 namespace ninaAPI.Utility.Http
 {
     public class WebSocketEvent
     {
         public string Event { get; set; }
-        public WebSocketChannel Channel { get; set; } // TODO: See if this should be sent or not
+
+        [JsonIgnore]
+        public WebSocketChannel Channel { get; set; }
         public object Data { get; set; }
     }
 
@@ -45,6 +48,8 @@ namespace ninaAPI.Utility.Http
         Equipment,
         Capture,
         Livestack,
+        TPPA,
+        TargetScheduler,
         Autofocus,
         Process,
         Guiding,

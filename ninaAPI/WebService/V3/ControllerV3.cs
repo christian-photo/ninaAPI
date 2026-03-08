@@ -19,6 +19,7 @@ using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3
 {
@@ -123,6 +124,21 @@ namespace ninaAPI.WebService.V3
             await responseHandler.SendObject(
                 HttpContext,
                 new StatusResponse(process.Status)
+            );
+        }
+
+        [Route(HttpVerbs.Get, "/events")]
+        public async Task GetEventHistory()
+        {
+            PagerParameterSet pagerParameter = PagerParameterSet.Default();
+            pagerParameter.Evaluate(HttpContext);
+
+            EventHistoryManager history = (AdvancedAPI.V3 as V3Api).GetEventWebSocket().EventHistoryManager;
+            var events = history.GetEventHistoryPage(pagerParameter.PageParameter.Value, pagerParameter.PageSizeParameter.Value);
+
+            await responseHandler.SendObject(
+                HttpContext,
+                events
             );
         }
     }

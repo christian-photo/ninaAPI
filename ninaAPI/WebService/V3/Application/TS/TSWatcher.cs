@@ -10,9 +10,9 @@
 #endregion "copyright"
 
 
-using System.Net.WebSockets;
 using System.Threading.Tasks;
 using NINA.Plugin.Interfaces;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Application.TS
@@ -30,6 +30,7 @@ namespace ninaAPI.WebService.V3.Application.TS
         public TSWatcher(EventHistoryManager eventHistory, IMessageBroker messageBroker) : base(eventHistory)
         {
             this.messageBroker = messageBroker;
+            Channel = WebSocketChannel.TargetScheduler;
         }
 
         public async Task OnMessageReceived(IMessage message)

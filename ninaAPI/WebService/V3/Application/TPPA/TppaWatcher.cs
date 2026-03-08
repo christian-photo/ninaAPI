@@ -13,6 +13,7 @@
 using System.Threading.Tasks;
 using NINA.Core.Model;
 using NINA.Plugin.Interfaces;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Application.TPPA
@@ -24,6 +25,7 @@ namespace ninaAPI.WebService.V3.Application.TPPA
         public TppaWatcher(EventHistoryManager eventHistory, IMessageBroker messageBroker) : base(eventHistory)
         {
             this.messageBroker = messageBroker;
+            this.Channel = WebSocketChannel.TPPA;
         }
 
         public async Task OnMessageReceived(IMessage message)

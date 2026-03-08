@@ -261,7 +261,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             }
 
             Guid processId;
-            Coordinates coordinates = config.Coordinates.ToCoordinates(); // TODO: Verfiy coordinates
+            Coordinates coordinates = config.Coordinates.ToCoordinates();
 
             if (config.SlewType == SlewType.Slew)
             {

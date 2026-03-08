@@ -85,7 +85,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
 
         private async Task GuiderConnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceConnected(Device.Guider));
         private async Task GuiderDisconnectedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceDisconnected(Device.Guider));
-        private async Task GuiderAfterDitherHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.GUIDER_DITHER); // TODO: Maybe this should go to the guiding channel or both
+        private async Task GuiderAfterDitherHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.GUIDER_DITHER, WebSocketChannel.Guiding);
         private async Task GuiderGuidingStartedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.GUIDER_GUIDING_STARTED);
         private async Task GuiderGuidingStoppedHandler(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.GUIDER_GUIDING_STOPPED);
 

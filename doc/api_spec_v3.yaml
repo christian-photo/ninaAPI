@@ -3872,41 +3872,24 @@ paths:
             schema:
               $ref: "#/components/schemas/TargetUpdate"
 
-  /event-history:
+  /events:
     get:
       tags:
         - Event Websocket
       summary: Event History
       description: Get event history
+      parameters:
+        - $ref: "#/components/parameters/PagerPage"
+        - $ref: "#/components/parameters/PagerPageSize"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        Event:
-                          type: string
-                        Time:
-                          type: string
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                type: array
+                items:
+                  $ref: "#/components/schemas/WebSocketEvent"
         default:
           description: Request could not be carried out
           content:
@@ -4061,6 +4044,91 @@ paths:
                 description: Image in png format
                 type: string
                 format: binary
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /tppa/start-alignment:
+    post:
+      tags:
+        - TPPA
+      summary: Start Alignment
+      description: Start Three Point Polar Alignment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TPPAStartAlignmentBody"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /tppa/stop-alignment:
+    post:
+      tags:
+        - TPPA
+      summary: Stop Alignment
+      description: Stop Three Point Polar Alignment
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /tppa/pause-alignment:
+    post:
+      tags:
+        - TPPA
+      summary: Pause Alignment
+      description: Pause Three Point Polar Alignment
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /tppa/resume-alignment:
+    post:
+      tags:
+        - TPPA
+      summary: Resume Alignment
+      description: Resume Three Point Polar Alignment
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -5018,6 +5086,75 @@ components:
         - GBGR
         - RGBG
         - BGRG
+
+    WebSocketEvent:
+      type: object
+      properties:
+        Event:
+          type: string
+        Data:
+          type: object
+
+    TPPAStartAlignmentBody:
+      type: object
+      properties:
+        ManualMode:
+          type: boolean
+          description: Whether to use manual mode
+        TargetDistance:
+          type: integer
+        MoveRate:
+          type: integer
+          description: The move rate in degrees per second
+        EastDirection:
+          type: boolean
+          description: Whether to move east or west
+        StartFromCurrentPosition:
+          type: boolean
+          description: Whether to start from the current position
+        AltDegrees:
+          type: integer
+          minimum: 0
+          maximum: 90
+        AltMinutes:
+          type: integer
+          minimum: 0
+          maximum: 60
+        AltSeconds:
+          type: number
+          minimum: 0
+          maximum: 60
+        AzDegrees:
+          type: integer
+          minimum: 0
+          maximum: 360
+        AzMinutes:
+          type: integer
+          minimum: 0
+          maximum: 60
+        AzSeconds:
+          type: number
+          minimum: 0
+          maximum: 60
+        AlignmentTolerance:
+          type: number
+          minimum: 0
+          maximum: 100
+        Filter:
+          type: string
+          description: The filter to use
+        ExposureTime:
+          type: number
+          minimum: 0
+        Binning:
+          type: integer
+          minimum: 1
+        Gain:
+          type: integer
+        Offset:
+          type: integer
+        SearchRadius:
+          type: number
 
     CameraInfo:
       type: object

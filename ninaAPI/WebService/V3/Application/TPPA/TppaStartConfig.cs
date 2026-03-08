@@ -18,27 +18,6 @@ namespace ninaAPI.WebService.V3.Application.TPPA
 #nullable enable
     public class TppaStartConfig
     {
-        private string action = string.Empty;
-
-        [AllowedValues("StartAlignment", "StopAlignment", "PauseAlignment", "ResumeAlignment")]
-        public string Action
-        {
-            get
-            {
-                if (action.Equals("StartAlignment") || action.Equals("StopAlignment"))
-                {
-                    return $"PolarAlignmentPlugin_DockablePolarAlignmentVM_{action}";
-                }
-                else
-                {
-                    return $"PolarAlignmentPlugin_PolarAlignment_{action}";
-                }
-            }
-            set
-            {
-                action = value;
-            }
-        }
         public bool? ManualMode { get; set; }
         public int? TargetDistance { get; set; }
         public int? MoveRate { get; set; }

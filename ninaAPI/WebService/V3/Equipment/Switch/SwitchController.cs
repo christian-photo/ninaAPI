@@ -63,7 +63,7 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
             }
 
             // TODO: Check if this needs to be a process
-            await @switch.SetSwitchValue(config.SwitchId, config.Value, statusMediator.GetStatus(), System.Threading.CancellationToken.None);
+            await @switch.SetSwitchValue(config.SwitchId, config.Value, statusMediator.GetStatus(), CancellationToken);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Switch value updated"));
         }

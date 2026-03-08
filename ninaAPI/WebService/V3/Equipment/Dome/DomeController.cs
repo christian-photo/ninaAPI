@@ -135,11 +135,11 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
 
             if (body.ShouldFollow)
             {
-                await dome.EnableFollowing(System.Threading.CancellationToken.None);
+                await dome.EnableFollowing(CancellationToken);
             }
             else
             {
-                await dome.DisableFollowing(System.Threading.CancellationToken.None);
+                await dome.DisableFollowing(CancellationToken);
             }
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Dome follower updated"));
@@ -164,7 +164,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             bool success = await dome.SyncToScopeCoordinates(
                 body?.Coordinates?.ToCoordinates() ?? mount.GetInfo().Coordinates,
                 body?.SideOfPier ?? mount.GetInfo().SideOfPier,
-                System.Threading.CancellationToken.None
+                CancellationToken
             );
 
             if (!success)

@@ -118,7 +118,7 @@ namespace ninaAPI.WebService.V3.Equipment
             var targetDevice = chooser.Devices.First(d => d.Id == deviceId.Get(HttpContext));
 
             chooser.SelectedDevice = targetDevice;
-            bool success = await chooser.SelectedDevice.Connect(System.Threading.CancellationToken.None);
+            bool success = await chooser.SelectedDevice.Connect(CancellationToken);
 
             if (success)
             {
