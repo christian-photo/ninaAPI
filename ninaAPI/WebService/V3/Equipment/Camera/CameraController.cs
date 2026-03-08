@@ -379,7 +379,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             starSensitivityParameter.Get(HttpContext);
             noiseReductionParameter.Get(HttpContext);
 
-            var stats = await capture.Analyze(imageDataFactory, starSensitivityParameter.Value, noiseReductionParameter.Value, rawConverterParameter.Value, HttpContext.CancellationToken);
+            var stats = await capture.Analyze(imageDataFactory, starSensitivityParameter.Value, noiseReductionParameter.Value, rawConverterParameter.Value, CancellationToken);
 
             await responseHandler.SendObject(HttpContext, stats);
         }
@@ -406,7 +406,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
             config.UpdateDefaults(profile.ActiveProfile, mount, cam);
 
-            var result = await capture.GetPlateSolve(imageDataFactory, plateSolverFactory, config, HttpContext.CancellationToken);
+            var result = await capture.GetPlateSolve(imageDataFactory, plateSolverFactory, config, CancellationToken);
 
             await responseHandler.SendObject(HttpContext, result);
         }

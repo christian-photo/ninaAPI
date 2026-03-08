@@ -40,7 +40,7 @@ namespace ninaAPI.Utility.Http
             await SendRaw(context, json, statusCode, mimeType);
         }
 
-        public async Task SendSequence(IHttpContext context, ISequenceContainer container, int statusCode = 200, string mimeType = MimeType.Json)
+        public async Task SendSequence(IHttpContext context, object container, int statusCode = 200, string mimeType = MimeType.Json)
         {
             string json;
             lock (serializerLock)

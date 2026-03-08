@@ -3586,7 +3586,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ProfileValueChangeConfig"
+              $ref: "#/components/schemas/ChangeValueConfig"
       responses:
         "200":
           description: Success
@@ -3601,188 +3601,20 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /sequence/json:
+  /sequence:
     get:
       tags:
         - Sequence
-      summary: JSON
-      description: Get sequence as json. This endpoint is generally advised to use over state since it gives more reliable results.
-      responses:
-        "200":
-          description: Success, best to try it out yourself
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SequenceBaseJson"
-        "409":
-          description: Sequencer not initialized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Sequencer not initialized
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /sequence/state:
-    get:
-      tags:
-        - Sequence
-      summary: Complete Sequence
+      summary: Get Sequence
       description:
-        Get sequence as json. This is similar to the json endpoint, however the returned sequence is much more elaborate and also supports plugins.
-        The returned json from /json is not directly compatible with this endpoint. Use this endpoint (not json!) as reference for sequence editing!
-        In general however I recommend using the json endpoint as it gives more reliable results, so use this if you do not need the extra functionality.
-      responses:
-        "200":
-          description: Success, best to try it out yourself
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SequenceBaseJson"
-        "409":
-          description: Sequencer not initialized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Sequencer not initialized
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /sequence/edit:
-    get:
-      tags:
-        - Sequence
-      summary: Edit a Sequence
-      description:
-        This works similary to profile/set-value. Note that this mainly supports fields that expect simple types like strings, numbers etc,
-        and may not work for things like enums or objects (filter, time source, ...). This is an experimental feature, and it could have unexpected side effects or simply not work for some instructions or fields.
-        If you encounter any bugs (except that it is not working with enums or objects), feel free to create an issue on github or contact me on the NINA discord.
+        Get current sequence as json. If the query parameter `base` is set to true,
+        the sequence will be returned in the format you get when saving the sequence to the disk. This can be used to edit the sequence and update it again afterwards.
+        The response for the base version will look slightly different from the normal version.
       parameters:
         - in: query
-          name: path
-          description:
-            The path to the property that should be updated. Use `GlobalTriggers`, `Start`, `Imaging`, `End` for the sequence root containers.
-            Then use the name of the property or the index of the item in a list, seperated with `-`.
-            The example would set the exposure time of a Take Exposure instruction, contained in a DSO container, to 20s.
-            Use `sequence/state` as reference, not `sequence/json`!
-          required: true
-          schema:
-            type: string
-            example: "Imaging-Items-0-Items-0-ExposureTime"
-        - in: query
-          name: value
-          description: The new value
-          required: true
-          schema:
-            type: string
-            example: "20"
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Updated setting
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Faulty state
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Sequence is not initialized
-                      - Invalid path
-                      - New value can't be null
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /sequence/start:
-    get:
-      tags:
-        - Sequence
-      summary: Start
-      description: Start Advanced Sequence.
-      parameters:
-        - in: query
-          name: skipValidation
-          description: Skip validation of the sequence
+          name: base
+          description: Return the sequence in the format it is saved to the disk
+          required: false
           schema:
             type: boolean
       responses:
@@ -3791,47 +3623,92 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Sequence started
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Sequence not initialized / Sequence already running
+                $ref: "#/components/schemas/SequenceEntity"
+        default:
+          description: Request could not be carried out
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Sequence is not initialized
-                      - Sequence is already running
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - Sequence
+      summary: Load Sequence
+      description: Load a sequence from a local file or from the request body.
+      parameters:
+        - in: query
+          name: name
+          description: The name of the sequence to load. A list of available sequences can be found by calling the `/sequence/available` endpoint.
+          required: false
+          schema:
+            type: string
+            example: "My Sequence"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SequenceEntity"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - Sequence
+      summary: Edit a Sequence
+      description:
+        This works similary to profile/settings (PATCH). Note that this mainly supports fields that expect simple types like strings, numbers etc,
+        and may not work for things like enums or objects (filter, time source, ...). This is an experimental feature, and it could have unexpected side effects or simply not work for some instructions or fields.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeValueConfig"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /sequence/start:
+    post:
+      tags:
+        - Sequence
+      summary: Start
+      description: Start Advanced Sequence.
+      parameters:
+        - in: query
+          name: validate
+          description: If the sequence should be validated before starting. In general you want this to be false if you are starting the sequence from the API
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -3840,7 +3717,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /sequence/stop:
-    get:
+    post:
       tags:
         - Sequence
       summary: Stop
@@ -3851,45 +3728,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Sequence stopped
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Sequence not initialized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Sequence is not initialized
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -3898,57 +3737,18 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /sequence/reset:
-    get:
+    post:
       tags:
         - Sequence
       summary: Reset Sequence
-      description: Reset Advanced Sequence.
+      description: Reset Advanced Sequence. This will stop the sequence and reset all targets and items.
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Sequence reset
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Sequence not initialized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Sequence is not initialized
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -3956,7 +3756,38 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /sequence/list-available:
+  /sequence/skip:
+    post:
+      tags:
+        - Sequence
+      summary: Skip
+      description: Skip in the sequence
+      parameters:
+        - in: query
+          name: type
+          description: The type of skip to perform
+          required: true
+          schema:
+            type: string
+            enum:
+              - SkipCurrentItems
+              - SkipToImaging
+              - SkipToEnd
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /sequence/available:
     get:
       tags:
         - Sequence
@@ -3968,24 +3799,10 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: array
-                    items:
-                      type: string
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                type: array
+                items:
+                  type: string
+                  description: The name of the sequence
         default:
           description: Request could not be carried out
           content:
@@ -3993,248 +3810,67 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /sequence/set-target:
+  /sequence/running-items:
     get:
       tags:
         - Sequence
-      summary: Set Target
-      description: Set the target of any one of the active target containers in the sequence
+      summary: Get Running Items
+      description: Get the running items of the sequence
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SequenceEntity"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /sequence/target:
+    get:
+      tags:
+        - Sequence
+      summary: Get Targets
+      description: Get all targets in the sequence
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SequenceTarget"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - Sequence
+      summary: Update Target
+      description: Update the properties of any one of the active target containers in the sequence
       parameters:
-        - name: name
+        - name: target
           in: query
-          description: The target name
-          required: true
-          schema:
-            type: string
-            example: Orion
-        - name: ra
-          in: query
-          description: The RA coordinate in degrees
-          required: true
-          schema:
-            type: number
-            format: double
-        - name: dec
-          in: query
-          description: The DEC coordinate in degrees
-          required: true
-          schema:
-            type: number
-            format: double
-        - name: rotation
-          in: query
-          description: The target rotation
-          required: true
-          schema:
-            type: number
-            format: double
-        - name: index
-          in: query
-          description: The index of the target container to update
+          description: The index of the target which to update
           required: true
           schema:
             type: integer
-            minimum: 0
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Target updated
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Invalid target index
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Index out of range
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        "409":
-          description: Sequencer not initialized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: Sequencer not initializedd
-                  StatusCode:
-                    type: integer
-                    example: 409
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /sequence/load:
-    get:
-      tags:
-        - Sequence
-      summary: Load Sequence from file
-      description: Loads a sequence from a file from the default sequence folders, the names can be retrieved using the `sequence/list-available` endpoint
-      parameters:
-        - name: sequenceName
-          in: query
-          description: The name of the sequence to load
-          required: true
-          schema:
-            type: string
-            example: Orion
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Sequence updated
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Sequence not initialized or already running
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Sequence is not initialized
-                      - Sequence is already running
-                      - Sequence not found
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-    post:
-      tags:
-        - Sequence
-      summary: Load Sequence from JSON
-      description: Loads a sequence from a JSON supplied by the client in the request body
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Sequence updated
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Sequence not initialized or already running
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    enum:
-                      - Sequence is not initialized
-                      - Sequence is already running
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TargetUpdate"
 
   /event-history:
     get:
@@ -7497,15 +7133,17 @@ components:
         - BitDepth
         - Filename
 
-    ProfileValueChangeConfig:
+    ChangeValueConfig:
       type: object
       properties:
         PathDescription:
           type: string
-          description: The path to the value to change, e.g. CameraSettings-PixelSize
+          description: The path to the value to change. Provide the path to the property that should be updated by separating the property names with a `-`.
+          example: CameraSettings-PixelSize
         Value:
           type: object
           description: The value to change to
+          example: 4.3
       required:
         - PathDescription
         - Value
@@ -8869,47 +8507,90 @@ components:
         - AlpacaSettings
         - ImageHistorySettings
 
-    SequenceBaseJson:
+    SequenceEntity:
       type: object
+      description: This schema only contains the minimal set of properties which are always included. Depending on the type of entity, additional properties may be included
       properties:
-        Response:
+        Name:
+          type: string
+          description: The name of the sequenc entity
+        Conditions:
           type: array
           items:
-            oneOf:
-              - type: object
-                properties:
-                  Conditions:
-                    type: array
-                    items: {}
-                  Items:
-                    type: array
-                    items: {}
-                    description: Contains sequence instructions as well as containers
-                  Triggers:
-                    type: array
-                    items: {}
-                  Status:
-                    type: string
-                  Name:
-                    type: string
-              - type: object
-                properties:
-                  GlobalTriggers:
-                    type: array
-                    items: {}
-
-        Error:
-          type: string
-          example: ""
-        StatusCode:
-          type: integer
-          example: 200
-        Success:
+            $ref: "#/components/schemas/SequenceEntity"
+        IsExpanded:
           type: boolean
-          example: true
-        Type:
+          description: Whether the item is expanded or not
+        Items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SequenceEntity"
+        Triggers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SequenceEntity"
+        ErrorBehavior:
           type: string
-          example: "API"
+          description: The error behavior of the item
+          enum:
+            - ContinueOnError
+            - SkipInstructionSetOnError
+            - AbortOnError
+            - SkipToSequenceEndInstructions
+        Attempts:
+          type: integer
+          description: The number of attempts for the item
+        Status:
+          $ref: "#/components/schemas/SequenceEntityStatus"
+        IsContainer:
+          type: boolean
+          description: Whether the item is a container or not
+      required:
+        - Name
+        - Conditions
+        - IsExpanded
+        - Items
+        - Triggers
+        - ErrorBehavior
+        - Attempts
+        - Status
+        - IsContainer
+
+    SequenceTarget:
+      type: object
+      properties:
+        TargetName:
+          type: string
+        PositionAngle:
+          type: number
+          minimum: 0
+          maximum: 360
+        Coordinates:
+          $ref: "#/components/schemas/NINACoordinates"
+        Status:
+          $ref: "#/components/schemas/SequenceEntityStatus"
+
+    SequenceEntityStatus:
+      type: string
+      enum:
+        - CREATED
+        - RUNNING
+        - FINISHED
+        - FAILED
+        - SKIPPED
+        - DISABLED
+
+    TargetUpdate:
+      type: object
+      properties:
+        TargetName:
+          type: string
+        Coordinates:
+          $ref: "#/components/schemas/HttpCoordinates"
+        PositionAngle:
+          type: number
+          minimum: 0
+          maximum: 360
 
     DeviceList:
       type: array

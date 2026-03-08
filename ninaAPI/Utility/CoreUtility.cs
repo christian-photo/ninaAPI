@@ -187,6 +187,57 @@ namespace ninaAPI.Utility
         }
 
         public static readonly List<string> IMAGE_TYPES = ["LIGHT", "FLAT", "BIAS", "DARK", "SNAPSHOT"];
+
+        public static void SetValueReflected(object position, string pathDescription, object value)
+        {
+            string[] pathSplit = pathDescription.Split('-'); // e.g. 'CameraSettings-PixelSize' -> CameraSettings, PixelSize
+
+            if (pathSplit.Length == 1)
+            {
+                var prop = position.GetType().GetProperty(pathDescription);
+                // This is needed because (as an example) Newtonsoft.JSON by default deserializes to double, and an assignment to a float would fail
+                var converted = Convert.ChangeType(value, prop.PropertyType);
+                prop.SetValue(position, converted);
+            }
+            else
+            {
+                for (int i = 0; i <= pathSplit.Length - 2; i++)
+                {
+                    if (IsIndexable(position, out Type indexType, out PropertyInfo indexProp))
+                    {
+                        if (indexType == typeof(string))
+                        {
+                            indexProp.GetValue(position, [pathSplit[i]]);
+                        }
+                        else
+                        {
+                            position = indexProp.GetValue(position, [int.Parse(pathSplit[i])]);
+                        }
+                    }
+                    else
+                    {
+                        position = position.GetType().GetProperty(pathSplit[i]).GetValue(position);
+                    }
+                }
+                PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
+                // This is needed because (as an example) Newtonsoft.JSON by default deserializes to double, and an assignment to a float would fail
+                var converted = Convert.ChangeType(value, prop.PropertyType);
+                prop.SetValue(position, converted);
+            }
+        }
+
+        private static bool IsIndexable(object obj, out Type indexType, out PropertyInfo indexProp)
+        {
+            indexProp = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).FirstOrDefault(x => x.GetIndexParameters().Length > 0, null);
+            if (indexProp == null)
+            {
+                indexType = null;
+                return false;
+            }
+
+            indexType = indexProp.GetIndexParameters()[0].ParameterType;
+            return true;
+        }
     }
 
     public class HttpResponse

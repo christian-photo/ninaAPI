@@ -89,56 +89,9 @@ namespace ninaAPI.WebService.V3.Application.Profile
         {
             Validator.ValidateObject(config, new ValidationContext(config));
 
-            string[] pathSplit = config.PathDescription.Split('-'); // e.g. 'CameraSettings-PixelSize' -> CameraSettings, PixelSize
-            object position = AdvancedAPI.Controls.Profile.ActiveProfile;
-
-            if (pathSplit.Length == 1)
-            {
-                var prop = position.GetType().GetProperty(config.PathDescription);
-                // This is needed because (as an example) Newtonsoft.JSON by default deserializes to double, and an assignment to a float would fail
-                var converted = Convert.ChangeType(config.Value, prop.PropertyType);
-                prop.SetValue(position, converted);
-            }
-            else
-            {
-                for (int i = 0; i <= pathSplit.Length - 2; i++)
-                {
-                    if (IsIndexable(position, out Type indexType, out PropertyInfo indexProp))
-                    {
-                        if (indexType == typeof(string))
-                        {
-                            indexProp.GetValue(position, [pathSplit[i]]);
-                        }
-                        else
-                        {
-                            position = indexProp.GetValue(position, [int.Parse(pathSplit[i])]);
-                        }
-                    }
-                    else
-                    {
-                        position = position.GetType().GetProperty(pathSplit[i]).GetValue(position);
-                    }
-                }
-                PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
-                // This is needed because (as an example) Newtonsoft.JSON by default deserializes to double, and an assignment to a float would fail
-                var converted = Convert.ChangeType(config.Value, prop.PropertyType);
-                prop.SetValue(position, converted);
-            }
+            CoreUtility.SetValueReflected(AdvancedAPI.Controls.Profile.ActiveProfile, config.PathDescription, config.Value);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Value was updated"));
-        }
-
-        private static bool IsIndexable(object obj, out Type indexType, out PropertyInfo indexProp)
-        {
-            indexProp = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).FirstOrDefault(x => x.GetIndexParameters().Length > 0, null);
-            if (indexProp == null)
-            {
-                indexType = null;
-                return false;
-            }
-
-            indexType = indexProp.GetIndexParameters()[0].ParameterType;
-            return true;
         }
 
         [Route(HttpVerbs.Post, "/")]

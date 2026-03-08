@@ -223,7 +223,7 @@ namespace ninaAPI.WebService.V3.Application.Image
                     config,
                     (double)config.PixelSize,
                     coordinates,
-                    HttpContext.CancellationToken,
+                    CancellationToken,
                     profile,
                     p.BitDepth,
                     p.IsBayered);
@@ -277,7 +277,7 @@ namespace ninaAPI.WebService.V3.Application.Image
                     (double)config.PixelSize,
                     coordinates,
                     profile,
-                    HttpContext.CancellationToken);
+                    CancellationToken);
 
             await responseHandler.SendObject(HttpContext, result);
         }

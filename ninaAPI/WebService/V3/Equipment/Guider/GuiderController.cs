@@ -72,7 +72,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
                 throw CommonErrors.DeviceNotConnected(Device.Guider);
             }
 
-            bool success = await guider.StopGuiding(HttpContext.CancellationToken); // TODO: Check why maybe false
+            bool success = await guider.StopGuiding(CancellationToken); // TODO: Check why maybe false
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Guiding stopped"));
         }
@@ -108,7 +108,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
                 throw new HttpException(HttpStatusCode.Conflict, "Guider can not clear calibration");
             }
 
-            bool success = await guider.ClearCalibration(HttpContext.CancellationToken); // TODO Check why maybe false
+            bool success = await guider.ClearCalibration(CancellationToken); // TODO Check why maybe false
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Calibration cleared"));
         }

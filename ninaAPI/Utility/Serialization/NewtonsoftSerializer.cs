@@ -73,7 +73,7 @@ namespace ninaAPI.Utility.Serialization
     internal class SequenceResolver : DefaultContractResolver
     {
         private static readonly string[] includedNames = ["Name", "Status"];
-        private static readonly string[] excludedNames = ["Parent"];
+        private static readonly string[] excludedNames = ["Parent", "Strategy"];
         private static readonly Type[] excludedTypes = [typeof(Expression)];
 
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)

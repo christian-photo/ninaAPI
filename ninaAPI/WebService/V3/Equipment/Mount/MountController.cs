@@ -203,7 +203,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
                 throw new HttpException(HttpStatusCode.Conflict, "Mount not parked");
             }
 
-            await mount.UnparkTelescope(statusMediator.GetStatus(), HttpContext.CancellationToken);
+            await mount.UnparkTelescope(statusMediator.GetStatus(), CancellationToken);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Unparked"));
         }

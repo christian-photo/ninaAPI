@@ -53,7 +53,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw new HttpException(HttpStatusCode.Conflict, "Flatdevice does not support on/off");
             }
 
-            await flatDevice.ToggleLight(body.TurnOn, appStatus.GetStatus(), HttpContext.CancellationToken);
+            await flatDevice.ToggleLight(body.TurnOn, appStatus.GetStatus(), CancellationToken);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice light set"));
         }
@@ -70,7 +70,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw CommonErrors.ParameterOutOfRange(nameof(body.Brightness), flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness);
             }
 
-            await flatDevice.SetBrightness(body.Brightness, appStatus.GetStatus(), HttpContext.CancellationToken);
+            await flatDevice.SetBrightness(body.Brightness, appStatus.GetStatus(), CancellationToken);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice brightness set"));
         }
@@ -87,7 +87,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw new HttpException(HttpStatusCode.Conflict, "Flatdevice does not support open/close");
             }
 
-            await flatDevice.OpenCover(appStatus.GetStatus(), HttpContext.CancellationToken);
+            await flatDevice.OpenCover(appStatus.GetStatus(), CancellationToken);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice cover open"));
         }
@@ -104,7 +104,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw new HttpException(HttpStatusCode.Conflict, "Flatdevice does not support open/close");
             }
 
-            await flatDevice.CloseCover(appStatus.GetStatus(), HttpContext.CancellationToken);
+            await flatDevice.CloseCover(appStatus.GetStatus(), CancellationToken);
 
             await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice cover close"));
         }

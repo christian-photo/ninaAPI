@@ -582,7 +582,7 @@ namespace ninaAPI.WebService.V2
                 };
                 IImageSolver captureSolver = platesolver.GetImageSolver(platesolver.GetPlateSolver(settings), platesolver.GetBlindSolver(settings));
 
-                plateSolveResult = await captureSolver.Solve(img.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), HttpContext.CancellationToken);
+                plateSolveResult = await captureSolver.Solve(img.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), CancellationToken);
 
                 response.Response = plateSolveResult;
             }

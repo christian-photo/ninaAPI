@@ -11,15 +11,8 @@
 
 using System.ComponentModel.DataAnnotations;
 using NINA.Astrometry;
-using NINA.Astrometry.Interfaces;
 using NINA.Core.Enum;
-using NINA.Equipment.Interfaces;
-using NINA.Equipment.Interfaces.Mediator;
-using NINA.Profile.Interfaces;
 using NINA.Sequencer.Container;
-using NINA.Sequencer.Logic;
-using NINA.WPF.Base.Interfaces.Mediator;
-using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.WebService.V3.Model;
 
 namespace ninaAPI.WebService.V3.Application.Sequence
@@ -29,19 +22,12 @@ namespace ninaAPI.WebService.V3.Application.Sequence
     /// </summary>
     public class TargetUpdate
     {
-        [Required]
         public string TargetName { get; set; }
 
-        [Required]
         public HttpCoordinates Coordinates { get; set; }
 
-        [Required]
         [Range(0, 360)]
-        public double Rotation { get; set; }
-
-        [Required]
-        [Range(0, int.MaxValue)]
-        public int TargetIndex { get; set; }
+        public double? PositionAngle { get; set; }
     }
 
     public enum SequenceSkipType
@@ -53,15 +39,26 @@ namespace ninaAPI.WebService.V3.Application.Sequence
 
     public class SequenceTarget
     {
-        public InputTarget Target { get; set; }
-        public string Name { get; set; }
+        public string TargetName { get; set; }
+        public double PositionAngle { get; set; }
+        public Coordinates Coordinates { get; set; }
         public SequenceEntityStatus Status { get; set; }
 
         public SequenceTarget(IDeepSkyObjectContainer copyMe)
         {
-            this.Target = copyMe.Target;
-            this.Name = copyMe.Name;
+            this.TargetName = copyMe.Target.TargetName;
+            this.PositionAngle = copyMe.Target.PositionAngle;
+            this.Coordinates = copyMe.Target.InputCoordinates.Coordinates;
             this.Status = copyMe.Status;
         }
+    }
+
+    public class SequenceEditBody
+    {
+        [Required(AllowEmptyStrings = false)]
+        public string PathDescription { get; set; }
+
+        [Required]
+        public object Value { get; set; }
     }
 }
