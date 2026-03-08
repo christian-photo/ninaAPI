@@ -44,7 +44,7 @@ namespace ninaAPI.WebService.V3.Application.Livestack
         [Route(HttpVerbs.Get, "/status")]
         public async Task GetLivestackStatus()
         {
-            await responseHandler.SendObject(HttpContext, new StringResponse(LivestackWatcher.LivestackStatus));
+            await responseHandler.SendObject(HttpContext, new { Status = LivestackWatcher.LivestackStatus });
         }
 
         [Route(HttpVerbs.Post, "/start")]

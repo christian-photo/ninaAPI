@@ -30,7 +30,9 @@ namespace ninaAPI.WebService.V3.Application.Livestack
             Channel = Utility.Http.WebSocketChannel.Livestack;
         }
 
-        // TODO: Find possible values
+        /// <summary>
+        /// Possible values are "running" and "stopped"
+        /// </summary>
         public static string LivestackStatus { get; private set; } = "stopped";
 
         public async Task OnMessageReceived(IMessage message)

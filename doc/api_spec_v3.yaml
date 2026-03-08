@@ -3914,12 +3914,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /livestack/start:
+  /livestack/status:
     get:
       tags:
         - Livestack
-      summary: Start Livestack
-      description: Starts Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to start the livestack.
+      summary: Livestack Status
+      description: Get the status of Livestack
       responses:
         "200":
           description: Success
@@ -3928,21 +3928,32 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
+                  Status:
                     type: string
-                    example: Live stack started
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                    description: The status of the livestack
+                    enum:
+                      - running
+                      - stopped
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /livestack/start:
+    post:
+      tags:
+        - Livestack
+      summary: Start Livestack
+      description: Starts Livestack. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to start the livestack.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -3951,34 +3962,18 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /livestack/stop:
-    get:
+    post:
       tags:
         - Livestack
       summary: Stop Livestack
-      description: Stops Livestack, requires Livestack >= v1.0.0.9. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to stop the livestack.
+      description: Stops Livestack. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to stop the livestack.
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Live stack stopped
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
@@ -3986,12 +3981,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /livestack/image/available:
+  /livestack/image:
     get:
       tags:
         - Livestack
       summary: Available Stacks
-      description: Livestack >= v1.0.0.9. Returns a list of available stacks, which can be retrieved
+      description: Returns a list of available stacks, which can be retrieved
       responses:
         "200":
           description: Success
@@ -4000,29 +3995,27 @@ paths:
               schema:
                 type: object
                 properties:
-                  Response:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        Filter:
-                          type: string
-                          example: RGB
-                        Target:
-                          type: string
-                          example: M31
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
+                  BlueStackCount:
                     type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
+                    description: The number of blue images in the stack
+                  Filter:
                     type: string
-                    example: "API"
+                    description: The filter of the stack
+                  GreenStackCount:
+                    type: integer
+                    description: The number of green images in the stack
+                  IsMonochrome:
+                    type: boolean
+                    description: Whether the stack is monochrome
+                  RedStackCount:
+                    type: integer
+                    description: The number of red images in the stack
+                  StackCount:
+                    type: integer
+                    description: The number of images in the stack
+                  Target:
+                    type: string
+                    description: The target of the stack
         default:
           description: Request could not be carried out
           content:
@@ -4049,70 +4042,24 @@ paths:
           schema:
             type: string
             example: RGB
-        - in: query
-          name: resize
-          description: Whether to resize the image.
-          required: false
-          schema:
-            type: boolean
-        - in: query
-          name: quality
-          description: The quality of the image, ranging from 1 (worst) to 100 (best). -1 or omitted for png
-          required: false
-          schema:
-            type: integer
-            format: int32
-        - in: query
-          name: size
-          description: The size of the image ([width]x[height]). Requires resize to be true.
-          required: false
-          schema:
-            type: string
-        - in: query
-          name: scale
-          description: The scale of the image. Requires resize to be true.
-          required: false
-          schema:
-            type: number
-            format: double
-        - in: query
-          name: stream
-          description: Stream the image to the client. This will stream the image in image/jpg or image/png format.
-          required: false
-          schema:
-            type: boolean
+        - $ref: "#/components/parameters/ImageScale"
+        - $ref: "#/components/parameters/ImageWidth"
+        - $ref: "#/components/parameters/ImageHeight"
+        - $ref: "#/components/parameters/ImageFormat"
+        - $ref: "#/components/parameters/ImageQuality"
       responses:
         "200":
           description: Success
           content:
-            application/json:
+            image/jpeg:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: "<base64 encoded image>"
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
+                description: Image in jpeg format
+                type: string
+                format: binary
             image/png:
               schema:
-                description: Image in png format, when stream is set to true and the image quality is not specified or set to -1
-                type: array
-                format: binary
-            image/jpg:
-              schema:
-                description: Image in jpg format, when stream is set to true and the image quality is specified
-                type: array
+                description: Image in png format
+                type: string
                 format: binary
         default:
           description: Request could not be carried out
