@@ -7,10 +7,28 @@ using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.Sessions;
 using NINA.Core.Enum;
+using NINA.Equipment.Equipment;
+using NINA.Equipment.Equipment.MyCamera;
+using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using Swan;
 
 namespace ninaAPI.Test;
+
+public class TestClass
+{
+    public int Test { get; set; }
+    public List<CameraInfo> Info { get; set; }
+    public Dictionary<string, string> TestDict { get; set; }
+
+    public TestClass()
+    {
+        Test = 1;
+        Info = [DeviceInfo.CreateDefaultInstance<CameraInfo>()];
+        TestDict = new Dictionary<string, string>();
+        TestDict.Add("Test", "Test");
+    }
+}
 
 public class Tests
 {
@@ -31,6 +49,18 @@ public class Tests
             Assert.That(1.IsBetween(0, 2), Is.True);
             Assert.That(2.IsBetween(0, 2), Is.True);
         });
+    }
+
+    [Test]
+    public void TestReflectedPropertySet()
+    {
+        var obj = new TestClass();
+        CoreUtility.SetValueReflected(obj, "Test", 2);
+        Assert.That(obj.Test, Is.EqualTo(2));
+        CoreUtility.SetValueReflected(obj, "Info-0-Name", "Test");
+        Assert.That(obj.Info[0].Name, Is.EqualTo("Test"));
+        CoreUtility.SetValueReflected(obj, "TestDict-Test", "Test2");
+        Assert.That(obj.TestDict["Test"], Is.EqualTo("Test2"));
     }
 
     [Test]
