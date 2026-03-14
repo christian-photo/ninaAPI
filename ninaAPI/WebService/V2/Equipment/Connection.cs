@@ -97,7 +97,7 @@ namespace ninaAPI.WebService.V2
 
                 if (chooser != null)
                 {
-                    response.Response = chooser.Devices.Where(x => !x.Name.Contains("Alpaca"));
+                    response.Response = chooser.Devices;
                 }
                 else
                 {

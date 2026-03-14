@@ -50,7 +50,7 @@ using System.Runtime.InteropServices;
 ---
 
 If you have question/issues/feedback, you can create an issue [here](https://github.com/christian-photo/ninaAPI/issues), take a look at the
-[documentation](https://bump.sh/christian-photo/doc/advanced-api/) and here for the [websockets](https://bump.sh/christian-photo/doc/advanced-api-websockets) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)
+[documentation](https://christian-photo.github.io/github-page/projects/ninaAPI/v2/doc/api) and here for the [websockets](https://github.com/christian-photo/ninaAPI/wiki/Websocket-V2) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)
 **Thanks to szymon and notzeeg (discord) for their help!**")]
 
 
