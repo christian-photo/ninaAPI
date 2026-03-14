@@ -6,13 +6,13 @@ using System.Runtime.InteropServices;
 
 // [MANDATORY] The assembly versioning
 //Should be incremented for each new build of a plugin
-[assembly: AssemblyVersion("2.2.15.0")]
-[assembly: AssemblyFileVersion("2.2.15.0")]
+[assembly: AssemblyVersion("3.0.0.0")]
+[assembly: AssemblyFileVersion("3.0.0.0")]
 
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]
 // [MANDATORY] A short description of your plugin
-[assembly: AssemblyDescription("An experimental API for N.I.N.A.")]
+[assembly: AssemblyDescription("Web API for N.I.N.A.")]
 
 // Your name
 [assembly: AssemblyCompany("Christian Palm")]
@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright ©  2026")]
 
 // The minimum Version of N.I.N.A. that this plugin is compatible with
-[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.2.0.9001")]
+[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.3.0.1005")]
 
 // The license your plugin code is using
 [assembly: AssemblyMetadata("License", "MPL-2.0")]
@@ -38,20 +38,37 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("Tags", "API,Web")]
 
 //[Optional] An in-depth description of your plugin
-[assembly: AssemblyMetadata("LongDescription", @"This plugin features an HTTP server, including an api and websockets!
+[assembly: AssemblyMetadata("LongDescription", @"# Advanced API for N.I.N.A.
 
-## Features:
-- Listen to events like connections, meridian flips and much more
-- TPPA integration (Requires TPPA to be installed)
-- Livestack integration (Requires Livestack to be installed)
-- Supports basic control over the equipment and application in general
-- And much more!
+A powerful HTTP and WebSocket server plugin that enables remote control and monitoring of N.I.N.A.
 
----
+## Key Features
 
-If you have question/issues/feedback, you can create an issue [here](https://github.com/christian-photo/ninaAPI/issues), take a look at the
-[documentation](https://christian-photo.github.io/github-page/projects/ninaAPI/v2/doc/api) and here for the [websockets](https://github.com/christian-photo/ninaAPI/wiki/Websocket-V2) or just ask on the N.I.N.A. discord in [#plugin-discussions](https://discord.com/channels/436650817295089664/854531935660146718)
-**Thanks to szymon and notzeeg (discord) for their help!**")]
+### Equipment Control
+* Complete equipment connection management
+* Device specific controls like camera cooling or mount slewing (these are only a very small fraction of the available controls)
+
+### Real-time Monitoring
+* Equipment status and state changes
+* Sequence progress and events
+* Meridian flip notifications
+* Connection status updates
+
+### Integration Support
+* TPPA (Third Party Program Automation) integration
+* LiveStack integration for real-time stacking
+
+### Developer Features
+* RESTful API with OpenAPI/Swagger documentation
+* WebSocket support for real-time events
+* Comprehensive error handling
+
+## Documentation & Support
+* [Full API Documentation](https://christian-photo.github.io/github-page/projects/ninaAPI/v3/doc/api)
+* [WebSocket Documentation](https://github.com/christian-photo/ninaAPI/wiki/Websocket-V3)
+* [Issue Tracker](https://github.com/christian-photo/ninaAPI/issues)
+
+If you need help, want to report a bug or request a new feature, please join the N.I.N.A. discord or write an issue on the github repository!")]
 
 
 // Setting ComVisible to false makes the types in this assembly not visible

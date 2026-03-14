@@ -9,11 +9,17 @@
 
 #endregion "copyright"
 
-namespace ninaAPI.WebService.V2
+
+using System.Threading.Tasks;
+using ninaAPI.Utility.Http;
+using ninaAPI.WebService.V3.Websocket.Event;
+
+namespace ninaAPI.WebService.Interfaces
 {
-    public interface INinaWatcher
+    public interface IEventSocket
     {
-        public void StartWatchers();
-        public void StopWatchers();
+        Task SendEvent(WebSocketEvent e);
+        EventHistoryManager EventHistoryManager { get; }
+        bool HasConnections { get; }
     }
 }

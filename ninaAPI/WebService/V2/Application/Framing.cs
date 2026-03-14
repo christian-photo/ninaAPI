@@ -42,6 +42,7 @@ namespace ninaAPI.WebService.V2
         public int VerticalPanels { get; set; }
         public FramingRectangle Rectangle { get; set; }
     }
+
     public partial class ControllerV2
     {
         private FramingInfoContainer GetFramingInfo()
@@ -273,11 +274,11 @@ namespace ninaAPI.WebService.V2
 
             if (toMoon)
             {
-                sepObjectPosition = AstroUtil.GetMoonPosition(date, jd, observerInfo);
+                sepObjectPosition = AstroUtil.GetMoonPosition(date, observerInfo);
             }
             else
             {
-                sepObjectPosition = AstroUtil.GetSunPosition(date, jd, observerInfo);
+                sepObjectPosition = AstroUtil.GetSunPosition(date, observerInfo);
             }
 
             var sepObjectRaRadians = AstroUtil.ToRadians(AstroUtil.HoursToDegrees(sepObjectPosition.RA));

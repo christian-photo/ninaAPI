@@ -22,6 +22,7 @@ using NINA.Sequencer.Conditions;
 using NINA.Sequencer.Container;
 using NINA.Sequencer.SequenceItem.FlatDevice;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 
 namespace ninaAPI.WebService.V2
 {
@@ -60,7 +61,8 @@ namespace ninaAPI.WebService.V2
                                                 AdvancedAPI.Controls.ImageSaveMediator,
                                                 AdvancedAPI.Controls.ImageHistory,
                                                 AdvancedAPI.Controls.FilterWheel,
-                                                AdvancedAPI.Controls.TwilightCalculator);
+                                                AdvancedAPI.Controls.TwilightCalculator,
+                                                AdvancedAPI.Controls.SymbolBroker);
 
                     flats.GetIterations().Iterations = count;
                     flats.MaxExposure = HttpContext.IsParameterOmitted(nameof(maxExposure)) ? flats.MaxExposure : maxExposure;
