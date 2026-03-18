@@ -14,26 +14,27 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using EmbedIO;
+using System.Net;
 using NINA.Core.Enum;
 using NINA.Profile.Interfaces;
 using ninaAPI.WebService;
 using ninaAPI.WebService.Interfaces;
+using SimpleW;
 
 namespace ninaAPI.Utility.Http
 {
     public static class HttpUtility
     {
-        public static bool IsParameterOmitted(this IHttpContext context, string parameter)
+        public static bool IsParameterOmitted(this HttpRequest request, string parameter)
         {
-            var keys = context?.Request?.QueryString?.AllKeys;
-            if (keys == null || keys.Length == 0) return true;
+            var keys = request?.Query?.Keys;
+            if (keys == null || keys.Count == 0) return true;
             return !keys.Any(k => string.Equals(k, parameter, StringComparison.CurrentCultureIgnoreCase));
         }
 
-        public static bool IsParameterOmitted<T>(this IHttpContext context, IQueryParameter<T> parameter)
+        public static bool IsParameterOmitted<T>(this HttpRequest request, IQueryParameter<T> parameter)
         {
-            return context.IsParameterOmitted(parameter.ParameterName);
+            return request.IsParameterOmitted(parameter.ParameterName);
         }
 
         public static readonly Dictionary<int, string> StatusCodeMessages = new Dictionary<int, string>()
@@ -68,9 +69,9 @@ namespace ninaAPI.Utility.Http
         public bool WasProvided { get; set; }
         public T Value { get; set; }
 
-        private T Evaluate(IHttpContext context)
+        private T Evaluate(HttpRequest request)
         {
-            var raw = context.Request.QueryString.Get(ParameterName);
+            var raw = request.Query.TryGetValue(ParameterName, out var value) ? value : null;
             if (raw is null || string.IsNullOrWhiteSpace(raw))
             {
                 WasProvided = false;
@@ -89,9 +90,9 @@ namespace ninaAPI.Utility.Http
             }
         }
 
-        public T Get(IHttpContext context)
+        public T Get(HttpRequest request)
         {
-            Value = Evaluate(context);
+            Value = Evaluate(request);
             if (WasProvided && Validate(Value) || !WasProvided)
             {
                 return Value;
@@ -113,10 +114,10 @@ namespace ninaAPI.Utility.Http
 
     public class SizeQueryParameter : QueryParameter<Size>
     {
-        public new Size Get(IHttpContext context)
+        public new Size Get(HttpRequest request)
         {
-            int width = widthParam.Get(context);
-            int height = heightParam.Get(context);
+            int width = widthParam.Get(request);
+            int height = heightParam.Get(request);
 
             if (widthParam.WasProvided ^ heightParam.WasProvided)
             {
@@ -226,19 +227,39 @@ namespace ninaAPI.Utility.Http
             return set;
         }
 
-        public void Evaluate(IHttpContext context)
+        public void Evaluate(HttpRequest request)
         {
-            Size.Get(context);
-            Scale.Get(context);
-            Quality.Get(context);
-            Format.Get(context);
-            StretchFactor.Get(context);
-            Stretch.Get(context);
-            RawConverter.Get(context);
-            Debayer.Get(context);
-            BayerPattern.Get(context);
-            UnlinkedStretch.Get(context);
-            BlackClipping.Get(context);
+            Size.Get(request);
+            Scale.Get(request);
+            Quality.Get(request);
+            Format.Get(request);
+            StretchFactor.Get(request);
+            Stretch.Get(request);
+            RawConverter.Get(request);
+            Debayer.Get(request);
+            BayerPattern.Get(request);
+            UnlinkedStretch.Get(request);
+            BlackClipping.Get(request);
         }
+    }
+
+    public class HttpException : Exception
+    {
+        public HttpStatusCode StatusCode { get; }
+
+        public HttpException(HttpStatusCode statusCode, string message) : base(message)
+        {
+            StatusCode = statusCode;
+        }
+    }
+
+    public enum HttpVerbs
+    {
+        GET,
+        POST,
+        PUT,
+        PATCH,
+        DELETE,
+        OPTIONS,
     }
 }

@@ -11,8 +11,7 @@
 
 using System.Collections.Generic;
 using System.IO;
-using EmbedIO;
-using EmbedIO.WebApi;
+using System.Runtime.CompilerServices;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
@@ -39,6 +38,8 @@ using ninaAPI.WebService.V3.Equipment.Switch;
 using ninaAPI.WebService.V3.Equipment.Weather;
 using ninaAPI.WebService.V3.Websocket.Event;
 using ninaAPI.WebService.V3.Websocket.MountControl;
+using SimpleW;
+using SimpleW.Modules;
 
 namespace ninaAPI.WebService.V3
 {
@@ -138,30 +139,28 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.ImageDataFactory,
                 AdvancedAPI.Controls.PlateSolver,
                 AdvancedAPI.Controls.FilterWheel,
-                responseHandler,
-                processMediator
+                processMediator,
+                serializer
             );
 
             domeController = new DomeController(
-                responseHandler,
                 AdvancedAPI.Controls.Dome,
                 AdvancedAPI.Controls.DomeFollower,
                 AdvancedAPI.Controls.Mount,
-                processMediator
+                processMediator,
+                serializer
             );
 
             filterWheelController = new FilterWheelController(
                 AdvancedAPI.Controls.FilterWheel,
                 AdvancedAPI.Controls.Profile,
                 AdvancedAPI.Controls.StatusMediator,
-                responseHandler,
                 processMediator
             );
 
             flatController = new FlatController(
                 AdvancedAPI.Controls.FlatDevice,
-                AdvancedAPI.Controls.StatusMediator,
-                responseHandler
+                AdvancedAPI.Controls.StatusMediator
             );
 
             focuserController = new FocuserController(
@@ -169,15 +168,13 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.FilterWheel,
                 AdvancedAPI.Controls.StatusMediator,
                 AdvancedAPI.Controls.AutoFocusFactory,
-                responseHandler,
                 processMediator
             );
 
             guiderController = new GuiderController(
                 AdvancedAPI.Controls.Guider,
                 AdvancedAPI.Controls.StatusMediator,
-                processMediator,
-                responseHandler
+                processMediator
             );
 
             mountController = new MountController(
@@ -195,8 +192,7 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.MeridianFlipFactory,
                 AdvancedAPI.Controls.Camera,
                 AdvancedAPI.Controls.Focuser,
-                processMediator,
-                responseHandler
+                processMediator
             );
 
             rotatorController = new RotatorController(
@@ -208,24 +204,20 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.PlateSolver,
                 AdvancedAPI.Controls.WindowFactory,
                 AdvancedAPI.Controls.StatusMediator,
-                processMediator,
-                responseHandler
+                processMediator
             );
 
             safetyController = new SafetyController(
-                AdvancedAPI.Controls.SafetyMonitor,
-                responseHandler
+                AdvancedAPI.Controls.SafetyMonitor
             );
 
             switchController = new SwitchController(
                 AdvancedAPI.Controls.Switch,
-                AdvancedAPI.Controls.StatusMediator,
-                responseHandler
+                AdvancedAPI.Controls.StatusMediator
             );
 
             weatherController = new WeatherController(
-                AdvancedAPI.Controls.Weather,
-                responseHandler
+                AdvancedAPI.Controls.Weather
             );
 
             connectionController = new DeviceController(
@@ -241,8 +233,7 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.SafetyMonitor,
                 AdvancedAPI.Controls.Switch,
                 AdvancedAPI.Controls.Weather,
-                AdvancedAPI.Controls.Profile,
-                responseHandler
+                AdvancedAPI.Controls.Profile
             );
 
             imageController = new ImageController(
@@ -251,52 +242,47 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.PlateSolver,
                 AdvancedAPI.Controls.Camera,
                 AdvancedAPI.Controls.Mount,
-                AdvancedAPI.Controls.StatusMediator,
-                responseHandler
+                AdvancedAPI.Controls.StatusMediator
             );
 
             profileController = new ProfileController(
-                AdvancedAPI.Controls.Profile,
-                responseHandler
+                AdvancedAPI.Controls.Profile
             );
 
             applicationController = new ApplicationController(
                 AdvancedAPI.Controls.Profile,
-                AdvancedAPI.Controls.Application,
-                responseHandler);
+                AdvancedAPI.Controls.Application
+            );
 
             sequenceController = new SequenceController(
                 AdvancedAPI.Controls.Sequence,
-                responseHandler
+                serializer
             );
 
             framingController = new FramingController(
                 AdvancedAPI.Controls.FramingAssistant,
                 AdvancedAPI.Controls.Camera,
                 AdvancedAPI.Controls.Profile,
-                processMediator,
-                responseHandler
+                processMediator
             );
 
             livestackController = new LivestackController(
                 AdvancedAPI.Controls.MessageBroker,
-                AdvancedAPI.Controls.Profile,
-                responseHandler
+                AdvancedAPI.Controls.Profile
             );
 
             tppaController = new TppaController(
-                AdvancedAPI.Controls.MessageBroker,
-                responseHandler
+                AdvancedAPI.Controls.MessageBroker
             );
 
-            controller = new ControllerV3(responseHandler, processMediator);
+            controller = new ControllerV3(processMediator);
 
-            mountControlSocket = new MountControlSocket("/v3/ws/mount-control", AdvancedAPI.Controls.Mount, serializer);
+            mountControlSocket = new MountControlSocket(AdvancedAPI.Controls.Mount, serializer);
         }
 
-        public WebServer ConfigureServer(WebServer server)
+        public SimpleWServer ConfigureServer(SimpleWServer server)
         {
-            eventSocket = new EventWebSocket("/v3/ws/events", serializer, eventHistory);
+            eventSocket = new EventWebSocket(serializer, eventHistory);
 
             foreach (EventWatcher watcher in watchers)
             {
@@ -305,9 +291,54 @@ namespace ninaAPI.WebService.V3
 
             Directory.CreateDirectory(FileSystemHelper.GetProcessTempFolder());
 
-            // EMBEDIO WOULD CREATE A NEW INSTANCE OF THE CONTROLLER FOR EACH REQUEST
-            return server.WithModule(eventSocket)
-                .WithModule(mountControlSocket)
+            server = server.UseWebSocketModule(ws =>
+            {
+                ws.Prefix = "/v3/ws/events";
+
+                eventSocket.ConfigureWebSocket(ws);
+            })
+            .UseWebSocketModule(ws =>
+            {
+                ws.Prefix = "/v3/ws/mount-control";
+
+                mountControlSocket.ConfigureWebSocket(ws);
+            })
+            .ConfigureResultHandler(async (session, result) =>
+            {
+                object body;
+                int statusCode;
+
+                if (result is ITuple tuple && tuple.Length == 2 && tuple[1] is int code)
+                {
+                    body = tuple[0];
+                    statusCode = code;
+                }
+                else
+                {
+                    body = result;
+                    statusCode = 200;
+                }
+
+                var json = serializer.Serialize(body);
+
+                await session.Response
+                    .Status(statusCode)
+                    .ContentType(serializer.MimeType)
+                    .Text(json)
+                    .SendAsync();
+            });
+            controller.Configure(server, "/v3/api");
+            cameraController.Configure(server, "/v3/api/equipment/camera");
+            domeController.Configure(server, "/v3/api/equipment/dome");
+            focuserController.Configure(server, "/v3/api/equipment/focuser");
+            filterWheelController.Configure(server, "/v3/api/equipment/filter-wheel");
+            flatController.Configure(server, "/v3/api/equipment/flat");
+            guiderController.Configure(server, "/v3/api/equipment/guider");
+            mountController.Configure(server, "/v3/api/equipment/mount");
+            rotatorController.Configure(server, "/v3/api/equipment/rotator");
+            safetyController.Configure(server, "/v3/api/equipment/safety");
+            switchController.Configure(server, "/v3/api/equipment/switch");
+            weatherController.Configure(server, "/v3/api/equipment/weather");
                 .WithWebApi("/v3/api/equipment", m => m
                     .WithController(() => connectionController)
                     .WithController(() => cameraController)
@@ -330,6 +361,8 @@ namespace ninaAPI.WebService.V3
                 .WithWebApi("/v3/api/livestack", m => m.WithController(() => livestackController))
                 .WithWebApi("/v3/api/tppa", m => m.WithController(() => tppaController))
                 .WithWebApi("/v3/api", m => m.WithController(() => controller));
+
+            return server;
         }
 
         public bool SupportsSSL() => true;

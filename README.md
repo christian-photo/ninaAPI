@@ -1,7 +1,7 @@
 # ninaAPI
 
 API for the astronomy imaging software N.I.N.A.
-The documentation for the api can be found [here](https://christian-photo.github.io/github-page/projects/ninaAPI/v2/doc/api), and the documentation for the websockets is available [here](https://github.com/christian-photo/ninaAPI/wiki/Websocket-V2).
+The documentation for the api can be found [here](https://christian-photo.github.io/github-page/projects/ninaAPI/v3/doc/api), and the documentation for the websockets is available [here](https://github.com/christian-photo/ninaAPI/wiki/Websocket-V3).
 
 This plugin aims to be an all-around api for building your own custom tools and apps! Let me know about any cool projects you make, at the bottom of the readme you can find a list containing cool projects using the api!
 
@@ -20,8 +20,7 @@ The versioning of the api works as follows:
 
 ### Acknowledgements
 
-- This project uses [EmbedIO](https://github.com/unosquare/embedio) for its Webserver
-- [NetVips](https://github.com/kleisauke/net-vips) is used to support a variety of different image formats
+- This project uses [SimpleW](https://github.com/stratdev3/SimpleW) for its Webserver
 
 ---
 

@@ -45,7 +45,7 @@ namespace ninaAPI
     [Export(typeof(IPluginManifest))]
     public class AdvancedAPI : PluginBase, INotifyPropertyChanged
     {
-        public static NINAControls Controls;
+        public static IMediatorContainer Controls { get; private set; }
         public static WebApiServer Server;
 
         public static string PluginId { get; private set; }
@@ -94,38 +94,37 @@ namespace ninaAPI
             PluginId = this.Identifier;
             instance = this;
 
-            Controls = new NINAControls()
-            {
-                Camera = camera,
-                Mount = telescope,
-                Focuser = focuser,
-                FilterWheel = filterWheel,
-                Guider = guider,
-                Rotator = rotator,
-                FlatDevice = flatDevice,
-                Dome = dome,
-                Switch = switches,
-                SafetyMonitor = safety,
-                Imaging = imaging,
-                ImageHistory = history,
-                Profile = profile,
-                Sequence = sequence,
-                StatusMediator = statusMediator,
-                Application = application,
-                ImageDataFactory = imageDataFactory,
-                AutoFocusFactory = AFFactory,
-                MeridianFlipFactory = meridianFlipVMFactory,
-                ImageSaveMediator = saveMediator,
-                Weather = weather,
-                PlateSolver = platesolver,
-                MessageBroker = broker,
-                FramingAssistant = framing,
-                DomeFollower = domeFollower,
-                TwilightCalculator = twilightCalculator,
-                NighttimeCalculator = nighttimeCalculator,
-                WindowFactory = windowFactory,
-                SymbolBroker = symbolBroker,
-            };
+            Controls = new NINAControls(
+                camera,
+                telescope,
+                focuser,
+                filterWheel,
+                guider,
+                rotator,
+                flatDevice,
+                dome,
+                switches,
+                safety,
+                imaging,
+                history,
+                profile,
+                sequence,
+                statusMediator,
+                application,
+                imageDataFactory,
+                AFFactory,
+                saveMediator,
+                weather,
+                platesolver,
+                broker,
+                framing,
+                domeFollower,
+                twilightCalculator,
+                nighttimeCalculator,
+                windowFactory,
+                meridianFlipVMFactory,
+                symbolBroker
+            );
 
             if (Settings.Default.UpdateSettings)
             {

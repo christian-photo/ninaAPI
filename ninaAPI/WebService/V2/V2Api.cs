@@ -9,16 +9,15 @@
 
 #endregion "copyright"
 
-using EmbedIO;
-using EmbedIO.WebApi;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2.CustomDrivers;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
     public class V2Api : IHttpApi
     {
-        public WebServer ConfigureServer(WebServer server)
+        public SimpleWServer ConfigureServer(SimpleWServer server)
         {
             return server.WithWebApi("/v2/api", m => m.WithController<ControllerV2>())
                 .WithModule(new WebSocketV2("/v2/socket"))

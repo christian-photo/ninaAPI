@@ -12,21 +12,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Reflection;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.Input;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using NINA.Core.Model;
 using NINA.Core.Utility;
-using NINA.Profile.Interfaces;
 using NINA.Sequencer;
 using NINA.Sequencer.Container;
 using NINA.Sequencer.Logic;
-using NINA.Sequencer.SequenceItem;
 
 namespace ninaAPI.Utility.Serialization
 {
@@ -59,6 +53,9 @@ namespace ninaAPI.Utility.Serialization
             ContractResolver = new FieldIgnoreResolver(),
             FloatFormatHandling = FloatFormatHandling.String,
         };
+
+        public string MimeType => "application/json";
+
         public string Serialize(object obj, bool isSequence = false)
         {
             return JsonConvert.SerializeObject(obj, isSequence ? sequenceSerializerSettings : serializerSettings);

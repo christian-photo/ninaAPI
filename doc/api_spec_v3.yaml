@@ -100,7 +100,7 @@ paths:
                 required:
                   - Time
 
-  /process/{id}/status:
+  /process/{id}:
     get:
       tags:
         - Process
@@ -139,9 +139,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
-  /process/{id}/abort:
-    post:
+    delete:
       tags:
         - Process
       summary: Process Abort
@@ -369,7 +367,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/camera/settings/usb-limit:
+  /equipment/camera/usb-limit:
     put:
       tags:
         - Camera
@@ -395,7 +393,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/camera/settings/readout:
+  /equipment/camera/readout:
     put:
       tags:
         - Camera
@@ -421,7 +419,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/camera/settings/readout/image:
+  /equipment/camera/readout/image:
     put:
       tags:
         - Camera
@@ -447,7 +445,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/camera/settings/readout/snapshot:
+  /equipment/camera/readout/snapshot:
     put:
       tags:
         - Camera
@@ -561,7 +559,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/camera/settings/dew-heater:
+  /equipment/camera/dew-heater:
     put:
       tags:
         - Camera
@@ -587,7 +585,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /equipment/camera/settings/binning:
+  /equipment/camera/binning:
     put:
       tags:
         - Camera

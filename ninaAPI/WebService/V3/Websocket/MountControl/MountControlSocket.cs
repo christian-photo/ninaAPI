@@ -13,16 +13,17 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using EmbedIO.WebSockets;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
+using SimpleW.Modules;
 
 namespace ninaAPI.WebService.V3.Websocket.MountControl
 {
-    public class MountControlSocket : WebSocketModule
+    public class MountControlSocket : IWebSocket
     {
         private readonly RetriggerableAction primaryTimer;
         private double eastRate;
@@ -36,7 +37,7 @@ namespace ninaAPI.WebService.V3.Websocket.MountControl
         private readonly ITelescopeMediator mount;
         private readonly ISerializerService serializer;
 
-        public MountControlSocket(string url, ITelescopeMediator mount, ISerializerService serializer) : base(url, true)
+        public MountControlSocket(ITelescopeMediator mount, ISerializerService serializer)
         {
             primaryTimer = new RetriggerableAction(new Action(() => mount.MoveAxis(TelescopeAxes.Primary, 0)), TimeSpan.FromMilliseconds(2000));
             secondaryTimer = new RetriggerableAction(new Action(() => mount.MoveAxis(TelescopeAxes.Secondary, 0)), TimeSpan.FromMilliseconds(2000));
@@ -44,30 +45,29 @@ namespace ninaAPI.WebService.V3.Websocket.MountControl
             this.serializer = serializer;
         }
 
-        protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
+        private async Task OnMessageReceivedAsync(WebSocketConnection connection, WebSocketContext context, string text)
         {
             string status = "OK";
-            var message = System.Text.Encoding.UTF8.GetString(buffer);
 
             if (!mount.GetInfo().Connected)
             {
-                await context.WebSocket.SendAsync(System.Text.Encoding.UTF8.GetBytes(serializer.Serialize(new { Status = "Mount not connected" })), true);
+                await connection.SendTextAsync(serializer.Serialize(new { Status = "Mount not connected" }));
                 return;
             }
             if (mount.GetInfo().AtPark)
             {
-                await context.WebSocket.SendAsync(System.Text.Encoding.UTF8.GetBytes(serializer.Serialize(new { Status = "Mount parked" })), true);
+                await connection.SendTextAsync(serializer.Serialize(new { Status = "Mount parked" }));
                 return;
             }
             if (mount.GetInfo().Slewing)
             {
-                await context.WebSocket.SendAsync(System.Text.Encoding.UTF8.GetBytes(serializer.Serialize(new { Status = "Mount slewing" })), true);
+                await connection.SendTextAsync(serializer.Serialize(new { Status = "Mount slewing" }));
                 return;
             }
 
             try
             {
-                var request = serializer.Deserialize<MountControlRequest>(message);
+                var request = serializer.Deserialize<MountControlRequest>(text);
                 switch (request.Direction)
                 {
                     case DirectionEnum.East:
@@ -122,9 +122,18 @@ namespace ninaAPI.WebService.V3.Websocket.MountControl
                 Logger.Error(ex);
             }
 
-            await context.WebSocket.SendAsync(System.Text.Encoding.UTF8.GetBytes(serializer.Serialize(new { Status = status })), true);
+            await connection.SendTextAsync(serializer.Serialize(new { Status = status }));
+        }
+
+        public void ConfigureWebSocket(WebSocketOptions options)
+        {
+            options.OnUnknown(async (conn, ctx, msg) =>
+            {
+                await OnMessageReceivedAsync(conn, ctx, msg.RawText);
+            });
         }
     }
+
     public class MountControlRequest
     {
         public DirectionEnum Direction { get; set; }

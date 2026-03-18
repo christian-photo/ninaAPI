@@ -10,7 +10,8 @@
 #endregion "copyright"
 
 
-using EmbedIO;
+
+using SimpleW;
 
 namespace ninaAPI.WebService.Interfaces
 {
@@ -20,6 +21,6 @@ namespace ninaAPI.WebService.Interfaces
         T DefaultValue { get; }
         bool Required { get; }
 
-        T Get(IHttpContext context);
+        T Get(HttpRequest request);
     }
 }

@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,35 +9,26 @@
 
 #endregion "copyright"
 
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
-using ninaAPI.Properties;
-using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2;
+using SimpleW;
+using SimpleW.Modules;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService
 {
     public class WebApiServer : IWebApiServer
     {
-        public WebServer Server;
+        public SimpleWServer Server;
 
-        private Thread serverThread;
-
-        private CancellationTokenSource apiToken;
         public readonly int Port;
 
         private static List<INinaWatcher> Watchers { get; set; } = new List<INinaWatcher>();
@@ -51,13 +42,48 @@ namespace ninaAPI.WebService
 
         private void CreateServer()
         {
-            responseHandler = new ResponseHandler(SerializerFactory.GetSerializer());
-            Server = new WebServer(o => o
-                .WithUrlPrefix($"http://*:{Port}")
-                .WithMode(HttpListenerMode.EmbedIO))
-                .WithModule(new PreprocessRequestModule())
-                .HandleHttpException(HandleHttpException)
-                .HandleUnhandledException(HandleUnhandledException);
+            var serializer = SerializerFactory.GetSerializer();
+            responseHandler = new ResponseHandler(serializer);
+
+            Server = new SimpleWServer(IPAddress.Any, Port).UseCorsModule(options =>
+            {
+                options.AllowAnyOrigin = true;
+            });
+            Server.UseMiddleware(async (session, next) =>
+            {
+                Logger.Debug($"Request: {session.Request.Path}", "AdvancedAPI.Middleware");
+                using var sw = MyStopWatch.Measure("AdvancedAPI.Middleware");
+
+                try
+                {
+                    await next();
+                }
+                catch (HttpException ex)
+                {
+                    await HandleHttpException(session, ex);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                    if (ex is ArgumentException || ex is ValidationException)
+                    {
+                        await HandleHttpException(session, new HttpException(HttpStatusCode.BadRequest, ex.Message));
+                    }
+                    else
+                    {
+                        await HandleHttpException(session, CommonErrors.UnknwonError(ex));
+                    }
+                }
+            });
+        }
+
+        private static async Task HandleHttpException(HttpSession session, HttpException exception)
+        {
+            Logger.Trace($"Handling HttpException, status code: {exception.StatusCode}, Message: {exception.Message}");
+
+            string error = HttpUtility.StatusCodeMessages.GetValueOrDefault((int)exception.StatusCode, "Unknown Error");
+
+            await session.Response.Status((int)exception.StatusCode).Text(SerializerFactory.GetSerializer().Serialize(new { Error = error, Message = exception.Message })).SendAsync();
         }
 
         public static void StartWatchers()
@@ -95,7 +121,7 @@ namespace ninaAPI.WebService
             }
         }
 
-        public void Start(params IHttpApi[] apis)
+        public async Task Start(params IHttpApi[] apis)
         {
             try
             {
@@ -105,18 +131,15 @@ namespace ninaAPI.WebService
                     Server = api.ConfigureServer(Server);
                 }
 
-                foreach (var module in Server.Modules.OfType<WebApiModule>())
+                foreach (var route in Server.Router.Routes)
                 {
-                    Logger.Debug("Registered WebApi Controller: " + module.BaseRoute);
+                    Logger.Debug("Registered Route: " + route.Path);
                 }
 
                 Logger.Info("Starting web server");
                 if (Server != null)
                 {
-                    serverThread = new Thread(() => APITask(Server));
-                    serverThread.Name = "API Thread";
-                    // serverThread.SetApartmentState(ApartmentState.STA);
-                    serverThread.Start();
+                    await Server.StartAsync();
                     Started?.Invoke(this, EventArgs.Empty); // Raise Started event
                 }
             }
@@ -127,12 +150,11 @@ namespace ninaAPI.WebService
             }
         }
 
-        public void Stop()
+        public async Task Stop()
         {
             try
             {
-                apiToken?.Cancel();
-                Server?.Dispose();
+                await Server?.StopAsync();
                 Server = null;
                 Stopped?.Invoke(this, EventArgs.Empty); // Raise Stopped event
                 WebSocketV2.SetUnavailable();
@@ -143,82 +165,9 @@ namespace ninaAPI.WebService
             }
         }
 
-        // [STAThread]
-        private void APITask(WebServer server)
-        {
-            Logger.Info($"Starting web server, listening at {LocalAddresses.IPAddress}:{Port}");
-
-            try
-            {
-                apiToken = new CancellationTokenSource();
-                server.RunAsync(apiToken.Token).Wait();
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"failed to start web server: {ex}");
-                Notification.ShowError($"Failed to start web server, see NINA log for details");
-            }
-        }
-
-        public bool IsRunning() => apiToken?.Token.IsCancellationRequested ?? false;
+        public bool IsRunning() => Server?.IsStarted ?? false;
 
         public event EventHandler<EventArgs> Started;
         public event EventHandler<EventArgs> Stopped;
-
-        private async Task HandleUnhandledException(IHttpContext context, Exception exception)
-        {
-            Logger.Error(exception);
-            if (exception is ArgumentException || exception is ValidationException)
-            {
-                await HandleHttpException(context, new HttpException(HttpStatusCode.BadRequest, exception.Message));
-            }
-            else
-            {
-                await HandleHttpException(context, CommonErrors.UnknwonError(exception));
-            }
-        }
-
-        private async Task HandleHttpException(IHttpContext context, IHttpException exception)
-        {
-            if (!context.Request.RawUrl.Contains("v3"))
-            {
-                // Only use the new exception handler for v3 requests
-                // TODO: Remove when v2 is no longer supported
-                await HttpExceptionHandler.Default(context, exception);
-                return;
-            }
-            Logger.Trace($"Handling HttpException, status code: {exception.StatusCode}, Message: {exception.Message}");
-            exception.PrepareResponse(context);
-
-            string error = HttpUtility.StatusCodeMessages.GetValueOrDefault(exception.StatusCode, "Unknown Error");
-
-            await responseHandler.SendObject(context, new { Error = error, Message = exception.Message }, exception.StatusCode);
-        }
-    }
-
-    public class PreprocessRequestModule : WebModuleBase
-    {
-        public PreprocessRequestModule() : base("/")
-        {
-        }
-
-        protected override async Task OnRequestAsync(IHttpContext context)
-        {
-            Logger.Trace($"Request: {context.Request.Url.OriginalString}");
-            if (Settings.Default.UseAccessControlHeader)
-            {
-                context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-                context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-                context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-                if (context.Request.HttpVerb == HttpVerbs.Options)
-                {
-                    context.Response.StatusCode = 200;
-                    await context.SendStringAsync(string.Empty, "text/plain", Encoding.UTF8);
-                }
-            }
-        }
-
-        public override bool IsFinalHandler => false;
     }
 }

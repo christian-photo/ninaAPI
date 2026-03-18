@@ -3,15 +3,11 @@ using System.Drawing;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.Sessions;
 using NINA.Core.Enum;
 using NINA.Equipment.Equipment;
 using NINA.Equipment.Equipment.MyCamera;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
-using Swan;
 
 namespace ninaAPI.Test;
 

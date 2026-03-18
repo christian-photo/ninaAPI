@@ -11,13 +11,14 @@
 
 
 using System;
+using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.Interfaces
 {
     public interface IWebApiServer
     {
-        public void Start(params IHttpApi[] apis);
-        public void Stop();
+        public Task Start(params IHttpApi[] apis);
+        public Task Stop();
 
         public bool IsRunning();
 

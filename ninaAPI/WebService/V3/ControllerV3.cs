@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,20 +10,20 @@
 #endregion "copyright"
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Websocket.Event;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3
 {
-    public class ControllerV3 : WebApiController
+    public class ControllerV3 : IHttpController
     {
         private readonly ResponseHandler responseHandler;
         private readonly ApiProcessMediator processMediator;
@@ -34,64 +34,47 @@ namespace ninaAPI.WebService.V3
             this.processMediator = processMediator;
         }
 
-        [Route(HttpVerbs.Get, "/")]
         public string Index()
         {
-            return $"ninaAPI: https://github.com/christian-photo/ninaAPI/, https://bump.sh/christian-photo/doc/advanced-api, https://bump.sh/christian-photo/doc/advanced-api-websockets";
+            return $"ninaAPI: https://github.com/christian-photo/ninaAPI/, https://christian-photo.github.io/github-page/projects/ninaAPI/v3/doc/api, https://github.com/christian-photo/ninaAPI/wiki/Websocket-V3";
         }
 
-        [Route(HttpVerbs.Get, "/version")]
-        public async Task GetVersion()
+        public async Task<object> GetVersion()
         {
-            await responseHandler.SendObject(
-                HttpContext,
-                new { Version = Assembly.GetAssembly(typeof(AdvancedAPI)).GetName().Version.ToString() }
-            );
+            return new { Version = Assembly.GetAssembly(typeof(AdvancedAPI)).GetName().Version.ToString() };
         }
 
-        [Route(HttpVerbs.Get, "/time")]
-        public async Task GetTime()
+        public async Task<object> GetTime()
         {
-            await responseHandler.SendObject(
-                HttpContext,
-                new { Time = DateTime.Now }
-            );
+            return new { Time = DateTime.Now };
         }
 
-        [Route(HttpVerbs.Get, "/time/application-start")]
-        public async Task GetApplicationStart()
+        public async Task<object> GetApplicationStart()
         {
-            await responseHandler.SendObject(
-                HttpContext,
-                new { Time = CoreUtil.ApplicationStartDate }
-            );
+            return new { Time = CoreUtil.ApplicationStartDate };
         }
 
-        [Route(HttpVerbs.Get, "/version/nina")]
-        public async Task GetNINAVersion([QueryField] bool friendly)
+        public async Task<object> GetNINAVersion(HttpRequest request)
         {
-            await responseHandler.SendObject(
-                HttpContext,
-                new { Version = friendly ? CoreUtil.VersionFriendlyName : CoreUtil.Version }
-            );
+            QueryParameter<bool> friendlyParameter = new QueryParameter<bool>("friendly", false, false);
+            friendlyParameter.Get(request);
+
+            bool friendly = friendlyParameter.Value;
+
+            return new { Version = friendly ? CoreUtil.VersionFriendlyName : CoreUtil.Version };
         }
 
-        [Route(HttpVerbs.Get, "/process/{id}/status")]
-        public async Task GetProcessStatus(string id)
+        public async Task<object> GetProcessStatus(string id)
         {
             if (!Guid.TryParse(id, out Guid processId))
             {
                 throw new HttpException(HttpStatusCode.BadRequest, "ID could not be parsed");
             }
             object progress = processMediator.GetProgress(processId) ?? throw new HttpException(HttpStatusCode.NotFound, "Process not found");
-            await responseHandler.SendObject(
-                HttpContext,
-                progress
-            );
+            return progress;
         }
 
-        [Route(HttpVerbs.Post, "/process/{id}/abort")]
-        public async Task AbortProcess(string id)
+        public async Task<StatusResponse> AbortProcess(string id)
         {
             if (!Guid.TryParse(id, out Guid processId))
             {
@@ -102,14 +85,10 @@ namespace ninaAPI.WebService.V3
             {
                 throw new HttpException(HttpStatusCode.NotFound, "Process not found");
             }
-            await responseHandler.SendObject(
-                HttpContext,
-                new StatusResponse(processMediator.GetStatus(processId))
-            );
+            return new StatusResponse(processMediator.GetStatus(processId));
         }
 
-        [Route(HttpVerbs.Get, "/process/{id}/wait")]
-        public async Task WaitForProcess(string id)
+        public async Task<StatusResponse> WaitForProcess(string id)
         {
             if (!Guid.TryParse(id, out Guid processId))
             {
@@ -121,25 +100,31 @@ namespace ninaAPI.WebService.V3
                 throw new HttpException(HttpStatusCode.NotFound, "Process not found");
             }
             await process.WaitForExit();
-            await responseHandler.SendObject(
-                HttpContext,
-                new StatusResponse(process.Status)
-            );
+            return new StatusResponse(process.Status);
         }
 
-        [Route(HttpVerbs.Get, "/events")]
-        public async Task GetEventHistory()
+        public async Task<List<WebSocketHistoryEvent>> GetEventHistory(HttpRequest request)
         {
             PagerParameterSet pagerParameter = PagerParameterSet.Default();
-            pagerParameter.Evaluate(HttpContext);
+            pagerParameter.Evaluate(request);
 
             EventHistoryManager history = (AdvancedAPI.V3 as V3Api).GetEventWebSocket().EventHistoryManager;
             var events = history.GetEventHistoryPage(pagerParameter.PageParameter.Value, pagerParameter.PageSizeParameter.Value);
 
-            await responseHandler.SendObject(
-                HttpContext,
-                events
-            );
+            return events;
+        }
+
+        public void Configure(SimpleWServer server, string prefix)
+        {
+            server.Map(HttpVerbs.GET.ToString(), prefix, () => Index());
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/version", async () => await GetVersion());
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/time", async () => await GetTime());
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/time/application-start", async () => await GetApplicationStart());
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/version/nina", async (HttpRequest request) => await GetNINAVersion(request));
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/process/:id", async (string id) => await GetProcessStatus(id));
+            server.Map(HttpVerbs.DELETE.ToString(), prefix + "/process/:id", async (string id) => await AbortProcess(id));
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/process/:id/wait", async (string id) => await WaitForProcess(id));
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/events", async (HttpRequest request) => await GetEventHistory(request));
         }
     }
 }

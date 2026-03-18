@@ -16,7 +16,7 @@ using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.Interfaces
 {
-    public interface IEventSocket
+    public interface IEventSocket : IWebSocket
     {
         Task SendEvent(WebSocketEvent e);
         EventHistoryManager EventHistoryManager { get; }

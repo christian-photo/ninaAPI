@@ -13,9 +13,8 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using EmbedIO;
-using NINA.Sequencer.Container;
 using ninaAPI.Utility.Serialization;
+using SimpleW;
 
 namespace ninaAPI.Utility.Http
 {
@@ -30,7 +29,7 @@ namespace ninaAPI.Utility.Http
             this.serializer = serializerService;
         }
 
-        public async Task SendObject(IHttpContext context, object obj, int statusCode = 200, string mimeType = MimeType.Json)
+        public async Task SendObject(SimpleW.HttpResponse response, object obj, int statusCode = 200, string mimeType = "application/json")
         {
             string json;
             lock (serializerLock)
@@ -40,7 +39,7 @@ namespace ninaAPI.Utility.Http
             await SendRaw(context, json, statusCode, mimeType);
         }
 
-        public async Task SendSequence(IHttpContext context, object container, int statusCode = 200, string mimeType = MimeType.Json)
+        public async Task SendSequence(SimpleW.HttpResponse response, object container, int statusCode = 200, string mimeType = "application/json")
         {
             string json;
             lock (serializerLock)
@@ -50,19 +49,18 @@ namespace ninaAPI.Utility.Http
             await SendRaw(context, json, statusCode, mimeType);
         }
 
-        public async Task SendRaw(IHttpContext context, string json, int statusCode = 200, string mimeType = MimeType.Json)
+        public async Task SendRaw(SimpleW.HttpResponse response, string json, int statusCode = 200, string mimeType = "application/json")
         {
-            context.Response.ContentType = mimeType;
-            context.Response.StatusCode = statusCode;
+            response.Text() = mimeType;
 
             string text = json;
-            using (var writer = new StreamWriter(context.Response.OutputStream))
+            using (var writer = new StreamWriter(response.))
             {
                 await writer.WriteAsync(text);
             }
         }
 
-        public async Task SendBytes(IHttpContext context, byte[] bytes, string mimeType, int statusCode = 200)
+        public async Task SendBytes(SimpleW.HttpResponse response, byte[] bytes, string mimeType, int statusCode = 200)
         {
             context.Response.ContentType = mimeType;
             context.Response.StatusCode = statusCode;

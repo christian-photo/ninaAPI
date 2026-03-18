@@ -9,13 +9,13 @@
 
 #endregion "copyright"
 
-using SimpleW;
+
+using SimpleW.Modules;
 
 namespace ninaAPI.WebService.Interfaces
 {
-    public interface IHttpApi
+    public interface IWebSocket
     {
-        public SimpleWServer ConfigureServer(SimpleWServer server);
-        public bool SupportsSSL();
+        public void ConfigureWebSocket(WebSocketOptions options);
     }
 }

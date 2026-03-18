@@ -16,5 +16,7 @@ namespace ninaAPI.Utility.Serialization
     {
         public string Serialize(object obj, bool isSequence = false);
         public T Deserialize<T>(string json);
+
+        public string MimeType { get; }
     }
 }

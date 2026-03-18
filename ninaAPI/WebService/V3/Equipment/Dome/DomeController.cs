@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,9 +14,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Enum;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
@@ -24,38 +21,38 @@ using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Dome;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Model;
-using Swan;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Dome
 {
-    public class DomeController : WebApiController
+    public class DomeController : IHttpController
     {
-        private readonly ResponseHandler responseHandler;
         private readonly IDomeMediator dome;
         private readonly IDomeFollower domeFollower;
         private readonly ITelescopeMediator mount;
         private readonly ApiProcessMediator processMediator;
+        private readonly ISerializerService serializer;
 
-        public DomeController(ResponseHandler responseHandler, IDomeMediator dome, IDomeFollower domeFollower, ITelescopeMediator mount, ApiProcessMediator processMediator)
+        public DomeController(IDomeMediator dome, IDomeFollower domeFollower, ITelescopeMediator mount, ApiProcessMediator processMediator, ISerializerService serializer)
         {
-            this.responseHandler = responseHandler;
             this.dome = dome;
             this.domeFollower = domeFollower;
             this.mount = mount;
             this.processMediator = processMediator;
+            this.serializer = serializer;
         }
 
-        [Route(HttpVerbs.Get, $"/{EquipmentConstants.DomeUrlName}")]
-        public async Task DomeInfo()
+        public DomeInfoResponse DomeInfo()
         {
             DomeInfoResponse info = new DomeInfoResponse(dome, domeFollower);
 
-            await responseHandler.SendObject(HttpContext, info);
+            return info;
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/shutter/open")]
-        public async Task DomeOpenShutter()
+        public object DomeOpenShutter()
         {
             if (!dome.GetInfo().Connected)
             {
@@ -74,11 +71,10 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/shutter/close")]
-        public async Task DomeCloseShutter()
+        public object DomeCloseShutter()
         {
             if (!dome.GetInfo().Connected)
             {
@@ -97,11 +93,10 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/stop-movement")]
-        public async Task DomeStopMovement()
+        public StringResponse DomeStopMovement()
         {
             if (!dome.GetInfo().Connected)
             {
@@ -116,11 +111,10 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             var vm = typeof(DomeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(dome) as DomeVM;
             vm.StopCommand.Execute(null);
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Dome movement stopped"));
+            return new StringResponse("Dome movement stopped");
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/set-follow")]
-        public async Task DomeSetFollow([JsonData] DomeFollowBody body)
+        public async Task<StringResponse> DomeSetFollow(HttpSession session, DomeFollowBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
 
@@ -135,18 +129,17 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
 
             if (body.ShouldFollow)
             {
-                await dome.EnableFollowing(CancellationToken);
+                await dome.EnableFollowing(session.RequestAborted);
             }
             else
             {
-                await dome.DisableFollowing(CancellationToken);
+                await dome.DisableFollowing(session.RequestAborted);
             }
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Dome follower updated"));
+            return new StringResponse("Dome follower updated");
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/sync")]
-        public async Task DomeSync([JsonData] DomeSyncBody body)
+        public async Task<StringResponse> DomeSync(HttpSession session, DomeSyncBody body)
         {
             if (!dome.GetInfo().Connected)
             {
@@ -164,7 +157,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             bool success = await dome.SyncToScopeCoordinates(
                 body?.Coordinates?.ToCoordinates() ?? mount.GetInfo().Coordinates,
                 body?.SideOfPier ?? mount.GetInfo().SideOfPier,
-                CancellationToken
+                session.RequestAborted
             );
 
             if (!success)
@@ -172,11 +165,10 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
                 throw new HttpException(HttpStatusCode.InternalServerError, "Dome sync failed");
             }
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Dome synced"));
+            return new StringResponse("Dome synced");
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/slew")]
-        public async Task DomeSlew([JsonData] DomeSlewBody body)
+        public async Task<object> DomeSlew(DomeSlewBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
 
@@ -197,11 +189,10 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.DomeUrlName}/park")]
-        public async Task DomeSetPark()
+        public StringResponse DomeSetPark()
         {
             if (!dome.GetInfo().Connected)
             {
@@ -215,11 +206,10 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             var vm = typeof(DomeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(dome) as DomeVM;
             vm.SetParkPositionCommand.Execute(null);
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Park position set"));
+            return new StringResponse("Park position set");
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/park")]
-        public async Task DomePark()
+        public object DomePark()
         {
             if (!dome.GetInfo().Connected)
             {
@@ -246,11 +236,10 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.DomeUrlName}/home")]
-        public async Task DomeFindHome()
+        public object DomeFindHome()
         {
             if (!dome.GetInfo().Connected)
             {
@@ -281,7 +270,21 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
+        }
+
+        public void Configure(SimpleWServer server, string prefix)
+        {
+            server.Map(HttpVerbs.GET.ToString(), prefix, () => DomeInfo());
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/shutter/open", () => DomeOpenShutter());
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/shutter/close", () => DomeCloseShutter());
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/stop-movement", () => DomeStopMovement());
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/set-follow", (HttpSession session) => DomeSetFollow(session, serializer.Deserialize<DomeFollowBody>(session.Request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/sync", (HttpSession session) => DomeSync(session, serializer.Deserialize<DomeSyncBody>(session.Request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/slew", (HttpRequest request) => DomeSlew(serializer.Deserialize<DomeSlewBody>(request.BodyString)));
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/park", () => DomeSetPark());
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/park", () => DomePark());
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/home", () => DomeFindHome());
         }
     }
 
