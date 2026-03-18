@@ -29,6 +29,7 @@ The event websocket now supports channels, which can be subscribed to per client
 
 ### Other changes
 
+- Switched to SimpleW for the webserver (maintained, faster and more featureful)
 - The response wrapper was removed in favor of smaller responses. All additional information is now carried by the status code
 - The error messages are now more consistent. They will always include the `Error` (the name of the status code) and optionally `Message` which may provide further information about the error.
 - Endpoints like `image-history` now support pagination

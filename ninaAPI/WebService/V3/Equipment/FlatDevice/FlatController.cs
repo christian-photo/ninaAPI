@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -12,37 +12,35 @@
 
 using System.Net;
 using System.Threading.Tasks;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.FlatDevice
 {
-    public class FlatController : WebApiController
+    public class FlatController : IHttpController
     {
         private readonly IFlatDeviceMediator flatDevice;
         private readonly IApplicationStatusMediator appStatus;
-        private readonly ResponseHandler responseHandler;
+        private readonly ISerializerService serializer;
 
-        public FlatController(IFlatDeviceMediator flatDevice, IApplicationStatusMediator appStatus, ResponseHandler responseHandler)
+        public FlatController(IFlatDeviceMediator flatDevice, IApplicationStatusMediator appStatus, ISerializerService serializer)
         {
             this.flatDevice = flatDevice;
             this.appStatus = appStatus;
-            this.responseHandler = responseHandler;
+            this.serializer = serializer;
         }
 
-        [Route(HttpVerbs.Get, $"/{EquipmentConstants.FlatDeviceUrlName}")]
-        public async Task FlatInfo()
+        public FlatInfoResponse FlatInfo()
         {
-            await responseHandler.SendObject(HttpContext, new FlatInfoResponse(flatDevice));
+            return new FlatInfoResponse(flatDevice);
         }
 
-        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.FlatDeviceUrlName}/light")]
-        public async Task FlatLight([JsonData] FlatLightUpdateBody body)
+        public async Task<StringResponse> FlatLight(HttpSession session, FlatLightUpdateBody body)
         {
             if (!flatDevice.GetInfo().Connected)
             {
@@ -53,13 +51,12 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw new HttpException(HttpStatusCode.Conflict, "Flatdevice does not support on/off");
             }
 
-            await flatDevice.ToggleLight(body.TurnOn, appStatus.GetStatus(), CancellationToken);
+            await flatDevice.ToggleLight(body.TurnOn, appStatus.GetStatus(), session.RequestAborted);
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice light set"));
+            return new StringResponse("Flatdevice light set");
         }
 
-        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.FlatDeviceUrlName}/brightness")]
-        public async Task FlatBrightness([JsonData] FlatBrightnessUpdateBody body)
+        public async Task<StringResponse> FlatBrightness(HttpSession session, FlatBrightnessUpdateBody body)
         {
             if (!flatDevice.GetInfo().Connected)
             {
@@ -70,13 +67,12 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw CommonErrors.ParameterOutOfRange(nameof(body.Brightness), flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness);
             }
 
-            await flatDevice.SetBrightness(body.Brightness, appStatus.GetStatus(), CancellationToken);
+            await flatDevice.SetBrightness(body.Brightness, appStatus.GetStatus(), session.RequestAborted);
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice brightness set"));
+            return new StringResponse("Flatdevice brightness set");
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.FlatDeviceUrlName}/cover/open")]
-        public async Task FlatCoverOpen()
+        public async Task<StringResponse> FlatCoverOpen(HttpSession session)
         {
             if (!flatDevice.GetInfo().Connected)
             {
@@ -87,13 +83,12 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw new HttpException(HttpStatusCode.Conflict, "Flatdevice does not support open/close");
             }
 
-            await flatDevice.OpenCover(appStatus.GetStatus(), CancellationToken);
+            await flatDevice.OpenCover(appStatus.GetStatus(), session.RequestAborted);
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice cover open"));
+            return new StringResponse("Flatdevice cover open");
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.FlatDeviceUrlName}/cover/close")]
-        public async Task FlatCoverClose()
+        public async Task<StringResponse> FlatCoverClose(HttpSession session)
         {
             if (!flatDevice.GetInfo().Connected)
             {
@@ -104,9 +99,18 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw new HttpException(HttpStatusCode.Conflict, "Flatdevice does not support open/close");
             }
 
-            await flatDevice.CloseCover(appStatus.GetStatus(), CancellationToken);
+            await flatDevice.CloseCover(appStatus.GetStatus(), session.RequestAborted);
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Flatdevice cover close"));
+            return new StringResponse("Flatdevice cover close");
+        }
+
+        public void Configure(SimpleWServer server, string prefix)
+        {
+            server.Map(HttpVerbs.GET.ToString(), prefix, () => FlatInfo());
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/light", async (HttpSession session) => await FlatLight(session, serializer.Deserialize<FlatLightUpdateBody>(session.Request.BodyString)));
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/brightness", async (HttpSession session) => await FlatBrightness(session, serializer.Deserialize<FlatBrightnessUpdateBody>(session.Request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/cover/open", async (HttpSession session) => await FlatCoverOpen(session));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/cover/close", async (HttpSession session) => await FlatCoverClose(session));
         }
     }
 

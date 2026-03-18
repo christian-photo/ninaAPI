@@ -155,12 +155,14 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.FilterWheel,
                 AdvancedAPI.Controls.Profile,
                 AdvancedAPI.Controls.StatusMediator,
-                processMediator
+                processMediator,
+                serializer
             );
 
             flatController = new FlatController(
                 AdvancedAPI.Controls.FlatDevice,
-                AdvancedAPI.Controls.StatusMediator
+                AdvancedAPI.Controls.StatusMediator,
+                serializer
             );
 
             focuserController = new FocuserController(
@@ -168,13 +170,15 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.FilterWheel,
                 AdvancedAPI.Controls.StatusMediator,
                 AdvancedAPI.Controls.AutoFocusFactory,
-                processMediator
+                processMediator,
+                serializer
             );
 
             guiderController = new GuiderController(
                 AdvancedAPI.Controls.Guider,
                 AdvancedAPI.Controls.StatusMediator,
-                processMediator
+                processMediator,
+                serializer
             );
 
             mountController = new MountController(
@@ -328,31 +332,17 @@ namespace ninaAPI.WebService.V3
                     .SendAsync();
             });
             controller.Configure(server, "/v3/api");
-            cameraController.Configure(server, "/v3/api/equipment/camera");
-            domeController.Configure(server, "/v3/api/equipment/dome");
-            focuserController.Configure(server, "/v3/api/equipment/focuser");
-            filterWheelController.Configure(server, "/v3/api/equipment/filter-wheel");
-            flatController.Configure(server, "/v3/api/equipment/flat");
-            guiderController.Configure(server, "/v3/api/equipment/guider");
-            mountController.Configure(server, "/v3/api/equipment/mount");
-            rotatorController.Configure(server, "/v3/api/equipment/rotator");
-            safetyController.Configure(server, "/v3/api/equipment/safety");
-            switchController.Configure(server, "/v3/api/equipment/switch");
-            weatherController.Configure(server, "/v3/api/equipment/weather");
-                .WithWebApi("/v3/api/equipment", m => m
-                    .WithController(() => connectionController)
-                    .WithController(() => cameraController)
-                    .WithController(() => focuserController)
-                    .WithController(() => domeController)
-                    .WithController(() => filterWheelController)
-                    .WithController(() => flatController)
-                    .WithController(() => guiderController)
-                    .WithController(() => mountController)
-                    .WithController(() => rotatorController)
-                    .WithController(() => safetyController)
-                    .WithController(() => switchController)
-                    .WithController(() => weatherController)
-                )
+            cameraController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.CameraUrlName}");
+            domeController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.DomeUrlName}");
+            filterWheelController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.FilterWheelUrlName}");
+            focuserController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}");
+            flatController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.FlatDeviceUrlName}");
+            guiderController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.GuiderUrlName}");
+            mountController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.MountUrlName}");
+            rotatorController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.RotatorUrlName}");
+            safetyController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.SafetyMonitorUrlName}");
+            switchController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.SwitchUrlName}");
+            weatherController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.WeatherUrlName}");
                 .WithWebApi("/v3/api/image", m => m.WithController(() => imageController))
                 .WithWebApi("/v3/api/profile", m => m.WithController(() => profileController))
                 .WithWebApi("/v3/api/application", m => m.WithController(() => applicationController))

@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,45 +11,41 @@
 
 
 using System.ComponentModel.DataAnnotations;
-using System.Net;
-using System.Threading.Tasks;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Model.Equipment;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.FilterWheel
 {
-    public class FilterWheelController : WebApiController
+    public class FilterWheelController : IHttpController
     {
         private readonly IFilterWheelMediator filterWheel;
         private readonly IProfileService profile;
         private readonly IApplicationStatusMediator appStatus;
-        private readonly ResponseHandler responseHandler;
         private readonly ApiProcessMediator processMediator;
+        private readonly ISerializerService serializer;
 
-        public FilterWheelController(IFilterWheelMediator filterWheel, IProfileService profile, IApplicationStatusMediator appStatus, ResponseHandler responseHandler, ApiProcessMediator processMediator)
+        public FilterWheelController(IFilterWheelMediator filterWheel, IProfileService profile, IApplicationStatusMediator appStatus, ApiProcessMediator processMediator, ISerializerService serializer)
         {
             this.filterWheel = filterWheel;
             this.profile = profile;
             this.appStatus = appStatus;
-            this.responseHandler = responseHandler;
             this.processMediator = processMediator;
+            this.serializer = serializer;
         }
 
-        [Route(HttpVerbs.Get, $"/{EquipmentConstants.FilterWheelUrlName}/info")]
-        public async Task FilterWheelInfo()
+        public FilterWheelInfoResponse FilterWheelInfo()
         {
-            await responseHandler.SendObject(HttpContext, new FilterWheelInfoResponse(filterWheel, profile.ActiveProfile));
+            return new FilterWheelInfoResponse(filterWheel, profile.ActiveProfile);
         }
 
-        [Route(HttpVerbs.Put, $"/{EquipmentConstants.FilterWheelUrlName}/filter")]
-        public async Task SetFilter()
+        public object SetFilter(HttpRequest request)
         {
             QueryParameter<short> positionParameter = new QueryParameter<short>("position", 0, true, (position) => position.IsBetween(0, profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1));
 
@@ -58,7 +54,7 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
                 throw CommonErrors.DeviceNotConnected(Device.Filterwheel);
             }
 
-            short position = positionParameter.Get(HttpContext);
+            short position = positionParameter.Get(request);
 
             FilterInfo filter = FilterData.ToFilter(position, profile.ActiveProfile);
 
@@ -70,11 +66,10 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.FilterWheelUrlName}/filter")]
-        public async Task AddFilter([JsonData] FilterData filter)
+        public FilterData AddFilter(FilterData filter)
         {
             Validator.ValidateObject(filter, new ValidationContext(filter));
             // In the FilterData object, the position is not used, everything else is optional except the name
@@ -91,14 +86,13 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
 
             profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Add(filterInfo);
 
-            await responseHandler.SendObject(HttpContext, FilterData.FromFilter(filterInfo));
+            return FilterData.FromFilter(filterInfo);
         }
 
-        [Route(HttpVerbs.Delete, $"/{EquipmentConstants.FilterWheelUrlName}/filter")]
-        public async Task RemoveFilter()
+        public StringResponse RemoveFilter(HttpRequest request)
         {
             QueryParameter<short> positionParameter = new QueryParameter<short>("position", 0, true, (position) => position.IsBetween(0, profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1));
-            short position = positionParameter.Get(HttpContext);
+            short position = positionParameter.Get(request);
 
             var filters = profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters;
             filters.RemoveAt(position);
@@ -107,7 +101,15 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
                 filters[i].Position = i;
             }
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Filter removed"));
+            return new StringResponse("Filter removed");
+        }
+
+        public void Configure(SimpleWServer server, string prefix)
+        {
+            server.Map(HttpVerbs.GET.ToString(), prefix, () => FilterWheelInfo());
+            server.Map(HttpVerbs.PUT.ToString(), prefix + "/filter", (HttpRequest request) => SetFilter(request));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/filter", (HttpRequest request) => AddFilter(serializer.Deserialize<FilterData>(request.BodyString)));
+            server.Map(HttpVerbs.DELETE.ToString(), prefix + "/filter", (HttpRequest request) => RemoveFilter(request));
         }
     }
 }

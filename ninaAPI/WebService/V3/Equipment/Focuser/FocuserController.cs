@@ -16,54 +16,50 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.ViewModel;
-using NINA.WPF.Base.Utility.AutoFocus;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Focuser
 {
-    public class FocuserController : WebApiController
+    public class FocuserController : IHttpController
     {
         private readonly IFocuserMediator focuser;
         private readonly IFilterWheelMediator filterWheel;
         private readonly IApplicationStatusMediator statusMediator;
         private readonly IAutoFocusVMFactory autofocusFactory;
-        private readonly ResponseHandler responseHandler;
         private readonly ApiProcessMediator processMediator;
+        private readonly ISerializerService serializer;
 
         public FocuserController(
             IFocuserMediator focuser,
             IFilterWheelMediator filterWheel,
             IApplicationStatusMediator statusMediator,
             IAutoFocusVMFactory autofocusFactory,
-            ResponseHandler responseHandler,
-            ApiProcessMediator processMediator)
+            ApiProcessMediator processMediator,
+            ISerializerService serializer)
         {
             this.focuser = focuser;
             this.filterWheel = filterWheel;
             this.statusMediator = statusMediator;
-            this.responseHandler = responseHandler;
             this.processMediator = processMediator;
             this.autofocusFactory = autofocusFactory;
+            this.serializer = serializer;
         }
 
-        [Route(HttpVerbs.Get, $"/{EquipmentConstants.FocuserUrlName}")]
-        public async Task FocuserInfo()
+        public FocuserInfoResponse FocuserInfo()
         {
-            await responseHandler.SendObject(HttpContext, new FocuserInfoResponse(focuser));
+            return new FocuserInfoResponse(focuser);
         }
 
-
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.FocuserUrlName}/move")]
-        public async Task FocuserMove([JsonData] FocuserMoveBody body)
+        public object FocuserMove(FocuserMoveBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
 
@@ -80,11 +76,10 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.FocuserUrlName}/temp-comp")]
-        public async Task FocuserTemperatureCompensation([JsonData] FocuserTempCompBody body)
+        public StringResponse FocuserTemperatureCompensation(FocuserTempCompBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
 
@@ -99,13 +94,12 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
 
             focuser.ToggleTempComp(body.CompensationEnabled);
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Temperature compensation set"));
+            return new StringResponse("Temperature compensation set");
         }
 
         private IAutoFocusVM autoFocusVM;
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.FocuserUrlName}/auto-focus")]
-        public async Task StartAutoFocus()
+        public object StartAutoFocus()
         {
             if (!focuser.GetInfo().Connected)
             {
@@ -127,28 +121,25 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Get, $"/{EquipmentConstants.FocuserUrlName}/auto-focus/list-reports")]
-        public async Task AutoFocusListReports()
+        public object AutoFocusListReports()
         {
             var files = FileSystemHelper.GetFilesRecursively(FileSystemHelper.GetAutofocusFolder());
-            object response = files.Select(f => new
+
+            return files.Select(f => new
             {
                 Filename = Path.GetFileNameWithoutExtension(f),
                 Date = File.GetCreationTime(f),
             });
-
-            await responseHandler.SendObject(HttpContext, response);
         }
 
-        [Route(HttpVerbs.Get, $"/{EquipmentConstants.FocuserUrlName}/auto-focus/get-report")]
-        public async Task AutoFocusGetReport()
+        public async Task<string> AutoFocusGetReport(HttpRequest request)
         {
             QueryParameter<string> filenameParameter = new QueryParameter<string>("filename", string.Empty, true);
 
-            string filename = filenameParameter.Get(HttpContext);
+            string filename = filenameParameter.Get(request);
             string file = Path.Combine(FileSystemHelper.GetAutofocusFolder(), $"{filename}.json");
             if (!File.Exists(file))
             {
@@ -156,7 +147,17 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             }
 
             string json = await Retry.Do(() => File.ReadAllText(file), TimeSpan.FromMilliseconds(50), 5);
-            await responseHandler.SendRaw(HttpContext, json);
+            return json; // TODO: See if it works to return it raw
+        }
+
+        public void Configure(SimpleWServer server, string prefix)
+        {
+            server.Map(HttpVerbs.GET.ToString(), prefix, () => FocuserInfo());
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/move", (HttpRequest request) => FocuserMove(serializer.Deserialize<FocuserMoveBody>(request.BodyString)));
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/temp-comp", (HttpRequest request) => FocuserTemperatureCompensation(serializer.Deserialize<FocuserTempCompBody>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/auto-focus", (HttpRequest request) => StartAutoFocus());
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/auto-focus/list-reports", (HttpRequest request) => AutoFocusListReports());
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/auto-focus/get-report", async (HttpRequest request) => await AutoFocusGetReport(request));
         }
     }
 
