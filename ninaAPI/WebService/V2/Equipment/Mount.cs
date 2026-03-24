@@ -21,7 +21,9 @@ using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Telescope;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.WebService.Interfaces;
 using SimpleW;
+using SimpleW.Modules;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -500,7 +502,7 @@ namespace ninaAPI.WebService.V2
         }
     }
 
-    public class MountAxisMoveSocket : WebSocketModule
+    public class MountAxisMoveSocket : IWebSocket
     {
         private static DateTime eastTimer;
         private double eastRate;
@@ -513,19 +515,13 @@ namespace ninaAPI.WebService.V2
 
         private static object _timerLock = new object();
 
-        public MountAxisMoveSocket(string urlPath) : base(urlPath, true)
-        {
-
-        }
-
-        protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
+        private async Task OnMessageReceivedAsync(WebSocketConnection connection, WebSocketContext context, string text)
         {
             CustomResponse response = new CustomResponse();
             response.Type = CustomResponse.TypeSocket;
             try
             {
-                var message = Encoding.GetString(buffer);
-                var json = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(message);
+                var json = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(text);
                 string direction = json["direction"].ToString().ToLower();
                 double rate = double.Parse(json["rate"].ToString());
 
@@ -650,7 +646,15 @@ namespace ninaAPI.WebService.V2
             {
                 response = CoreUtility.CreateErrorTable(new Error(ex.Message, 400));
             }
-            await context.WebSocket.SendAsync(Encoding.GetBytes(System.Text.Json.JsonSerializer.Serialize(response)), true);
+            await connection.SendTextAsync(System.Text.Json.JsonSerializer.Serialize(response));
+        }
+
+        public void ConfigureWebSocket(WebSocketOptions options)
+        {
+            options.OnUnknown(async (conn, ctx, msg) =>
+            {
+                await OnMessageReceivedAsync(conn, ctx, msg.RawText);
+            });
         }
     }
 }

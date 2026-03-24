@@ -12,6 +12,7 @@
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2.CustomDrivers;
 using SimpleW;
+using SimpleW.Modules;
 
 namespace ninaAPI.WebService.V2
 {
@@ -20,8 +21,8 @@ namespace ninaAPI.WebService.V2
         public SimpleWServer ConfigureServer(SimpleWServer server)
         {
             server.MapController<HttpControllerV2>("/v2/api");
-            return server.WithModule(new WebSocketV2("/v2/socket"))
-                .WithModule(new TPPASocket("/v2/tppa"))
+            server.UseWebSocketModule(new WebSocketV2().ConfigureWebSocket);
+            return server.WithModule(new TPPASocket("/v2/tppa"))
                 .WithModule(new MountAxisMoveSocket("/v2/mount"))
                 .WithModule(new NetworkedFilterWheelSocket("/v2/filterwheel"));
         }

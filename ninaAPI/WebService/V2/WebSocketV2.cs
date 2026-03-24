@@ -9,13 +9,12 @@
 
 #endregion "copyright"
 
-using Accord.IO;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebSockets;
 using Newtonsoft.Json;
 using NINA.Core.Utility;
 using ninaAPI.Utility;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
+using SimpleW.Modules;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,7 +25,7 @@ namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/event-history")]
+        [Route("GET", "/event-history")]
         public void GetEventHistory()
         {
             CustomResponse response = new CustomResponse();
@@ -46,16 +45,16 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 
-    public class WebSocketV2 : WebSocketModule
+    public class WebSocketV2 : IWebSocket
     {
         private static bool sendConsumerEvents = false;
 
         private static WebSocketV2 instance;
-        public WebSocketV2(string urlPath) : base(urlPath, true)
+        public WebSocketV2()
         {
             instance = this;
         }
@@ -125,24 +124,30 @@ namespace ninaAPI.WebService.V2
 
         public static List<CustomResponse> Events = new List<CustomResponse>();
 
-        protected override Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult rxResult)
+        private static ThreadSafeList<WebSocketConnection> clients = new();
+
+        private void OnMessageReceivedAsync(WebSocketConnection connection, WebSocketContext context, string text)
         {
-            string s = Encoding.GetString(rxBuffer);
-            if (s.Equals("enable-consumer-events"))
+            if (text.Equals("enable-consumer-events"))
             {
                 sendConsumerEvents = true;
             }
-            else if (s.Equals("disable-consumer-events"))
+            else if (text.Equals("disable-consumer-events"))
             {
                 sendConsumerEvents = false;
             }
-            return Task.CompletedTask;
         }
 
-        protected override Task OnClientConnectedAsync(IWebSocketContext context)
+        private async ValueTask OnClientConnectedAsync(WebSocketConnection connection, WebSocketContext context)
         {
-            Logger.Info("WebSocket connected " + context.RemoteEndPoint.ToString());
-            return Task.CompletedTask;
+            Logger.Info($"WebSocket connected {connection.RemoteEndPoint}");
+            clients.Add(connection);
+        }
+
+        private async ValueTask OnClientDisconnectedAsync(WebSocketConnection connection, WebSocketContext context)
+        {
+            Logger.Info($"WebSocket disconnected {connection.RemoteEndPoint}");
+            clients.Remove(connection);
         }
 
         public static async Task<bool> SendEvent(CustomResponse payload)
@@ -165,11 +170,22 @@ namespace ninaAPI.WebService.V2
 
         public async Task Send(CustomResponse payload)
         {
-            foreach (IWebSocketContext context in ActiveContexts)
+            foreach (var client in clients.ToList())
             {
-                Logger.Trace("Sending to " + context.RemoteEndPoint.ToString());
-                await SendAsync(context, JsonConvert.SerializeObject(payload));
+                Logger.Trace("Sending to " + client.RemoteEndPoint.ToString());
+                await client.SendTextAsync(JsonConvert.SerializeObject(payload));
             }
+        }
+
+        public void ConfigureWebSocket(WebSocketOptions options)
+        {
+            options.OnUnknown(async (conn, ctx, msg) =>
+            {
+                OnMessageReceivedAsync(conn, ctx, msg.RawText);
+            });
+
+            options.OnConnect = OnClientConnectedAsync;
+            options.OnDisconnect = OnClientDisconnectedAsync;
         }
     }
 }
