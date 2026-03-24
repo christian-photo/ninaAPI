@@ -19,8 +19,8 @@ namespace ninaAPI.WebService.V2
     {
         public SimpleWServer ConfigureServer(SimpleWServer server)
         {
-            return server.WithWebApi("/v2/api", m => m.WithController<ControllerV2>())
-                .WithModule(new WebSocketV2("/v2/socket"))
+            server.MapController<HttpControllerV2>("/v2/api");
+            return server.WithModule(new WebSocketV2("/v2/socket"))
                 .WithModule(new TPPASocket("/v2/tppa"))
                 .WithModule(new MountAxisMoveSocket("/v2/mount"))
                 .WithModule(new NetworkedFilterWheelSocket("/v2/filterwheel"));
@@ -28,4 +28,6 @@ namespace ninaAPI.WebService.V2
 
         public bool SupportsSSL() => false;
     }
+
+    public class HttpControllerV2 : Controller { }
 }

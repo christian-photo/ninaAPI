@@ -73,7 +73,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/framing/info")]
         public void FramingInfo()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -91,7 +91,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/framing/set-source")]
         public void FramingSetSource([QueryField] string source)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -120,7 +120,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/framing/set-coordinates")]
         public void FramingSetCoordinates([QueryField] double RAangle, [QueryField] double DECangle)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -141,7 +141,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/framing/slew")]
         public async Task FramingSlew([QueryField] string slew_option, [QueryField] bool waitForResult)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -172,7 +172,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/framing/set-rotation")]
         public void FramingSetRotation([QueryField] double rotation)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -193,7 +193,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/framing/determine-rotation")]
         public async Task FramingDetermineRotation([QueryField] bool waitForResult)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -231,7 +231,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/astro-util/moon-separation")]
         public async Task UtilCalculateNighttime([QueryField] double ra, [QueryField] double dec)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {

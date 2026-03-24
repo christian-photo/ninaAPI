@@ -137,7 +137,7 @@ namespace ninaAPI.WebService.V2
                 PreparedImage = e.RenderedImage;
             }
 
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            CustomResponse response = new CustomResponse() { Type = CustomResponse.TypeSocket };
 
             response.Response = new Dictionary<string, object>() { { "Event", "IMAGE-PREPARED" } };
 
@@ -170,13 +170,13 @@ namespace ninaAPI.WebService.V2
 
         private static async void ImageSaved(object sender, ImageSavedEventArgs e)
         {
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            CustomResponse response = new CustomResponse() { Type = CustomResponse.TypeSocket };
 
             var r = ImageResponse.FromEvent(e);
 
             response.Response = new ImageEvent(r);
 
-            HttpResponse imageEvent = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", "IMAGE-SAVE" }, { "Time", DateTime.Now } } };
+            CustomResponse imageEvent = new CustomResponse() { Type = CustomResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", "IMAGE-SAVE" }, { "Time", DateTime.Now } } };
 
             lock (imageLock)
             {
@@ -205,7 +205,7 @@ namespace ninaAPI.WebService.V2
                     [QueryField] bool autoPrepare,
                     [QueryField] string bayerPattern)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
 
             SensorType sensor = SensorType.Monochrome;
@@ -340,7 +340,7 @@ namespace ninaAPI.WebService.V2
                     [QueryField] string imageType,
                     [QueryField] bool raw_fits)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
 
             SensorType sensor = SensorType.Monochrome;
@@ -524,7 +524,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/image/{index}/solve")]
         public async Task SolveImage(int index, [QueryField] string imageType, object image = null)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -599,7 +599,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/image/{index}/prefix")]
         public void AddPrefix(int index, [QueryField(true)] string prefix, [QueryField] string imageType)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             IEnumerable<ImageResponse> points;
             lock (ImageWatcher.imageLock)
@@ -641,7 +641,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/image-history")]
         public void GetHistoryCount([QueryField] bool all, [QueryField] int index, [QueryField] bool count, [QueryField] string imageType)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -678,7 +678,7 @@ namespace ninaAPI.WebService.V2
         public async Task GetImage(int index,
                     [QueryField] string imageType)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
 
             try

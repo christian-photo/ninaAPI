@@ -88,7 +88,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/json")]
         public void SequenceJson()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -121,7 +121,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/state")]
         public void SequenceState()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -155,7 +155,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/edit")]
         public void SequenceEdit([QueryField] string path, [QueryField] string value)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -629,7 +629,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/start")]
         public void SequenceStart([QueryField] bool skipValidation)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -662,7 +662,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/stop")]
         public void SequenceStop()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -690,7 +690,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/reset")]
         public void SequenceReset()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -719,7 +719,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Post, "/sequence/load")]
         public async Task SequenceLoad()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -760,7 +760,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/load")]
         public void GetSequenceLoad([QueryField(true)] string sequenceName)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -829,7 +829,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/list-available")]
         public void SequenceGetAvailable()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -866,7 +866,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/set-target")]
         public void SequenceSetTarget([QueryField] string name, [QueryField] double ra, [QueryField] double dec, [QueryField] double rotation, [QueryField] int index)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -906,7 +906,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/sequence/skip")]
         public void SequenceSkip([QueryField(true)] SequenceSkipType type)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {

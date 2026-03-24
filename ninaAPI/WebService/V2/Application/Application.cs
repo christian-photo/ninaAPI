@@ -35,7 +35,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/application/switch-tab")]
         public void ApplicationSwitchTab([QueryField] string tab)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -80,7 +80,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/application/get-tab")]
         public void ApplicationGetTab()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -126,7 +126,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/application/screenshot")]
         public async Task ApplicationScreenshot([QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale, [QueryField] bool stream)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -208,7 +208,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/application/plugins")]
         public void ApplicationPlugins()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -228,7 +228,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/application/logs")]
         public void GetRecentLogs([QueryField(true)] int lineCount, [QueryField] string level)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             List<Hashtable> logs = new List<Hashtable>();
 
@@ -302,7 +302,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/plugin/settings")]
         public void GetPluginSettings()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {

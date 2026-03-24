@@ -10,9 +10,6 @@
 #endregion "copyright"
 
 using CommunityToolkit.Mvvm.Input;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
@@ -32,6 +29,7 @@ using NINA.WPF.Base.ViewModel.Equipment.Telescope;
 using NINA.WPF.Base.ViewModel.Equipment.WeatherData;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using SimpleW;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,10 +39,10 @@ namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/equipment/info")]
+        [Route("GET", "/equipment/info")]
         public void GetAllEquipmentInfo()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -82,14 +80,14 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
 
-        [Route(HttpVerbs.Get, "/equipment/{device}/list-devices")]
+        [Route("GET", "/equipment/:device/list-devices")]
         public void ListDevices(string device)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -111,13 +109,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/{device}/connect")]
-        public async Task DeviceConnect(string device, [QueryField] string to)
+        [Route("GET", "/equipment/{device}/connect")]
+        public async Task DeviceConnect(string device, string to = null)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -128,7 +126,7 @@ namespace ninaAPI.WebService.V2
                 if (chooser != null)
                 {
                     IDevice d;
-                    if (HttpContext.IsParameterOmitted(nameof(to)))
+                    if (Request.IsParameterOmitted(nameof(to)))
                     {
                         d = chooser.SelectedDevice;
                     }
@@ -161,13 +159,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/{device}/disconnect")]
+        [Route("GET", "/equipment/:device/disconnect")]
         public async Task DeviceDisconnect(string device)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -190,13 +188,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/{device}/rescan")]
+        [Route("GET", "/equipment/:device/rescan")]
         public async Task DeviceRescan(string device)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -229,7 +227,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
         private (IDeviceChooserVM, object) GetDeviceVM(string device)

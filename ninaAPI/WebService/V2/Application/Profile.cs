@@ -166,7 +166,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/profile/show")]
         public void ProfileShow([QueryField] bool active)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -193,7 +193,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/profile/change-value")]
         public void ProfileChangeValue([QueryField] string settingpath, [QueryField] string newValue)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -268,7 +268,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/profile/switch")]
         public void ProfileSwitch([QueryField] string profileid)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -315,7 +315,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/profile/horizon")]
         public void ProfileHorizon()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {

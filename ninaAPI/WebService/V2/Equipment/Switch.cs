@@ -9,13 +9,11 @@
 
 #endregion "copyright"
 
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MySwitch;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
+using SimpleW;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,10 +54,10 @@ namespace ninaAPI.WebService.V2
     {
         private static CancellationTokenSource SwitchToken;
 
-        [Route(HttpVerbs.Get, "/equipment/switch/info")]
+        [Route("GET", "/equipment/switch/info")]
         public void SwitchInfo()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -74,13 +72,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/switch/set")]
-        public void SwitchSet([QueryField] short index, [QueryField] double value)
+        [Route("GET", "/equipment/switch/set")]
+        public void SwitchSet(short index, double value)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -104,7 +102,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 }

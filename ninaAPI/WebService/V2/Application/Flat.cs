@@ -44,7 +44,7 @@ namespace ninaAPI.WebService.V2
                             [QueryField] int gain,
                             [QueryField] int offset)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -152,7 +152,7 @@ namespace ninaAPI.WebService.V2
                                         [QueryField] double exposureTime,
                                         [QueryField] bool keepClosed)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -260,7 +260,7 @@ namespace ninaAPI.WebService.V2
                                     [QueryField] double exposureTime,
                                     [QueryField] bool keepClosed)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -363,7 +363,7 @@ namespace ninaAPI.WebService.V2
                                     [QueryField] int offset,
                                     [QueryField] bool keepClosed)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -460,7 +460,7 @@ namespace ninaAPI.WebService.V2
                                 [QueryField] int offset,
                                 [QueryField] bool keepClosed)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -558,7 +558,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/flats/status")]
         public void FlatsStatus()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             try
             {
                 response.Response = new FlatStatusResponse(container, flatTask);
@@ -575,7 +575,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/flats/stop")]
         public void FlatsStop()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {

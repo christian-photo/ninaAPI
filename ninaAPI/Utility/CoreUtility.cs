@@ -9,17 +9,14 @@
 
 #endregion "copyright"
 
-using EmbedIO;
 using NINA.Core.Model;
 using NINA.Sequencer.Container;
 using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using ninaAPI.WebService;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Reflection;
 using System.Text.Json;
@@ -85,14 +82,14 @@ namespace ninaAPI.Utility
             return new Progress<ApplicationStatus>(p => Status = p);
         }
 
-        public static HttpResponse CreateErrorTable(string message, int code = 500)
+        public static CustomResponse CreateErrorTable(string message, int code = 500)
         {
             return CreateErrorTable(new Error(message, code));
         }
 
-        public static HttpResponse CreateErrorTable(Error error)
+        public static CustomResponse CreateErrorTable(Error error)
         {
-            return new HttpResponse() { Error = error.message, Success = false, StatusCode = error.code };
+            return new CustomResponse() { Error = error.message, Success = false, StatusCode = error.code };
         }
 
         private static readonly JsonSerializerOptions options = new JsonSerializerOptions()
@@ -115,34 +112,18 @@ namespace ninaAPI.Utility
             FloatFormatHandling = FloatFormatHandling.String,
         };
 
-        public static void WriteSequenceResponse(this IHttpContext context, object json)
+        public static void WriteSequenceResponse(this SimpleW.HttpResponse context, object json)
         {
-            context.Response.ContentType = MimeType.Json;
-
             string text = JsonConvert.SerializeObject(json, sequenceSerializerSettings);
 
-            var bytes = System.Text.Encoding.UTF8.GetBytes(text);
-
-            context.Response.ContentLength64 = bytes.Length;
-
-            using (var writer = new StreamWriter(context.Response.OutputStream))
-            {
-                writer.Write(text);
-            }
+            context.Text(text, "application/json").SendAsync().AsTask().Wait();
         }
 
-        public static void WriteToResponse(this IHttpContext context, object json)
+        public static void WriteToResponse(this SimpleW.HttpResponse context, object json)
         {
-            context.Response.ContentType = MimeType.Json;
-
             string text = System.Text.Json.JsonSerializer.Serialize(json, options);
-            var bytes = System.Text.Encoding.UTF8.GetBytes(text);
 
-            context.Response.ContentLength64 = bytes.Length;
-            using (var writer = new StreamWriter(context.Response.OutputStream))
-            {
-                writer.Write(text);
-            }
+            context.Text(text, "application/json").SendAsync().AsTask().Wait();
         }
 
         public static object ConvertString(this string str, Type type)
@@ -240,7 +221,7 @@ namespace ninaAPI.Utility
         }
     }
 
-    public class HttpResponse
+    public class CustomResponse
     {
         public const string TypeAPI = "API";
         public const string TypeSocket = "Socket";

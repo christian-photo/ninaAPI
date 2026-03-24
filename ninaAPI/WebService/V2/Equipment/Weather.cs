@@ -9,12 +9,11 @@
 
 #endregion "copyright"
 
-using EmbedIO;
-using EmbedIO.Routing;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyWeatherData;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
+using SimpleW;
 using System;
 using System.Threading.Tasks;
 
@@ -52,10 +51,10 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/equipment/weather/info")]
+        [Route("GET", "/equipment/weather/info")]
         public void WeatherInfo()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -70,7 +69,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 }

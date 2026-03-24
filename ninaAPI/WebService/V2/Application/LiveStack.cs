@@ -116,7 +116,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/livestack/status")]
         public void LiveStackStatus()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             response.Response = LiveStackWatcher.LivestackStatus;
 
@@ -126,7 +126,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/livestack/stop")]
         public void LiveStackStop()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -145,7 +145,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/livestack/start")]
         public void LiveStackStart()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -164,7 +164,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/livestack/image/available")]
         public void LiveStackImageAvailable()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             List<object> images = new List<object>();
 
@@ -193,7 +193,7 @@ namespace ninaAPI.WebService.V2
             [QueryField] double scale,
             [QueryField] bool stream)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -269,7 +269,7 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/livestack/image/{target}/{filter}/info")]
         public async Task LiveStackImageInfo(string filter, string target)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {

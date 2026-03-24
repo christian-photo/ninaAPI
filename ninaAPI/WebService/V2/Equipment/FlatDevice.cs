@@ -9,13 +9,11 @@
 
 #endregion "copyright"
 
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyFlatDevice;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
+using SimpleW;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -69,10 +67,10 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/equipment/flatdevice/info")]
+        [Route("GET", "/equipment/flatdevice/info")]
         public void FlatDeviceInfo()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -87,13 +85,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/flatdevice/set-light")]
-        public void FlatDeviceToggle([QueryField] bool on)
+        [Route("GET", "/equipment/flatdevice/set-light")]
+        public void FlatDeviceToggle(bool on)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -115,13 +113,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/flatdevice/set-cover")]
-        public void FlatDeviceCover([QueryField] bool closed)
+        [Route("GET", "/equipment/flatdevice/set-cover")]
+        public void FlatDeviceCover(bool closed)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             try
             {
                 IFlatDeviceMediator flat = AdvancedAPI.Controls.FlatDevice;
@@ -149,13 +147,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/flatdevice/set-brightness")]
-        public void FlatDeviceSetLight([QueryField] int brightness)
+        [Route("GET", "/equipment/flatdevice/set-brightness")]
+        public void FlatDeviceSetLight(int brightness)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             try
             {
                 IFlatDeviceMediator flat = AdvancedAPI.Controls.FlatDevice;
@@ -176,7 +174,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 }

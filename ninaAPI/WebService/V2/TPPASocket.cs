@@ -100,9 +100,9 @@ namespace ninaAPI.WebService.V2
 
             Guid correlatedGuid = Guid.NewGuid();
             await AdvancedAPI.Controls.MessageBroker.Publish(new TPPAMessage(correlatedGuid, topic, content));
-            await Send(new HttpResponse()
+            await Send(new CustomResponse()
             {
-                Type = HttpResponse.TypeSocket,
+                Type = CustomResponse.TypeSocket,
                 Response = response
             });
         }
@@ -113,7 +113,7 @@ namespace ninaAPI.WebService.V2
             return Task.CompletedTask;
         }
 
-        public async Task Send(HttpResponse payload)
+        public async Task Send(CustomResponse payload)
         {
             Logger.Trace("Sending " + payload.Response + " to TPPA WebSocket");
             foreach (IWebSocketContext context in ActiveContexts)
@@ -135,9 +135,9 @@ namespace ninaAPI.WebService.V2
                     double AltitudeError = (double)t.GetProperty("AltitudeError").GetValue(message.Content, null);
                     double TotalError = (double)t.GetProperty("TotalError").GetValue(message.Content, null);
 
-                    await Send(new HttpResponse()
+                    await Send(new CustomResponse()
                     {
-                        Type = HttpResponse.TypeSocket,
+                        Type = CustomResponse.TypeSocket,
                         Response = new Dictionary<string, double>
                     {
                         { "AzimuthError", AzimuthError },
@@ -150,9 +150,9 @@ namespace ninaAPI.WebService.V2
                 {
                     ApplicationStatus status = (ApplicationStatus)message.Content;
 
-                    await Send(new HttpResponse()
+                    await Send(new CustomResponse()
                     {
-                        Type = HttpResponse.TypeSocket,
+                        Type = CustomResponse.TypeSocket,
                         Response = new
                         {
                             Status = status.Status,

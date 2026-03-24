@@ -63,7 +63,7 @@ namespace ninaAPI.SequenceItems
         public override async Task Execute(IProgress<ApplicationStatus> progress, CancellationToken token)
         {
             var message = ExpressionExpander.Expand(MessageDefinition, SymbolBroker, Parent);
-            await WebSocketV2.SendEvent(new HttpResponse() { Response = message, Type = HttpResponse.TypeSocket }).WaitAsync(token);
+            await WebSocketV2.SendEvent(new CustomResponse() { Response = message, Type = CustomResponse.TypeSocket }).WaitAsync(token);
             await (AdvancedAPI.V3 as V3Api).GetEventWebSocket().SendEvent(new WebSocketEvent()
             {
                 Channel = WebSocketChannel.Sequence,

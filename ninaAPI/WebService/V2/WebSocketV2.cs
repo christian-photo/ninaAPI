@@ -29,12 +29,12 @@ namespace ninaAPI.WebService.V2
         [Route(HttpVerbs.Get, "/event-history")]
         public void GetEventHistory()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
                 List<object> result = new List<object>();
-                foreach (HttpResponse r in WebSocketV2.Events)
+                foreach (CustomResponse r in WebSocketV2.Events)
                 {
                     result.Add(r.Response);
                 }
@@ -71,7 +71,7 @@ namespace ninaAPI.WebService.V2
                 // Do not allow mount updates for now, because that would be a lot of unnecessary traffic
                 // because every time the coordinates change, the info also changes. We could enable this with an extra bool
                 // in the future
-                await SendEvent(new HttpResponse() { Response = $"{consumer}-INFO-UPDATED", Type = HttpResponse.TypeSocket });
+                await SendEvent(new CustomResponse() { Response = $"{consumer}-INFO-UPDATED", Type = CustomResponse.TypeSocket });
             }
         }
 
@@ -92,8 +92,8 @@ namespace ninaAPI.WebService.V2
 
         public static async Task SendAndAddEvent(string eventName, DateTime time, Dictionary<string, object> data)
         {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
+            CustomResponse response = new CustomResponse();
+            response.Type = CustomResponse.TypeSocket;
 
             Hashtable responseData = new Hashtable
             {
@@ -113,7 +113,7 @@ namespace ninaAPI.WebService.V2
             string json = JsonConvert.SerializeObject(responseData);
             Hashtable eventTable = JsonConvert.DeserializeObject<Hashtable>(json);
             eventTable.Add("Time", time);
-            HttpResponse Event = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = eventTable };
+            CustomResponse Event = new CustomResponse() { Type = CustomResponse.TypeSocket, Response = eventTable };
             Events.Add(Event);
 
             await SendEvent(response);
@@ -123,7 +123,7 @@ namespace ninaAPI.WebService.V2
 
         public static void SetUnavailable() => instance = null;
 
-        public static List<HttpResponse> Events = new List<HttpResponse>();
+        public static List<CustomResponse> Events = new List<CustomResponse>();
 
         protected override Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult rxResult)
         {
@@ -145,7 +145,7 @@ namespace ninaAPI.WebService.V2
             return Task.CompletedTask;
         }
 
-        public static async Task<bool> SendEvent(HttpResponse payload)
+        public static async Task<bool> SendEvent(CustomResponse payload)
         {
             try
             {
@@ -163,7 +163,7 @@ namespace ninaAPI.WebService.V2
             return false;
         }
 
-        public async Task Send(HttpResponse payload)
+        public async Task Send(CustomResponse payload)
         {
             foreach (IWebSocketContext context in ActiveContexts)
             {
