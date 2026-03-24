@@ -20,9 +20,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Image.ImageAnalysis;
@@ -32,30 +29,32 @@ using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Service;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3.Application
 {
-    public class ApplicationController : WebApiController
+    public class ApplicationController : IHttpController
     {
         private readonly IProfileService profileService;
         private readonly IApplicationMediator applicationMediator;
-        private readonly ResponseHandler responseHandler;
+        private readonly ISerializerService serializer;
 
-        public ApplicationController(IProfileService profileService, IApplicationMediator applicationMediator, ResponseHandler responseHandler)
+        public ApplicationController(IProfileService profileService, IApplicationMediator applicationMediator, ISerializerService serializer)
         {
             this.profileService = profileService;
             this.applicationMediator = applicationMediator;
-            this.responseHandler = responseHandler;
+            this.serializer = serializer;
         }
 
-        [Route(HttpVerbs.Get, "/log")]
-        public async Task GetLogEntries()
+        public List<LogLine> GetLogEntries(HttpRequest request)
         {
             PagerParameterSet pagerParameter = PagerParameterSet.Default();
             QueryParameter<LogLevelEnum> logLevel = new QueryParameter<LogLevelEnum>("level", LogLevelEnum.INFO, false);
-            pagerParameter.Evaluate(HttpContext);
-            logLevel.Get(HttpContext);
+            pagerParameter.Evaluate(request);
+            logLevel.Get(request);
 
             string currentLogFile = Directory.GetFiles(Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "Logs")).OrderByDescending(File.GetCreationTime).First();
 
@@ -73,34 +72,31 @@ namespace ninaAPI.WebService.V3.Application
 
             List<LogLine> parsed = filteredLogLines.Select(LogLine.Parse).ToList();
 
-            await responseHandler.SendObject(HttpContext, parsed);
+            return parsed;
         }
 
-        [Route(HttpVerbs.Get, "/tab")]
-        public async Task GetApplicationTab()
+        public object GetApplicationTab()
         {
             IApplicationVM vm = (IApplicationVM)applicationMediator.GetType().GetField("handler", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(applicationMediator);
             int index = vm.TabIndex;
 
-            await responseHandler.SendObject(HttpContext, new { CurrentTab = (ApplicationTab)index });
+            return new { CurrentTab = (ApplicationTab)index };
         }
 
-        [Route(HttpVerbs.Put, "/tab")]
-        public async Task SetApplicationTab([JsonData] ApplicationTabChangeRequest request)
+        public StringResponse SetApplicationTab(ApplicationTabChangeRequest request)
         {
             Validator.ValidateObject(request, new ValidationContext(request));
 
             applicationMediator.ChangeTab(request.Tab);
-            await responseHandler.SendObject(HttpContext, new StringResponse("Tab changed"));
+            return new StringResponse("Tab changed");
         }
 
-        [Route(HttpVerbs.Get, "/screenshot")]
-        public async Task GetScreenshot()
+        public async Task GetScreenshot(HttpSession session)
         {
             // Here only scale, size, format and quality are used and these are the only ones that will be documented
             ImageQueryParameterSet parameters = ImageQueryParameterSet.ByProfile(profileService.ActiveProfile);
 
-            parameters.Evaluate(HttpContext);
+            parameters.Evaluate(session.Request);
 
             Bitmap screenshot = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
 
@@ -120,28 +116,26 @@ namespace ninaAPI.WebService.V3.Application
             source = ImageService.ResizeBitmap(source, parameters);
             ImageWriter writer = ImageWriter.GetImageWriter(source, parameters.Format.Value);
 
-            await responseHandler.SendBytes(HttpContext, writer.Encode(parameters.Quality.Value), writer.MimeType);
+            await session.Response.Body(writer.Encode(parameters.Quality.Value), writer.MimeType).SendAsync();
 
             screenshot.Dispose();
         }
 
-        [Route(HttpVerbs.Get, "/plugins")]
-        public async Task GetPlugins()
+        public List<string> GetPlugins()
         {
             string path = Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName;
             List<string> plugins = [.. Directory.GetDirectories(path).Select(Path.GetFileName)];
 
-            await responseHandler.SendObject(HttpContext, plugins);
+            return plugins;
         }
 
-        [Route(HttpVerbs.Get, "/plugin/settings")]
-        public async Task GetPluginSettings()
+        public object GetPluginSettings()
         {
-            await responseHandler.SendObject(HttpContext, new
+            return new
             {
                 AccessControlHeaderEnabled = Settings.Default.UseAccessControlHeader,
                 ShouldCreateThumbnails = Settings.Default.CreateThumbnails,
-            });
+            };
         }
 
         private static bool IsLineAboveLevel(string line, LogLevelEnum level)
@@ -155,6 +149,16 @@ namespace ninaAPI.WebService.V3.Application
                 }
             }
             return false;
+        }
+
+        public void Configure(SimpleWServer server, string prefix)
+        {
+            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/log", (HttpRequest request) => GetLogEntries(request));
+            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/tab", () => GetApplicationTab());
+            server.Map(HttpVerbs.PUT.ToString(), $"{prefix}/tab", (HttpRequest request) => SetApplicationTab(serializer.Deserialize<ApplicationTabChangeRequest>(request.BodyString)));
+            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/screenshot", async (HttpSession session) => await GetScreenshot(session));
+            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/plugins", () => GetPlugins());
+            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/plugin/settings", () => GetPluginSettings());
         }
     }
 

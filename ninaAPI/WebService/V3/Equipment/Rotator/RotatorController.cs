@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,9 +14,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility.WindowService;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.PlateSolving.Interfaces;
@@ -25,10 +22,13 @@ using NINA.Sequencer.SequenceItem.Platesolving;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Rotator
 {
-    public class RotatorController : WebApiController
+    public class RotatorController : IHttpController
     {
         private readonly IRotatorMediator rotator;
         private readonly IProfileService profile;
@@ -39,7 +39,7 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
         private readonly IWindowServiceFactory windowService;
         private readonly IApplicationStatusMediator statusMediator;
         private readonly ApiProcessMediator processMediator;
-        private readonly ResponseHandler responseHandler;
+        private readonly ISerializerService serializer;
 
         public RotatorController(
             IRotatorMediator rotator,
@@ -51,7 +51,7 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
             IWindowServiceFactory windowService,
             IApplicationStatusMediator statusMediator,
             ApiProcessMediator processMediator,
-            ResponseHandler responseHandler)
+            ISerializerService serializer)
         {
             this.mount = telescope;
             this.profile = profile;
@@ -62,17 +62,22 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
             this.windowService = windowService;
             this.statusMediator = statusMediator;
             this.processMediator = processMediator;
-            this.responseHandler = responseHandler;
+            this.serializer = serializer;
         }
 
-        [Route(HttpVerbs.Get, $"/{EquipmentConstants.RotatorUrlName}")]
-        public async Task RotatorInfo()
+        public void Configure(SimpleWServer server, string prefix)
         {
-            await responseHandler.SendObject(HttpContext, new RotatorInfoResponse(rotator));
+            server.Map(HttpVerbs.GET.ToString(), prefix, () => RotatorInfo());
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/move", (HttpRequest request) => RotatorMove(serializer.Deserialize<RotatorMoveConfig>(request.BodyString)));
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/sync", (HttpRequest request) => RotatorSync(serializer.Deserialize<RotatorSyncConfig>(request.BodyString)));
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.RotatorUrlName}/home")]
-        public async Task RotatorMove([JsonData] RotatorMoveConfig config)
+        public RotatorInfoResponse RotatorInfo()
+        {
+            return new RotatorInfoResponse(rotator);
+        }
+
+        public object RotatorMove(RotatorMoveConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
 
@@ -106,11 +111,10 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.RotatorUrlName}/park")]
-        public async Task RotatorSync([JsonData] RotatorSyncConfig config)
+        public object RotatorSync(RotatorSyncConfig config)
         {
             if (!rotator.GetInfo().Connected)
             {
@@ -134,13 +138,13 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
 
                 (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-                await responseHandler.SendObject(HttpContext, response, statusCode);
+                return (response, statusCode);
             }
             else
             {
                 rotator.Sync(config.SkyAngle);
 
-                await responseHandler.SendObject(HttpContext, new StringResponse("Rotator synced"));
+                return new StringResponse("Rotator synced");
             }
         }
     }

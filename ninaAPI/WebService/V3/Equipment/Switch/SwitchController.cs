@@ -12,41 +12,48 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Switch
 {
-    public class SwitchController : WebApiController
+    public class SwitchController : IHttpController
     {
         private readonly ISwitchMediator @switch;
         private readonly IApplicationStatusMediator statusMediator;
-        private readonly ResponseHandler responseHandler;
+        private readonly ISerializerService serializer;
 
-        public SwitchController(ISwitchMediator @switch, IApplicationStatusMediator statusMediator, ResponseHandler responseHandler)
+        public SwitchController(ISwitchMediator @switch, IApplicationStatusMediator statusMediator, ISerializerService serializer)
         {
             this.@switch = @switch;
             this.statusMediator = statusMediator;
-            this.responseHandler = responseHandler;
+            this.serializer = serializer;
         }
 
-        [Route(HttpVerbs.Get, $"/{EquipmentConstants.SwitchUrlName}")]
-        public async Task SwitchInfo()
+        public void Configure(SimpleWServer server, string prefix)
         {
-            await responseHandler.SendObject(HttpContext, new SwitchInfoResponse(@switch));
+            server.Map(HttpVerbs.GET.ToString(), prefix, () => SwitchInfo());
+            server.Map(HttpVerbs.PATCH.ToString(), prefix, (HttpSession session) => SwitchSetValue(serializer.Deserialize<SwitchSetValueConfig>(session.Request.BodyString), session));
         }
 
-        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.SwitchUrlName}")]
-        public async Task SwitchSetValue([JsonData] SwitchSetValueConfig config)
+        public SwitchInfoResponse SwitchInfo()
         {
+            return new SwitchInfoResponse(@switch);
+        }
+
+        public async Task<StringResponse> SwitchSetValue(SwitchSetValueConfig config, HttpSession session)
+        {
+            Validator.ValidateObject(config, new ValidationContext(config));
+
             if (!@switch.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Switch);
@@ -63,9 +70,9 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
             }
 
             // TODO: Check if this needs to be a process
-            await @switch.SetSwitchValue(config.SwitchId, config.Value, statusMediator.GetStatus(), CancellationToken);
+            await @switch.SetSwitchValue(config.SwitchId, config.Value, statusMediator.GetStatus(), session.RequestAborted);
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Switch value updated"));
+            return new StringResponse("Switch value updated");
         }
     }
 

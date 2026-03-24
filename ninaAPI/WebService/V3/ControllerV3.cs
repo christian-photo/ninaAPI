@@ -25,12 +25,10 @@ namespace ninaAPI.WebService.V3
 {
     public class ControllerV3 : IHttpController
     {
-        private readonly ResponseHandler responseHandler;
         private readonly ApiProcessMediator processMediator;
 
-        public ControllerV3(ResponseHandler responseHandler, ApiProcessMediator processMediator)
+        public ControllerV3(ApiProcessMediator processMediator)
         {
-            this.responseHandler = responseHandler;
             this.processMediator = processMediator;
         }
 
@@ -39,22 +37,22 @@ namespace ninaAPI.WebService.V3
             return $"ninaAPI: https://github.com/christian-photo/ninaAPI/, https://christian-photo.github.io/github-page/projects/ninaAPI/v3/doc/api, https://github.com/christian-photo/ninaAPI/wiki/Websocket-V3";
         }
 
-        public async Task<object> GetVersion()
+        public object GetVersion()
         {
             return new { Version = Assembly.GetAssembly(typeof(AdvancedAPI)).GetName().Version.ToString() };
         }
 
-        public async Task<object> GetTime()
+        public object GetTime()
         {
             return new { Time = DateTime.Now };
         }
 
-        public async Task<object> GetApplicationStart()
+        public object GetApplicationStart()
         {
             return new { Time = CoreUtil.ApplicationStartDate };
         }
 
-        public async Task<object> GetNINAVersion(HttpRequest request)
+        public object GetNINAVersion(HttpRequest request)
         {
             QueryParameter<bool> friendlyParameter = new QueryParameter<bool>("friendly", false, false);
             friendlyParameter.Get(request);
@@ -64,7 +62,7 @@ namespace ninaAPI.WebService.V3
             return new { Version = friendly ? CoreUtil.VersionFriendlyName : CoreUtil.Version };
         }
 
-        public async Task<object> GetProcessStatus(string id)
+        public object GetProcessStatus(string id)
         {
             if (!Guid.TryParse(id, out Guid processId))
             {
@@ -74,7 +72,7 @@ namespace ninaAPI.WebService.V3
             return progress;
         }
 
-        public async Task<StatusResponse> AbortProcess(string id)
+        public StatusResponse AbortProcess(string id)
         {
             if (!Guid.TryParse(id, out Guid processId))
             {
@@ -103,7 +101,7 @@ namespace ninaAPI.WebService.V3
             return new StatusResponse(process.Status);
         }
 
-        public async Task<List<WebSocketHistoryEvent>> GetEventHistory(HttpRequest request)
+        public List<WebSocketHistoryEvent> GetEventHistory(HttpRequest request)
         {
             PagerParameterSet pagerParameter = PagerParameterSet.Default();
             pagerParameter.Evaluate(request);
@@ -117,14 +115,14 @@ namespace ninaAPI.WebService.V3
         public void Configure(SimpleWServer server, string prefix)
         {
             server.Map(HttpVerbs.GET.ToString(), prefix, () => Index());
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/version", async () => await GetVersion());
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/time", async () => await GetTime());
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/time/application-start", async () => await GetApplicationStart());
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/version/nina", async (HttpRequest request) => await GetNINAVersion(request));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/process/:id", async (string id) => await GetProcessStatus(id));
-            server.Map(HttpVerbs.DELETE.ToString(), prefix + "/process/:id", async (string id) => await AbortProcess(id));
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/version", () => GetVersion());
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/time", () => GetTime());
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/time/application-start", () => GetApplicationStart());
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/version/nina", (HttpRequest request) => GetNINAVersion(request));
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/process/:id", (string id) => GetProcessStatus(id));
+            server.Map(HttpVerbs.DELETE.ToString(), prefix + "/process/:id", (string id) => AbortProcess(id));
             server.Map(HttpVerbs.GET.ToString(), prefix + "/process/:id/wait", async (string id) => await WaitForProcess(id));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/events", async (HttpRequest request) => await GetEventHistory(request));
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/events", (HttpRequest request) => GetEventHistory(request));
         }
     }
 }

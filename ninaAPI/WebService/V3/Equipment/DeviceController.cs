@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,10 +14,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
-using NINA.Equipment.Equipment;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
@@ -36,6 +32,8 @@ using NINA.WPF.Base.ViewModel.Equipment.Telescope;
 using NINA.WPF.Base.ViewModel.Equipment.WeatherData;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Equipment.Camera;
 using ninaAPI.WebService.V3.Equipment.Dome;
 using ninaAPI.WebService.V3.Equipment.FilterWheel;
@@ -47,10 +45,11 @@ using ninaAPI.WebService.V3.Equipment.Rotator;
 using ninaAPI.WebService.V3.Equipment.Safety;
 using ninaAPI.WebService.V3.Equipment.Switch;
 using ninaAPI.WebService.V3.Equipment.Weather;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment
 {
-    public class DeviceController : WebApiController
+    public class DeviceController : IHttpController
     {
         private readonly ICameraMediator camera;
         private readonly IDomeMediator dome;
@@ -65,7 +64,7 @@ namespace ninaAPI.WebService.V3.Equipment
         private readonly ISwitchMediator switchMediator;
         private readonly IWeatherDataMediator weatherData;
         private readonly IProfileService profileService;
-        private readonly ResponseHandler responseHandler;
+        private readonly ISerializerService serializer;
 
         public DeviceController(
             ICameraMediator camera,
@@ -81,7 +80,7 @@ namespace ninaAPI.WebService.V3.Equipment
             ISwitchMediator switchMediator,
             IWeatherDataMediator weatherData,
             IProfileService profileService,
-            ResponseHandler responseHandler)
+            ISerializerService serializer)
         {
             this.camera = camera;
             this.dome = dome;
@@ -96,33 +95,31 @@ namespace ninaAPI.WebService.V3.Equipment
             this.switchMediator = switchMediator;
             this.weatherData = weatherData;
             this.profileService = profileService;
-            this.responseHandler = responseHandler;
+            this.serializer = serializer;
         }
 
-        [Route(HttpVerbs.Get, "/{device}/list-devices")]
-        public async Task ListDevices(string device)
+        public object ListDevices(string device)
         {
             var chooser = GetDeviceChooserVM(device);
 
             var deviceList = chooser.Devices.Select(d => new DeviceChooserEntry(d));
 
-            await responseHandler.SendObject(HttpContext, deviceList);
+            return deviceList;
         }
 
-        [Route(HttpVerbs.Post, "/{device}/connect")]
-        public async Task DeviceConnect(string device)
+        public async Task<StringResponse> DeviceConnect(string device, HttpSession session)
         {
             var chooser = GetDeviceChooserVM(device);
 
             var deviceId = new QueryParameter<string>("deviceId", chooser.SelectedDevice.Id, false, (id) => chooser.Devices.Any(d => d.Id == id));
-            var targetDevice = chooser.Devices.First(d => d.Id == deviceId.Get(HttpContext));
+            var targetDevice = chooser.Devices.First(d => d.Id == deviceId.Get(session.Request));
 
             chooser.SelectedDevice = targetDevice;
-            bool success = await chooser.SelectedDevice.Connect(CancellationToken);
+            bool success = await chooser.SelectedDevice.Connect(session.RequestAborted);
 
             if (success)
             {
-                await responseHandler.SendObject(HttpContext, new StringResponse($"{targetDevice.DisplayName} connected"));
+                return new StringResponse($"{targetDevice.DisplayName} connected");
             }
             else
             {
@@ -130,8 +127,7 @@ namespace ninaAPI.WebService.V3.Equipment
             }
         }
 
-        [Route(HttpVerbs.Post, "/{device}/disconnect")]
-        public async Task DeviceDisconnect(string device)
+        public StringResponse DeviceDisconnect(string device)
         {
             var chooser = GetDeviceChooserVM(device);
 
@@ -142,21 +138,20 @@ namespace ninaAPI.WebService.V3.Equipment
 
             chooser.SelectedDevice.Disconnect();
 
-            await responseHandler.SendObject(HttpContext, new StringResponse($"{chooser.SelectedDevice.DisplayName} disconnected"));
+            return new StringResponse($"{chooser.SelectedDevice.DisplayName} disconnected");
         }
 
-        [Route(HttpVerbs.Post, "/{device}/rescan")]
-        public async Task DeviceRescan(string device)
+        public async Task<object> DeviceRescan(string device)
         {
             var chooser = GetDeviceChooserVM(device);
 
             await chooser.GetEquipment();
 
-            await ListDevices(device);
+            return ListDevices(device);
         }
 
-        [Route(HttpVerbs.Post, "/{device}/action")]
-        public async Task DeviceAction(string device, [JsonData] ActionConfig config)
+        // TODO: Document
+        public StringResponse DeviceAction(string device, ActionConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
 
@@ -168,13 +163,12 @@ namespace ninaAPI.WebService.V3.Equipment
             }
             string result = deviceobj.Action(config.Action, config.Parameters);
 
-            await responseHandler.SendObject(HttpContext, new StringResponse(string.IsNullOrEmpty(result) ? "Action executed" : result));
+            return new StringResponse(string.IsNullOrEmpty(result) ? "Action executed" : result);
         }
 
-        [Route(HttpVerbs.Get, "/")]
-        public async Task GetEquipmentBundleInfo()
+        public object GetEquipmentBundleInfo()
         {
-            await responseHandler.SendObject(HttpContext, new
+            return new
             {
                 Camera = new CameraInfoResponse(camera),
                 Dome = new DomeInfoResponse(dome, domeFollower),
@@ -187,7 +181,7 @@ namespace ninaAPI.WebService.V3.Equipment
                 SafetyMonitor = new SafetyInfoResponse(safetyMonitor),
                 Switch = new SwitchInfoResponse(switchMediator),
                 Weather = new WeatherInfoResponse(weatherData),
-            });
+            };
         }
 
         private IDevice GetDevice(string device)
@@ -261,6 +255,16 @@ namespace ninaAPI.WebService.V3.Equipment
                 default:
                     throw new HttpException(HttpStatusCode.NotFound, "Device not found");
             }
+        }
+
+        public void Configure(SimpleWServer server, string prefix)
+        {
+            server.Map(HttpVerbs.GET.ToString(), prefix, () => GetEquipmentBundleInfo());
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/:device/list-devices", (string device) => ListDevices(device));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/connect", (string device, HttpSession session) => DeviceConnect(device, session));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/disconnect", (string device) => DeviceDisconnect(device));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/rescan", (string device) => DeviceRescan(device));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/action", (string device, HttpRequest request) => DeviceAction(device, serializer.Deserialize<ActionConfig>(request.BodyString)));
         }
     }
 

@@ -196,7 +196,8 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.MeridianFlipFactory,
                 AdvancedAPI.Controls.Camera,
                 AdvancedAPI.Controls.Focuser,
-                processMediator
+                processMediator,
+                serializer
             );
 
             rotatorController = new RotatorController(
@@ -208,7 +209,8 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.PlateSolver,
                 AdvancedAPI.Controls.WindowFactory,
                 AdvancedAPI.Controls.StatusMediator,
-                processMediator
+                processMediator,
+                serializer
             );
 
             safetyController = new SafetyController(
@@ -217,7 +219,8 @@ namespace ninaAPI.WebService.V3
 
             switchController = new SwitchController(
                 AdvancedAPI.Controls.Switch,
-                AdvancedAPI.Controls.StatusMediator
+                AdvancedAPI.Controls.StatusMediator,
+                serializer
             );
 
             weatherController = new WeatherController(
@@ -237,7 +240,8 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.SafetyMonitor,
                 AdvancedAPI.Controls.Switch,
                 AdvancedAPI.Controls.Weather,
-                AdvancedAPI.Controls.Profile
+                AdvancedAPI.Controls.Profile,
+                serializer
             );
 
             imageController = new ImageController(
@@ -246,16 +250,19 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.PlateSolver,
                 AdvancedAPI.Controls.Camera,
                 AdvancedAPI.Controls.Mount,
-                AdvancedAPI.Controls.StatusMediator
+                AdvancedAPI.Controls.StatusMediator,
+                serializer
             );
 
             profileController = new ProfileController(
-                AdvancedAPI.Controls.Profile
+                AdvancedAPI.Controls.Profile,
+                serializer
             );
 
             applicationController = new ApplicationController(
                 AdvancedAPI.Controls.Profile,
-                AdvancedAPI.Controls.Application
+                AdvancedAPI.Controls.Application,
+                serializer
             );
 
             sequenceController = new SequenceController(
@@ -267,7 +274,8 @@ namespace ninaAPI.WebService.V3
                 AdvancedAPI.Controls.FramingAssistant,
                 AdvancedAPI.Controls.Camera,
                 AdvancedAPI.Controls.Profile,
-                processMediator
+                processMediator,
+                serializer
             );
 
             livestackController = new LivestackController(
@@ -276,7 +284,8 @@ namespace ninaAPI.WebService.V3
             );
 
             tppaController = new TppaController(
-                AdvancedAPI.Controls.MessageBroker
+                AdvancedAPI.Controls.MessageBroker,
+                serializer
             );
 
             controller = new ControllerV3(processMediator);
@@ -343,14 +352,14 @@ namespace ninaAPI.WebService.V3
             safetyController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.SafetyMonitorUrlName}");
             switchController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.SwitchUrlName}");
             weatherController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.WeatherUrlName}");
-                .WithWebApi("/v3/api/image", m => m.WithController(() => imageController))
-                .WithWebApi("/v3/api/profile", m => m.WithController(() => profileController))
-                .WithWebApi("/v3/api/application", m => m.WithController(() => applicationController))
-                .WithWebApi("/v3/api/sequence", m => m.WithController(() => sequenceController))
-                .WithWebApi("/v3/api/framing", m => m.WithController(() => framingController))
-                .WithWebApi("/v3/api/livestack", m => m.WithController(() => livestackController))
-                .WithWebApi("/v3/api/tppa", m => m.WithController(() => tppaController))
-                .WithWebApi("/v3/api", m => m.WithController(() => controller));
+            imageController.Configure(server, $"/v3/api/image");
+            profileController.Configure(server, $"/v3/api/profile");
+            applicationController.Configure(server, $"/v3/api/application");
+            sequenceController.Configure(server, $"/v3/api/sequence");
+            framingController.Configure(server, $"/v3/api/framing");
+            livestackController.Configure(server, $"/v3/api/livestack");
+            tppaController.Configure(server, $"/v3/api/tppa");
+            controller.Configure(server, "/v3/api");
 
             return server;
         }

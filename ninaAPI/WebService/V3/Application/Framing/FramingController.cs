@@ -14,44 +14,41 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
-using Accord;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Astrometry;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3.Application.Framing
 {
-    public class FramingController : WebApiController
+    public class FramingController : IHttpController
     {
         private readonly IFramingAssistantVM framingVM;
         private readonly ICameraMediator camera;
         private readonly IProfileService profileService;
         private readonly ApiProcessMediator processMediator;
-        private readonly ResponseHandler responseHandler;
+        private readonly ISerializerService serializer;
 
-        public FramingController(IFramingAssistantVM framingVm, ICameraMediator camera, IProfileService profileService, ApiProcessMediator processMediator, ResponseHandler responseHandler)
+        public FramingController(IFramingAssistantVM framingVm, ICameraMediator camera, IProfileService profileService, ApiProcessMediator processMediator, ISerializerService serializer)
         {
             this.framingVM = framingVm;
             this.camera = camera;
             this.profileService = profileService;
             this.processMediator = processMediator;
-            this.responseHandler = responseHandler;
+            this.serializer = serializer;
         }
 
-        [Route(HttpVerbs.Get, "/")]
-        public async Task FramingInfo()
+        public FramingInfoContainer FramingInfo()
         {
-            await responseHandler.SendObject(HttpContext, new FramingInfoContainer(framingVM));
+            return new FramingInfoContainer(framingVM);
         }
 
-        [Route(HttpVerbs.Patch, "/")]
-        public async Task FramingUpdate([JsonData] FramingUpdate config)
+        public async Task<FramingInfoContainer> FramingUpdate(FramingUpdate config)
         {
             Validator.ValidateObject(config, new ValidationContext(config)); // is there a better way to do this?
 
@@ -104,13 +101,12 @@ namespace ninaAPI.WebService.V3.Application.Framing
                 framingVM.FramingAssistantSource = config.FramingSource.Value;
             }
 
-            await responseHandler.SendObject(HttpContext, new FramingInfoContainer(framingVM));
+            return FramingInfo();
         }
 
         // I dont copy the slew endopint because you can use the mount slew as well
 
-        [Route(HttpVerbs.Post, "/solve-rotation")]
-        public async Task FramingSolveRotation()
+        public object FramingSolveRotation()
         {
             if (!framingVM.RectangleCalculated)
             {
@@ -137,7 +133,14 @@ namespace ninaAPI.WebService.V3.Application.Framing
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
+        }
+
+        public void Configure(SimpleWServer server, string prefix)
+        {
+            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/", () => FramingInfo());
+            server.Map(HttpVerbs.PATCH.ToString(), $"{prefix}/", async (HttpRequest request) => await FramingUpdate(serializer.Deserialize<FramingUpdate>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/solve-rotation", () => FramingSolveRotation());
         }
     }
 }

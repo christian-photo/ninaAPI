@@ -6960,6 +6960,7 @@ components:
         - Sequence
         - Imaging
         - Options
+        - Plugins
 
     ApplicationTabChangeRequest:
       type: object

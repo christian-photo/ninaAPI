@@ -11,60 +11,54 @@
 
 
 using System;
+using System.Collections;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Plugin.Interfaces;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.Model;
 using ninaAPI.WebService.V2;
 using ninaAPI.WebService.V3.Service;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3.Application.Livestack
 {
-    public class LivestackController : WebApiController
+    public class LivestackController : IHttpController
     {
         private readonly IMessageBroker messageBroker;
         private readonly IProfileService profileService;
-        private readonly ResponseHandler responseHandler;
 
-        public LivestackController(IMessageBroker messageBroker, IProfileService profileService, ResponseHandler responseHandler)
+        public LivestackController(IMessageBroker messageBroker, IProfileService profileService)
         {
             this.messageBroker = messageBroker;
             this.profileService = profileService;
-            this.responseHandler = responseHandler;
         }
 
-        [Route(HttpVerbs.Get, "/status")]
-        public async Task GetLivestackStatus()
+        public object GetLivestackStatus()
         {
-            await responseHandler.SendObject(HttpContext, new { Status = LivestackWatcher.LivestackStatus });
+            return new { Status = LivestackWatcher.LivestackStatus };
         }
 
-        [Route(HttpVerbs.Post, "/start")]
-        public async Task StartLivestack()
+        public async Task<StringResponse> StartLivestack()
         {
             await messageBroker.Publish(new NINAMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StartLiveStack", string.Empty));
-            await responseHandler.SendObject(HttpContext, new StringResponse("Live stack started"));
+            return new StringResponse("Live stack started");
         }
 
-        [Route(HttpVerbs.Post, "/stop")]
-        public async Task StopLivestack()
+        public async Task<StringResponse> StopLivestack()
         {
             await messageBroker.Publish(new NINAMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StopLiveStack", string.Empty));
-            await responseHandler.SendObject(HttpContext, new StringResponse("Live stack stopped"));
+            return new StringResponse("Live stack stopped");
         }
 
-        [Route(HttpVerbs.Get, "/image")]
-        public async Task GetLivestackImageAvailable()
+        public object GetLivestackImageAvailable()
         {
-            await responseHandler.SendObject(HttpContext, LiveStackWatcher.LiveStackHistory.Images.Select(x => new
+            return LiveStackWatcher.LiveStackHistory.Images.Select(x => new
             {
                 x.BlueStackCount,
                 x.Filter,
@@ -73,22 +67,30 @@ namespace ninaAPI.WebService.V3.Application.Livestack
                 x.RedStackCount,
                 x.StackCount,
                 x.Target
-            }));
+            });
         }
 
-        [Route(HttpVerbs.Get, "/image/{target}/{filter}")]
-        public async Task GetLivestackImage(string target, string filter)
+        public async Task GetLivestackImage(string target, string filter, HttpSession session)
         {
             // Here only scale, size, format and quality are used and these are the only ones that will be documented
             ImageQueryParameterSet parameters = ImageQueryParameterSet.ByProfile(profileService.ActiveProfile);
-            parameters.Evaluate(HttpContext);
+            parameters.Evaluate(session.Request);
 
             BitmapSource image = LiveStackWatcher.LiveStackHistory.GetLast(filter, target) ?? throw new HttpException(HttpStatusCode.NotFound, "No image with specified filter and target found");
 
             image = ImageService.ResizeBitmap(image, parameters);
             ImageWriter writer = ImageWriter.GetImageWriter(image, parameters.Format.Value);
 
-            await responseHandler.SendBytes(HttpContext, writer.Encode(parameters.Quality.Value), writer.MimeType);
+            await session.Response.Body(writer.Encode(parameters.Quality.Value), writer.MimeType).SendAsync();
+        }
+
+        public void Configure(SimpleWServer server, string prefix)
+        {
+            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/status", () => GetLivestackStatus());
+            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/start", async () => await StartLivestack());
+            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/stop", async () => await StopLivestack());
+            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/image", () => GetLivestackImageAvailable());
+            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/image/:target/:filter", async (HttpSession session, string target, string filter) => await GetLivestackImage(target, filter, session));
         }
     }
 }

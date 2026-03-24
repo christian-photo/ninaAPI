@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -13,11 +13,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Astrometry;
 using NINA.Core.Utility.WindowService;
 using NINA.Equipment.Interfaces;
@@ -30,10 +26,13 @@ using NINA.WPF.Base.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Mount
 {
-    public class MountController : WebApiController
+    public class MountController : IHttpController
     {
         private readonly ITelescopeMediator mount;
         private readonly IProfileService profile;
@@ -50,7 +49,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
         private readonly ICameraMediator camera;
         private readonly IFocuserMediator focuser;
         private readonly ApiProcessMediator processMediator;
-        private readonly ResponseHandler responseHandler;
+        private readonly ISerializerService serializer;
 
         public MountController(
             ITelescopeMediator telescope,
@@ -68,7 +67,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             ICameraMediator camera,
             IFocuserMediator focuser,
             ApiProcessMediator processMediator,
-            ResponseHandler responseHandler)
+            ISerializerService serializer)
         {
             this.mount = telescope;
             this.profile = profile;
@@ -85,17 +84,15 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             this.camera = camera;
             this.focuser = focuser;
             this.processMediator = processMediator;
-            this.responseHandler = responseHandler;
+            this.serializer = serializer;
         }
 
-        [Route(HttpVerbs.Get, $"/{EquipmentConstants.MountUrlName}")]
-        public async Task MountInfo()
+        public MountInfoResponse MountInfo()
         {
-            await responseHandler.SendObject(HttpContext, new MountInfoResponse(mount));
+            return new MountInfoResponse(mount);
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/home")]
-        public async Task MountHome()
+        public object MountHome()
         {
             if (!mount.GetInfo().Connected)
             {
@@ -127,11 +124,10 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.MountUrlName}/tracking")]
-        public async Task MountTrackingUpdate([JsonData] UpdateTrackingModeBody body)
+        public StringResponse MountTrackingUpdate(UpdateTrackingModeBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
 
@@ -156,11 +152,10 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
                 throw new HttpException(HttpStatusCode.InternalServerError, "Tracking mode could not be set");
             }
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Tracking mode updated"));
+            return new StringResponse("Tracking mode updated");
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/park")]
-        public async Task MountPark()
+        public object MountPark()
         {
             if (!mount.GetInfo().Connected)
             {
@@ -188,11 +183,10 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/unpark")]
-        public async Task MountUnpark()
+        public async Task<StringResponse> MountUnpark(HttpSession session)
         {
             if (!mount.GetInfo().Connected)
             {
@@ -203,13 +197,12 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
                 throw new HttpException(HttpStatusCode.Conflict, "Mount not parked");
             }
 
-            await mount.UnparkTelescope(statusMediator.GetStatus(), CancellationToken);
+            await mount.UnparkTelescope(statusMediator.GetStatus(), session.RequestAborted);
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Unparked"));
+            return new StringResponse("Unparked");
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/flip")]
-        public async Task MountFlip([JsonData] MountFlipConfig config)
+        public object MountFlip(MountFlipConfig config)
         {
             if (!mount.GetInfo().Connected)
             {
@@ -241,11 +234,10 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/slew")]
-        public async Task MountSlew([JsonData] MountSlewConfig config)
+        public object MountSlew(MountSlewConfig config)
         {
             if (!mount.GetInfo().Connected)
             {
@@ -306,11 +298,10 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-            await responseHandler.SendObject(HttpContext, response, statusCode);
+            return (response, statusCode);
         }
 
-        [Route(HttpVerbs.Post, $"/{EquipmentConstants.MountUrlName}/slew/stop")]
-        public async Task MountStopSlew()
+        public StringResponse MountStopSlew()
         {
             if (!mount.GetInfo().Connected)
             {
@@ -322,11 +313,10 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             }
 
             mount.StopSlew();
-            await responseHandler.SendObject(HttpContext, new StringResponse("Stopped slew"));
+            return new StringResponse("Stopped slew");
         }
 
-        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.MountUrlName}/park")]
-        public async Task MountSetPark()
+        public StringResponse MountSetPark()
         {
             if (!mount.GetInfo().Connected)
             {
@@ -339,11 +329,10 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             ITelescope telescope = mount.GetDevice() as ITelescope;
             telescope.Setpark();
 
-            await responseHandler.SendObject(HttpContext, new StringResponse("Park position set"));
+            return new StringResponse("Park position set");
         }
 
-        [Route(HttpVerbs.Patch, $"/{EquipmentConstants.MountUrlName}/sync")]
-        public async Task MountSync([JsonData] MountSyncConfig config)
+        public async Task<object> MountSync(MountSyncConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
 
@@ -373,7 +362,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
 
                 (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
-                await responseHandler.SendObject(HttpContext, response, statusCode);
+                return (response, statusCode);
             }
             else
             {
@@ -383,8 +372,22 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
                 {
                     throw new HttpException(HttpStatusCode.InternalServerError, "Mount sync failed");
                 }
-                await responseHandler.SendObject(HttpContext, new StringResponse("Mount synced"));
+                return new StringResponse("Mount synced");
             }
+        }
+
+        public void Configure(SimpleWServer server, string prefix)
+        {
+            server.Map(HttpVerbs.GET.ToString(), prefix, () => MountInfo());
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/home", () => MountHome());
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/tracking", (HttpRequest request) => MountTrackingUpdate(serializer.Deserialize<UpdateTrackingModeBody>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/park", () => MountPark());
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/unpark", async (HttpSession session) => await MountUnpark(session));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/flip", (HttpRequest request) => MountFlip(serializer.Deserialize<MountFlipConfig>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/slew", (HttpRequest request) => MountSlew(serializer.Deserialize<MountSlewConfig>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/slew/stop", () => MountStopSlew());
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/park", () => MountSetPark());
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/sync", (HttpRequest request) => MountSync(serializer.Deserialize<MountSyncConfig>(request.BodyString)));
         }
     }
 }
