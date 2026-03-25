@@ -49,12 +49,12 @@ namespace ninaAPI.WebService.V3.Application
             this.serializer = serializer;
         }
 
-        public List<LogLine> GetLogEntries(HttpRequest request)
+        public List<LogLine> GetLogEntries(HttpSession session)
         {
             PagerParameterSet pagerParameter = PagerParameterSet.Default();
             QueryParameter<LogLevelEnum> logLevel = new QueryParameter<LogLevelEnum>("level", LogLevelEnum.INFO, false);
-            pagerParameter.Evaluate(request);
-            logLevel.Get(request);
+            pagerParameter.Evaluate(session.Request);
+            logLevel.Get(session.Request);
 
             string currentLogFile = Directory.GetFiles(Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "Logs")).OrderByDescending(File.GetCreationTime).First();
 
@@ -153,9 +153,9 @@ namespace ninaAPI.WebService.V3.Application
 
         public void Configure(SimpleWServer server, string prefix)
         {
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/log", (HttpRequest request) => GetLogEntries(request));
+            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/log", (HttpSession session) => GetLogEntries(session));
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/tab", () => GetApplicationTab());
-            server.Map(HttpVerbs.PUT.ToString(), $"{prefix}/tab", (HttpRequest request) => SetApplicationTab(serializer.Deserialize<ApplicationTabChangeRequest>(request.BodyString)));
+            server.Map(HttpVerbs.PUT.ToString(), $"{prefix}/tab", (HttpSession session) => SetApplicationTab(serializer.Deserialize<ApplicationTabChangeRequest>(session.Request.BodyString)));
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/screenshot", async (HttpSession session) => await GetScreenshot(session));
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/plugins", () => GetPlugins());
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/plugin/settings", () => GetPluginSettings());

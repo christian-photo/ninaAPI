@@ -264,7 +264,7 @@ namespace ninaAPI.WebService.V3.Equipment
             server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/connect", (string device, HttpSession session) => DeviceConnect(device, session));
             server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/disconnect", (string device) => DeviceDisconnect(device));
             server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/rescan", (string device) => DeviceRescan(device));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/action", (string device, HttpRequest request) => DeviceAction(device, serializer.Deserialize<ActionConfig>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/action", (string device, HttpSession session) => DeviceAction(device, serializer.Deserialize<ActionConfig>(session.Request.BodyString)));
         }
     }
 

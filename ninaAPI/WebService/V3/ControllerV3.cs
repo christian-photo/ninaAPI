@@ -52,10 +52,10 @@ namespace ninaAPI.WebService.V3
             return new { Time = CoreUtil.ApplicationStartDate };
         }
 
-        public object GetNINAVersion(HttpRequest request)
+        public object GetNINAVersion(HttpSession session)
         {
             QueryParameter<bool> friendlyParameter = new QueryParameter<bool>("friendly", false, false);
-            friendlyParameter.Get(request);
+            friendlyParameter.Get(session.Request);
 
             bool friendly = friendlyParameter.Value;
 
@@ -101,10 +101,10 @@ namespace ninaAPI.WebService.V3
             return new StatusResponse(process.Status);
         }
 
-        public List<WebSocketHistoryEvent> GetEventHistory(HttpRequest request)
+        public List<WebSocketHistoryEvent> GetEventHistory(HttpSession session)
         {
             PagerParameterSet pagerParameter = PagerParameterSet.Default();
-            pagerParameter.Evaluate(request);
+            pagerParameter.Evaluate(session.Request);
 
             EventHistoryManager history = (AdvancedAPI.V3 as V3Api).GetEventWebSocket().EventHistoryManager;
             var events = history.GetEventHistoryPage(pagerParameter.PageParameter.Value, pagerParameter.PageSizeParameter.Value);
@@ -118,11 +118,11 @@ namespace ninaAPI.WebService.V3
             server.Map(HttpVerbs.GET.ToString(), prefix + "/version", () => GetVersion());
             server.Map(HttpVerbs.GET.ToString(), prefix + "/time", () => GetTime());
             server.Map(HttpVerbs.GET.ToString(), prefix + "/time/application-start", () => GetApplicationStart());
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/version/nina", (HttpRequest request) => GetNINAVersion(request));
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/version/nina", (HttpSession session) => GetNINAVersion(session));
             server.Map(HttpVerbs.GET.ToString(), prefix + "/process/:id", (string id) => GetProcessStatus(id));
             server.Map(HttpVerbs.DELETE.ToString(), prefix + "/process/:id", (string id) => AbortProcess(id));
             server.Map(HttpVerbs.GET.ToString(), prefix + "/process/:id/wait", async (string id) => await WaitForProcess(id));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/events", (HttpRequest request) => GetEventHistory(request));
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/events", (HttpSession session) => GetEventHistory(session));
         }
     }
 }

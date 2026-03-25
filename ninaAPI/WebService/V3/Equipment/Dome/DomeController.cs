@@ -281,7 +281,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
             server.Map(HttpVerbs.POST.ToString(), prefix + "/stop-movement", () => DomeStopMovement());
             server.Map(HttpVerbs.POST.ToString(), prefix + "/set-follow", (HttpSession session) => DomeSetFollow(session, serializer.Deserialize<DomeFollowBody>(session.Request.BodyString)));
             server.Map(HttpVerbs.POST.ToString(), prefix + "/sync", (HttpSession session) => DomeSync(session, serializer.Deserialize<DomeSyncBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/slew", (HttpRequest request) => DomeSlew(serializer.Deserialize<DomeSlewBody>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/slew", (HttpSession session) => DomeSlew(serializer.Deserialize<DomeSlewBody>(session.Request.BodyString)));
             server.Map(HttpVerbs.PATCH.ToString(), prefix + "/park", () => DomeSetPark());
             server.Map(HttpVerbs.POST.ToString(), prefix + "/park", () => DomePark());
             server.Map(HttpVerbs.POST.ToString(), prefix + "/home", () => DomeFindHome());

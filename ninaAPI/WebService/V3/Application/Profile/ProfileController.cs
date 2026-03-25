@@ -58,10 +58,10 @@ namespace ninaAPI.WebService.V3.Application.Profile
             return new HorizonResponse(profileService.ActiveProfile.AstrometrySettings.Horizon);
         }
 
-        public StringResponse ChangeProfile(HttpRequest request)
+        public StringResponse ChangeProfile(HttpSession session)
         {
             QueryParameter<Guid> idParameter = new QueryParameter<Guid>("id", Guid.Empty, true);
-            idParameter.Get(request);
+            idParameter.Get(session.Request);
 
             ProfileMeta targetProfile = profileService.Profiles.FirstOrDefault(x => x.Id == idParameter.Value);
             if (targetProfile is null)
@@ -91,10 +91,10 @@ namespace ninaAPI.WebService.V3.Application.Profile
             return profileService.Profiles.Last();
         }
 
-        public StringResponse CloneProfile(HttpRequest request)
+        public StringResponse CloneProfile(HttpSession session)
         {
             QueryParameter<Guid> idParameter = new QueryParameter<Guid>("id", Guid.Empty, true);
-            idParameter.Get(request);
+            idParameter.Get(session.Request);
 
             ProfileMeta targetProfile = profileService.Profiles.FirstOrDefault(x => x.Id == idParameter.Value);
             if (targetProfile is null)
@@ -109,10 +109,10 @@ namespace ninaAPI.WebService.V3.Application.Profile
             return new StringResponse("Profile cloned");
         }
 
-        public StringResponse DeleteProfile(HttpRequest request)
+        public StringResponse DeleteProfile(HttpSession session)
         {
             QueryParameter<Guid> idParameter = new QueryParameter<Guid>("id", Guid.Empty, true);
-            idParameter.Get(request);
+            idParameter.Get(session.Request);
 
             ProfileMeta targetProfile = profileService.Profiles.FirstOrDefault(x => x.Id == idParameter.Value);
             if (targetProfile is null)
@@ -138,11 +138,11 @@ namespace ninaAPI.WebService.V3.Application.Profile
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/list", () => GetProfileList());
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/settings", () => GetActiveProfileSettings());
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/horizon", () => GetProfileHorizon());
-            server.Map(HttpVerbs.PUT.ToString(), prefix, (HttpRequest request) => ChangeProfile(request));
-            server.Map(HttpVerbs.PATCH.ToString(), $"{prefix}/settings", (HttpRequest request) => UpdateProfileValue(serializer.Deserialize<ProfileValueChangeConfig>(request.BodyString)));
+            server.Map(HttpVerbs.PUT.ToString(), prefix, (HttpSession session) => ChangeProfile(session));
+            server.Map(HttpVerbs.PATCH.ToString(), $"{prefix}/settings", (HttpSession session) => UpdateProfileValue(serializer.Deserialize<ProfileValueChangeConfig>(session.Request.BodyString)));
             server.Map(HttpVerbs.POST.ToString(), prefix, () => CreateProfile());
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/clone", (HttpRequest request) => CloneProfile(request));
-            server.Map(HttpVerbs.DELETE.ToString(), prefix, (HttpRequest request) => DeleteProfile(request));
+            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/clone", (HttpSession session) => CloneProfile(session));
+            server.Map(HttpVerbs.DELETE.ToString(), prefix, (HttpSession session) => DeleteProfile(session));
         }
     }
 

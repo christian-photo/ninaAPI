@@ -139,7 +139,7 @@ namespace ninaAPI.WebService.V3.Application.Framing
         public void Configure(SimpleWServer server, string prefix)
         {
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/", () => FramingInfo());
-            server.Map(HttpVerbs.PATCH.ToString(), $"{prefix}/", async (HttpRequest request) => await FramingUpdate(serializer.Deserialize<FramingUpdate>(request.BodyString)));
+            server.Map(HttpVerbs.PATCH.ToString(), $"{prefix}/", async (HttpSession session) => await FramingUpdate(serializer.Deserialize<FramingUpdate>(session.Request.BodyString)));
             server.Map(HttpVerbs.POST.ToString(), $"{prefix}/solve-rotation", () => FramingSolveRotation());
         }
     }

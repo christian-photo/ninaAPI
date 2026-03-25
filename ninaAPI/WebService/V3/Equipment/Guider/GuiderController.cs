@@ -110,10 +110,10 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
             return new StringResponse("Calibration cleared");
         }
 
-        public object GuidingGraph(HttpRequest request)
+        public object GuidingGraph(HttpSession session)
         {
             var pagerParameter = PagerParameterSet.Default();
-            pagerParameter.Evaluate(request);
+            pagerParameter.Evaluate(session.Request);
 
             Pager<GuideStep> steps = new Pager<GuideStep>(GuiderWatcher.GuideStepHistory.ToList());
 
@@ -132,12 +132,12 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
         public void Configure(SimpleWServer server, string prefix)
         {
             server.Map(HttpVerbs.GET.ToString(), prefix, () => GuiderInfo());
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/guiding/start", (HttpRequest request) => StartGuiding(serializer.Deserialize<GuiderStartGuidingBody>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/guiding/start", (HttpSession session) => StartGuiding(serializer.Deserialize<GuiderStartGuidingBody>(session.Request.BodyString)));
             server.Map(HttpVerbs.POST.ToString(), prefix + "/guiding/stop", async (HttpSession session) => await StopGuiding(session));
             server.Map(HttpVerbs.POST.ToString(), prefix + "/guiding/dither", () => Dither());
             server.Map(HttpVerbs.DELETE.ToString(), prefix + "/guiding/calibration", (HttpSession session) => ClearCalibration(session));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/guiding", (HttpRequest request) => GuidingGraph(request));
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/guiding", (HttpRequest request) => SetGuidingHistoryLength(serializer.Deserialize<GuidingHistoryLengthBody>(request.BodyString)));
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/guiding", (HttpSession session) => GuidingGraph(session));
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/guiding", (HttpSession session) => SetGuidingHistoryLength(serializer.Deserialize<GuidingHistoryLengthBody>(session.Request.BodyString)));
         }
     }
 

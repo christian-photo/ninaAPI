@@ -68,8 +68,8 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
         public void Configure(SimpleWServer server, string prefix)
         {
             server.Map(HttpVerbs.GET.ToString(), prefix, () => RotatorInfo());
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/move", (HttpRequest request) => RotatorMove(serializer.Deserialize<RotatorMoveConfig>(request.BodyString)));
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/sync", (HttpRequest request) => RotatorSync(serializer.Deserialize<RotatorSyncConfig>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/move", (HttpSession session) => RotatorMove(serializer.Deserialize<RotatorMoveConfig>(session.Request.BodyString)));
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/sync", (HttpSession session) => RotatorSync(serializer.Deserialize<RotatorSyncConfig>(session.Request.BodyString)));
         }
 
         public RotatorInfoResponse RotatorInfo()

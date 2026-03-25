@@ -220,7 +220,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return new StringResponse("Readout mode updated");
         }
 
-        public async Task<StringResponse> CameraSetReadoutNormal(HttpRequest request)
+        public async Task<StringResponse> CameraSetReadoutNormal(HttpSession session)
         {
             int readoutModes = cam.GetInfo().ReadoutModes.Count();
 
@@ -231,14 +231,14 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 throw CommonErrors.DeviceNotConnected(Device.Camera);
             }
 
-            int mode = modeParameter.Get(request);
+            int mode = modeParameter.Get(session.Request);
 
             ((ICamera)cam.GetDevice()).ReadoutModeForNormalImages = (short)mode;
 
             return new StringResponse("Readout mode updated");
         }
 
-        public async Task<StringResponse> CameraSetReadoutSnapshot(HttpRequest request)
+        public async Task<StringResponse> CameraSetReadoutSnapshot(HttpSession session)
         {
             int readoutModes = cam.GetInfo().ReadoutModes.Count();
 
@@ -249,7 +249,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 throw CommonErrors.DeviceNotConnected(Device.Camera);
             }
 
-            int mode = modeParameter.Get(request);
+            int mode = modeParameter.Get(session.Request);
 
             ((ICamera)cam.GetDevice()).ReadoutModeForSnapImages = (short)mode;
 
@@ -420,16 +420,16 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         public void Configure(SimpleWServer server, string prefix)
         {
             server.Map(HttpVerbs.GET.ToString(), prefix, async () => await CameraInfo());
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/cool", async (HttpRequest request) => await CameraCool(serializer.Deserialize<CoolCameraBody>(request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/warm", async (HttpRequest request) => await CameraWarm(serializer.Deserialize<WarmCameraBody>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/cool", async (HttpSession session) => await CameraCool(serializer.Deserialize<CoolCameraBody>(session.Request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/warm", async (HttpSession session) => await CameraWarm(serializer.Deserialize<WarmCameraBody>(session.Request.BodyString)));
             server.Map(HttpVerbs.POST.ToString(), prefix + "/abort-exposure", async () => await AbortExposure());
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/dew-heater", async (HttpRequest request) => await CameraDewHeater(serializer.Deserialize<DewHeaterUpdateBody>(request.BodyString)));
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/binning", async (HttpRequest request) => await CameraSetBinning(serializer.Deserialize<BinningMode>(request.BodyString)));
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/usb-limit", async (HttpRequest request) => await CameraSetBinning(serializer.Deserialize<USBLimitUpdateBody>(request.BodyString)));
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/readout", async (HttpRequest request) => await CameraSetReadout(serializer.Deserialize<ReadoutModeUpdateBody>(request.BodyString)));
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/readout/image", async (HttpRequest request) => await CameraSetReadoutNormal(request));
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/readout/snapshot", async (HttpRequest request) => await CameraSetReadoutSnapshot(request));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/capture", async (HttpRequest request) => await CameraCapture(serializer.Deserialize<CaptureConfig>(request.BodyString)));
+            server.Map(HttpVerbs.PUT.ToString(), prefix + "/dew-heater", async (HttpSession session) => await CameraDewHeater(serializer.Deserialize<DewHeaterUpdateBody>(session.Request.BodyString)));
+            server.Map(HttpVerbs.PUT.ToString(), prefix + "/binning", async (HttpSession session) => await CameraSetBinning(serializer.Deserialize<BinningMode>(session.Request.BodyString)));
+            server.Map(HttpVerbs.PUT.ToString(), prefix + "/usb-limit", async (HttpSession session) => await CameraSetBinning(serializer.Deserialize<USBLimitUpdateBody>(session.Request.BodyString)));
+            server.Map(HttpVerbs.PUT.ToString(), prefix + "/readout", async (HttpSession session) => await CameraSetReadout(serializer.Deserialize<ReadoutModeUpdateBody>(session.Request.BodyString)));
+            server.Map(HttpVerbs.PUT.ToString(), prefix + "/readout/image", async (HttpSession session) => await CameraSetReadoutNormal(session));
+            server.Map(HttpVerbs.PUT.ToString(), prefix + "/readout/snapshot", async (HttpSession session) => await CameraSetReadoutSnapshot(session));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/capture", async (HttpSession session) => await CameraCapture(serializer.Deserialize<CaptureConfig>(session.Request.BodyString)));
             server.Map(HttpVerbs.GET.ToString(), prefix + "/capture/:id", async (HttpSession session, Guid id) => await CameraCaptureImage(session, id));
             server.Map(HttpVerbs.DELETE.ToString(), prefix + "/capture/:id", async (HttpSession session, Guid id) => await CameraRemoveCapture(id));
             server.Map(HttpVerbs.GET.ToString(), prefix + "/capture/:id/analysis", async (HttpSession session, Guid id) => await CameraCaptureStats(session, id));

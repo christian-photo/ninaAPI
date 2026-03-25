@@ -62,7 +62,7 @@ namespace ninaAPI.WebService.V3.Application.TPPA
 
         public void Configure(SimpleWServer server, string prefix)
         {
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/start-alignment", (HttpRequest request) => StartAlignment(serializer.Deserialize<TppaStartConfig>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/start-alignment", (HttpSession session) => StartAlignment(serializer.Deserialize<TppaStartConfig>(session.Request.BodyString)));
             server.Map(HttpVerbs.POST.ToString(), $"{prefix}/stop-alignment", () => StopAlignment());
             server.Map(HttpVerbs.POST.ToString(), $"{prefix}/pause-alignment", () => PauseAlignment());
             server.Map(HttpVerbs.POST.ToString(), $"{prefix}/resume-alignment", () => ResumeAlignment());

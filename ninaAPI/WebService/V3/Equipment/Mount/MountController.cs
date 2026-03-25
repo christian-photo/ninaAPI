@@ -380,14 +380,14 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
         {
             server.Map(HttpVerbs.GET.ToString(), prefix, () => MountInfo());
             server.Map(HttpVerbs.POST.ToString(), prefix + "/home", () => MountHome());
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/tracking", (HttpRequest request) => MountTrackingUpdate(serializer.Deserialize<UpdateTrackingModeBody>(request.BodyString)));
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/tracking", (HttpSession session) => MountTrackingUpdate(serializer.Deserialize<UpdateTrackingModeBody>(session.Request.BodyString)));
             server.Map(HttpVerbs.POST.ToString(), prefix + "/park", () => MountPark());
             server.Map(HttpVerbs.POST.ToString(), prefix + "/unpark", async (HttpSession session) => await MountUnpark(session));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/flip", (HttpRequest request) => MountFlip(serializer.Deserialize<MountFlipConfig>(request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/slew", (HttpRequest request) => MountSlew(serializer.Deserialize<MountSlewConfig>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/flip", (HttpSession session) => MountFlip(serializer.Deserialize<MountFlipConfig>(session.Request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), prefix + "/slew", (HttpSession session) => MountSlew(serializer.Deserialize<MountSlewConfig>(session.Request.BodyString)));
             server.Map(HttpVerbs.POST.ToString(), prefix + "/slew/stop", () => MountStopSlew());
             server.Map(HttpVerbs.PATCH.ToString(), prefix + "/park", () => MountSetPark());
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/sync", (HttpRequest request) => MountSync(serializer.Deserialize<MountSyncConfig>(request.BodyString)));
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/sync", (HttpSession session) => MountSync(serializer.Deserialize<MountSyncConfig>(session.Request.BodyString)));
         }
     }
 }

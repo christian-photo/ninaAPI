@@ -68,10 +68,10 @@ namespace ninaAPI.WebService.V3.Application.Sequence
         }
 
         // Loads the sequence either from a file (if name is provided) or from the request body
-        public StringResponse SetSequence(HttpRequest request)
+        public StringResponse SetSequence(HttpSession session)
         {
             QueryParameter<string> nameParameter = new QueryParameter<string>("name", string.Empty, true);
-            string name = nameParameter.Get(request);
+            string name = nameParameter.Get(session.Request);
 
             if (!sequence.Initialized)
             {
@@ -99,7 +99,7 @@ namespace ninaAPI.WebService.V3.Application.Sequence
             }
             else
             {
-                json = request.BodyString;
+                json = session.Request.BodyString;
             }
 
             var mediator = (SequenceMediator)sequence;
@@ -199,17 +199,17 @@ namespace ninaAPI.WebService.V3.Application.Sequence
             return new StringResponse("Sequence stopped");
         }
 
-        public async Task<StringResponse> StartSequence(HttpRequest request)
+        public async Task<StringResponse> StartSequence(HttpSession session)
         {
             QueryParameter<bool> validateParameter = new QueryParameter<bool>("validate", false, false);
-            bool validate = validateParameter.Get(request);
+            bool validate = validateParameter.Get(session.Request);
 
             await sequence.StartAdvancedSequence(!validate);
 
             return new StringResponse("Sequence started");
         }
 
-        public async Task<StringResponse> SetTarget(HttpRequest request, TargetUpdate target)
+        public async Task<StringResponse> SetTarget(HttpSession session, TargetUpdate target)
         {
             Validator.ValidateObject(target, new ValidationContext(target));
 
@@ -221,7 +221,7 @@ namespace ninaAPI.WebService.V3.Application.Sequence
             var targets = sequence.GetAllTargetsInAdvancedSequence();
 
             QueryParameter<int> targetIndexParameter = new QueryParameter<int>("target", 0, true, (target) => target.IsBetween(0, targets.Count - 1));
-            int targetIndex = targetIndexParameter.Get(request);
+            int targetIndex = targetIndexParameter.Get(session.Request);
 
             IDeepSkyObjectContainer container = targets[targetIndex];
             if (target.Coordinates != null)
@@ -253,10 +253,10 @@ namespace ninaAPI.WebService.V3.Application.Sequence
             return targets.Select(x => new SequenceTarget(x));
         }
 
-        public StringResponse SkipSequence(HttpRequest request)
+        public StringResponse SkipSequence(HttpSession session)
         {
             QueryParameter<SequenceSkipType> typeParameter = new QueryParameter<SequenceSkipType>("type", SequenceSkipType.SkipCurrentItems, true);
-            SequenceSkipType type = typeParameter.Get(request);
+            SequenceSkipType type = typeParameter.Get(session.Request);
 
             if (!sequence.Initialized)
             {
@@ -282,16 +282,16 @@ namespace ninaAPI.WebService.V3.Application.Sequence
         public void Configure(SimpleWServer server, string prefix)
         {
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/", (HttpSession session) => GetSequence(session));
-            server.Map(HttpVerbs.PUT.ToString(), $"{prefix}/", (HttpRequest request) => SetSequence(request));
-            server.Map(HttpVerbs.PATCH.ToString(), $"{prefix}/", (HttpRequest request) => EditSequence(serializer.Deserialize<SequenceEditBody>(request.BodyString)));
+            server.Map(HttpVerbs.PUT.ToString(), $"{prefix}/", (HttpSession session) => SetSequence(session));
+            server.Map(HttpVerbs.PATCH.ToString(), $"{prefix}/", (HttpSession session) => EditSequence(serializer.Deserialize<SequenceEditBody>(session.Request.BodyString)));
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/available", () => GetAvailableSequences());
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/running-items", () => GetRunningItems());
             server.Map(HttpVerbs.POST.ToString(), $"{prefix}/reset", () => ResetSequenceProgress());
             server.Map(HttpVerbs.POST.ToString(), $"{prefix}/stop", () => StopSequence());
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/start", async (HttpRequest request) => await StartSequence(request));
-            server.Map(HttpVerbs.PATCH.ToString(), $"{prefix}/target", async (HttpRequest request) => await SetTarget(request, serializer.Deserialize<TargetUpdate>(request.BodyString)));
+            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/start", async (HttpSession session) => await StartSequence(session));
+            server.Map(HttpVerbs.PATCH.ToString(), $"{prefix}/target", async (HttpSession session) => await SetTarget(session, serializer.Deserialize<TargetUpdate>(session.Request.BodyString)));
             server.Map(HttpVerbs.GET.ToString(), $"{prefix}/target", () => GetTargets());
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/skip", (HttpRequest request) => SkipSequence(request));
+            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/skip", (HttpSession session) => SkipSequence(session));
         }
     }
 }

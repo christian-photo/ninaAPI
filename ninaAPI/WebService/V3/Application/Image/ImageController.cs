@@ -143,7 +143,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             }
         }
 
-        public object AddPrefix(int index, ImagePrefixBody body, HttpRequest request)
+        public object AddPrefix(int index, ImagePrefixBody body, HttpSession session)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
 
@@ -153,7 +153,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             }
 
             QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
-            imageTypeParameter.Get(request);
+            imageTypeParameter.Get(session.Request);
 
             ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
 
@@ -267,12 +267,12 @@ namespace ninaAPI.WebService.V3.Application.Image
             return result;
         }
 
-        public object GetImageHistory(HttpRequest request)
+        public object GetImageHistory(HttpSession session)
         {
             PagerParameterSet pagerParameterSet = PagerParameterSet.Default();
             QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
-            imageTypeParameter.Get(request);
-            pagerParameterSet.Evaluate(request);
+            imageTypeParameter.Get(session.Request);
+            pagerParameterSet.Evaluate(session.Request);
 
             IEnumerable<ImageResponse> history = ImageWatcher.GetImageHistory();
 
@@ -310,11 +310,11 @@ namespace ninaAPI.WebService.V3.Application.Image
             server.Map(HttpVerbs.GET.ToString(), prefix + "/:index", async (int index, HttpSession session) => await GetImage(index, session));
             server.Map(HttpVerbs.GET.ToString(), prefix + "/:index/thumbnail", async (int index, HttpSession session) => await GetThumbnail(index, session));
             server.Map(HttpVerbs.GET.ToString(), prefix + "/:index/raw", async (int index, HttpSession session) => await GetImageRaw(index, session));
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/:index/prefix", (int index, HttpRequest request) => AddPrefix(index, serializer.Deserialize<ImagePrefixBody>(request.BodyString), request));
+            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/:index/prefix", (int index, HttpSession session) => AddPrefix(index, serializer.Deserialize<ImagePrefixBody>(session.Request.BodyString), session));
             server.Map(HttpVerbs.GET.ToString(), prefix + "/:index/solve", async (int index, HttpSession session) => await ImageSolve(index, serializer.Deserialize<PlatesolveConfig>(session.Request.BodyString), session));
             server.Map(HttpVerbs.GET.ToString(), prefix + "/prepared", async (HttpSession session) => await GetPreparedImage(session));
             server.Map(HttpVerbs.GET.ToString(), prefix + "/prepared/solve", async (HttpSession session) => await PreparedImageSolve(serializer.Deserialize<PlatesolveConfig>(session.Request.BodyString), session));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/history", (HttpRequest request) => GetImageHistory(request));
+            server.Map(HttpVerbs.GET.ToString(), prefix + "/history", (HttpSession session) => GetImageHistory(session));
         }
     }
 
