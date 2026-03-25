@@ -4,9 +4,9 @@ The changes for each individual (beta) release can be seen in each [release](htt
 
 ## 3.0.0.0
 
-## v3
+### v3
 
-### Processes
+#### Processes
 
 Longer running processes like slewing, capturing or autofocusing now return a `ProcessId` in their response that can be used to:
 
@@ -14,11 +14,11 @@ Longer running processes like slewing, capturing or autofocusing now return a `P
 - Cancel the process
 - Await the process
 
-### Endpoints
+#### Endpoints
 
 The structure of the endpoints is similar to before, but http verbs are now actually used, like `GET` for device information, `POST` for starting a process, ...
 
-### Websocket
+#### Websocket
 
 The event websocket now supports channels, which can be subscribed to per client. These channels include:
 
@@ -30,7 +30,7 @@ The event websocket now supports channels, which can be subscribed to per client
 - `Guiding`
 - ...
 
-## Other changes
+#### Other changes
 
 - The response wrapper was removed in favor of smaller responses. All additional information is now carried by the status code
 - The error messages are now more consistent. They will always include the `Error` (the name of the status code) and optionally `Message` which may provide further information about the error.
@@ -49,6 +49,8 @@ The event websocket now supports channels, which can be subscribed to per client
 - Improved the options page for configuration
 - The instruction was upgraded to work with expressions
 - Switched the webserver to SimpleW (maintained, faster, smaller and more featureful)
+
+---
 
 ## 2.2.15.0
 

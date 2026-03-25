@@ -327,6 +327,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /equipment/camera/action:
+    post:
+      tags:
+        - Camera
+      summary: Custom Action
+      description: This endpoint runs a custom action if the camera supports it. Check `SupportedActions` for a list of supported actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionConfig"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /equipment/camera/list-devices:
     get:
       tags:
@@ -877,6 +903,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /equipment/dome/action:
+    post:
+      tags:
+        - Dome
+      summary: Custom Action
+      description: This endpoint runs a custom action if the dome supports it. Check `SupportedActions` for a list of supported actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionConfig"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /equipment/dome/list-devices:
     get:
       tags:
@@ -1226,6 +1278,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /equipment/filterwheel/action:
+    post:
+      tags:
+        - FilterWheel
+      summary: Custom Action
+      description: This endpoint runs a custom action if the filterwheel supports it. Check `SupportedActions` for a list of supported actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionConfig"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /equipment/filterwheel/list-devices:
     get:
       tags:
@@ -1403,6 +1481,32 @@ paths:
         - Flat Panel
       summary: Disconnect
       description: Disconnect the flat panel
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /equipment/flatdevice/action:
+    post:
+      tags:
+        - Flat Panel
+      summary: Custom Action
+      description: This endpoint runs a custom action if the flat panel supports it. Check `SupportedActions` for a list of supported actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionConfig"
       responses:
         "200":
           description: Success
@@ -1602,6 +1706,32 @@ paths:
         - Focuser
       summary: Disconnect
       description: Disconnect the focuser
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /equipment/focuser/action:
+    post:
+      tags:
+        - Focuser
+      summary: Custom Action
+      description: This endpoint runs a custom action if the focuser supports it. Check `SupportedActions` for a list of supported actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionConfig"
       responses:
         "200":
           description: Success
@@ -1846,6 +1976,32 @@ paths:
         - Guider
       summary: Disconnect
       description: Disconnect the guider
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /equipment/guider/action:
+    post:
+      tags:
+        - Guider
+      summary: Custom Action
+      description: This endpoint runs a custom action if the guider supports it. Check `SupportedActions` for a list of supported actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionConfig"
       responses:
         "200":
           description: Success
@@ -2116,6 +2272,32 @@ paths:
         - Mount
       summary: Disconnect
       description: Disconnect the mount
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /equipment/mount/action:
+    post:
+      tags:
+        - Mount
+      summary: Custom Action
+      description: This endpoint runs a custom action if the mount supports it. Check `SupportedActions` for a list of supported actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionConfig"
       responses:
         "200":
           description: Success
@@ -2483,6 +2665,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /equipment/rotator/action:
+    post:
+      tags:
+        - Rotator
+      summary: Custom Action
+      description: This endpoint runs a custom action if the rotator supports it. Check `SupportedActions` for a list of supported actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionConfig"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /equipment/rotator/list-devices:
     get:
       tags:
@@ -2662,6 +2870,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /equipment/safety/action:
+    post:
+      tags:
+        - Safety Monitor
+      summary: Custom Action
+      description: This endpoint runs a custom action if the safety monitor supports it. Check `SupportedActions` for a list of supported actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionConfig"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /equipment/safety/list-devices:
     get:
       tags:
@@ -2793,6 +3027,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /equipment/switch/action:
+    post:
+      tags:
+        - Switch
+      summary: Custom Action
+      description: This endpoint runs a custom action if the switch supports it. Check `SupportedActions` for a list of supported actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionConfig"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /equipment/switch/list-devices:
     get:
       tags:
@@ -2886,6 +3146,32 @@ paths:
         - Weather
       summary: Disconnect
       description: Disconnect the weather
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StringResponse"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /equipment/weather/action:
+    post:
+      tags:
+        - Weather
+      summary: Custom Action
+      description: This endpoint runs a custom action if the weather driver supports it. Check `SupportedActions` for a list of supported actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionConfig"
       responses:
         "200":
           description: Success
@@ -4862,62 +5148,62 @@ paths:
     #               $ref: "#/components/schemas/Error"
 
     # /flats/stop:
-    get:
-      tags:
-        - Flats
-      summary: Stop
-      description: Stop a running flat taking process
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: Process stopped
-                  Error:
-                    type: string
-                    example: ""
-                  StatusCode:
-                    type: integer
-                    example: 200
-                  Success:
-                    type: boolean
-                    example: true
-                  Type:
-                    type: string
-                    example: "API"
-        "400":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                    example: ""
-                  Error:
-                    type: string
-                    example: No process running
-                  StatusCode:
-                    type: integer
-                    example: 400
-                  Success:
-                    type: boolean
-                    example: false
-                  Type:
-                    type: string
-                    example: "API"
-        default:
-          description: Request could not be carried out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+    # get:
+    #   tags:
+    #     - Flats
+    #   summary: Stop
+    #   description: Stop a running flat taking process
+    #   responses:
+    #     "200":
+    #       description: Success
+    #       content:
+    #         application/json:
+    #           schema:
+    #             type: object
+    #             properties:
+    #               Response:
+    #                 type: string
+    #                 example: Process stopped
+    #               Error:
+    #                 type: string
+    #                 example: ""
+    #               StatusCode:
+    #                 type: integer
+    #                 example: 200
+    #               Success:
+    #                 type: boolean
+    #                 example: true
+    #               Type:
+    #                 type: string
+    #                 example: "API"
+    #     "400":
+    #       description: Success
+    #       content:
+    #         application/json:
+    #           schema:
+    #             type: object
+    #             properties:
+    #               Response:
+    #                 type: string
+    #                 example: ""
+    #               Error:
+    #                 type: string
+    #                 example: No process running
+    #               StatusCode:
+    #                 type: integer
+    #                 example: 400
+    #               Success:
+    #                 type: boolean
+    #                 example: false
+    #               Type:
+    #                 type: string
+    #                 example: "API"
+    #     default:
+    #       description: Request could not be carried out
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: "#/components/schemas/Error"
 
 components:
   parameters:
@@ -8712,6 +8998,18 @@ components:
           - DriverVersion
           - SupportedActions
           - HasSetupDialog
+
+    ActionConfig:
+      type: object
+      properties:
+        Action:
+          type: string
+          description: The action to perform
+        Parameters:
+          type: string
+          description: The parameters to pass to the action
+      required:
+        - Action
 
     CaptureConfig:
       type: object

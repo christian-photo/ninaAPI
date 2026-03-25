@@ -40,7 +40,7 @@ using System.Runtime.InteropServices;
 //[Optional] An in-depth description of your plugin
 [assembly: AssemblyMetadata("LongDescription", @"# Advanced API for N.I.N.A.
 
-A powerful HTTP and WebSocket server plugin that enables remote control and monitoring of N.I.N.A.
+A powerful HTTP and WebSocket server plugin that enables remote control and monitoring of N.I.N.A. with over 150 unique endpoints.
 
 ## Key Features
 
