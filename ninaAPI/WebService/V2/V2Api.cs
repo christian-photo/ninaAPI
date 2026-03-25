@@ -21,10 +21,28 @@ namespace ninaAPI.WebService.V2
         public SimpleWServer ConfigureServer(SimpleWServer server)
         {
             server.MapController<HttpControllerV2>("/v2/api");
-            server.UseWebSocketModule(new WebSocketV2().ConfigureWebSocket);
-            return server.WithModule(new TPPASocket("/v2/tppa"))
-                .WithModule(new MountAxisMoveSocket("/v2/mount"))
-                .WithModule(new NetworkedFilterWheelSocket("/v2/filterwheel"));
+            server.UseWebSocketModule(o =>
+            {
+                o.Prefix = "/v2/socket";
+                new WebSocketV2().ConfigureWebSocket(o);
+            });
+            server.UseWebSocketModule(o =>
+            {
+                o.Prefix = "/v2/tppa";
+                new TPPASocket().ConfigureWebSocket(o);
+            });
+            server.UseWebSocketModule(o =>
+            {
+                o.Prefix = "/v2/mount";
+                new MountAxisMoveSocket().ConfigureWebSocket(o);
+            });
+            server.UseWebSocketModule(o =>
+            {
+                o.Prefix = "/v2/filterwheel";
+                new NetworkedFilterWheelSocket().ConfigureWebSocket(o);
+            });
+
+            return server;
         }
 
         public bool SupportsSSL() => false;

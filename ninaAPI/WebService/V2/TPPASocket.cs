@@ -9,16 +9,15 @@
 
 #endregion "copyright"
 
-using EmbedIO.WebSockets;
-using Grpc.Core;
 using Newtonsoft.Json;
 using NINA.Core.Model;
 using NINA.Core.Utility;
 using NINA.Plugin.Interfaces;
 using ninaAPI.Utility;
+using ninaAPI.WebService.Interfaces;
+using SimpleW.Modules;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
@@ -46,30 +45,31 @@ namespace ninaAPI.WebService.V2
         public double? SearchRadius { get; set; }
     }
 
-    public class TPPASocket : WebSocketModule, ISubscriber
+    public class TPPASocket : IWebSocket, ISubscriber
     {
-        public TPPASocket(string urlPath) : base(urlPath, true)
+        private readonly ThreadSafeList<WebSocketConnection> clients = new();
+
+        public TPPASocket()
         {
             AdvancedAPI.Controls.MessageBroker.Subscribe("PolarAlignmentPlugin_PolarAlignment_AlignmentError", this);
             AdvancedAPI.Controls.MessageBroker.Subscribe("PolarAlignmentPlugin_PolarAlignment_Progress", this);
         }
 
-        protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult rxResult)
+        private async Task OnMessageReceivedAsync(WebSocketConnection connection, WebSocketContext context, string text)
         {
-            string message = Encoding.GetString(rxBuffer); // Do something with it
             string topic;
             object content = null;
             string response;
 
             try
             {
-                TPPARequest r = JsonConvert.DeserializeObject<TPPARequest>(message, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Include }); // TODO: Document this
+                TPPARequest r = JsonConvert.DeserializeObject<TPPARequest>(text, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Include }); // TODO: Document this
                 topic = r.Action;
                 content = r;
             }
             catch
             {
-                topic = message;
+                topic = text;
             }
 
 
@@ -107,18 +107,24 @@ namespace ninaAPI.WebService.V2
             });
         }
 
-        protected override Task OnClientConnectedAsync(IWebSocketContext context)
+        private async ValueTask OnClientConnectedAsync(WebSocketConnection connection, WebSocketContext context)
         {
-            Logger.Info("TPPA WebSocket connected " + context.RemoteEndPoint.ToString());
-            return Task.CompletedTask;
+            Logger.Info("TPPA WebSocket connected " + connection.RemoteEndPoint.ToString());
+            clients.Add(connection);
+        }
+
+        private async ValueTask OnClientDisconnectedAsync(WebSocketConnection connection, WebSocketContext context)
+        {
+            Logger.Info("TPPA WebSocket disconnected " + connection.RemoteEndPoint.ToString());
+            clients.Remove(connection);
         }
 
         public async Task Send(CustomResponse payload)
         {
             Logger.Trace("Sending " + payload.Response + " to TPPA WebSocket");
-            foreach (IWebSocketContext context in ActiveContexts)
+            foreach (WebSocketConnection client in clients.ToList())
             {
-                await SendAsync(context, JsonConvert.SerializeObject(payload));
+                await client.SendTextAsync(JsonConvert.SerializeObject(payload));
             }
         }
 
@@ -165,6 +171,17 @@ namespace ninaAPI.WebService.V2
             {
                 Logger.Error(ex, "Error while processing TPPA message");
             }
+        }
+
+        public void ConfigureWebSocket(WebSocketOptions options)
+        {
+            options.OnUnknown(async (conn, ctx, msg) =>
+            {
+                await OnMessageReceivedAsync(conn, ctx, msg.RawText);
+            });
+
+            options.OnConnect = OnClientConnectedAsync;
+            options.OnDisconnect = OnClientDisconnectedAsync;
         }
     }
 

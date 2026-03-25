@@ -22,13 +22,14 @@
 
 #endregion "copyright"
 
-using EmbedIO.WebSockets;
 using NINA.Core.Locale;
 using NINA.Core.Model.Equipment;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.ViewModel;
 using ninaAPI.Utility;
+using ninaAPI.WebService.Interfaces;
+using SimpleW.Modules;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -165,33 +166,57 @@ namespace ninaAPI.WebService.V2.CustomDrivers
         }
     }
 
-    public class NetworkedFilterWheelSocket : WebSocketModule
+    public class NetworkedFilterWheelSocket : IWebSocket
     {
-        public NetworkedFilterWheelSocket(string urlPath) : base(urlPath, true)
+        private readonly ThreadSafeList<WebSocketConnection> clients = new();
+
+        public NetworkedFilterWheelSocket()
         {
             NetworkedFilterWheel.FilterChangeRequested += NetworkedFilterWheel_FilterChangeRequested;
         }
 
-        private void NetworkedFilterWheel_FilterChangeRequested(object sender, string filter)
+        private async void NetworkedFilterWheel_FilterChangeRequested(object sender, string filter)
         {
-            foreach (IWebSocketContext context in ActiveContexts)
+            foreach (WebSocketConnection client in clients.ToList())
             {
-                SendAsync(context, string.IsNullOrEmpty(filter) ? "Change Complete" : filter);
+                await client.SendTextAsync(string.IsNullOrEmpty(filter) ? "Change Complete" : filter);
             }
         }
 
-        protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
+        private async Task OnMessageReceivedAsync(WebSocketConnection connection, WebSocketContext context, string text)
         {
-            string message = Encoding.GetString(buffer);
-            if (message.Equals("get-target-filter"))
+            if (text.Equals("get-target-filter"))
             {
-                await SendAsync(context, string.IsNullOrEmpty(NetworkedFilterWheel.TargetFilter) ? "N/A" : NetworkedFilterWheel.TargetFilter);
+                await connection.SendTextAsync(string.IsNullOrEmpty(NetworkedFilterWheel.TargetFilter) ? "N/A" : NetworkedFilterWheel.TargetFilter);
             }
-            else if (message.Equals("filter-changed"))
+            else if (text.Equals("filter-changed"))
             {
                 NetworkedFilterWheel.TokenSource.Cancel();
                 NetworkedFilterWheel.TargetFilter = string.Empty;
             }
+        }
+
+        public void ConfigureWebSocket(WebSocketOptions options)
+        {
+            options.OnUnknown(async (conn, ctx, msg) =>
+            {
+                await OnMessageReceivedAsync(conn, ctx, msg.RawText);
+            });
+
+            options.OnConnect = OnClientConnectedAsync;
+            options.OnDisconnect = OnClientDisconnectedAsync;
+        }
+
+        private async ValueTask OnClientDisconnectedAsync(WebSocketConnection connection, WebSocketContext context)
+        {
+            Logger.Info("Networked Filter Wheel WebSocket disconnected " + connection.RemoteEndPoint.ToString());
+            clients.Remove(connection);
+        }
+
+        private async ValueTask OnClientConnectedAsync(WebSocketConnection connection, WebSocketContext context)
+        {
+            Logger.Info("Networked Filter Wheel WebSocket connected " + connection.RemoteEndPoint.ToString());
+            clients.Add(connection);
         }
     }
 }
