@@ -349,6 +349,7 @@ namespace ninaAPI.WebService.V3
             safetyController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.SafetyMonitorUrlName}");
             switchController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.SwitchUrlName}");
             weatherController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.WeatherUrlName}");
+            connectionController.Configure(server, $"/v3/api/equipment");
             imageController.Configure(server, $"/v3/api/image");
             profileController.Configure(server, $"/v3/api/profile");
             applicationController.Configure(server, $"/v3/api/application");

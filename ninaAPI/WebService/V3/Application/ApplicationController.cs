@@ -185,7 +185,7 @@ namespace ninaAPI.WebService.V3.Application
                 return new LogLine()
                 {
                     Timestamp = DateTime.Parse(parts[0]),
-                    Level = (LogLevelEnum)Enum.Parse(typeof(LogLevelEnum), parts[1]),
+                    Level = Enum.Parse<LogLevelEnum>(parts[1]),
                     Source = parts[2],
                     Member = parts[3],
                     Line = int.Parse(parts[4]),
@@ -194,7 +194,6 @@ namespace ninaAPI.WebService.V3.Application
             }
             else
             {
-                // TODO: Should this throw an error?
                 return null;
             }
         }

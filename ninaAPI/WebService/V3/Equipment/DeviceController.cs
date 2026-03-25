@@ -150,7 +150,6 @@ namespace ninaAPI.WebService.V3.Equipment
             return ListDevices(device);
         }
 
-        // TODO: Document
         public StringResponse DeviceAction(string device, ActionConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));

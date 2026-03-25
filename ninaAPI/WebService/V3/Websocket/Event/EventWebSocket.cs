@@ -11,7 +11,9 @@
 
 
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using NINA.Core.Utility;
 using ninaAPI.Utility.Http;
@@ -60,14 +62,34 @@ namespace ninaAPI.WebService.V3.Websocket.Event
                 Logger.Debug($"Client {connection.RemoteEndPoint} sent message: {text}");
                 message = serializer.Deserialize<ClientMessage>(text);
 
-                if (message.Sender == "Subscribe") // TODO: Support lists of channels
+                if (message.Sender == "Subscribe") // TODO: Find a better field (instead of Sender)
                 {
-                    Clients[clientId].Config.SubscriptionManager.Subscribe(Enum.Parse<WebSocketChannel>(message.Data.ToString()));
+                    if (message.Data is List<string> channels)
+                    {
+                        foreach (string channel in channels)
+                        {
+                            Clients[clientId].Config.SubscriptionManager.Subscribe(Enum.Parse<WebSocketChannel>(channel));
+                        }
+                    }
+                    else
+                    {
+                        Clients[clientId].Config.SubscriptionManager.Subscribe(Enum.Parse<WebSocketChannel>(message.Data.ToString()));
+                    }
                     await connection.SendTextAsync(serializer.Serialize(ClientMessage.Reply(message, "Subscribed")));
                 }
                 else if (message.Sender == "Unsubscribe")
                 {
-                    Clients[clientId].Config.SubscriptionManager.Unsubscribe(Enum.Parse<WebSocketChannel>(message.Data.ToString()));
+                    if (message.Data is List<string> channels)
+                    {
+                        foreach (string channel in channels)
+                        {
+                            Clients[clientId].Config.SubscriptionManager.Unsubscribe(Enum.Parse<WebSocketChannel>(channel));
+                        }
+                    }
+                    else
+                    {
+                        Clients[clientId].Config.SubscriptionManager.Unsubscribe(Enum.Parse<WebSocketChannel>(message.Data.ToString()));
+                    }
                     await connection.SendTextAsync(serializer.Serialize(ClientMessage.Reply(message, "Unsubscribed")));
                 }
                 else if (message.Sender == "AvailableChannels")
