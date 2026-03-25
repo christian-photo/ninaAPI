@@ -12,9 +12,9 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Net;
-using EmbedIO;
 using NINA.Core.Model.Equipment;
 using NINA.Profile.Interfaces;
+using ninaAPI.Utility.Http;
 
 namespace ninaAPI.WebService.V3.Equipment.FilterWheel
 {

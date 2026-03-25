@@ -183,7 +183,7 @@ namespace ninaAPI.WebService.V2
             Response.WriteToResponse(response);
         }
 
-        [Route("GET", "/livestack/image/{target}/{filter}")]
+        [Route("GET", "/livestack/image/:target/:filter")]
         public async Task LiveStackImage(string filter, string target,
             bool resize = false,
             int quality = 80,
@@ -249,7 +249,7 @@ namespace ninaAPI.WebService.V2
             Response.WriteToResponse(response);
         }
 
-        [Route("GET", "/livestack/image/{target}/{filter}/info")]
+        [Route("GET", "/livestack/image/:target/:filter/info")]
         public async Task LiveStackImageInfo(string filter, string target)
         {
             CustomResponse response = new CustomResponse();

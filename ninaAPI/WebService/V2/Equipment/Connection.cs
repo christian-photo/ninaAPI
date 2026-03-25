@@ -112,7 +112,7 @@ namespace ninaAPI.WebService.V2
             Response.WriteToResponse(response);
         }
 
-        [Route("GET", "/equipment/{device}/connect")]
+        [Route("GET", "/equipment/:device/connect")]
         public async Task DeviceConnect(string device, string to = null)
         {
             CustomResponse response = new CustomResponse();

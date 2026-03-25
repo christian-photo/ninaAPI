@@ -33,8 +33,6 @@ namespace ninaAPI.WebService
 
         private static List<INinaWatcher> Watchers { get; set; } = new List<INinaWatcher>();
 
-        private ResponseHandler responseHandler;
-
         public WebApiServer(int port)
         {
             Port = port;
@@ -43,11 +41,18 @@ namespace ninaAPI.WebService
         private void CreateServer()
         {
             var serializer = SerializerFactory.GetSerializer();
-            responseHandler = new ResponseHandler(serializer);
 
             Server = new SimpleWServer(IPAddress.Any, Port).UseCorsModule(options =>
             {
                 options.AllowAnyOrigin = true;
+            });
+            Server.OnStarted((server) =>
+            {
+                Started?.Invoke(this, EventArgs.Empty);
+            });
+            Server.OnStopped((server) =>
+            {
+                Stopped?.Invoke(this, EventArgs.Empty);
             });
             Server.UseMiddleware(async (session, next) =>
             {
@@ -83,7 +88,9 @@ namespace ninaAPI.WebService
 
             string error = HttpUtility.StatusCodeMessages.GetValueOrDefault((int)exception.StatusCode, "Unknown Error");
 
-            await session.Response.Status((int)exception.StatusCode).Text(SerializerFactory.GetSerializer().Serialize(new { Error = error, Message = exception.Message })).SendAsync();
+            var serializer = SerializerFactory.GetSerializer();
+
+            await session.Response.Status((int)exception.StatusCode).Text(serializer.Serialize(new { Error = error, Message = exception.Message }), serializer.MimeType).SendAsync();
         }
 
         public static void StartWatchers()
@@ -133,14 +140,13 @@ namespace ninaAPI.WebService
 
                 foreach (var route in Server.Router.Routes)
                 {
-                    Logger.Debug("Registered Route: " + route.Path);
+                    Logger.Debug($"Registered Route: {route.Path}, Method: {route.Method}, Host: {route.Host}");
                 }
 
                 Logger.Info("Starting web server");
                 if (Server != null)
                 {
                     await Server.StartAsync();
-                    Started?.Invoke(this, EventArgs.Empty); // Raise Started event
                 }
             }
             catch (Exception ex)
@@ -156,7 +162,6 @@ namespace ninaAPI.WebService
             {
                 await Server?.StopAsync();
                 Server = null;
-                Stopped?.Invoke(this, EventArgs.Empty); // Raise Stopped event
                 WebSocketV2.SetUnavailable();
             }
             catch (Exception ex)

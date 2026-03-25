@@ -73,7 +73,7 @@
     <None Remove="CreateManifest.ps1" />
     <None Remove="gather.js" />
     <None Remove="manifest.schema.json" />
-    <PackageReference Include="SimpleW" Version="26.0.0-rc.20260317-1568 " />
+    <PackageReference Include="SimpleW" Version="26.0.0-rc.20260324-1599" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.346202">

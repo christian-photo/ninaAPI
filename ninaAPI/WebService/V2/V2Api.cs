@@ -20,7 +20,8 @@ namespace ninaAPI.WebService.V2
     {
         public SimpleWServer ConfigureServer(SimpleWServer server)
         {
-            server.MapController<HttpControllerV2>("/v2/api");
+            server.MapController<ControllerV2>("/v2/api");
+
             server.UseWebSocketModule(o =>
             {
                 o.Prefix = "/v2/socket";
@@ -41,12 +42,15 @@ namespace ninaAPI.WebService.V2
                 o.Prefix = "/v2/filterwheel";
                 new NetworkedFilterWheelSocket().ConfigureWebSocket(o);
             });
+            server.UseWebSocketModule(o =>
+            {
+                o.Prefix = "/v2/rotator";
+                new NetworkedRotatorSocket().ConfigureWebSocket(o);
+            });
 
             return server;
         }
 
         public bool SupportsSSL() => false;
     }
-
-    public class HttpControllerV2 : Controller { }
 }

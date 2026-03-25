@@ -45,7 +45,6 @@ namespace ninaAPI.WebService.V3
 {
     public class V3Api : IHttpApi
     {
-        private readonly ResponseHandler responseHandler;
         private readonly ISerializerService serializer;
 
         private readonly CameraController cameraController;
@@ -126,7 +125,6 @@ namespace ninaAPI.WebService.V3
         public V3Api()
         {
             serializer = SerializerFactory.GetSerializer();
-            responseHandler = new ResponseHandler(serializer);
             processMediator = new ApiProcessMediator();
 
             cameraController = new CameraController(
@@ -336,8 +334,7 @@ namespace ninaAPI.WebService.V3
 
                 await session.Response
                     .Status(statusCode)
-                    .ContentType(serializer.MimeType)
-                    .Text(json)
+                    .Text(json, serializer.MimeType)
                     .SendAsync();
             });
             controller.Configure(server, "/v3/api");

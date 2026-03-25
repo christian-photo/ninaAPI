@@ -16,7 +16,7 @@ using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
-    public partial class ControllerV2 : HttpControllerV2
+    public partial class ControllerV2 : Controller
     {
         [Route("GET", "/")]
         public string Index()

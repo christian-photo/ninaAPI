@@ -320,7 +320,7 @@ namespace ninaAPI.WebService.V2
             Response.WriteToResponse(response);
         }
 
-        [Route("GET", "/image/{index}")]
+        [Route("GET", "/image/:index")]
         public async Task GetImage(int index,
                     bool resize = false,
                     int quality = 80,
@@ -501,7 +501,7 @@ namespace ninaAPI.WebService.V2
             await SolveImage(-1, string.Empty, ImageWatcher.PreparedImage);
         }
 
-        [Route("GET", "/image/{index}/solve")]
+        [Route("GET", "/image/:index/solve")]
         public async Task SolveImage(int index, string imageType = "", object image = null)
         {
             CustomResponse response = new CustomResponse();
@@ -576,7 +576,7 @@ namespace ninaAPI.WebService.V2
 
         }
 
-        [Route("GET", "/image/{index}/prefix")]
+        [Route("GET", "/image/:index/prefix")]
         public void AddPrefix(int index, string prefix, string imageType = "")
         {
             CustomResponse response = new CustomResponse();
@@ -654,7 +654,7 @@ namespace ninaAPI.WebService.V2
             Response.WriteToResponse(response);
         }
 
-        [Route("GET", "/image/thumbnail/{index}")]
+        [Route("GET", "/image/thumbnail/:index")]
         public async Task GetImage(int index,
                     string imageType = "")
         {

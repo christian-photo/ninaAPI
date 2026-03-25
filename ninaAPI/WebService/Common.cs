@@ -11,8 +11,8 @@
 
 using System;
 using System.Net;
-using EmbedIO;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 
 namespace ninaAPI.WebService
 {
