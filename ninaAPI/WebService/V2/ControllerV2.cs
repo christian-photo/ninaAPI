@@ -21,7 +21,7 @@ namespace ninaAPI.WebService.V2
         [Route("GET", "/")]
         public string Index()
         {
-            return $"ninaAPI: https://github.com/rennmaus-coder/ninaAPI/, https://bump.sh/christian-photo/doc/advanced-api, https://bump.sh/christian-photo/doc/advanced-api-websockets";
+            return $"ninaAPI: https://github.com/rennmaus-coder/ninaAPI/, https://christian-photo.github.io/github-page/projects/ninaAPI/v2/doc/api, https://github.com/christian-photo/ninaAPI/wiki/Websocket-V2";
         }
 
         [Route("GET", "/version")]

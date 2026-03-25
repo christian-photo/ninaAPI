@@ -4,6 +4,8 @@ The changes for each individual (beta) release can be seen in each [release](htt
 
 ## 3.0.0.0
 
+## v3
+
 ### Processes
 
 Longer running processes like slewing, capturing or autofocusing now return a `ProcessId` in their response that can be used to:
@@ -26,18 +28,27 @@ The event websocket now supports channels, which can be subscribed to per client
 - `Autofocus`
 - `Process`
 - `Guiding`
+- ...
 
-### Other changes
+## Other changes
 
-- Switched to SimpleW for the webserver (maintained, faster and more featureful)
 - The response wrapper was removed in favor of smaller responses. All additional information is now carried by the status code
 - The error messages are now more consistent. They will always include the `Error` (the name of the status code) and optionally `Message` which may provide further information about the error.
 - Endpoints like `image-history` now support pagination
 - It is now possible to work with multiple captures, not just the last one
-- The instruction was upgraded to work with expressions
 - The TPPA websocket was separated into the event websocket and endpoints to control TPPA
 - Containers in the sequence are now marked with a `IsContainer: true` property instead of a suffixed name
 - Many more changes behind the scenes to make it easier for contributers to work on the project
+
+### v2
+
+- Base64 support for images was removed
+
+### General changes
+
+- Improved the options page for configuration
+- The instruction was upgraded to work with expressions
+- Switched the webserver to SimpleW (maintained, faster, smaller and more featureful)
 
 ## 2.2.15.0
 
