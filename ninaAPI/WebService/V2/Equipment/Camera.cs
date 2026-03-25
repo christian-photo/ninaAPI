@@ -554,7 +554,6 @@ namespace ninaAPI.WebService.V2
             string size = null,
             int gain = -1,
             double scale = 1,
-            bool stream = true,
             bool omitImage = false,
             bool waitForResult = false,
             bool save = true,
@@ -603,7 +602,7 @@ namespace ninaAPI.WebService.V2
                 {
                     Bitmap img = new Bitmap(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"));
                     BitmapSource source = ImageUtility.ConvertBitmap(img);
-                    if (stream)
+                    if (!omitImage)
                     {
                         BitmapEncoder encoder = null;
                         if (scale == 0 && resize)
@@ -630,22 +629,7 @@ namespace ninaAPI.WebService.V2
                     }
                     else
                     {
-                        if (!omitImage)
-                        {
-                            string image = string.Empty;
-                            if (scale == 0 && resize)
-                                image = BitmapHelper.ResizeAndConvertBitmap(source, resolution, quality);
-                            if (scale != 0 && resize)
-                                image = BitmapHelper.ScaleAndConvertBitmap(source, scale, quality);
-                            if (!resize)
-                                image = BitmapHelper.ScaleAndConvertBitmap(source, 1, quality);
-
-                            response.Response = new CaptureResponse() { Image = image, PlateSolveResult = plateSolveResult };
-                        }
-                        else
-                        {
-                            response.Response = new CaptureResponse() { PlateSolveResult = plateSolveResult, Image = null };
-                        }
+                        response.Response = new CaptureResponse() { PlateSolveResult = plateSolveResult, Image = null };
                     }
                 }
                 else if (!getResult && !cam.GetInfo().Connected)
@@ -744,7 +728,7 @@ namespace ninaAPI.WebService.V2
                     {
                         await CaptureTask;
                         // Return the captured image
-                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false, targetName, false, onlySaveRaw, skipAutoStretch, imageType);
+                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, omitImage, false, false, targetName, false, onlySaveRaw, skipAutoStretch, imageType);
                         return;
                     }
 

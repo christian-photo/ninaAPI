@@ -16,13 +16,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Plugin.Interfaces;
 using ninaAPI.Utility;
 using ninaAPI.WebService.Model;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
@@ -113,17 +111,17 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/livestack/status")]
+        [Route("GET", "/livestack/status")]
         public void LiveStackStatus()
         {
             CustomResponse response = new CustomResponse();
 
             response.Response = LiveStackWatcher.LivestackStatus;
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/livestack/stop")]
+        [Route("GET", "/livestack/stop")]
         public void LiveStackStop()
         {
             CustomResponse response = new CustomResponse();
@@ -139,10 +137,10 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/livestack/start")]
+        [Route("GET", "/livestack/start")]
         public void LiveStackStart()
         {
             CustomResponse response = new CustomResponse();
@@ -158,10 +156,10 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/livestack/image/available")]
+        [Route("GET", "/livestack/image/available")]
         public void LiveStackImageAvailable()
         {
             CustomResponse response = new CustomResponse();
@@ -182,16 +180,15 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/livestack/image/{target}/{filter}")]
+        [Route("GET", "/livestack/image/{target}/{filter}")]
         public async Task LiveStackImage(string filter, string target,
-            [QueryField] bool resize,
-            [QueryField] int quality,
-            [QueryField] string size,
-            [QueryField] double scale,
-            [QueryField] bool stream)
+            bool resize = false,
+            int quality = 80,
+            string size = "640x480",
+            double scale = 1)
         {
             CustomResponse response = new CustomResponse();
 
@@ -219,42 +216,28 @@ namespace ninaAPI.WebService.V2
                         int height = int.Parse(s[1]);
                         sz = new Size(width, height);
                     }
-                    if (stream)
+                    BitmapEncoder encoder = null;
+                    if (scale == 0 && resize)
                     {
-                        BitmapEncoder encoder = null;
-                        if (scale == 0 && resize)
-                        {
-                            image = BitmapHelper.ResizeBitmap(image, sz);
-                            encoder = BitmapHelper.GetEncoder(image, quality);
-                        }
-                        if (scale != 0 && resize)
-                        {
-                            image = BitmapHelper.ScaleBitmap(image, scale);
-                            encoder = BitmapHelper.GetEncoder(image, quality);
-                        }
-                        if (!resize)
-                        {
-                            image = BitmapHelper.ScaleBitmap(image, 1);
-                            encoder = BitmapHelper.GetEncoder(image, quality);
-                        }
-                        HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpg";
-                        using (MemoryStream memory = new MemoryStream())
-                        {
-                            encoder.Save(memory);
-                            await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
-                            return;
-                        }
+                        image = BitmapHelper.ResizeBitmap(image, sz);
+                        encoder = BitmapHelper.GetEncoder(image, quality);
                     }
-                    else
+                    if (scale != 0 && resize)
                     {
-                        if (scale == 0 && resize)
-                            response.Response = BitmapHelper.ResizeAndConvertBitmap(image, sz, quality);
-                        if (scale != 0 && resize)
-                            response.Response = BitmapHelper.ScaleAndConvertBitmap(image, scale, quality);
-                        if (!resize)
-                            response.Response = BitmapHelper.ScaleAndConvertBitmap(image, 1, quality);
+                        image = BitmapHelper.ScaleBitmap(image, scale);
+                        encoder = BitmapHelper.GetEncoder(image, quality);
                     }
-
+                    if (!resize)
+                    {
+                        image = BitmapHelper.ScaleBitmap(image, 1);
+                        encoder = BitmapHelper.GetEncoder(image, quality);
+                    }
+                    using (MemoryStream memory = new MemoryStream())
+                    {
+                        encoder.Save(memory);
+                        await Response.Body(memory.ToArray(), quality == -1 ? "image/png" : "image/jpg").SendAsync();
+                        return;
+                    }
                 }
             }
             catch (Exception ex)
@@ -263,17 +246,17 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/livestack/image/{target}/{filter}/info")]
+        [Route("GET", "/livestack/image/{target}/{filter}/info")]
         public async Task LiveStackImageInfo(string filter, string target)
         {
             CustomResponse response = new CustomResponse();
 
             try
             {
-                LiveStackResponse l = LiveStackWatcher.LiveStackHistory.Images.Where(x => x.Filter == filter && x.Target == target).LastOrDefault();
+                LiveStackResponse l = LiveStackWatcher.LiveStackHistory.Images.LastOrDefault(x => x.Filter == filter && x.Target == target);
                 if (l is null)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("No image with specified filter and target found", 404));
@@ -300,7 +283,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 }

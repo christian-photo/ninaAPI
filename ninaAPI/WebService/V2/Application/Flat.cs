@@ -13,9 +13,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Profile.Interfaces;
 using NINA.Sequencer.Conditions;
@@ -23,6 +20,7 @@ using NINA.Sequencer.Container;
 using NINA.Sequencer.SequenceItem.FlatDevice;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
@@ -32,17 +30,17 @@ namespace ninaAPI.WebService.V2
         private static CancellationTokenSource flatCancellationToken;
         private static SequentialContainer container;
 
-        [Route(HttpVerbs.Get, "/flats/skyflat")]
-        public void SkyFlats([QueryField] int count,
-                            [QueryField] double minExposure,
-                            [QueryField] double maxExposure,
-                            [QueryField] double histogramMean,
-                            [QueryField] double meanTolerance,
-                            [QueryField] bool dither,
-                            [QueryField] int filterId,
-                            [QueryField] string binning,
-                            [QueryField] int gain,
-                            [QueryField] int offset)
+        [Route("GET", "/flats/skyflat")]
+        public void SkyFlats(int count = 10,
+                            double minExposure = -1,
+                            double maxExposure = -1,
+                            double histogramMean = -1,
+                            double meanTolerance = -1,
+                            bool dither = false,
+                            int filterId = -1,
+                            string binning = "1x1",
+                            int gain = -1,
+                            int offset = -1)
         {
             CustomResponse response = new CustomResponse();
 
@@ -65,21 +63,21 @@ namespace ninaAPI.WebService.V2
                                                 AdvancedAPI.Controls.SymbolBroker);
 
                     flats.GetIterations().Iterations = count;
-                    flats.MaxExposure = HttpContext.IsParameterOmitted(nameof(maxExposure)) ? flats.MaxExposure : maxExposure;
-                    flats.MinExposure = HttpContext.IsParameterOmitted(nameof(minExposure)) ? flats.MinExposure : minExposure;
-                    flats.HistogramTargetPercentage = HttpContext.IsParameterOmitted(nameof(histogramMean)) ? flats.HistogramTargetPercentage : histogramMean;
-                    flats.HistogramTolerancePercentage = HttpContext.IsParameterOmitted(nameof(meanTolerance)) ? flats.HistogramTolerancePercentage : meanTolerance;
-                    flats.ShouldDither = HttpContext.IsParameterOmitted(nameof(dither)) ? flats.ShouldDither : dither;
-                    flats.GetExposureItem().Gain = HttpContext.IsParameterOmitted(nameof(gain)) ? flats.GetExposureItem().Gain : gain;
-                    flats.GetExposureItem().Offset = HttpContext.IsParameterOmitted(nameof(offset)) ? flats.GetExposureItem().Offset : offset;
+                    flats.MaxExposure = Request.IsParameterOmitted(nameof(maxExposure)) ? flats.MaxExposure : maxExposure;
+                    flats.MinExposure = Request.IsParameterOmitted(nameof(minExposure)) ? flats.MinExposure : minExposure;
+                    flats.HistogramTargetPercentage = Request.IsParameterOmitted(nameof(histogramMean)) ? flats.HistogramTargetPercentage : histogramMean;
+                    flats.HistogramTolerancePercentage = Request.IsParameterOmitted(nameof(meanTolerance)) ? flats.HistogramTolerancePercentage : meanTolerance;
+                    flats.ShouldDither = Request.IsParameterOmitted(nameof(dither)) ? flats.ShouldDither : dither;
+                    flats.GetExposureItem().Gain = Request.IsParameterOmitted(nameof(gain)) ? flats.GetExposureItem().Gain : gain;
+                    flats.GetExposureItem().Offset = Request.IsParameterOmitted(nameof(offset)) ? flats.GetExposureItem().Offset : offset;
 
                     IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
-                    if (!HttpContext.IsParameterOmitted(nameof(filterId)))
+                    if (!Request.IsParameterOmitted(nameof(filterId)))
                     {
                         if (filterId < 0 || filterId >= profile.FilterWheelSettings.FilterWheelFilters.Count)
                         {
                             response = CoreUtility.CreateErrorTable(new Error("Filter not available", 400));
-                            HttpContext.WriteToResponse(response);
+                            Response.WriteToResponse(response);
                             return;
                         }
                         else
@@ -88,31 +86,31 @@ namespace ninaAPI.WebService.V2
                         }
                     }
 
-                    if (!HttpContext.IsParameterOmitted(nameof(binning)))
+                    if (!Request.IsParameterOmitted(nameof(binning)))
                     {
-                        if (!AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Where(b => b.Name == binning).Any())
+                        if (!AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Any(b => b.Name == binning))
                         {
                             response = CoreUtility.CreateErrorTable(new Error("Binning not available", 400));
-                            HttpContext.WriteToResponse(response);
+                            Response.WriteToResponse(response);
                             return;
                         }
                         else
                         {
-                            flats.GetExposureItem().Binning = AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Where(b => b.Name == binning).First();
+                            flats.GetExposureItem().Binning = AdvancedAPI.Controls.Camera.GetInfo().BinningModes.First(b => b.Name == binning);
                         }
                     }
 
-                    if ((gain < 0 || gain > AdvancedAPI.Controls.Camera.GetInfo().GainMax) && !HttpContext.IsParameterOmitted(nameof(gain)))
+                    if ((gain < 0 || gain > AdvancedAPI.Controls.Camera.GetInfo().GainMax) && !Request.IsParameterOmitted(nameof(gain)))
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Invalid gain", 400));
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
 
-                    if ((offset < 0 || offset > AdvancedAPI.Controls.Camera.GetInfo().OffsetMax) && !HttpContext.IsParameterOmitted(nameof(offset)))
+                    if ((offset < 0 || offset > AdvancedAPI.Controls.Camera.GetInfo().OffsetMax) && !Request.IsParameterOmitted(nameof(offset)))
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Invalid offset", 400));
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
 
@@ -136,21 +134,21 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/flats/auto-brightness")]
-        public void AutoBrightnessFlats([QueryField] int count,
-                                        [QueryField] int minBrightness,
-                                        [QueryField] int maxBrightness,
-                                        [QueryField] double histogramMean,
-                                        [QueryField] double meanTolerance,
-                                        [QueryField] int filterId,
-                                        [QueryField] string binning,
-                                        [QueryField] int gain,
-                                        [QueryField] int offset,
-                                        [QueryField] double exposureTime,
-                                        [QueryField] bool keepClosed)
+        [Route("GET", "/flats/auto-brightness")]
+        public void AutoBrightnessFlats(int count = 10,
+                                        int minBrightness = -1,
+                                        int maxBrightness = -1,
+                                        double histogramMean = -1,
+                                        double meanTolerance = -1,
+                                        int filterId = -1,
+                                        string binning = "1x1",
+                                        int gain = -1,
+                                        int offset = -1,
+                                        double exposureTime = -1,
+                                        bool keepClosed = false)
         {
             CustomResponse response = new CustomResponse();
 
@@ -171,22 +169,22 @@ namespace ninaAPI.WebService.V2
                                                         AdvancedAPI.Controls.FlatDevice);
 
                     flats.GetIterations().Iterations = count;
-                    flats.MaxBrightness = HttpContext.IsParameterOmitted(nameof(maxBrightness)) ? flats.MaxBrightness : maxBrightness;
-                    flats.MinBrightness = HttpContext.IsParameterOmitted(nameof(minBrightness)) ? flats.MinBrightness : minBrightness;
-                    flats.HistogramTargetPercentage = HttpContext.IsParameterOmitted(nameof(histogramMean)) ? flats.HistogramTargetPercentage : histogramMean;
-                    flats.HistogramTolerancePercentage = HttpContext.IsParameterOmitted(nameof(meanTolerance)) ? flats.HistogramTolerancePercentage : meanTolerance;
-                    flats.GetExposureItem().Gain = HttpContext.IsParameterOmitted(nameof(gain)) ? flats.GetExposureItem().Gain : gain;
-                    flats.GetExposureItem().Offset = HttpContext.IsParameterOmitted(nameof(offset)) ? flats.GetExposureItem().Offset : offset;
-                    flats.GetExposureItem().ExposureTime = HttpContext.IsParameterOmitted(nameof(exposureTime)) ? flats.GetExposureItem().ExposureTime : exposureTime;
-                    flats.KeepPanelClosed = HttpContext.IsParameterOmitted(nameof(keepClosed)) ? flats.KeepPanelClosed : keepClosed;
+                    flats.MaxBrightness = Request.IsParameterOmitted(nameof(maxBrightness)) ? flats.MaxBrightness : maxBrightness;
+                    flats.MinBrightness = Request.IsParameterOmitted(nameof(minBrightness)) ? flats.MinBrightness : minBrightness;
+                    flats.HistogramTargetPercentage = Request.IsParameterOmitted(nameof(histogramMean)) ? flats.HistogramTargetPercentage : histogramMean;
+                    flats.HistogramTolerancePercentage = Request.IsParameterOmitted(nameof(meanTolerance)) ? flats.HistogramTolerancePercentage : meanTolerance;
+                    flats.GetExposureItem().Gain = Request.IsParameterOmitted(nameof(gain)) ? flats.GetExposureItem().Gain : gain;
+                    flats.GetExposureItem().Offset = Request.IsParameterOmitted(nameof(offset)) ? flats.GetExposureItem().Offset : offset;
+                    flats.GetExposureItem().ExposureTime = Request.IsParameterOmitted(nameof(exposureTime)) ? flats.GetExposureItem().ExposureTime : exposureTime;
+                    flats.KeepPanelClosed = Request.IsParameterOmitted(nameof(keepClosed)) ? flats.KeepPanelClosed : keepClosed;
 
                     IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
-                    if (!HttpContext.IsParameterOmitted(nameof(filterId)))
+                    if (!Request.IsParameterOmitted(nameof(filterId)))
                     {
                         if (filterId < 0 || filterId >= profile.FilterWheelSettings.FilterWheelFilters.Count)
                         {
                             response = CoreUtility.CreateErrorTable(new Error("Filter not available", 400));
-                            HttpContext.WriteToResponse(response);
+                            Response.WriteToResponse(response);
                             return;
                         }
                         else
@@ -195,31 +193,31 @@ namespace ninaAPI.WebService.V2
                         }
                     }
 
-                    if (!HttpContext.IsParameterOmitted(nameof(binning)))
+                    if (!Request.IsParameterOmitted(nameof(binning)))
                     {
-                        if (!AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Where(b => b.Name == binning).Any())
+                        if (!AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Any(b => b.Name == binning))
                         {
                             response = CoreUtility.CreateErrorTable(new Error("Binning not available", 400));
-                            HttpContext.WriteToResponse(response);
+                            Response.WriteToResponse(response);
                             return;
                         }
                         else
                         {
-                            flats.GetExposureItem().Binning = AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Where(b => b.Name == binning).First();
+                            flats.GetExposureItem().Binning = AdvancedAPI.Controls.Camera.GetInfo().BinningModes.First(b => b.Name == binning);
                         }
                     }
 
-                    if ((gain < 0 || gain > AdvancedAPI.Controls.Camera.GetInfo().GainMax) && !HttpContext.IsParameterOmitted(nameof(gain)))
+                    if ((gain < 0 || gain > AdvancedAPI.Controls.Camera.GetInfo().GainMax) && !Request.IsParameterOmitted(nameof(gain)))
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Invalid gain", 400));
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
 
-                    if ((offset < 0 || offset > AdvancedAPI.Controls.Camera.GetInfo().OffsetMax) && !HttpContext.IsParameterOmitted(nameof(offset)))
+                    if ((offset < 0 || offset > AdvancedAPI.Controls.Camera.GetInfo().OffsetMax) && !Request.IsParameterOmitted(nameof(offset)))
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Invalid offset", 400));
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
 
@@ -243,22 +241,22 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/flats/auto-exposure")]
-        public void AutoExposureFlats([QueryField] int count,
-                                    [QueryField] double minExposure,
-                                    [QueryField] double maxExposure,
-                                    [QueryField] double histogramMean,
-                                    [QueryField] double meanTolerance,
-                                    [QueryField] int brightness,
-                                    [QueryField] int filterId,
-                                    [QueryField] string binning,
-                                    [QueryField] int gain,
-                                    [QueryField] int offset,
-                                    [QueryField] double exposureTime,
-                                    [QueryField] bool keepClosed)
+        [Route("GET", "/flats/auto-exposure")]
+        public void AutoExposureFlats(int count = 10,
+                                    double minExposure = -1,
+                                    double maxExposure = -1,
+                                    double histogramMean = -1,
+                                    double meanTolerance = -1,
+                                    int brightness = -1,
+                                    int filterId = -1,
+                                    string binning = "1x1",
+                                    int gain = -1,
+                                    int offset = -1,
+                                    double exposureTime = -1,
+                                    bool keepClosed = false)
         {
             CustomResponse response = new CustomResponse();
 
@@ -279,23 +277,23 @@ namespace ninaAPI.WebService.V2
                                                                 AdvancedAPI.Controls.FlatDevice);
 
                     flats.GetIterations().Iterations = count;
-                    flats.MaxExposure = HttpContext.IsParameterOmitted(nameof(minExposure)) ? flats.MaxExposure : maxExposure;
-                    flats.MinExposure = HttpContext.IsParameterOmitted(nameof(minExposure)) ? flats.MinExposure : minExposure;
-                    flats.GetSetBrightnessItem().Brightness = HttpContext.IsParameterOmitted(nameof(brightness)) ? flats.GetSetBrightnessItem().Brightness : brightness;
-                    flats.HistogramTargetPercentage = HttpContext.IsParameterOmitted(nameof(histogramMean)) ? flats.HistogramTargetPercentage : histogramMean;
-                    flats.HistogramTolerancePercentage = HttpContext.IsParameterOmitted(nameof(meanTolerance)) ? flats.HistogramTolerancePercentage : meanTolerance;
-                    flats.GetExposureItem().Gain = HttpContext.IsParameterOmitted(nameof(gain)) ? flats.GetExposureItem().Gain : gain;
-                    flats.GetExposureItem().Offset = HttpContext.IsParameterOmitted(nameof(offset)) ? flats.GetExposureItem().Offset : offset;
-                    flats.GetExposureItem().ExposureTime = HttpContext.IsParameterOmitted(nameof(exposureTime)) ? flats.GetExposureItem().ExposureTime : exposureTime;
-                    flats.KeepPanelClosed = HttpContext.IsParameterOmitted(nameof(keepClosed)) ? flats.KeepPanelClosed : keepClosed;
+                    flats.MaxExposure = Request.IsParameterOmitted(nameof(minExposure)) ? flats.MaxExposure : maxExposure;
+                    flats.MinExposure = Request.IsParameterOmitted(nameof(minExposure)) ? flats.MinExposure : minExposure;
+                    flats.GetSetBrightnessItem().Brightness = Request.IsParameterOmitted(nameof(brightness)) ? flats.GetSetBrightnessItem().Brightness : brightness;
+                    flats.HistogramTargetPercentage = Request.IsParameterOmitted(nameof(histogramMean)) ? flats.HistogramTargetPercentage : histogramMean;
+                    flats.HistogramTolerancePercentage = Request.IsParameterOmitted(nameof(meanTolerance)) ? flats.HistogramTolerancePercentage : meanTolerance;
+                    flats.GetExposureItem().Gain = Request.IsParameterOmitted(nameof(gain)) ? flats.GetExposureItem().Gain : gain;
+                    flats.GetExposureItem().Offset = Request.IsParameterOmitted(nameof(offset)) ? flats.GetExposureItem().Offset : offset;
+                    flats.GetExposureItem().ExposureTime = Request.IsParameterOmitted(nameof(exposureTime)) ? flats.GetExposureItem().ExposureTime : exposureTime;
+                    flats.KeepPanelClosed = Request.IsParameterOmitted(nameof(keepClosed)) ? flats.KeepPanelClosed : keepClosed;
 
                     IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
-                    if (!HttpContext.IsParameterOmitted(nameof(filterId)))
+                    if (!Request.IsParameterOmitted(nameof(filterId)))
                     {
                         if (filterId < 0 || filterId >= profile.FilterWheelSettings.FilterWheelFilters.Count)
                         {
                             response = CoreUtility.CreateErrorTable(new Error("Filter not available", 400));
-                            HttpContext.WriteToResponse(response);
+                            Response.WriteToResponse(response);
                             return;
                         }
                         else
@@ -304,31 +302,31 @@ namespace ninaAPI.WebService.V2
                         }
                     }
 
-                    if (!HttpContext.IsParameterOmitted(nameof(binning)))
+                    if (!Request.IsParameterOmitted(nameof(binning)))
                     {
-                        if (!AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Where(b => b.Name == binning).Any())
+                        if (!AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Any(b => b.Name == binning))
                         {
                             response = CoreUtility.CreateErrorTable(new Error("Binning not available", 400));
-                            HttpContext.WriteToResponse(response);
+                            Response.WriteToResponse(response);
                             return;
                         }
                         else
                         {
-                            flats.GetExposureItem().Binning = AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Where(b => b.Name == binning).First();
+                            flats.GetExposureItem().Binning = AdvancedAPI.Controls.Camera.GetInfo().BinningModes.First(b => b.Name == binning);
                         }
                     }
 
-                    if ((gain < 0 || gain > AdvancedAPI.Controls.Camera.GetInfo().GainMax) && !HttpContext.IsParameterOmitted(nameof(gain)))
+                    if ((gain < 0 || gain > AdvancedAPI.Controls.Camera.GetInfo().GainMax) && !Request.IsParameterOmitted(nameof(gain)))
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Invalid gain", 400));
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
 
-                    if ((offset < 0 || offset > AdvancedAPI.Controls.Camera.GetInfo().OffsetMax) && !HttpContext.IsParameterOmitted(nameof(offset)))
+                    if ((offset < 0 || offset > AdvancedAPI.Controls.Camera.GetInfo().OffsetMax) && !Request.IsParameterOmitted(nameof(offset)))
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Invalid offset", 400));
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
 
@@ -352,16 +350,16 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/flats/trained-dark-flat")]
-        public void TrainedDarkFlat([QueryField] int count,
-                                    [QueryField] int filterId,
-                                    [QueryField] string binning,
-                                    [QueryField] int gain,
-                                    [QueryField] int offset,
-                                    [QueryField] bool keepClosed)
+        [Route("GET", "/flats/trained-dark-flat")]
+        public void TrainedDarkFlat(int count = 10,
+                                    int filterId = -1,
+                                    string binning = "1x1",
+                                    int gain = -1,
+                                    int offset = -1,
+                                    bool keepClosed = false)
         {
             CustomResponse response = new CustomResponse();
 
@@ -382,17 +380,17 @@ namespace ninaAPI.WebService.V2
                                                                 AdvancedAPI.Controls.FlatDevice);
 
                     flats.GetIterations().Iterations = count;
-                    flats.GetExposureItem().Gain = HttpContext.IsParameterOmitted(nameof(gain)) ? flats.GetExposureItem().Gain : gain;
-                    flats.GetExposureItem().Offset = HttpContext.IsParameterOmitted(nameof(offset)) ? flats.GetExposureItem().Offset : offset;
-                    flats.KeepPanelClosed = HttpContext.IsParameterOmitted(nameof(keepClosed)) ? flats.KeepPanelClosed : keepClosed;
+                    flats.GetExposureItem().Gain = Request.IsParameterOmitted(nameof(gain)) ? flats.GetExposureItem().Gain : gain;
+                    flats.GetExposureItem().Offset = Request.IsParameterOmitted(nameof(offset)) ? flats.GetExposureItem().Offset : offset;
+                    flats.KeepPanelClosed = Request.IsParameterOmitted(nameof(keepClosed)) ? flats.KeepPanelClosed : keepClosed;
 
                     IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
-                    if (!HttpContext.IsParameterOmitted(nameof(filterId)))
+                    if (!Request.IsParameterOmitted(nameof(filterId)))
                     {
                         if (filterId < 0 || filterId >= profile.FilterWheelSettings.FilterWheelFilters.Count)
                         {
                             response = CoreUtility.CreateErrorTable(new Error("Filter not available", 400));
-                            HttpContext.WriteToResponse(response);
+                            Response.WriteToResponse(response);
                             return;
                         }
                         else
@@ -401,31 +399,31 @@ namespace ninaAPI.WebService.V2
                         }
                     }
 
-                    if (!HttpContext.IsParameterOmitted(nameof(binning)))
+                    if (!Request.IsParameterOmitted(nameof(binning)))
                     {
-                        if (!AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Where(b => b.Name == binning).Any())
+                        if (!AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Any(b => b.Name == binning))
                         {
                             response = CoreUtility.CreateErrorTable(new Error("Binning not available", 400));
-                            HttpContext.WriteToResponse(response);
+                            Response.WriteToResponse(response);
                             return;
                         }
                         else
                         {
-                            flats.GetExposureItem().Binning = AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Where(b => b.Name == binning).First();
+                            flats.GetExposureItem().Binning = AdvancedAPI.Controls.Camera.GetInfo().BinningModes.First(b => b.Name == binning);
                         }
                     }
 
-                    if ((gain < 0 || gain > AdvancedAPI.Controls.Camera.GetInfo().GainMax) && !HttpContext.IsParameterOmitted(nameof(gain)))
+                    if ((gain < 0 || gain > AdvancedAPI.Controls.Camera.GetInfo().GainMax) && !Request.IsParameterOmitted(nameof(gain)))
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Invalid gain", 400));
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
 
-                    if ((offset < 0 || offset > AdvancedAPI.Controls.Camera.GetInfo().OffsetMax) && !HttpContext.IsParameterOmitted(nameof(offset)))
+                    if ((offset < 0 || offset > AdvancedAPI.Controls.Camera.GetInfo().OffsetMax) && !Request.IsParameterOmitted(nameof(offset)))
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Invalid offset", 400));
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
 
@@ -449,16 +447,16 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/flats/trained-flat")]
-        public void TrainedFlat([QueryField] int count,
-                                [QueryField] int filterId,
-                                [QueryField] string binning,
-                                [QueryField] int gain,
-                                [QueryField] int offset,
-                                [QueryField] bool keepClosed)
+        [Route("GET", "/flats/trained-flat")]
+        public void TrainedFlat(int count = 10,
+                                int filterId = -1,
+                                string binning = "1x1",
+                                int gain = -1,
+                                int offset = -1,
+                                bool keepClosed = false)
         {
             CustomResponse response = new CustomResponse();
 
@@ -467,7 +465,7 @@ namespace ninaAPI.WebService.V2
                 if (!flatTask?.IsCompleted ?? false)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Process already running", 400));
-                    HttpContext.WriteToResponse(response);
+                    Response.WriteToResponse(response);
                     return;
                 }
                 if (!AdvancedAPI.Controls.Camera.GetInfo().Connected)
@@ -485,17 +483,17 @@ namespace ninaAPI.WebService.V2
                                                                         AdvancedAPI.Controls.FlatDevice);
 
                     flats.GetIterations().Iterations = count;
-                    flats.GetExposureItem().Gain = HttpContext.IsParameterOmitted(nameof(gain)) ? flats.GetExposureItem().Gain : gain;
-                    flats.GetExposureItem().Offset = HttpContext.IsParameterOmitted(nameof(offset)) ? flats.GetExposureItem().Offset : offset;
-                    flats.KeepPanelClosed = HttpContext.IsParameterOmitted(nameof(keepClosed)) ? flats.KeepPanelClosed : keepClosed;
+                    flats.GetExposureItem().Gain = Request.IsParameterOmitted(nameof(gain)) ? flats.GetExposureItem().Gain : gain;
+                    flats.GetExposureItem().Offset = Request.IsParameterOmitted(nameof(offset)) ? flats.GetExposureItem().Offset : offset;
+                    flats.KeepPanelClosed = Request.IsParameterOmitted(nameof(keepClosed)) ? flats.KeepPanelClosed : keepClosed;
 
                     IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
-                    if (!HttpContext.IsParameterOmitted(nameof(filterId)))
+                    if (!Request.IsParameterOmitted(nameof(filterId)))
                     {
                         if (filterId < 0 || filterId >= profile.FilterWheelSettings.FilterWheelFilters.Count)
                         {
                             response = CoreUtility.CreateErrorTable(new Error("Filter not available", 400));
-                            HttpContext.WriteToResponse(response);
+                            Response.WriteToResponse(response);
                             return;
                         }
                         else
@@ -504,31 +502,31 @@ namespace ninaAPI.WebService.V2
                         }
                     }
 
-                    if (!HttpContext.IsParameterOmitted(nameof(binning)))
+                    if (!Request.IsParameterOmitted(nameof(binning)))
                     {
-                        if (!AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Where(b => b.Name == binning).Any())
+                        if (!AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Any(b => b.Name == binning))
                         {
                             response = CoreUtility.CreateErrorTable(new Error("Binning not available", 400));
-                            HttpContext.WriteToResponse(response);
+                            Response.WriteToResponse(response);
                             return;
                         }
                         else
                         {
-                            flats.GetExposureItem().Binning = AdvancedAPI.Controls.Camera.GetInfo().BinningModes.Where(b => b.Name == binning).First();
+                            flats.GetExposureItem().Binning = AdvancedAPI.Controls.Camera.GetInfo().BinningModes.First(b => b.Name == binning);
                         }
                     }
 
-                    if ((gain < 0 || gain > AdvancedAPI.Controls.Camera.GetInfo().GainMax) && !HttpContext.IsParameterOmitted(nameof(gain)))
+                    if ((gain < 0 || gain > AdvancedAPI.Controls.Camera.GetInfo().GainMax) && !Request.IsParameterOmitted(nameof(gain)))
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Invalid gain", 400));
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
 
-                    if ((offset < 0 || offset > AdvancedAPI.Controls.Camera.GetInfo().OffsetMax) && !HttpContext.IsParameterOmitted(nameof(offset)))
+                    if ((offset < 0 || offset > AdvancedAPI.Controls.Camera.GetInfo().OffsetMax) && !Request.IsParameterOmitted(nameof(offset)))
                     {
                         response = CoreUtility.CreateErrorTable(new Error("Invalid offset", 400));
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
 
@@ -552,10 +550,10 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/flats/status")]
+        [Route("GET", "/flats/status")]
         public void FlatsStatus()
         {
             CustomResponse response = new CustomResponse();
@@ -569,10 +567,10 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/flats/stop")]
+        [Route("GET", "/flats/stop")]
         public void FlatsStop()
         {
             CustomResponse response = new CustomResponse();
@@ -595,7 +593,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 

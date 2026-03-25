@@ -9,10 +9,7 @@
 
 #endregion "copyright"
 
-using EmbedIO.WebApi;
-using EmbedIO;
 using System;
-using EmbedIO.Routing;
 using ninaAPI.Utility;
 using NINA.Core.Utility;
 using NINA.Astrometry;
@@ -20,6 +17,7 @@ using NINA.WPF.Base.Interfaces.ViewModel;
 using System.Threading.Tasks;
 using NINA.Core.Enum;
 using NINA.Equipment.Interfaces.Mediator;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
@@ -70,7 +68,7 @@ namespace ninaAPI.WebService.V2
             return info;
         }
 
-        [Route(HttpVerbs.Get, "/framing/info")]
+        [Route("GET", "/framing/info")]
         public void FramingInfo()
         {
             CustomResponse response = new CustomResponse();
@@ -85,11 +83,11 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/framing/set-source")]
-        public void FramingSetSource([QueryField] string source)
+        [Route("GET", "/framing/set-source")]
+        public void FramingSetSource(string source)
         {
             CustomResponse response = new CustomResponse();
 
@@ -113,12 +111,12 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
         // Framing Assistant View needs to have benn opened once before to be initialized
-        [Route(HttpVerbs.Get, "/framing/set-coordinates")]
-        public void FramingSetCoordinates([QueryField] double RAangle, [QueryField] double DECangle)
+        [Route("GET", "/framing/set-coordinates")]
+        public void FramingSetCoordinates(double RAangle, double DECangle)
         {
             CustomResponse response = new CustomResponse();
 
@@ -135,11 +133,11 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/framing/slew")]
-        public async Task FramingSlew([QueryField] string slew_option, [QueryField] bool waitForResult)
+        [Route("GET", "/framing/slew")]
+        public async Task FramingSlew(string slew_option = "", bool waitForResult = false)
         {
             CustomResponse response = new CustomResponse();
 
@@ -166,11 +164,11 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/framing/set-rotation")]
-        public void FramingSetRotation([QueryField] double rotation)
+        [Route("GET", "/framing/set-rotation")]
+        public void FramingSetRotation(double rotation)
         {
             CustomResponse response = new CustomResponse();
 
@@ -187,11 +185,11 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/framing/determine-rotation")]
-        public async Task FramingDetermineRotation([QueryField] bool waitForResult)
+        [Route("GET", "/framing/determine-rotation")]
+        public async Task FramingDetermineRotation(bool waitForResult = false)
         {
             CustomResponse response = new CustomResponse();
 
@@ -225,11 +223,11 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/astro-util/moon-separation")]
-        public async Task UtilCalculateNighttime([QueryField] double ra, [QueryField] double dec)
+        [Route("GET", "/astro-util/moon-separation")]
+        public async Task UtilCalculateNighttime(double ra, double dec)
         {
             CustomResponse response = new CustomResponse();
 
@@ -253,7 +251,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
         // This method is copied from https://github.com/daleghent/nina-moon-angle/blob/main/Utility/Utility.cs#L28
