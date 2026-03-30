@@ -105,7 +105,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
                 throw new HttpException(HttpStatusCode.Conflict, "Guider can not clear calibration");
             }
 
-            bool success = await guider.ClearCalibration(session.RequestAborted); // TODO Check why maybe false
+            bool success = await guider.ClearCalibration(session.RequestAborted); // TODO: Check why maybe false
 
             return new StringResponse("Calibration cleared");
         }

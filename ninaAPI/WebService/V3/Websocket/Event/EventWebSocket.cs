@@ -11,9 +11,9 @@
 
 
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using NINA.Core.Utility;
 using ninaAPI.Utility.Http;
@@ -62,7 +62,14 @@ namespace ninaAPI.WebService.V3.Websocket.Event
                 Logger.Debug($"Client {connection.RemoteEndPoint} sent message: {text}");
                 message = serializer.Deserialize<ClientMessage>(text);
 
-                if (message.Sender == "Subscribe") // TODO: Find a better field (instead of Sender)
+                if (!Validator.TryValidateObject(message, new ValidationContext(message), []))
+                {
+                    Logger.Warning($"Message from {connection.RemoteEndPoint} was invalid");
+                    await connection.SendTextAsync(serializer.Serialize(ClientMessage.Reply(message, "Invalid message, Action and RequestId are required")));
+                    return;
+                }
+
+                if (message.Action == "Subscribe")
                 {
                     if (message.Data is List<string> channels)
                     {
@@ -77,7 +84,7 @@ namespace ninaAPI.WebService.V3.Websocket.Event
                     }
                     await connection.SendTextAsync(serializer.Serialize(ClientMessage.Reply(message, "Subscribed")));
                 }
-                else if (message.Sender == "Unsubscribe")
+                else if (message.Action == "Unsubscribe")
                 {
                     if (message.Data is List<string> channels)
                     {
@@ -92,11 +99,11 @@ namespace ninaAPI.WebService.V3.Websocket.Event
                     }
                     await connection.SendTextAsync(serializer.Serialize(ClientMessage.Reply(message, "Unsubscribed")));
                 }
-                else if (message.Sender == "AvailableChannels")
+                else if (message.Action == "AvailableChannels")
                 {
                     await connection.SendTextAsync(serializer.Serialize(ClientMessage.Reply(message, Enum.GetValues<WebSocketChannel>())));
                 }
-                else if (message.Sender == "SubscribedChannels")
+                else if (message.Action == "SubscribedChannels")
                 {
                     await connection.SendTextAsync(serializer.Serialize(ClientMessage.Reply(message, Clients[clientId].Config.SubscriptionManager.GetSubscribedChannels())));
                 }
@@ -146,10 +153,10 @@ namespace ninaAPI.WebService.V3.Websocket.Event
 
     public class ClientMessage
     {
-        /// <summary>
-        /// Sender should not be sent by the client, that is only for the 
-        /// </summary>
-        public string Sender { get; set; }
+        [Required(ErrorMessage = "Action is required", AllowEmptyStrings = false)]
+        public string Action { get; set; }
+
+        [Required(ErrorMessage = "RequestId is required", AllowEmptyStrings = false)]
         public string RequestId { get; set; }
         public object Data { get; set; }
 
@@ -157,7 +164,7 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         {
             return new ClientMessage()
             {
-                Sender = "Server",
+                Action = request.Action,
                 RequestId = request.RequestId,
                 Data = data
             };

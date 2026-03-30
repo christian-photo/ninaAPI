@@ -33,6 +33,7 @@ namespace ninaAPI.Utility
         public static string GetProcessTempFolder() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"{Environment.ProcessId}");
         public static string GetThumbnailFolder() => Path.Combine(GetProcessTempFolder(), "thumbnails");
         public static string GetAutofocusFolder() => Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "AutoFocus");
+        public static string GetApiLogFolder() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Logs");
 
         public static void Cleanup(TimeSpan retryDelay, int retires)
         {

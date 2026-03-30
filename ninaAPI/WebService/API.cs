@@ -56,15 +56,13 @@ namespace ninaAPI.WebService
             });
             Server.UseMiddleware(async (session, next) =>
             {
-                Logger.Debug($"Request: {session.Request.Path}", "AdvancedAPI.Middleware");
-                using var sw = MyStopWatch.Measure("AdvancedAPI.Middleware");
-
                 try
                 {
                     await next();
                 }
                 catch (HttpException ex)
                 {
+                    Logger.Warning(ex.Message);
                     await HandleHttpException(session, ex);
                 }
                 catch (Exception ex)
@@ -140,7 +138,7 @@ namespace ninaAPI.WebService
 
                 foreach (var route in Server.Router.Routes)
                 {
-                    Logger.Debug($"Registered Route: {route.Path}, Method: {route.Method}, Host: {route.Host}");
+                    Logger.Trace($"Registered Route: {route.Path}, Method: {route.Method}, Host: {route.Host}");
                 }
 
                 Logger.Info("Starting web server");

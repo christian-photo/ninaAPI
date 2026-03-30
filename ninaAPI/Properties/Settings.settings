@@ -20,5 +20,11 @@
     <Setting Name="SelectedApiOption" Type="System.String" Scope="User">
       <Value Profile="(Default)">Both</Value>
     </Setting>
+    <Setting Name="ThumbnailLongAxis" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">256</Value>
+    </Setting>
+    <Setting Name="EnableTelemetry" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -133,6 +133,8 @@ namespace ninaAPI
                 CoreUtil.SaveSettings(Settings.Default);
             }
 
+            SimpleW.Observability.Log.SetSink((entry) => Logger.Info(entry.Message, entry.Source));
+
             PluginSettings = new PluginOptionsAccessor(Controls.Profile, Guid.Parse(this.Identifier));
             Controls.Profile.ProfileChanged += ProfileChanged;
 
@@ -276,6 +278,37 @@ namespace ninaAPI
             {
                 Settings.Default.CreateThumbnails = value;
                 CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public int ThumbnailLongAxis
+        {
+            get => Settings.Default.ThumbnailLongAxis;
+            set
+            {
+                Settings.Default.ThumbnailLongAxis = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public bool EnableTelemetry
+        {
+            get => Settings.Default.EnableTelemetry;
+            set
+            {
+                Settings.Default.EnableTelemetry = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                if (Server?.Server != null)
+                {
+                    if (value)
+                    {
+                        Server.Server.EnableTelemetry();
+                    }
+                    else
+                    {
+                        Server.Server.DisableTelemetry();
+                    }
+                }
             }
         }
 

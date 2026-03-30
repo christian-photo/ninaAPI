@@ -9,12 +9,14 @@
 
 #endregion "copyright"
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Media.Imaging;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Image.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
+using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Model;
@@ -68,7 +70,7 @@ namespace ninaAPI.WebService.V3.Application.Image
 
         private static string CacheThumbnail(ImageSavedEventArgs e)
         {
-            if (!Properties.Settings.Default.CreateThumbnails)
+            if (!Settings.Default.CreateThumbnails)
                 return string.Empty;
 
             lock (imageLock)
@@ -77,8 +79,9 @@ namespace ninaAPI.WebService.V3.Application.Image
                 Directory.CreateDirectory(thumbnailFile);
                 thumbnailFile = Path.Combine(thumbnailFile, $"{history.Count - 1}.png");
 
-                // TODO: Make the thumbnail configurable (either scale or long axis dimension)
-                var img = BitmapHelper.ScaleBitmap(e.Image, 256 / e.Image.Width);
+                double scale = Settings.Default.ThumbnailLongAxis / Math.Max(e.Image.Width, e.Image.Height);
+
+                var img = BitmapHelper.ScaleBitmap(e.Image, scale);
 
                 // Encode as png to minimize quality loss, the small dimensions should already be sufficient for decreasing the file size
                 PngBitmapEncoder encoder = new PngBitmapEncoder();

@@ -35,6 +35,7 @@ The event websocket now supports channels, which can be subscribed to per client
 - The response wrapper was removed in favor of smaller responses. All additional information is now carried by the status code
 - The error messages are now more consistent. They will always include the `Error` (the name of the status code) and optionally `Message` which may provide further information about the error.
 - Endpoints like `image-history` now support pagination
+- You can configure the long axis dimension for thumbnails
 - It is now possible to work with multiple captures, not just the last one
 - The TPPA websocket was separated into the event websocket and endpoints to control TPPA
 - Containers in the sequence are now marked with a `IsContainer: true` property instead of a suffixed name
