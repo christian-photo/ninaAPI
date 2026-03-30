@@ -44,11 +44,14 @@ namespace ninaAPI.WebService
             var serializer = SerializerFactory.GetSerializer();
 
             Server = new SimpleWServer(IPAddress.Any, Port);
-            Server.UseCorsModule(options =>
+            if (Settings.Default.UseAccessControlHeader)
             {
-                options.AllowedOrigins = ["*"];
-                options.AllowedMethods = "GET, POST, PUT, DELETE, OPTIONS";
-            });
+                Server.UseCorsModule(options =>
+                {
+                    options.AllowedOrigins = ["*"];
+                    options.AllowedMethods = "GET, POST, PUT, DELETE, OPTIONS";
+                });
+            }
             Server.OnStarted((server) =>
             {
                 Started?.Invoke(this, EventArgs.Empty);
