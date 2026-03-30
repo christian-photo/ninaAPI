@@ -11,6 +11,7 @@
 
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
+using ninaAPI.Properties;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
@@ -42,9 +43,11 @@ namespace ninaAPI.WebService
         {
             var serializer = SerializerFactory.GetSerializer();
 
-            Server = new SimpleWServer(IPAddress.Any, Port).UseCorsModule(options =>
+            Server = new SimpleWServer(IPAddress.Any, Port);
+            Server.UseCorsModule(options =>
             {
-                options.AllowAnyOrigin = true;
+                options.AllowedOrigins = ["*"];
+                options.AllowedMethods = "GET, POST, PUT, DELETE, OPTIONS";
             });
             Server.OnStarted((server) =>
             {

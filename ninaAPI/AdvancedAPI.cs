@@ -168,18 +168,18 @@ namespace ninaAPI
             if (SelectedApiOption == "V3")
             {
                 V3 ??= new V3Api();
-                Server.Start(V3);
+                Server.Start(V3).ConfigureAwait(false);
             }
             else if (SelectedApiOption == "V2")
             {
                 V2 ??= new V2Api();
-                Server.Start(V2);
+                Server.Start(V2).ConfigureAwait(false);
             }
             else if (SelectedApiOption == "Both")
             {
                 V2 ??= new V2Api();
                 V3 ??= new V3Api();
-                Server.Start(V2, V3);
+                Server.Start(V2, V3).ConfigureAwait(false);
             }
         }
 
@@ -286,8 +286,11 @@ namespace ninaAPI
             get => Settings.Default.ThumbnailLongAxis;
             set
             {
-                Settings.Default.ThumbnailLongAxis = value;
-                CoreUtil.SaveSettings(Settings.Default);
+                if (value > 1)
+                {
+                    Settings.Default.ThumbnailLongAxis = value;
+                    CoreUtil.SaveSettings(Settings.Default);
+                }
             }
         }
 
