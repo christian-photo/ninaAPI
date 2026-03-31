@@ -26,7 +26,7 @@ namespace ninaAPI.WebService.V3.Application.Profile
         {
             this.profileService = profileService;
 
-            Channel = WebSocketChannel.General;
+            Channel = WebSocketChannel.Profile;
         }
 
         public override void StartWatchers()

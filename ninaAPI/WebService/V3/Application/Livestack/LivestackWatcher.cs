@@ -33,7 +33,7 @@ namespace ninaAPI.WebService.V3.Application.Livestack
         /// <summary>
         /// Possible values are "running" and "stopped"
         /// </summary>
-        public static string LivestackStatus { get; private set; } = "stopped";
+        public static bool IsLivestackRunning { get; private set; } = false;
 
         public async Task OnMessageReceived(IMessage message)
         {
@@ -54,8 +54,8 @@ namespace ninaAPI.WebService.V3.Application.Livestack
 
         public async Task OnStatusReceived(IMessage message)
         {
-            LivestackStatus = message.Content.ToString();
-            await SubmitAndStoreEvent(WebSocketEvents.LIVESTACK_STATUS, new { Status = LivestackStatus });
+            IsLivestackRunning = message.Content.ToString().Equals("running");
+            await SubmitAndStoreEvent(WebSocketEvents.LIVESTACK_STATUS, new { IsRunning = IsLivestackRunning });
         }
 
         public async Task OnStackUpdateReceived(IMessage message)

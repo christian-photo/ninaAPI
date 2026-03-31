@@ -42,11 +42,10 @@ namespace ninaAPI.Utility.Http
 
     public enum WebSocketChannel
     {
-        General,
+        Profile,
         Sequence,
         Image,
         Equipment,
-        Capture,
         Livestack,
         TPPA,
         TargetScheduler,

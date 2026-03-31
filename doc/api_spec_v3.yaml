@@ -4195,12 +4195,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  Status:
-                    type: string
+                  IsRunning:
+                    type: boolean
                     description: The status of the livestack
-                    enum:
-                      - running
-                      - stopped
         default:
           description: Request could not be carried out
           content:
@@ -4260,29 +4257,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  BlueStackCount:
-                    type: integer
-                    description: The number of blue images in the stack
-                  Filter:
-                    type: string
-                    description: The filter of the stack
-                  GreenStackCount:
-                    type: integer
-                    description: The number of green images in the stack
-                  IsMonochrome:
-                    type: boolean
-                    description: Whether the stack is monochrome
-                  RedStackCount:
-                    type: integer
-                    description: The number of red images in the stack
-                  StackCount:
-                    type: integer
-                    description: The number of images in the stack
-                  Target:
-                    type: string
-                    description: The target of the stack
+                $ref: "#/components/schemas/LivestackImageInfo"
         default:
           description: Request could not be carried out
           content:
@@ -9249,6 +9224,36 @@ components:
           description: The duration over which the camera should warm up. If not specified, the default duration as set in NINA will be used
       required:
         - Duration
+
+    LivestackImageInfo:
+      type: object
+      properties:
+        BlueStackCount:
+          type: integer
+          description: The number of blue images in the stack
+        Filter:
+          type: string
+          description: The filter of the stack
+        GreenStackCount:
+          type: integer
+          description: The number of green images in the stack
+        IsMonochrome:
+          type: boolean
+          description: Whether the stack is monochrome
+        RedStackCount:
+          type: integer
+          description: The number of red images in the stack
+        StackCount:
+          type: integer
+          description: The number of images in the stack
+        Target:
+          type: string
+          description: The target of the stack
+      required:
+        - Filter
+        - Target
+        - IsMonochrome
+        - StackCount
 
     ApplicationStatus:
       type: object
