@@ -20,7 +20,7 @@ namespace ninaAPI.WebService.V3.Websocket.Event
     {
         public WebSocketChannel Channel { get; protected set; } = WebSocketChannel.Equipment;
 
-        private IEventSocket? eventSocket;
+        private IEventSocket eventSocket;
         private readonly EventHistoryManager eventHistory;
 
         public bool IsActive => eventSocket != null && eventSocket.HasConnections;

@@ -144,7 +144,8 @@ namespace ninaAPI
                 ActualPort = PreferredPort; // This may look useless, but that way the visibility only changes when cachedPort changes and not when the user enters a new port
             });
 
-            V3Api.StartEventWatchers(); // THis has to be done before the API is started because the event socket needs to be initialized
+            V2Api.StartWatchers();
+            V3Api.StartWatchers(); // This has to be done before the API is started because the event socket needs to be initialized
 
             if (APIEnabled)
             {
@@ -155,7 +156,6 @@ namespace ninaAPI
             communicator = new Communicator();
 
             SetHostNames();
-            WebApiServer.StartWatchers();
         }
 
         public static IHttpApi V3 { get; private set; }
@@ -207,8 +207,8 @@ namespace ninaAPI
             Server?.Stop();
             Server = null;
 
-            WebApiServer.StopWatchers();
-            V3Api.StopEventWatchers();
+            V2Api.StopWatchers();
+            V3Api.StopWatchers();
             communicator.Dispose();
 
             FileSystemHelper.Cleanup();

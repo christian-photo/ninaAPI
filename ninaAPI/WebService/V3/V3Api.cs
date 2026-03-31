@@ -83,7 +83,7 @@ namespace ninaAPI.WebService.V3
         // - Networked filterwheel
         // - Networked rotator
 
-        public static void StartEventWatchers()
+        public static void StartWatchers()
         {
             eventHistory = new EventHistoryManager();
             watchers =
@@ -114,7 +114,7 @@ namespace ninaAPI.WebService.V3
             }
         }
 
-        public static void StopEventWatchers()
+        public static void StopWatchers()
         {
             foreach (EventWatcher watcher in watchers)
             {

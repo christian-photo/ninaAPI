@@ -32,8 +32,6 @@ namespace ninaAPI.WebService
 
         public readonly int Port;
 
-        private static List<INinaWatcher> Watchers { get; set; } = new List<INinaWatcher>();
-
         public WebApiServer(int port)
         {
             Port = port;
@@ -97,41 +95,6 @@ namespace ninaAPI.WebService
             await session.Response.Status((int)exception.StatusCode).Text(serializer.Serialize(new { Error = error, Message = exception.Message }), serializer.MimeType).SendAsync();
         }
 
-        public static void StartWatchers()
-        {
-            Watchers.Add(new CameraWatcher());
-            Watchers.Add(new DomeWatcher());
-            Watchers.Add(new FilterWheelWatcher());
-            Watchers.Add(new FlatDeviceWatcher());
-            Watchers.Add(new FocuserWatcher());
-            Watchers.Add(new GuiderWatcher());
-            Watchers.Add(new MountWatcher());
-            Watchers.Add(new RotatorWatcher());
-            Watchers.Add(new SafetyWatcher());
-            Watchers.Add(new SwitchWatcher());
-            Watchers.Add(new WeatherWatcher());
-            Watchers.Add(new ImageWatcher());
-            Watchers.Add(new NinaLogWatcher());
-            Watchers.Add(new LiveStackWatcher());
-            Watchers.Add(new ProfileWatcher());
-            Watchers.Add(new TSWatcher());
-            Watchers.Add(new SequenceWatcher());
-
-            foreach (INinaWatcher watcher in Watchers)
-            {
-                watcher.StartWatchers();
-            }
-        }
-
-        public static void StopWatchers()
-        {
-            Logger.Info("Stopping all event watchers");
-            foreach (INinaWatcher watcher in Watchers)
-            {
-                watcher.StopWatchers();
-            }
-        }
-
         public async Task Start(params IHttpApi[] apis)
         {
             try
@@ -148,10 +111,7 @@ namespace ninaAPI.WebService
                 }
 
                 Logger.Info("Starting web server");
-                if (Server != null)
-                {
-                    await Server.StartAsync();
-                }
+                await Server.StartAsync();
             }
             catch (Exception ex)
             {

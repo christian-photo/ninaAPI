@@ -15,6 +15,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using NINA.Core.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
@@ -71,7 +72,7 @@ namespace ninaAPI.WebService.V3.Websocket.Event
 
                 if (message.Action == "Subscribe")
                 {
-                    if (message.Data is List<string> channels)
+                    if (message.Data is IList<string> channels)
                     {
                         foreach (string channel in channels)
                         {
@@ -86,7 +87,7 @@ namespace ninaAPI.WebService.V3.Websocket.Event
                 }
                 else if (message.Action == "Unsubscribe")
                 {
-                    if (message.Data is List<string> channels)
+                    if (message.Data is IList<string> channels)
                     {
                         foreach (string channel in channels)
                         {

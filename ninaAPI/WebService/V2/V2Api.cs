@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using System.Collections.Generic;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2.CustomDrivers;
 using SimpleW;
@@ -18,6 +19,8 @@ namespace ninaAPI.WebService.V2
 {
     public class V2Api : IHttpApi
     {
+        private static List<INinaWatcher> Watchers { get; set; } = new List<INinaWatcher>();
+
         public SimpleWServer ConfigureServer(SimpleWServer server)
         {
             server.MapController<ControllerV2>("/v2/api");
@@ -49,6 +52,40 @@ namespace ninaAPI.WebService.V2
             });
 
             return server;
+        }
+
+        public static void StartWatchers()
+        {
+            Watchers.Add(new CameraWatcher());
+            Watchers.Add(new DomeWatcher());
+            Watchers.Add(new FilterWheelWatcher());
+            Watchers.Add(new FlatDeviceWatcher());
+            Watchers.Add(new FocuserWatcher());
+            Watchers.Add(new GuiderWatcher());
+            Watchers.Add(new MountWatcher());
+            Watchers.Add(new RotatorWatcher());
+            Watchers.Add(new SafetyWatcher());
+            Watchers.Add(new SwitchWatcher());
+            Watchers.Add(new WeatherWatcher());
+            Watchers.Add(new ImageWatcher());
+            Watchers.Add(new NinaLogWatcher());
+            Watchers.Add(new LiveStackWatcher());
+            Watchers.Add(new ProfileWatcher());
+            Watchers.Add(new TSWatcher());
+            Watchers.Add(new SequenceWatcher());
+
+            foreach (INinaWatcher watcher in Watchers)
+            {
+                watcher.StartWatchers();
+            }
+        }
+
+        public static void StopWatchers()
+        {
+            foreach (INinaWatcher watcher in Watchers)
+            {
+                watcher.StopWatchers();
+            }
         }
 
         public bool SupportsSSL() => false;
