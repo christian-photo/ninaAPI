@@ -4395,152 +4395,39 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-    # /flats/skyflat:
-    #   get:
-    #     tags:
-    #       - Flats
-    #     summary: Sky flats
-    #     description: Start capturing sky flats. This requires the camera and mount to be connected. Any omitted parameter will default to the instruction default.
-    #     parameters:
-    #       - in: query
-    #         name: count
-    #         required: true
-    #         description: The number of flats to capture
-    #         example: 1
-    #         schema:
-    #           type: integer
-    #           minimum: 0
-    #       - in: query
-    #         name: minExposure
-    #         required: false
-    #         description: The minimum exposure time to use for the flats, in seconds
-    #         example: 0
-    #         schema:
-    #           type: number
-    #           minimum: 0
-    #       - in: query
-    #         name: maxExposure
-    #         required: false
-    #         description: The maximum exposure time to use for the flats, in seconds
-    #         example: 10
-    #         schema:
-    #           type: number
-    #           minimum: 0
-    #       - in: query
-    #         name: histogramMean
-    #         required: false
-    #         description: The mean to use for the histogram
-    #         example: 50
-    #         schema:
-    #           type: number
-    #           minimum: 0
-    #           maximum: 1
-    #       - in: query
-    #         name: meanTolerance
-    #         required: false
-    #         description: The tolerance to use for the histogram
-    #         example: 10
-    #         schema:
-    #           type: number
-    #           minimum: 0
-    #           maximum: 1
-    #       - in: query
-    #         name: dither
-    #         required: false
-    #         description: Whether to dither the flats
-    #         example: false
-    #         schema:
-    #           type: boolean
-    #       - in: query
-    #         name: filterId
-    #         required: false
-    #         description: The filter to use for the flats. The current filter will be used if this is not specified
-    #         schema:
-    #           type: integer
-    #           minimum: 0
-    #       - in: query
-    #         name: binning
-    #         required: false
-    #         description: The binning to use for the flats
-    #         example: 2x2
-    #         schema:
-    #           type: string
-    #       - in: query
-    #         name: gain
-    #         required: false
-    #         description: The gain to use for the flats. The camera gain will be used if this is not specified
-    #         schema:
-    #           type: integer
-    #           minimum: 0
-    #       - in: query
-    #         name: offset
-    #         required: false
-    #         description: The offset to use for the flats. The camera offset will be used if this is not specified
-    #         schema:
-    #           type: integer
-    #           minimum: 0
-    #     responses:
-    #       "200":
-    #         description: Success
-    #         content:
-    #           application/json:
-    #             schema:
-    #               type: object
-    #               properties:
-    #                 Response:
-    #                   type: string
-    #                   example: Process started
-    #                 Error:
-    #                   type: string
-    #                   example: ""
-    #                 StatusCode:
-    #                   type: integer
-    #                   example: 200
-    #                 Success:
-    #                   type: boolean
-    #                   example: true
-    #                 Type:
-    #                   type: string
-    #                   example: "API"
-    #       "400":
-    #         description: Could not start the process
-    #         content:
-    #           application/json:
-    #             schema:
-    #               type: object
-    #               properties:
-    #                 Response:
-    #                   oneOf:
-    #                     - type: string
-    #                       example: ""
-    #                     - type: array
-    #                       items:
-    #                         type: string
-    #                         description: A list of issues found during validation
-    #                 Error:
-    #                   type: string
-    #                   enum:
-    #                     - Process already running
-    #                     - Filter not available
-    #                     - Binning not available
-    #                     - Invalid gain
-    #                     - Invalid offset
-    #                     - Issues found
-    #                 StatusCode:
-    #                   type: integer
-    #                   example: 400
-    #                 Success:
-    #                   type: boolean
-    #                   example: false
-    #                 Type:
-    #                   type: string
-    #                   example: "API"
-    #       default:
-    #         description: Request could not be carried out
-    #         content:
-    #           application/json:
-    #             schema:
-    #               $ref: "#/components/schemas/Error"
+  /flats/skyflats:
+    get:
+      tags:
+        - Flats
+      summary: Sky Flats
+      description: Take Sky Flats. The sky flats instruction in NINA will be used here and the parameters will simply be passed on to the instruction. Any omitted parameter will default to the instruction default.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkyFlatConfig"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessStart200"
+        "409":
+          description: Process conflict
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
     # /flats/auto-brightness:
     #   get:
@@ -8935,6 +8822,48 @@ components:
           type: number
           minimum: 0
           maximum: 360
+
+    SkyFlatConfig:
+      type: object
+      properties:
+        MinExposure:
+          type: number
+          minimum: 0
+        MaxExposure:
+          type: number
+          minimum: 0
+        HistogramTargetPercentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+        MeanTolerance:
+          type: integer
+          minimum: 0
+          maximum: 100
+        ShouldDither:
+          description: Whether dithering should be used
+          type: boolean
+        Amount:
+          type: integer
+          minimum: 1
+        FilterId:
+          type: integer
+          minimum: 0
+        Binning:
+          $ref: "#/components/schemas/BinningMode"
+        Gain:
+          type: integer
+          minimum: 0
+        Offset:
+          type: integer
+          minimum: 0
+      required:
+        - MinExposure
+        - MaxExposure
+        - HistogramTargetPercentage
+        - MeanTolerance
+        - ShouldDither
+        - Amount
 
     DeviceList:
       type: array

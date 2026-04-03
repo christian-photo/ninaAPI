@@ -47,7 +47,7 @@ namespace ninaAPI.WebService.V3.Application.Framing
         {
             return new FramingInfoContainer(framingVM);
         }
-
+        // TODO: Get Image endpoint
         public async Task<FramingInfoContainer> FramingUpdate(FramingUpdate config)
         {
             Validator.ValidateObject(config, new ValidationContext(config)); // is there a better way to do this?

@@ -142,26 +142,61 @@ namespace ninaAPI.Utility
             return converted;
         }
 
+        /// <summary>
+        /// Checks if a value is between two values, both inclusive
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns>True if value >= min and value <= max</returns>
         public static bool IsBetween(this short value, int min, int max)
         {
             return value >= min && value <= max;
         }
 
+        /// <summary>
+        /// Checks if a value is between two values, both inclusive
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns>True if value >= min and value <= max</returns>
         public static bool IsBetween(this int value, int min, int max)
         {
             return value >= min && value <= max;
         }
 
+        /// <summary>
+        /// Checks if a value is between two values, both inclusive
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns>True if value >= min and value <= max</returns>
         public static bool IsBetween(this decimal value, decimal min, decimal max)
         {
             return value >= min && value <= max;
         }
 
+        /// <summary>
+        /// Checks if a value is between two values, both inclusive
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns>True if value >= min and value <= max</returns>
         public static bool IsBetween(this float value, float min, float max)
         {
             return IsBetween((decimal)value, (decimal)min, (decimal)max);
         }
 
+        /// <summary>
+        /// Checks if a value is between two values, both inclusive
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns>True if value >= min and value <= max</returns>
         public static bool IsBetween(this double value, double min, double max)
         {
             return IsBetween((decimal)value, (decimal)min, (decimal)max);
