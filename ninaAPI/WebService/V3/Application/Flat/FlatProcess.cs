@@ -33,7 +33,7 @@ namespace ninaAPI.WebService.V3.Application.Flat
         {
             return new SkyFlatProcess(
                 async (token) => await instruction.Execute(statusMediator.GetStatus(), token),
-                ApiProcessType.SkyFlats,
+                ApiProcessType.FlatInstruction,
                 instruction
             );
         }
@@ -50,7 +50,7 @@ namespace ninaAPI.WebService.V3.Application.Flat
                     DeterminedHistogramADU = instruction.DeterminedHistogramADU,
                     CurrentExposureTime = instruction.GetExposureItem().ExposureTime,
                     TotalIterations = instruction.GetIterations().Iterations,
-                    CompletedIterations = instruction.GetIterations().CompletedIterations,
+                    CompletedIterations = instruction.GetIterations().CompletedIterations, // TODO: Add progress to documentation
                 };
             }
             else
@@ -59,6 +59,39 @@ namespace ninaAPI.WebService.V3.Application.Flat
             }
 
             return progress;
+        }
+    }
+
+
+    public class AutoBrightnessFlatProcess : ApiProcess
+    {
+        private readonly AutoBrightnessFlat instruction;
+
+        private AutoBrightnessFlatProcess(Func<CancellationToken, Task> action, ApiProcessType type, AutoBrightnessFlat instruction) : base(action, type)
+        {
+            this.instruction = instruction;
+        }
+
+        public static AutoBrightnessFlatProcess Create(AutoBrightnessFlat instruction, IApplicationStatusMediator statusMediator)
+        {
+            return new AutoBrightnessFlatProcess(
+                async (token) => await instruction.Execute(statusMediator.GetStatus(), token),
+                ApiProcessType.FlatInstruction,
+                instruction
+            );
+        }
+
+        public override object GetProgress()
+        {
+            return new
+            {
+                Status = Status,
+                DeterminedHistogramADU = instruction.DeterminedHistogramADU,
+                CurrentExposureTime = instruction.GetExposureItem().ExposureTime,
+                DeterminedPanelBrightness = instruction.GetSetBrightnessItem().Brightness, // Not set from the beginning
+                TotalIterations = instruction.GetIterations().Iterations,
+                CompletedIterations = instruction.GetIterations().CompletedIterations, // TODO: Add progress to documentation
+            };
         }
     }
 }

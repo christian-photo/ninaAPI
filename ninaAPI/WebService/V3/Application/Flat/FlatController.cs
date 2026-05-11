@@ -102,34 +102,78 @@ namespace ninaAPI.WebService.V3.Application.Flat
             );
 
             flats.GetIterations().Iterations = config.Amount;
-            flats.MaxExposure = config.MaxExposure;
-            flats.MinExposure = config.MinExposure;
-            flats.HistogramTargetPercentage = config.HistogramTargetPercentage;
-            flats.HistogramTolerancePercentage = config.MeanTolerance;
-            flats.ShouldDither = config.ShouldDither;
-            if (config.Gain.HasValue)
-            {
-                flats.GetExposureItem().Gain = config.Gain.Value;
-            }
-            if (config.Offset.HasValue)
-            {
-                flats.GetExposureItem().Offset = config.Offset.Value;
-            }
+
+            if (config.MaxExposure.HasValue) flats.MaxExposure = config.MaxExposure.Value;
+            if (config.MinExposure.HasValue) flats.MinExposure = config.MinExposure.Value;
+            if (config.HistogramTargetPercentage.HasValue) flats.HistogramTargetPercentage = config.HistogramTargetPercentage.Value;
+            if (config.MeanTolerance.HasValue) flats.HistogramTolerancePercentage = config.MeanTolerance.Value;
+            if (config.ShouldDither.HasValue) flats.ShouldDither = config.ShouldDither.Value;
+            if (config.Gain.HasValue) flats.GetExposureItem().Gain = config.Gain.Value;
+            if (config.Offset.HasValue) flats.GetExposureItem().Offset = config.Offset.Value;
+            if (config.Binning != null) flats.GetExposureItem().Binning = config.Binning;
+
             if (config.FilterId.HasValue && config.FilterId.Value.IsBetween(0, profileService.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1))
             {
                 flats.GetSwitchFilterItem().Filter = profileService.ActiveProfile.FilterWheelSettings.FilterWheelFilters[config.FilterId.Value];
             }
-            if (config.Binning != null)
+
+
+            if (!flats.Validate())
             {
-                flats.GetExposureItem().Binning = config.Binning;
+                throw new HttpException(HttpStatusCode.BadRequest, "Could not start the sky flats instruction because validation failed");
+            }
+
+            var processId = processMediator.AddProcess(SkyFlatProcess.Create(flats, applicationStatus));
+            var result = processMediator.Start(processId);
+
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
+
+            return (response, statusCode);
+        }
+
+        public object AutoBrightnessFlats(AutoBrightnessFlatConfig config)
+        {
+            Validator.ValidateObject(config, new ValidationContext(config));
+
+            AutoBrightnessFlat flats = new AutoBrightnessFlat(
+                profileService,
+                camera,
+                imaging,
+                imageSaveMediator,
+                imageHistory,
+                filterWheel,
+                flatDevice
+            );
+
+            flats.GetIterations().Iterations = config.Amount;
+
+            if (config.MaxFlatPanelBrightness.HasValue && config.MaxFlatPanelBrightness.Value.IsBetween(flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness))
+            {
+                flats.MaxBrightness = config.MaxFlatPanelBrightness.Value;
+            }
+            if (config.MinFlatPanelBrightness.HasValue && config.MinFlatPanelBrightness.Value.IsBetween(flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness))
+            {
+                flats.MinBrightness = config.MinFlatPanelBrightness.Value;
+            }
+
+            if (config.HistogramTargetPercentage.HasValue) flats.HistogramTargetPercentage = config.HistogramTargetPercentage.Value;
+            if (config.MeanTolerance.HasValue) flats.HistogramTolerancePercentage = config.MeanTolerance.Value;
+            if (config.KeepClosed.HasValue) flats.KeepPanelClosed = config.KeepClosed.Value;
+            if (config.Gain.HasValue) flats.GetExposureItem().Gain = config.Gain.Value;
+            if (config.Offset.HasValue) flats.GetExposureItem().Offset = config.Offset.Value;
+            if (config.Binning != null) flats.GetExposureItem().Binning = config.Binning;
+
+            if (config.FilterId.HasValue && config.FilterId.Value.IsBetween(0, profileService.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1))
+            {
+                flats.GetSwitchFilterItem().Filter = profileService.ActiveProfile.FilterWheelSettings.FilterWheelFilters[config.FilterId.Value];
             }
 
             if (!flats.Validate())
             {
-                throw new HttpException(HttpStatusCode.BadRequest, "Could not start the sky flats instruction because there are issues with the configuration");
+                throw new HttpException(HttpStatusCode.BadRequest, "Could not start the sky flats instruction because validation failed");
             }
 
-            var processId = processMediator.AddProcess(SkyFlatProcess.Create(flats, applicationStatus));
+            var processId = processMediator.AddProcess(AutoBrightnessFlatProcess.Create(flats, applicationStatus));
             var result = processMediator.Start(processId);
 
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
@@ -143,26 +187,51 @@ namespace ninaAPI.WebService.V3.Application.Flat
         }
     }
 
+    public class AutoBrightnessFlatConfig
+    {
+        public int? MinFlatPanelBrightness { get; set; }
+        public int? MaxFlatPanelBrightness { get; set; }
+
+        [Range(0, 1)]
+        public double? HistogramTargetPercentage { get; set; }
+
+        [Range(0, 1)]
+        public double? MeanTolerance { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public double? ExposureTime { get; set; }
+
+        public bool? KeepClosed { get; set; }
+
+        [Range(0, int.MaxValue)]
+        [Required]
+        public int Amount { get; set; }
+
+        [Range(0, int.MaxValue)]
+        public int? FilterId { get; set; }
+
+        public BinningMode Binning { get; set; }
+
+        public int? Gain { get; set; }
+
+        public int? Offset { get; set; }
+    }
+
     public class SkyFlatConfig
     {
         [Range(0, double.MaxValue)]
-        [Required]
-        public double MinExposure { get; set; }
+        public double? MinExposure { get; set; }
 
         [Range(0, double.MaxValue)]
-        [Required]
-        public double MaxExposure { get; set; }
+        public double? MaxExposure { get; set; }
 
-        [Range(0, 100)]
-        [Required]
-        public short HistogramTargetPercentage { get; set; }
+        [Range(0, 1)]
+        public double? HistogramTargetPercentage { get; set; }
 
-        [Range(0, 100)]
-        [Required]
-        public short MeanTolerance { get; set; }
+        [Range(0, 1)]
+        public double? MeanTolerance { get; set; }
 
-        [Required]
-        public bool ShouldDither { get; set; }
+        public bool? ShouldDither { get; set; }
 
         [Range(1, int.MaxValue)]
         [Required]
@@ -170,7 +239,6 @@ namespace ninaAPI.WebService.V3.Application.Flat
 
         [Range(0, int.MaxValue)]
         public int? FilterId { get; set; }
-
 
         public BinningMode Binning { get; set; }
 

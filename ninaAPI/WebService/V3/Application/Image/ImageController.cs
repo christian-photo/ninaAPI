@@ -218,6 +218,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             return result;
         }
 
+        // TODO: Not documented
         public async Task GetPreparedImage(HttpSession session)
         {
             IProfile profile = profileService.ActiveProfile;

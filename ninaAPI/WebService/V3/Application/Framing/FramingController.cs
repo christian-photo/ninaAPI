@@ -52,53 +52,21 @@ namespace ninaAPI.WebService.V3.Application.Framing
         {
             Validator.ValidateObject(config, new ValidationContext(config)); // is there a better way to do this?
 
-            if (config.BoundHeight != null)
-            {
-                framingVM.BoundHeight = config.BoundHeight.Value;
-            }
-            if (config.BoundWidth != null)
-            {
-                framingVM.BoundWidth = config.BoundWidth.Value;
-            }
-            if (config.CameraHeight != null)
-            {
-                framingVM.CameraHeight = config.CameraHeight.Value;
-            }
-            if (config.CameraWidth != null)
-            {
-                framingVM.CameraWidth = config.CameraWidth.Value;
-            }
-            if (config.CameraPixelSize != null)
-            {
-                framingVM.CameraPixelSize = config.CameraPixelSize.Value;
-            }
+            if (config.BoundHeight != null) framingVM.BoundHeight = config.BoundHeight.Value;
+            if (config.BoundWidth != null) framingVM.BoundWidth = config.BoundWidth.Value;
+            if (config.CameraHeight != null) framingVM.CameraHeight = config.CameraHeight.Value;
+            if (config.CameraWidth != null) framingVM.CameraWidth = config.CameraWidth.Value;
+            if (config.CameraPixelSize != null) framingVM.CameraPixelSize = config.CameraPixelSize.Value;
+            if (!string.IsNullOrEmpty(config.DSOName)) framingVM.DSO.Name = config.DSOName;
+            if (config.FieldOfView != null) framingVM.FieldOfView = config.FieldOfView.Value;
+            if (config.FocalLength != null) framingVM.FocalLength = config.FocalLength.Value;
+            if (config.HorizontalPanels != null) framingVM.HorizontalPanels = config.HorizontalPanels.Value;
+            if (config.VerticalPanels != null) framingVM.VerticalPanels = config.VerticalPanels.Value;
+            if (config.FramingSource != null) framingVM.FramingAssistantSource = config.FramingSource.Value;
+
             if (config.Coordinates != null)
             {
                 await framingVM.SetCoordinates(new DeepSkyObject(framingVM.DSO.Name, config.Coordinates.ToCoordinates(), profileService.ActiveProfile.AstrometrySettings.Horizon));
-            }
-            if (!string.IsNullOrEmpty(config.DSOName))
-            {
-                framingVM.DSO.Name = config.DSOName;
-            }
-            if (config.FieldOfView != null)
-            {
-                framingVM.FieldOfView = config.FieldOfView.Value;
-            }
-            if (config.FocalLength != null)
-            {
-                framingVM.FocalLength = config.FocalLength.Value;
-            }
-            if (config.HorizontalPanels != null)
-            {
-                framingVM.HorizontalPanels = config.HorizontalPanels.Value;
-            }
-            if (config.VerticalPanels != null)
-            {
-                framingVM.VerticalPanels = config.VerticalPanels.Value;
-            }
-            if (config.FramingSource != null)
-            {
-                framingVM.FramingAssistantSource = config.FramingSource.Value;
             }
 
             return FramingInfo();

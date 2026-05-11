@@ -11,7 +11,6 @@
 
 
 using System;
-using System.Collections;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -41,7 +40,7 @@ namespace ninaAPI.WebService.V3.Application.Livestack
 
         public object GetLivestackStatus()
         {
-            return new { Status = LivestackWatcher.LivestackStatus };
+            return new { IsRunning = LivestackWatcher.IsLivestackRunning };
         }
 
         public async Task<StringResponse> StartLivestack()
