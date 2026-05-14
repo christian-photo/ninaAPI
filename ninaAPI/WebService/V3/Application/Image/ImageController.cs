@@ -187,8 +187,9 @@ namespace ninaAPI.WebService.V3.Application.Image
         }
 
         [Route("GET", "/:index/solve")]
-        public async Task<PlateSolveResult> ImageSolve(int index, PlatesolveConfig config)
+        public async Task<PlateSolveResult> ImageSolve(int index)
         {
+            PlatesolveConfig config = serializer.Deserialize<PlatesolveConfig>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config));
 
             IProfile profile = profileService.ActiveProfile;
@@ -223,7 +224,6 @@ namespace ninaAPI.WebService.V3.Application.Image
             return result;
         }
 
-        // TODO: Not documented
         [Route("GET", "/prepared")]
         public async Task GetPreparedImage()
         {
@@ -245,8 +245,9 @@ namespace ninaAPI.WebService.V3.Application.Image
         }
 
         [Route("GET", "/prepared/solve")]
-        public async Task<PlateSolveResult> PreparedImageSolve(PlatesolveConfig config)
+        public async Task<PlateSolveResult> PreparedImageSolve()
         {
+            PlatesolveConfig config = serializer.Deserialize<PlatesolveConfig>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config));
 
             IProfile profile = profileService.ActiveProfile;

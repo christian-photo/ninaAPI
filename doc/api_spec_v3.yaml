@@ -3651,6 +3651,86 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /image/prepared:
+    get:
+      tags:
+        - Image
+      summary: Get Prepared Image
+      description: Get the image shown in the image dockable
+      parameters:
+        - $ref: "#/components/parameters/ImageWidth"
+        - $ref: "#/components/parameters/ImageHeight"
+        - $ref: "#/components/parameters/ImageScale"
+        - $ref: "#/components/parameters/ImageQuality"
+        - $ref: "#/components/parameters/ImageFormat"
+        - $ref: "#/components/parameters/ImageStretchEnabled"
+        - $ref: "#/components/parameters/ImageStretchFactor"
+        - $ref: "#/components/parameters/ImageDebayerEnabled"
+        - $ref: "#/components/parameters/BayerPattern"
+        - $ref: "#/components/parameters/ImageUnlinkedStretchEnabled"
+        - $ref: "#/components/parameters/ImageBlackClipping"
+        - $ref: "#/components/parameters/RawConverter"
+      responses:
+        "200":
+          description: Success
+          content:
+            image/jpeg:
+              schema:
+                description: Image in jpeg format
+                type: string
+                format: binary
+            image/png:
+              schema:
+                description: Image in png format
+                type: string
+                format: binary
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /image/solve:
+    get:
+      tags:
+        - Image
+      summary: Solve Prepared Image
+      description: Solve the image shown in the image dockable
+      parameters:
+        - $ref: "#/components/parameters/ImageType"
+        - $ref: "#/components/parameters/ImageWidth"
+        - $ref: "#/components/parameters/ImageHeight"
+        - $ref: "#/components/parameters/ImageScale"
+        - $ref: "#/components/parameters/ImageQuality"
+        - $ref: "#/components/parameters/ImageFormat"
+        - $ref: "#/components/parameters/ImageStretchEnabled"
+        - $ref: "#/components/parameters/ImageStretchFactor"
+        - $ref: "#/components/parameters/ImageDebayerEnabled"
+        - $ref: "#/components/parameters/BayerPattern"
+        - $ref: "#/components/parameters/ImageUnlinkedStretchEnabled"
+        - $ref: "#/components/parameters/ImageBlackClipping"
+        - $ref: "#/components/parameters/RawConverter"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlatesolveConfig"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatesolveResult"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /image/history:
     get:
       tags:
