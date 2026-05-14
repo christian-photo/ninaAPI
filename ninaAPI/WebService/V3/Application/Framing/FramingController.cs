@@ -15,12 +15,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
 using NINA.Astrometry;
+using NINA.Core.Enum;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.V3.Service;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Application.Framing
@@ -49,6 +51,43 @@ namespace ninaAPI.WebService.V3.Application.Framing
             return new FramingInfoContainer(framingVM);
         }
 
+        // TODO: Test this endpoint
+        [Route("GET", "/image")]
+        public async Task GetImage()
+        {
+            IProfile profile = profileService.ActiveProfile;
+
+            // Here only scale, size, format and quality are used and these are the only ones that will be documented
+            ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile);
+            QueryParameter<double> raParameter = new QueryParameter<double>("ra", 0, true, (ra) => ra.IsBetween(-180, 180));
+            QueryParameter<double> decParameter = new QueryParameter<double>("dec", 0, true, (dec) => dec.IsBetween(-90, 90));
+            QueryParameter<Epoch> epochParameter = new QueryParameter<Epoch>("epoch", Epoch.J2000, false);
+            QueryParameter<SkySurveySource> sourceParameter = new QueryParameter<SkySurveySource>("source", SkySurveySource.CACHE, false);
+
+            imageQuery.Evaluate(Request);
+            var source = sourceParameter.Get(Request);
+            var ra = raParameter.Get(Request);
+            var dec = decParameter.Get(Request);
+            var epoch = epochParameter.Get(Request);
+
+            var coordinates = new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), epoch);
+
+            if (source != framingVM.FramingAssistantSource) framingVM.FramingAssistantSource = source;
+
+            var dso = new DeepSkyObject("api request", coordinates, profile.AstrometrySettings.Horizon);
+
+            var success = await framingVM.SetCoordinates(dso);
+
+            if (!success)
+            {
+                throw new HttpException(HttpStatusCode.InternalServerError, "Error while loading image");
+            }
+
+            var image = ImageService.ResizeBitmap(framingVM.ImageParameter.Image, imageQuery);
+            ImageWriter writer = ImageWriter.GetImageWriter(image, imageQuery.Format.Value);
+
+            await Response.Body(writer.Encode(imageQuery.Quality.Value), writer.MimeType).SendAsync();
+        }
 
         // TODO: Get Image endpoint
         [Route("PATCH", "/")]
