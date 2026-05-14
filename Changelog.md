@@ -2,6 +2,10 @@
 
 The changes for each individual (beta) release can be seen in each [release](https://github.com/christian-photo/ninaAPI/releases). This changelog will only cover the fully released versions.
 
+## 2.2.15.1
+
+- Fixed a wrong validation in the mount sync endpoint [#94](https://github.com/christian-photo/ninaAPI/issues/94)
+
 ## 2.2.15.0
 
 - Make profile change value more robust
@@ -13,7 +17,7 @@ The changes for each individual (beta) release can be seen in each [release](htt
 
 ## 2.2.14.5
 
-- Add support for floats when updating profile settings (#85)
+- Add support for floats when updating profile settings
 
 ## 2.2.14.4
 
