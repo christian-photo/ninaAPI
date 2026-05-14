@@ -466,7 +466,7 @@ namespace ninaAPI.WebService.V2
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Mount not connected", 400));
                 }
-                else if (!mount.GetInfo().CanSetPark || mount.GetInfo().AtPark)
+                else if (mount.GetInfo().AtPark)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Mount is parked", 400));
                 }
