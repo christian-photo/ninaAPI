@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2.CustomDrivers;
 using SimpleW;
@@ -21,7 +22,7 @@ namespace ninaAPI.WebService.V2
     {
         private static List<INinaWatcher> Watchers { get; set; } = new List<INinaWatcher>();
 
-        public SimpleWServer ConfigureServer(SimpleWServer server)
+        public SimpleWServer ConfigureServer(SimpleWServer server, ServiceProvider provider)
         {
             server.MapController<ControllerV2>("/v2/api");
 

@@ -13,6 +13,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
+using System.Runtime.Versioning;
 using NINA.Astrometry.Interfaces;
 using NINA.Core.Model.Equipment;
 using NINA.Equipment.Interfaces.Mediator;
@@ -24,12 +25,12 @@ using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Application.Flat
 {
-    public class FlatController : IHttpController
+    [Route("/v3/api/flats")]
+    public class FlatController : Controller
     {
         private readonly ICameraMediator camera;
         private readonly IProfileService profileService;
@@ -76,8 +77,11 @@ namespace ninaAPI.WebService.V3.Application.Flat
             this.applicationStatus = applicationStatus;
         }
 
-        public object SkyFlats(SkyFlatConfig config)
+        [Route("POST", "/sky")]
+        public object SkyFlats()
         {
+            SkyFlatConfig config = serializer.Deserialize<SkyFlatConfig>(Request.BodyString);
+
             Validator.ValidateObject(config, new ValidationContext(config));
 
             if (!camera.GetInfo().BinningModes.Any(b => b.Name == config.Binning?.Name))
@@ -131,8 +135,11 @@ namespace ninaAPI.WebService.V3.Application.Flat
             return (response, statusCode);
         }
 
-        public object AutoBrightnessFlats(AutoBrightnessFlatConfig config)
+        [Route("POST", "/auto-brightness")]
+        public object AutoBrightnessFlats()
         {
+            AutoBrightnessFlatConfig config = serializer.Deserialize<AutoBrightnessFlatConfig>(Request.BodyString);
+
             Validator.ValidateObject(config, new ValidationContext(config));
 
             AutoBrightnessFlat flats = new AutoBrightnessFlat(
@@ -179,11 +186,6 @@ namespace ninaAPI.WebService.V3.Application.Flat
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             return (response, statusCode);
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/skyfats", (HttpRequest request) => SkyFlats(serializer.Deserialize<SkyFlatConfig>(request.BodyString)));
         }
     }
 

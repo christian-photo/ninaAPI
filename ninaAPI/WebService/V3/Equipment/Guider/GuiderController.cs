@@ -19,12 +19,11 @@ using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Guider
 {
-    public class GuiderController : IHttpController
+    public class GuiderController : Controller
     {
         private readonly IGuiderMediator guider;
         private readonly IApplicationStatusMediator appStatus;
@@ -39,13 +38,18 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
             this.serializer = serializer;
         }
 
+        [Route("GET", "/")]
         public GuiderInfoResponse GuiderInfo()
         {
             return new GuiderInfoResponse(guider);
         }
 
-        public object StartGuiding(GuiderStartGuidingBody body)
+        [Route("POST", "/guiding/start")]
+        public object StartGuiding()
         {
+            GuiderStartGuidingBody body = serializer.Deserialize<GuiderStartGuidingBody>(Request.BodyString);
+            Validator.ValidateObject(body, new ValidationContext(body));
+
             if (!guider.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Guider);
@@ -64,18 +68,20 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
             return (response, statusCode);
         }
 
-        public async Task<StringResponse> StopGuiding(HttpSession session)
+        [Route("POST", "/guiding/stop")]
+        public async Task<StringResponse> StopGuiding()
         {
             if (!guider.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Guider);
             }
 
-            bool success = await guider.StopGuiding(session.RequestAborted); // TODO: Check why maybe false
+            bool success = await guider.StopGuiding(Session.RequestAborted); // TODO: Check why maybe false
 
             return new StringResponse("Guiding stopped");
         }
 
+        [Route("POST", "/guiding/dither")]
         public object Dither()
         {
             if (!guider.GetInfo().Connected)
@@ -94,7 +100,8 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
             return (response, statusCode);
         }
 
-        public async Task<StringResponse> ClearCalibration(HttpSession session)
+        [Route("DELETE", "/guiding/calibration")]
+        public async Task<StringResponse> ClearCalibration()
         {
             if (!guider.GetInfo().Connected)
             {
@@ -105,21 +112,23 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
                 throw new HttpException(HttpStatusCode.Conflict, "Guider can not clear calibration");
             }
 
-            bool success = await guider.ClearCalibration(session.RequestAborted); // TODO: Check why maybe false
+            bool success = await guider.ClearCalibration(Session.RequestAborted); // TODO: Check why maybe false
 
             return new StringResponse("Calibration cleared");
         }
 
-        public object GuidingGraph(HttpSession session)
+        [Route("GET", "/guiding")]
+        public object GuidingGraph()
         {
             var pagerParameter = PagerParameterSet.Default();
-            pagerParameter.Evaluate(session.Request);
+            pagerParameter.Evaluate(Request);
 
             Pager<GuideStep> steps = new Pager<GuideStep>(GuiderWatcher.GuideStepHistory.ToList());
 
             return steps.GetPage(pagerParameter.PageParameter.Value, pagerParameter.PageSizeParameter.Value);
         }
 
+        [Route("PATCH", "/guiding")]
         public StringResponse SetGuidingHistoryLength(GuidingHistoryLengthBody body)
         {
             Validator.ValidateObject(body, new ValidationContext(body));
@@ -128,21 +137,11 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
 
             return new StringResponse("History length set");
         }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, () => GuiderInfo());
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/guiding/start", (HttpSession session) => StartGuiding(serializer.Deserialize<GuiderStartGuidingBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/guiding/stop", async (HttpSession session) => await StopGuiding(session));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/guiding/dither", () => Dither());
-            server.Map(HttpVerbs.DELETE.ToString(), prefix + "/guiding/calibration", (HttpSession session) => ClearCalibration(session));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/guiding", (HttpSession session) => GuidingGraph(session));
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/guiding", (HttpSession session) => SetGuidingHistoryLength(serializer.Deserialize<GuidingHistoryLengthBody>(session.Request.BodyString)));
-        }
     }
 
     public class GuiderStartGuidingBody
     {
+        [Required]
         public bool ForceCalibration { get; set; }
     }
 

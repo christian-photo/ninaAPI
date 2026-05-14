@@ -37,6 +37,12 @@ namespace ninaAPI.WebService.V3.Application.Sequence
         SkipToEnd,
     }
 
+    public class SequenceSkipModel
+    {
+        [Required]
+        public SequenceSkipType SkipType { get; set; }
+    }
+
     public class SequenceTarget
     {
         public string TargetName { get; set; }

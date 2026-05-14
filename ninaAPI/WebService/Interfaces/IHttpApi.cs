@@ -9,13 +9,14 @@
 
 #endregion "copyright"
 
+using Microsoft.Extensions.DependencyInjection;
 using SimpleW;
 
 namespace ninaAPI.WebService.Interfaces
 {
     public interface IHttpApi
     {
-        public SimpleWServer ConfigureServer(SimpleWServer server);
+        public SimpleWServer ConfigureServer(SimpleWServer server, ServiceProvider provider);
         public bool SupportsSSL();
     }
 }

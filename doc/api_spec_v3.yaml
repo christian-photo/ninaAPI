@@ -14,7 +14,7 @@ paths:
       summary: Plugin Version
       description: Returns the installed plugin version.
       responses:
-        '200':
+        "200":
           description: Version
           content:
             application/json:
@@ -41,7 +41,7 @@ paths:
           schema:
             type: boolean
       responses:
-        '200':
+        "200":
           description: Version
           content:
             application/json:
@@ -67,7 +67,7 @@ paths:
       summary: NINA start time
       description: Returns the time NINA was started.
       responses:
-        '200':
+        "200":
           description: Application start time
           content:
             application/json:
@@ -87,7 +87,7 @@ paths:
       summary: Current time
       description: Returns the current local time.
       responses:
-        '200':
+        "200":
           description: Local time
           content:
             application/json:
@@ -115,7 +115,7 @@ paths:
             type: string
             format: guid
       responses:
-        '200':
+        "200":
           description: Process status
           content:
             application/json:
@@ -124,19 +124,19 @@ paths:
                   - type: object
                     properties:
                       Status:
-                        $ref: '#/components/schemas/ApiProcessStatusEnum'
+                        $ref: "#/components/schemas/ApiProcessStatusEnum"
                     required:
                       - Status
-                  - $ref: '#/components/schemas/AutoFocusProgress'
-                  - $ref: '#/components/schemas/MeridianFlipProgress'
-                  - $ref: '#/components/schemas/SkyFlatProgress'
-                  - $ref: '#/components/schemas/AutoBrightnessFlatProgress'
+                  - $ref: "#/components/schemas/AutoFocusProgress"
+                  - $ref: "#/components/schemas/MeridianFlipProgress"
+                  - $ref: "#/components/schemas/SkyFlatProgress"
+                  - $ref: "#/components/schemas/AutoBrightnessFlatProgress"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - Process
@@ -151,7 +151,7 @@ paths:
             type: string
             format: guid
       responses:
-        '200':
+        "200":
           description: Process aborted, returns the status of the process
           content:
             application/json:
@@ -164,7 +164,7 @@ paths:
                         example: Finished
                     required:
                       - Status
-        '400':
+        "400":
           description: Invalid process ID format
           content:
             application/json:
@@ -180,7 +180,7 @@ paths:
                 required:
                   - Error
                   - Message
-        '404':
+        "404":
           description: Process not found
           content:
             application/json:
@@ -212,7 +212,7 @@ paths:
             type: string
             format: guid
       responses:
-        '200':
+        "200":
           description: Process aborted, returns the status of the process
           content:
             application/json:
@@ -225,7 +225,7 @@ paths:
                         example: Finished
                     required:
                       - Status
-        '400':
+        "400":
           description: Invalid process ID format
           content:
             application/json:
@@ -241,7 +241,7 @@ paths:
                 required:
                   - Error
                   - Message
-        '404':
+        "404":
           description: Process not found
           content:
             application/json:
@@ -265,18 +265,18 @@ paths:
       summary: Information
       description: This endpoint returns information about the camera.
       responses:
-        '200':
+        "200":
           description: Camera Info
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CameraInfo'
+                $ref: "#/components/schemas/CameraInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/connect:
     post:
@@ -292,18 +292,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/disconnect:
     post:
@@ -312,18 +312,18 @@ paths:
       summary: Disconnect
       description: This endpoint disconnects the camera.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/action:
     post:
@@ -336,20 +336,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionConfig'
+              $ref: "#/components/schemas/ActionConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/list-devices:
     get:
@@ -358,18 +358,18 @@ paths:
       summary: List Devices
       description: List all devices which can be connected
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/rescan:
     post:
@@ -378,18 +378,18 @@ paths:
       summary: Rescan for cameras
       description: Rescans for new devices, and returns a list of all available devices
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/usb-limit:
     put:
@@ -402,20 +402,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/USBLimitUpdateBody'
+              $ref: "#/components/schemas/USBLimitUpdateBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/readout:
     put:
@@ -428,20 +428,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReadoutModeUpdateBody'
+              $ref: "#/components/schemas/ReadoutModeUpdateBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/readout/image:
     put:
@@ -454,20 +454,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReadoutModeUpdateBody'
+              $ref: "#/components/schemas/ReadoutModeUpdateBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/readout/snapshot:
     put:
@@ -480,20 +480,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReadoutModeUpdateBody'
+              $ref: "#/components/schemas/ReadoutModeUpdateBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/cool:
     post:
@@ -506,28 +506,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CoolCameraBody'
+              $ref: "#/components/schemas/CoolCameraBody"
       responses:
-        '200':
+        "202":
           description: Cooling started
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/warm:
     post:
@@ -540,28 +540,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WarmCameraBody'
+              $ref: "#/components/schemas/WarmCameraBody"
       responses:
-        '200':
+        "202":
           description: Warming started
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/abort-exposure:
     post:
@@ -570,18 +570,18 @@ paths:
       summary: Exposure Abort
       description: This endpoint aborts the current exposure.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/dew-heater:
     put:
@@ -594,20 +594,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DewHeaterUpdateBody'
+              $ref: "#/components/schemas/DewHeaterUpdateBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/binning:
     put:
@@ -620,20 +620,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BinningMode'
+              $ref: "#/components/schemas/BinningMode"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/capture:
     post:
@@ -646,9 +646,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CaptureConfig'
+              $ref: "#/components/schemas/CaptureConfig"
       responses:
-        '200':
+        "200":
           description: Capture started
           content:
             application/json:
@@ -663,20 +663,20 @@ paths:
                     type: string
                     format: guid
                     example: 4dcefaca-f9d9-4e13-b2e5-6cfb6dc517f3
-        '409':
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/capture/{id}:
     get:
@@ -692,20 +692,20 @@ paths:
             type: string
             format: guid
             example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
-        - $ref: '#/components/parameters/ImageWidth'
-        - $ref: '#/components/parameters/ImageHeight'
-        - $ref: '#/components/parameters/ImageScale'
-        - $ref: '#/components/parameters/ImageQuality'
-        - $ref: '#/components/parameters/ImageFormat'
-        - $ref: '#/components/parameters/ImageStretchEnabled'
-        - $ref: '#/components/parameters/ImageStretchFactor'
-        - $ref: '#/components/parameters/ImageDebayerEnabled'
-        - $ref: '#/components/parameters/BayerPattern'
-        - $ref: '#/components/parameters/ImageUnlinkedStretchEnabled'
-        - $ref: '#/components/parameters/ImageBlackClipping'
-        - $ref: '#/components/parameters/RawConverter'
+        - $ref: "#/components/parameters/ImageWidth"
+        - $ref: "#/components/parameters/ImageHeight"
+        - $ref: "#/components/parameters/ImageScale"
+        - $ref: "#/components/parameters/ImageQuality"
+        - $ref: "#/components/parameters/ImageFormat"
+        - $ref: "#/components/parameters/ImageStretchEnabled"
+        - $ref: "#/components/parameters/ImageStretchFactor"
+        - $ref: "#/components/parameters/ImageDebayerEnabled"
+        - $ref: "#/components/parameters/BayerPattern"
+        - $ref: "#/components/parameters/ImageUnlinkedStretchEnabled"
+        - $ref: "#/components/parameters/ImageBlackClipping"
+        - $ref: "#/components/parameters/RawConverter"
       responses:
-        '200':
+        "200":
           description: Capture found
           content:
             image/jpeg:
@@ -723,7 +723,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - Camera
@@ -738,7 +738,7 @@ paths:
             format: guid
             example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
@@ -755,7 +755,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/capture/{id}/analysis:
     get:
@@ -775,33 +775,33 @@ paths:
           name: raw-converter
           required: false
           schema:
-            $ref: '#/components/schemas/RawConverterEnum'
+            $ref: "#/components/schemas/RawConverterEnum"
         - in: query
           name: star-sensitivity
           required: false
           schema:
-            $ref: '#/components/schemas/StarSensitivityEnum'
+            $ref: "#/components/schemas/StarSensitivityEnum"
         - in: query
           name: noise-reduction
           required: false
           schema:
-            $ref: '#/components/schemas/NoiseReductionEnum'
+            $ref: "#/components/schemas/NoiseReductionEnum"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CaptureAnalysis'
+                $ref: "#/components/schemas/CaptureAnalysis"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/camera/capture/{id}/solve:
-    post:
+    get:
       tags:
         - Camera
       summary: Platesolve capture
@@ -819,20 +819,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PlatesolveConfig'
+              $ref: "#/components/schemas/PlatesolveConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlatesolveResult'
+                $ref: "#/components/schemas/PlatesolveResult"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome:
     get:
@@ -841,18 +841,18 @@ paths:
       summary: Information
       description: This endpoint returns information about the dome.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomeInfo'
+                $ref: "#/components/schemas/DomeInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/connect:
     post:
@@ -868,18 +868,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/disconnect:
     post:
@@ -888,18 +888,18 @@ paths:
       summary: Disconnect
       description: This endpoint disconnects the dome.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/action:
     post:
@@ -912,20 +912,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionConfig'
+              $ref: "#/components/schemas/ActionConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/list-devices:
     get:
@@ -934,18 +934,18 @@ paths:
       summary: List Devices
       description: List all devices which can be connected
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/rescan:
     post:
@@ -954,18 +954,18 @@ paths:
       summary: Rescan for domes
       description: Rescans for new devices, and returns a list of all available devices
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/shutter/open:
     post:
@@ -974,26 +974,26 @@ paths:
       summary: Open Shutter
       description: Open Dome Shutter. This will verify that the dome is connected and the shutter is not already open or opening.
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/shutter/close:
     post:
@@ -1002,26 +1002,26 @@ paths:
       summary: Close Shutter
       description: Close Dome Shutter. This will verify that the dome is connected and the shutter is not already closed or closing.
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/stop-movement:
     post:
@@ -1030,21 +1030,21 @@ paths:
       summary: Stop Dome Movement
       description: Stops any Dome movement, even if it was not started by the api.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-  /equipment/dome/set-follow:
-    post:
+  /equipment/dome/follow:
+    put:
       tags:
         - Dome
       summary: Set Dome follow
@@ -1054,20 +1054,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DomeFollowBody'
+              $ref: "#/components/schemas/DomeFollowBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/sync:
     post:
@@ -1080,20 +1080,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DomeSyncBody'
+              $ref: "#/components/schemas/DomeSyncBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/slew:
     post:
@@ -1106,28 +1106,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DomeSlewBody'
+              $ref: "#/components/schemas/DomeSlewBody"
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/park:
     patch:
@@ -1136,7 +1136,7 @@ paths:
       summary: Set Park Position
       description: Sets the current dome position as park position, if supported
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
@@ -1153,33 +1153,33 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     post:
       tags:
         - Dome
       summary: Park
       description: Parks the dome. Checks that the dome is not parked or slewing
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/dome/home:
     get:
@@ -1188,26 +1188,26 @@ paths:
       summary: Home
       description: Moves the dome to its home position. Checks that the dome is not parked or slewing
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel:
     get:
@@ -1216,18 +1216,18 @@ paths:
       summary: Information
       description: Get Filterwheel information
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FWInfo'
+                $ref: "#/components/schemas/FWInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/connect:
     post:
@@ -1243,18 +1243,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/disconnect:
     post:
@@ -1263,18 +1263,18 @@ paths:
       summary: Disconnect
       description: This endpoint disconnects the filterwheel.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/action:
     post:
@@ -1287,20 +1287,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionConfig'
+              $ref: "#/components/schemas/ActionConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/list-devices:
     get:
@@ -1309,18 +1309,18 @@ paths:
       summary: List Devices
       description: List all devices which can be connected
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/rescan:
     post:
@@ -1329,18 +1329,18 @@ paths:
       summary: Rescan Devices
       description: Rescans for new devices, and returns a list of all available devices
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/filterwheel/filter:
     put:
@@ -1356,26 +1356,26 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     post:
       tags:
         - FilterWheel
@@ -1386,20 +1386,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateFilterBody'
+              $ref: "#/components/schemas/CreateFilterBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CustomFilterDataFull'
+                $ref: "#/components/schemas/CustomFilterDataFull"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - FilterWheel
@@ -1413,18 +1413,18 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice:
     get:
@@ -1433,18 +1433,18 @@ paths:
       summary: Information
       description: Get information about the flat panel
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FlatDeviceInfo'
+                $ref: "#/components/schemas/FlatDeviceInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/connect:
     post:
@@ -1460,18 +1460,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/disconnect:
     post:
@@ -1480,18 +1480,18 @@ paths:
       summary: Disconnect
       description: Disconnect the flat panel
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/action:
     post:
@@ -1504,20 +1504,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionConfig'
+              $ref: "#/components/schemas/ActionConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/list-devices:
     get:
@@ -1526,18 +1526,18 @@ paths:
       summary: List Devices
       description: List all devices which can be connected
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/rescan:
     post:
@@ -1546,18 +1546,18 @@ paths:
       summary: Rescan Devices
       description: Rescans for new devices, and returns a list of all available devices
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/light:
     patch:
@@ -1570,20 +1570,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FlatLightUpdateBody'
+              $ref: "#/components/schemas/FlatLightUpdateBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/brightness:
     patch:
@@ -1596,20 +1596,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FlatBrightnessUpdateBody'
+              $ref: "#/components/schemas/FlatBrightnessUpdateBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/cover/open:
     post:
@@ -1618,18 +1618,18 @@ paths:
       summary: Open Cover
       description: Open the cover of the flatpanel
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/flatdevice/cover/close:
     post:
@@ -1638,18 +1638,18 @@ paths:
       summary: Close Cover
       description: Close the cover of the flatpanel
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser:
     get:
@@ -1658,18 +1658,18 @@ paths:
       summary: Information
       description: Get the focuser info
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FocuserInfo'
+                $ref: "#/components/schemas/FocuserInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/connect:
     post:
@@ -1685,18 +1685,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/disconnect:
     post:
@@ -1705,18 +1705,18 @@ paths:
       summary: Disconnect
       description: Disconnect the focuser
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/action:
     post:
@@ -1729,20 +1729,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionConfig'
+              $ref: "#/components/schemas/ActionConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/list-devices:
     get:
@@ -1751,18 +1751,18 @@ paths:
       summary: List Devices
       description: List all devices which can be connected
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/rescan:
     post:
@@ -1771,18 +1771,18 @@ paths:
       summary: Rescan Devices
       description: Rescans for new devices, and returns a list of all available devices
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/move:
     post:
@@ -1795,28 +1795,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FocuserMoveBody'
+              $ref: "#/components/schemas/FocuserMoveBody"
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/temp-comp:
     patch:
@@ -1829,20 +1829,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FocuserTempCompBody'
+              $ref: "#/components/schemas/FocuserTempCompBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/auto-focus:
     post:
@@ -1851,26 +1851,26 @@ paths:
       summary: Auto Focus
       description: Start an AF. When getting the progress of the process, the response will contain additional autofocus information
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/auto-focus/list-reports:
     get:
@@ -1879,20 +1879,20 @@ paths:
       summary: List Autofocus Reports
       description: List all autofocus reports
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AutoFocusReportListEntry'
+                  $ref: "#/components/schemas/AutoFocusReportListEntry"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/focuser/auto-focus/get-report:
     get:
@@ -1908,18 +1908,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AutoFocusReport'
+                $ref: "#/components/schemas/AutoFocusReport"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider:
     get:
@@ -1928,18 +1928,18 @@ paths:
       summary: Information
       description: Get guider information. For guiding information either use the websocket stream or the /equipment/guider/guiding/graph endpoint
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GuiderInfo'
+                $ref: "#/components/schemas/GuiderInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/connect:
     get:
@@ -1955,18 +1955,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/disconnect:
     post:
@@ -1975,18 +1975,18 @@ paths:
       summary: Disconnect
       description: Disconnect the guider
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/action:
     post:
@@ -1999,20 +1999,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionConfig'
+              $ref: "#/components/schemas/ActionConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/list-devices:
     get:
@@ -2021,18 +2021,18 @@ paths:
       summary: List Devices
       description: List all devices which can be connected
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/rescan:
     post:
@@ -2041,18 +2041,18 @@ paths:
       summary: Rescan Devices
       description: Rescans for new devices, and returns a list of all available devices
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/guiding/start:
     post:
@@ -2065,28 +2065,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GuiderStartGuidingBody'
+              $ref: "#/components/schemas/GuiderStartGuidingBody"
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/guiding/stop:
     post:
@@ -2095,18 +2095,18 @@ paths:
       summary: Stop Guiding
       description: Stop guiding
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/guiding/calibration:
     delete:
@@ -2115,18 +2115,18 @@ paths:
       summary: Clear Calibration
       description: Clears the calibration data, forces the guider to recalibrate when it starts guiding
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/guiding:
     get:
@@ -2152,18 +2152,18 @@ paths:
             minimum: -1
             default: 20
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GuideStepsHistory'
+                $ref: "#/components/schemas/GuideStepsHistory"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     patch:
       tags:
         - Guider
@@ -2174,20 +2174,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GuidingHistoryLengthBody'
+              $ref: "#/components/schemas/GuidingHistoryLengthBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/guider/guiding/dither:
     post:
@@ -2196,26 +2196,26 @@ paths:
       summary: Dither
       description: Start a dither
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Can't dither
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount:
     get:
@@ -2224,18 +2224,18 @@ paths:
       summary: Information
       description: Get mount information
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MountInfo'
+                $ref: "#/components/schemas/MountInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/connect:
     post:
@@ -2251,18 +2251,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/disconnect:
     post:
@@ -2271,18 +2271,18 @@ paths:
       summary: Disconnect
       description: Disconnect the mount
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/action:
     post:
@@ -2295,20 +2295,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionConfig'
+              $ref: "#/components/schemas/ActionConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/list-devices:
     get:
@@ -2317,18 +2317,18 @@ paths:
       summary: List Devices
       description: List all devices which can be connected
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/rescan:
     post:
@@ -2337,18 +2337,18 @@ paths:
       summary: Rescan Devices
       description: Rescans for new devices, and returns a list of all available devices
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/home:
     post:
@@ -2357,26 +2357,26 @@ paths:
       summary: Home
       description: Home the mount
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Can't home
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/tracking:
     patch:
@@ -2389,20 +2389,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateTrackingModeBody'
+              $ref: "#/components/schemas/UpdateTrackingModeBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/park:
     post:
@@ -2411,44 +2411,44 @@ paths:
       summary: Park
       description: Park the mount
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Can't park
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     patch:
       tags:
         - Mount
       summary: Set Park
       description: Sets the current mount position as park position. This requires the mount to be unparked.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/unpark:
     post:
@@ -2457,18 +2457,18 @@ paths:
       summary: Unpark
       description: Unpark the mount
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/flip:
     post:
@@ -2481,28 +2481,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MountFlipConfig'
+              $ref: "#/components/schemas/MountFlipConfig"
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Can't flip
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/slew:
     post:
@@ -2515,28 +2515,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MountSlewConfig'
+              $ref: "#/components/schemas/MountSlewConfig"
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Can't slew
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/slew/stop:
     post:
@@ -2545,18 +2545,18 @@ paths:
       summary: Stop Slew
       description: Stops any slew, even if it was not started using the api. If you started a slew using the api, you should use the process id to stop it
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/mount/sync:
     patch:
@@ -2571,30 +2571,30 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MountSyncConfig'
+              $ref: "#/components/schemas/MountSyncConfig"
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart200'
-                  - $ref: '#/components/schemas/StringResponse'
-        '409':
+                  - $ref: "#/components/schemas/ProcessStart202"
+                  - $ref: "#/components/schemas/StringResponse"
+        "409":
           description: Can't sync
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator:
     get:
@@ -2603,18 +2603,18 @@ paths:
       summary: Information
       description: Get rotator information
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RotatorInfo'
+                $ref: "#/components/schemas/RotatorInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/connect:
     post:
@@ -2630,18 +2630,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/disconnect:
     post:
@@ -2650,18 +2650,18 @@ paths:
       summary: Disconnect
       description: Disconnect the rotator
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/action:
     post:
@@ -2674,20 +2674,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionConfig'
+              $ref: "#/components/schemas/ActionConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/list-devices:
     get:
@@ -2696,18 +2696,18 @@ paths:
       summary: List Devices
       description: List all devices which can be connected
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/rescan:
     post:
@@ -2716,18 +2716,18 @@ paths:
       summary: Rescan Devices
       description: Rescans for new devices, and returns a list of all available devices
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/move:
     post:
@@ -2740,28 +2740,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RotatorMoveConfig'
+              $ref: "#/components/schemas/RotatorMoveConfig"
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/rotator/sync:
     patch:
@@ -2776,30 +2776,30 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RotatorSyncConfig'
+              $ref: "#/components/schemas/RotatorSyncConfig"
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart200'
-                  - $ref: '#/components/schemas/StringResponse'
-        '409':
+                  - $ref: "#/components/schemas/ProcessStart202"
+                  - $ref: "#/components/schemas/StringResponse"
+        "409":
           description: Can't sync
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/safety:
     get:
@@ -2808,18 +2808,18 @@ paths:
       summary: Information
       description: Get safety monitor information
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SafetyMonitorInfo'
+                $ref: "#/components/schemas/SafetyMonitorInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/safety/connect:
     post:
@@ -2835,18 +2835,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/safety/disconnect:
     post:
@@ -2855,18 +2855,18 @@ paths:
       summary: Disconnect
       description: Disconnect the safety monitor
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/safety/action:
     post:
@@ -2879,20 +2879,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionConfig'
+              $ref: "#/components/schemas/ActionConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/safety/list-devices:
     get:
@@ -2901,18 +2901,18 @@ paths:
       summary: List Devices
       description: List all devices which can be connected
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/safety/rescan:
     post:
@@ -2921,18 +2921,18 @@ paths:
       summary: Rescan Devices
       description: Rescans for new devices, and returns a list of all available devices
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch:
     get:
@@ -2941,18 +2941,18 @@ paths:
       summary: Information
       description: Get switch information
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SwitchInfo'
+                $ref: "#/components/schemas/SwitchInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     patch:
       tags:
         - Switch
@@ -2963,20 +2963,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SwitchSetValueConfig'
+              $ref: "#/components/schemas/SwitchSetValueConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/connect:
     post:
@@ -2992,18 +2992,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/disconnect:
     post:
@@ -3012,18 +3012,18 @@ paths:
       summary: Disconnect
       description: Disconnect the switch
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/action:
     post:
@@ -3036,20 +3036,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionConfig'
+              $ref: "#/components/schemas/ActionConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/list-devices:
     get:
@@ -3058,18 +3058,18 @@ paths:
       summary: List Devices
       description: List all devices which can be connected
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/switch/rescan:
     post:
@@ -3078,18 +3078,18 @@ paths:
       summary: Rescan Devices
       description: Rescans for new devices, and returns a list of all available devices
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/weather:
     get:
@@ -3098,18 +3098,18 @@ paths:
       summary: Information
       description: Get weather information
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WeatherInfo'
+                $ref: "#/components/schemas/WeatherInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/weather/connect:
     post:
@@ -3125,18 +3125,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/weather/disconnect:
     post:
@@ -3145,18 +3145,18 @@ paths:
       summary: Disconnect
       description: Disconnect the weather
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/weather/action:
     post:
@@ -3169,20 +3169,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionConfig'
+              $ref: "#/components/schemas/ActionConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/weather/list-devices:
     get:
@@ -3191,18 +3191,18 @@ paths:
       summary: List Weather Sources
       description: List all weather sources which can be connected
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /equipment/weather/rescan:
     post:
@@ -3211,18 +3211,18 @@ paths:
       summary: Rescan Sources
       description: Rescans for new weather sources, and returns a list of all available sources
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceList'
+                $ref: "#/components/schemas/DeviceList"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /application/tab:
     get:
@@ -3231,7 +3231,7 @@ paths:
       summary: Get Current Tab
       description: Get the tab that is currently selected in NINA
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
@@ -3239,13 +3239,13 @@ paths:
                 type: object
                 properties:
                   CurrentTab:
-                    $ref: '#/components/schemas/ApplicationTabEnum'
+                    $ref: "#/components/schemas/ApplicationTabEnum"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     put:
       tags:
         - Application
@@ -3256,20 +3256,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApplicationTabChangeRequest'
+              $ref: "#/components/schemas/ApplicationTabChangeRequest"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /application/plugins:
     get:
@@ -3279,7 +3279,7 @@ paths:
       description: Get a list of installed plugins. This is useful for example
         if you want to use an integrated plugin like livestack or TPPA
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
@@ -3297,7 +3297,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /application/plugin/settings:
     get:
@@ -3306,7 +3306,7 @@ paths:
       summary: Plugin Settings (Advanced API)
       description: Get the Advanced API plugin settings
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
@@ -3322,7 +3322,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /application/log:
     get:
@@ -3331,29 +3331,29 @@ paths:
       summary: Logs
       description: Get a list of the last N log entries, this will ignore the header of the file. The endpoint is limited by the log level set in NINA. To change the log leve use the profile/settings endpoint
       parameters:
-        - $ref: '#/components/parameters/PagerPage'
-        - $ref: '#/components/parameters/PagerPageSize'
+        - $ref: "#/components/parameters/PagerPage"
+        - $ref: "#/components/parameters/PagerPageSize"
         - in: query
           name: level
           description: Filter the log entries by level. This uses the provided level as a minimum level, so level INFO will return INFO, WARNING and ERROR entries. This is limited by the log level set in NINA
           required: false
           schema:
-            $ref: '#/components/schemas/LogLevelEnum'
+            $ref: "#/components/schemas/LogLevelEnum"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/LogLine'
+                  $ref: "#/components/schemas/LogLine"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /application/screenshot:
     get:
@@ -3362,12 +3362,12 @@ paths:
       summary: Screenshot
       description: Takes a screenshot
       parameters:
-        - $ref: '#/components/parameters/ImageScale'
-        - $ref: '#/components/parameters/ImageWidth'
-        - $ref: '#/components/parameters/ImageHeight'
-        - $ref: '#/components/parameters/ImageFormat'
+        - $ref: "#/components/parameters/ImageScale"
+        - $ref: "#/components/parameters/ImageWidth"
+        - $ref: "#/components/parameters/ImageHeight"
+        - $ref: "#/components/parameters/ImageFormat"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             image/jpeg:
@@ -3385,7 +3385,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /framing:
     get:
@@ -3394,18 +3394,18 @@ paths:
       summary: Information
       description: Get framing assistant information
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FramingInfoContainer'
+                $ref: "#/components/schemas/FramingInfoContainer"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     patch:
       tags:
         - Framing Assistant
@@ -3416,20 +3416,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FramingUpdate'
+              $ref: "#/components/schemas/FramingUpdate"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FramingInfoContainer'
+                $ref: "#/components/schemas/FramingInfoContainer"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /framing/solve-rotation:
     post:
@@ -3438,26 +3438,26 @@ paths:
       summary: Determine Rotation
       description: Determine rotation from camera. This does exactly what the button in the framing assistant does. This will only work if an image is loaded in the framing assistant
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process could not be started
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /image/{index}:
     get:
@@ -3473,21 +3473,21 @@ paths:
           schema:
             type: integer
             format: int32
-        - $ref: '#/components/parameters/ImageType'
-        - $ref: '#/components/parameters/ImageWidth'
-        - $ref: '#/components/parameters/ImageHeight'
-        - $ref: '#/components/parameters/ImageScale'
-        - $ref: '#/components/parameters/ImageQuality'
-        - $ref: '#/components/parameters/ImageFormat'
-        - $ref: '#/components/parameters/ImageStretchEnabled'
-        - $ref: '#/components/parameters/ImageStretchFactor'
-        - $ref: '#/components/parameters/ImageDebayerEnabled'
-        - $ref: '#/components/parameters/BayerPattern'
-        - $ref: '#/components/parameters/ImageUnlinkedStretchEnabled'
-        - $ref: '#/components/parameters/ImageBlackClipping'
-        - $ref: '#/components/parameters/RawConverter'
+        - $ref: "#/components/parameters/ImageType"
+        - $ref: "#/components/parameters/ImageWidth"
+        - $ref: "#/components/parameters/ImageHeight"
+        - $ref: "#/components/parameters/ImageScale"
+        - $ref: "#/components/parameters/ImageQuality"
+        - $ref: "#/components/parameters/ImageFormat"
+        - $ref: "#/components/parameters/ImageStretchEnabled"
+        - $ref: "#/components/parameters/ImageStretchFactor"
+        - $ref: "#/components/parameters/ImageDebayerEnabled"
+        - $ref: "#/components/parameters/BayerPattern"
+        - $ref: "#/components/parameters/ImageUnlinkedStretchEnabled"
+        - $ref: "#/components/parameters/ImageBlackClipping"
+        - $ref: "#/components/parameters/RawConverter"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             image/jpeg:
@@ -3505,7 +3505,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /image/{index}/thumbnail:
     get:
@@ -3521,9 +3521,9 @@ paths:
           schema:
             type: integer
             format: int32
-        - $ref: '#/components/parameters/ImageType'
+        - $ref: "#/components/parameters/ImageType"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             image/jpeg:
@@ -3541,7 +3541,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /image/{index}/raw:
     get:
@@ -3557,9 +3557,9 @@ paths:
           schema:
             type: integer
             format: int32
-        - $ref: '#/components/parameters/ImageType'
+        - $ref: "#/components/parameters/ImageType"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/octet-stream:
@@ -3572,7 +3572,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /image/{index}/prefix:
     patch:
@@ -3588,15 +3588,15 @@ paths:
           schema:
             type: integer
             format: int32
-        - $ref: '#/components/parameters/ImageType'
+        - $ref: "#/components/parameters/ImageType"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ImagePrefixBody'
+              $ref: "#/components/schemas/ImagePrefixBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
@@ -3614,7 +3614,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /image/{index}/solve:
     post:
@@ -3630,26 +3630,26 @@ paths:
           schema:
             type: integer
             format: int32
-        - $ref: '#/components/parameters/ImageType'
+        - $ref: "#/components/parameters/ImageType"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PlatesolveConfig'
+              $ref: "#/components/schemas/PlatesolveConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlatesolveResult'
+                $ref: "#/components/schemas/PlatesolveResult"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /image/history:
     get:
@@ -3658,24 +3658,24 @@ paths:
       summary: Get Image History
       description: Get the image history, each entry contains metadata about the image
       parameters:
-        - $ref: '#/components/parameters/ImageType'
-        - $ref: '#/components/parameters/PagerPage'
-        - $ref: '#/components/parameters/PagerPageSize'
+        - $ref: "#/components/parameters/ImageType"
+        - $ref: "#/components/parameters/PagerPage"
+        - $ref: "#/components/parameters/PagerPageSize"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ImageResponse'
+                  $ref: "#/components/schemas/ImageResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /profile:
     get:
@@ -3684,18 +3684,18 @@ paths:
       summary: Get Profile Meta
       description: Get the profile meta instance for the active profile
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileMeta'
+                $ref: "#/components/schemas/ProfileMeta"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     put:
       tags:
         - Profile
@@ -3711,36 +3711,36 @@ paths:
             format: guid
             example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     post:
       tags:
         - Profile
       summary: Create Profile
       description: Create a new profile
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileMeta'
+                $ref: "#/components/schemas/ProfileMeta"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - Profile
@@ -3756,18 +3756,18 @@ paths:
             format: guid
             example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /profile/list:
     get:
@@ -3776,20 +3776,20 @@ paths:
       summary: Get Profile List
       description: Get all available profiles
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProfileMeta'
+                  $ref: "#/components/schemas/ProfileMeta"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /profile/horizon:
     get:
@@ -3798,18 +3798,18 @@ paths:
       summary: Get Horizon
       description: Get the horizon for the active profile
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HorizonResponse'
+                $ref: "#/components/schemas/HorizonResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /profile/clone:
     post:
@@ -3827,18 +3827,18 @@ paths:
             format: guid
             example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /profile/settings:
     get:
@@ -3847,18 +3847,18 @@ paths:
       summary: Get Profile Settings
       description: Get the settings for the active profile
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileInfo'
+                $ref: "#/components/schemas/ProfileInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     patch:
       tags:
         - Profile
@@ -3868,27 +3868,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChangeValueConfig'
+              $ref: "#/components/schemas/ChangeValueConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /sequence:
     get:
       tags:
         - Sequence
       summary: Get Sequence
-      description: Get current sequence as json. If the query parameter `base` is set to true,
+      description:
+        Get current sequence as json. If the query parameter `base` is set to true,
         the sequence will be returned in the format you get when saving the sequence to the disk. This can be used to edit the sequence and update it again afterwards.
         The response for the base version will look slightly different from the normal version.
       parameters:
@@ -3899,18 +3900,18 @@ paths:
           schema:
             type: boolean
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SequenceEntity'
+                $ref: "#/components/schemas/SequenceEntity"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     put:
       tags:
         - Sequence
@@ -3923,25 +3924,25 @@ paths:
           required: false
           schema:
             type: string
-            example: 'My Sequence'
+            example: "My Sequence"
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SequenceEntity'
+              $ref: "#/components/schemas/SequenceEntity"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     patch:
       tags:
         - Sequence
@@ -3954,20 +3955,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChangeValueConfig'
+              $ref: "#/components/schemas/ChangeValueConfig"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /sequence/start:
     post:
@@ -3984,18 +3985,18 @@ paths:
             type: boolean
             default: false
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /sequence/stop:
     post:
@@ -4004,18 +4005,18 @@ paths:
       summary: Stop
       description: Stop Advanced Sequence.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /sequence/reset:
     post:
@@ -4024,18 +4025,18 @@ paths:
       summary: Reset Sequence
       description: Reset Advanced Sequence. This will stop the sequence and reset all targets and items.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /sequence/skip:
     post:
@@ -4055,18 +4056,18 @@ paths:
               - SkipToImaging
               - SkipToEnd
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /sequence/available:
     get:
@@ -4075,7 +4076,7 @@ paths:
       summary: Available Sequences
       description: List available sequences.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
@@ -4089,7 +4090,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /sequence/running-items:
     get:
@@ -4098,20 +4099,20 @@ paths:
       summary: Get Running Items
       description: Get the running items of the sequence
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SequenceEntity'
+                  $ref: "#/components/schemas/SequenceEntity"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /sequence/target:
     get:
@@ -4120,20 +4121,20 @@ paths:
       summary: Get Targets
       description: Get all targets in the sequence
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SequenceTarget'
+                  $ref: "#/components/schemas/SequenceTarget"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     patch:
       tags:
         - Sequence
@@ -4151,7 +4152,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TargetUpdate'
+              $ref: "#/components/schemas/TargetUpdate"
 
   /events:
     get:
@@ -4160,23 +4161,23 @@ paths:
       summary: Event History
       description: Get event history
       parameters:
-        - $ref: '#/components/parameters/PagerPage'
-        - $ref: '#/components/parameters/PagerPageSize'
+        - $ref: "#/components/parameters/PagerPage"
+        - $ref: "#/components/parameters/PagerPageSize"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/WebSocketEvent'
+                  $ref: "#/components/schemas/WebSocketEvent"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /livestack/status:
     get:
@@ -4185,7 +4186,7 @@ paths:
       summary: Livestack Status
       description: Get the status of Livestack
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
@@ -4200,7 +4201,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /livestack/start:
     post:
@@ -4209,18 +4210,18 @@ paths:
       summary: Start Livestack
       description: Starts Livestack. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to start the livestack.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /livestack/stop:
     post:
@@ -4229,18 +4230,18 @@ paths:
       summary: Stop Livestack
       description: Stops Livestack. Note that this method cannot fail, even if the livestack plugin is not installed or something went wrong. This simply issues a command to stop the livestack.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /livestack/image:
     get:
@@ -4249,18 +4250,18 @@ paths:
       summary: Available Stacks
       description: Returns a list of available stacks, which can be retrieved
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LivestackImageInfo'
+                $ref: "#/components/schemas/LivestackImageInfo"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /livestack/image/{target}/{filter}:
     get:
@@ -4281,13 +4282,13 @@ paths:
           schema:
             type: string
             example: RGB
-        - $ref: '#/components/parameters/ImageScale'
-        - $ref: '#/components/parameters/ImageWidth'
-        - $ref: '#/components/parameters/ImageHeight'
-        - $ref: '#/components/parameters/ImageFormat'
-        - $ref: '#/components/parameters/ImageQuality'
+        - $ref: "#/components/parameters/ImageScale"
+        - $ref: "#/components/parameters/ImageWidth"
+        - $ref: "#/components/parameters/ImageHeight"
+        - $ref: "#/components/parameters/ImageFormat"
+        - $ref: "#/components/parameters/ImageQuality"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             image/jpeg:
@@ -4305,9 +4306,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-  /tppa/start-alignment:
+  /tppa/start:
     post:
       tags:
         - TPPA
@@ -4317,80 +4318,80 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TPPAStartAlignmentBody'
+              $ref: "#/components/schemas/TPPAStartAlignmentBody"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-  /tppa/stop-alignment:
+  /tppa/stop:
     post:
       tags:
         - TPPA
       summary: Stop Alignment
       description: Stop Three Point Polar Alignment
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-  /tppa/pause-alignment:
+  /tppa/pause:
     post:
       tags:
         - TPPA
       summary: Pause Alignment
       description: Pause Three Point Polar Alignment
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-  /tppa/resume-alignment:
+  /tppa/resume:
     post:
       tags:
         - TPPA
       summary: Resume Alignment
       description: Resume Three Point Polar Alignment
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StringResponse'
+                $ref: "#/components/schemas/StringResponse"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /flats/skyflats:
     post:
@@ -4403,28 +4404,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SkyFlatConfig'
+              $ref: "#/components/schemas/SkyFlatConfig"
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /flats/auto-brightness:
     post:
@@ -4437,28 +4438,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AutoBrightnessFlatConfig'
+              $ref: "#/components/schemas/AutoBrightnessFlatConfig"
       responses:
-        '200':
+        "202":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessStart200'
-        '409':
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
           description: Process conflict
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ProcessStart409'
-                  - $ref: '#/components/schemas/Error'
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
         default:
           description: Request could not be carried out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
     # /flats/auto-exposure:
     #   get:
@@ -4845,7 +4846,7 @@ components:
       description: Use for filtering the image history by image type
       required: false
       schema:
-        $ref: '#/components/schemas/ImageTypeEnum'
+        $ref: "#/components/schemas/ImageTypeEnum"
     ImageFormat:
       name: format
       in: query
@@ -4942,14 +4943,14 @@ components:
       description: The raw converter to be used. If not specified, the raw converter from the profile will be used
       required: false
       schema:
-        $ref: '#/components/schemas/RawConverterEnum'
+        $ref: "#/components/schemas/RawConverterEnum"
     BayerPattern:
       in: query
       name: bayer-pattern
       description: The bayer pattern to be used. If not specified, first the auto bayer pattern from the profile will be used (if not set to auto), then the sensor type will be used. By default monochrome
       required: false
       schema:
-        $ref: '#/components/schemas/BayerPatternEnum'
+        $ref: "#/components/schemas/BayerPatternEnum"
     ProcessIdPath:
       name: id
       in: path
@@ -5208,12 +5209,12 @@ components:
                     type: string
                   X:
                     type: integer
-                  'Y':
+                  "Y":
                     type: integer
                 required:
                   - Name
                   - X
-                  - 'Y'
+                  - "Y"
             ExposureMax:
               type: number
             ExposureMin:
@@ -5303,7 +5304,7 @@ components:
         SolveTime:
           type: string
           format: date-time
-          example: '2025-05-04T14:57:39.5079'
+          example: "2025-05-04T14:57:39.5079"
         Orientation:
           type: number
           description: Deprecated, use PositionAngle instead
@@ -5321,7 +5322,7 @@ components:
           format: double
           description: The radius of the frame in arcseconds
         Coordinates:
-          $ref: '#/components/schemas/NINACoordinates'
+          $ref: "#/components/schemas/NINACoordinates"
         Flipped:
           type: boolean
           description: Indicates if the frame is flipped
@@ -5481,12 +5482,12 @@ components:
               items:
                 type: string
             SelectedFilter:
-              $ref: '#/components/schemas/CustomFilterDataFull'
+              $ref: "#/components/schemas/CustomFilterDataFull"
               description: Currently selected filter
             AvailableFilters:
               type: array
               items:
-                $ref: '#/components/schemas/CustomFilterDataFull'
+                $ref: "#/components/schemas/CustomFilterDataFull"
           required:
             - Connected
             - IsMoving
@@ -5764,26 +5765,26 @@ components:
         Fitting:
           type: string
         InitialFocusPoint:
-          $ref: '#/components/schemas/FocusPoint'
+          $ref: "#/components/schemas/FocusPoint"
         CalculatedFocusPoint:
-          $ref: '#/components/schemas/FocusPoint'
+          $ref: "#/components/schemas/FocusPoint"
         PreviousFocusPoint:
-          $ref: '#/components/schemas/FocusPoint'
+          $ref: "#/components/schemas/FocusPoint"
         MeasurePoints:
           type: array
           items:
-            $ref: '#/components/schemas/FocusPoint'
+            $ref: "#/components/schemas/FocusPoint"
         Intersections:
           type: object
           properties:
             TrendLineIntersection:
-              $ref: '#/components/schemas/FocusPoint'
+              $ref: "#/components/schemas/FocusPoint"
             GaussianMaximum:
-              $ref: '#/components/schemas/FocusPoint'
+              $ref: "#/components/schemas/FocusPoint"
             HyperbolicMinimum:
-              $ref: '#/components/schemas/FocusPoint'
+              $ref: "#/components/schemas/FocusPoint"
             QuadraticMinimum:
-              $ref: '#/components/schemas/FocusPoint'
+              $ref: "#/components/schemas/FocusPoint"
           required:
             - TrendLineIntersection
             - GaussianMaximum
@@ -5863,14 +5864,14 @@ components:
       type: object
       properties:
         Status:
-          $ref: '#/components/schemas/ApiProcessStatusEnum'
+          $ref: "#/components/schemas/ApiProcessStatusEnum"
         Duration:
           type: string
           format: time-span
         AcquiredPoints:
           type: array
           items:
-            $ref: '#/components/schemas/FocusPoint'
+            $ref: "#/components/schemas/FocusPoint"
         LastPoint:
           type: object
           properties:
@@ -5894,7 +5895,7 @@ components:
             - Temperature
             - Filter
         FinalPoint:
-          $ref: '#/components/schemas/FocusPoint'
+          $ref: "#/components/schemas/FocusPoint"
       required:
         - Status
 
@@ -6136,7 +6137,7 @@ components:
             type: string
         RMSError:
           description: The RMS Error of all datapoints in the GuideStepHistory. The values depend on the value range selection for the guide charts
-          $ref: '#/components/schemas/RMSError'
+          $ref: "#/components/schemas/RMSError"
         PixelScale:
           type: number
         State:
@@ -6169,15 +6170,15 @@ components:
       type: object
       properties:
         RA:
-          $ref: '#/components/schemas/RMSUnit'
+          $ref: "#/components/schemas/RMSUnit"
         Dec:
-          $ref: '#/components/schemas/RMSUnit'
+          $ref: "#/components/schemas/RMSUnit"
         Total:
-          $ref: '#/components/schemas/RMSUnit'
+          $ref: "#/components/schemas/RMSUnit"
         PeakRA:
-          $ref: '#/components/schemas/RMSUnit'
+          $ref: "#/components/schemas/RMSUnit"
         PeakDec:
-          $ref: '#/components/schemas/RMSUnit'
+          $ref: "#/components/schemas/RMSUnit"
       required:
         - RA
         - Dec
@@ -6253,7 +6254,7 @@ components:
     GuideStepsHistory:
       type: array
       items:
-        $ref: '#/components/schemas/GuideStep'
+        $ref: "#/components/schemas/GuideStep"
 
     GuidingHistoryLengthBody:
       type: object
@@ -6283,7 +6284,7 @@ components:
         DeclinationString:
           type: string
         Coordinates:
-          $ref: '#/components/schemas/NINACoordinates'
+          $ref: "#/components/schemas/NINACoordinates"
         TimeToMeridianFlip:
           type: number
         SideOfPier:
@@ -6307,7 +6308,7 @@ components:
         AtPark:
           type: boolean
         TrackingRate:
-          $ref: '#/components/schemas/TrackingRate'
+          $ref: "#/components/schemas/TrackingRate"
         TrackingEnabled:
           type: boolean
         TrackingModes:
@@ -6347,9 +6348,9 @@ components:
         TimeToMeridianFlipString:
           type: string
         TargetCoordinates:
-          $ref: '#/components/schemas/NINACoordinates'
+          $ref: "#/components/schemas/NINACoordinates"
         TargetSideOfPier:
-          $ref: '#/components/schemas/PierSide'
+          $ref: "#/components/schemas/PierSide"
         Slewing:
           type: boolean
         GuideRateRightAscensionArcsecPerSec:
@@ -6375,7 +6376,7 @@ components:
           items:
             type: string
         AlignmentMode:
-          $ref: '#/components/schemas/AlignmentMode'
+          $ref: "#/components/schemas/AlignmentMode"
         CanPulseGuide:
           type: boolean
         IsPulseGuiding:
@@ -6463,7 +6464,7 @@ components:
       type: object
       properties:
         TrackingMode:
-          $ref: '#/components/schemas/TrackingMode'
+          $ref: "#/components/schemas/TrackingMode"
         CustomRightAscensionRate:
           type: number
         CustomDeclinationRate:
@@ -6514,7 +6515,7 @@ components:
       type: object
       properties:
         TrackingMode:
-          $ref: '#/components/schemas/TrackingMode'
+          $ref: "#/components/schemas/TrackingMode"
       required:
         - TrackingMode
 
@@ -6534,13 +6535,13 @@ components:
       type: object
       properties:
         Coordinates:
-          $ref: '#/components/schemas/HttpCoordinates'
+          $ref: "#/components/schemas/HttpCoordinates"
         PositionAngle:
           type: number
           minimum: 0
           maximum: 360
         SlewType:
-          $ref: '#/components/schemas/SlewType'
+          $ref: "#/components/schemas/SlewType"
       required:
         - Coordinates
         - SlewType
@@ -6556,7 +6557,7 @@ components:
       type: object
       properties:
         Coordinates:
-          $ref: '#/components/schemas/HttpCoordinates'
+          $ref: "#/components/schemas/HttpCoordinates"
         SolveAndSync:
           type: boolean
           default: false
@@ -6567,13 +6568,13 @@ components:
       type: object
       properties:
         Status:
-          $ref: '#/components/schemas/ApiProcessStatusEnum'
+          $ref: "#/components/schemas/ApiProcessStatusEnum"
         FlipStatus:
-          $ref: '#/components/schemas/ApplicationStatus'
+          $ref: "#/components/schemas/ApplicationStatus"
         TotalSteps:
           type: integer
         CurrentStep:
-          $ref: '#/components/schemas/WorkflowStep'
+          $ref: "#/components/schemas/WorkflowStep"
       required:
         - Status
 
@@ -6694,11 +6695,11 @@ components:
         WritableSwitches:
           type: array
           items:
-            $ref: '#/components/schemas/WriteableSwitch'
+            $ref: "#/components/schemas/WriteableSwitch"
         ReadonlySwitches:
           type: array
           items:
-            $ref: '#/components/schemas/ReadonlySwitch'
+            $ref: "#/components/schemas/ReadonlySwitch"
         SupportedActions:
           type: array
           items:
@@ -6874,7 +6875,7 @@ components:
       type: object
       properties:
         Tab:
-          $ref: '#/components/schemas/ApplicationTabEnum'
+          $ref: "#/components/schemas/ApplicationTabEnum"
       required:
         - Tab
 
@@ -6892,21 +6893,21 @@ components:
       properties:
         Timestamp:
           type: string
-          example: '2025-05-04T14:57:39.5079'
+          example: "2025-05-04T14:57:39.5079"
         Level:
-          $ref: '#/components/schemas/LogLevelEnum'
+          $ref: "#/components/schemas/LogLevelEnum"
         Source:
           type: string
-          example: 'CameraChooserVM.cs'
+          example: "CameraChooserVM.cs"
         Member:
           type: string
-          example: 'GetEquipment'
+          example: "GetEquipment"
         Line:
           type: string
-          example: '279'
+          example: "279"
         Message:
           type: string
-          example: 'Found 2 ASCOM Cameras'
+          example: "Found 2 ASCOM Cameras"
       required:
         - Timestamp
         - Level
@@ -6919,7 +6920,7 @@ components:
       type: object
       properties:
         Level:
-          $ref: '#/components/schemas/LogLevelEnum'
+          $ref: "#/components/schemas/LogLevelEnum"
       required:
         - Level
 
@@ -6937,7 +6938,7 @@ components:
         CameraPixelSize:
           type: number
         Coordinates:
-          $ref: '#/components/schemas/NINACoordinates'
+          $ref: "#/components/schemas/NINACoordinates"
         DSOName:
           type: string
         FieldOfView:
@@ -6951,7 +6952,7 @@ components:
         VerticalPanels:
           type: integer
         FramingSource:
-          $ref: '#/components/schemas/SkySurveySource'
+          $ref: "#/components/schemas/SkySurveySource"
       required:
         - BoundHeight
         - BoundWidth
@@ -6980,7 +6981,7 @@ components:
         CameraPixelSize:
           type: number
         Coordinates:
-          $ref: '#/components/schemas/HttpCoordinates'
+          $ref: "#/components/schemas/HttpCoordinates"
         DSOName:
           type: string
         FieldOfView:
@@ -6994,7 +6995,7 @@ components:
         VerticalPanels:
           type: integer
         FramingSource:
-          $ref: '#/components/schemas/SkySurveySource'
+          $ref: "#/components/schemas/SkySurveySource"
 
     SkySurveySource:
       type: string
@@ -7034,7 +7035,7 @@ components:
           type: number
           description: The exposure time of the image in seconds
         ImageType:
-          $ref: '#/components/schemas/ImageTypeEnum'
+          $ref: "#/components/schemas/ImageTypeEnum"
         Filter:
           type: string
           description: The filter used to take the image
@@ -7332,7 +7333,7 @@ components:
           type: integer
           description: The filter position
         Binning:
-          $ref: '#/components/schemas/BinningMode'
+          $ref: "#/components/schemas/BinningMode"
         Gain:
           type: integer
         Offset:
@@ -7388,13 +7389,13 @@ components:
             PageSize:
               type: integer
             LogLevel:
-              $ref: '#/components/schemas/LogLevelEnum'
+              $ref: "#/components/schemas/LogLevelEnum"
             SkySurveyCacheDirectory:
               type: string
             NotificationWorkArea:
-              $ref: '#/components/schemas/NotificationWorkAreaEnum'
+              $ref: "#/components/schemas/NotificationWorkAreaEnum"
             NotificationCorner:
-              $ref: '#/components/schemas/NotificationCornerEnum'
+              $ref: "#/components/schemas/NotificationCornerEnum"
           required:
             - Culture
             - DevicePollingInterval
@@ -7439,15 +7440,15 @@ components:
             PixelSize:
               type: number
             BayerPattern:
-              $ref: '#/components/schemas/BayerPatternEnum'
+              $ref: "#/components/schemas/BayerPatternEnum"
             BulbMode:
-              $ref: '#/components/schemas/CameraBulbModeEnum'
+              $ref: "#/components/schemas/CameraBulbModeEnum"
             SerialPort:
               type: string
             BitDepth:
               type: number
             RawConverter:
-              $ref: '#/components/schemas/RawConverterEnum'
+              $ref: "#/components/schemas/RawConverterEnum"
             MinFlatExposureTime:
               type: number
             MaxFlatExposureTime:
@@ -7473,7 +7474,7 @@ components:
             FLIEnableSnapshotFloodFlush:
               type: boolean
             FLIFloodBin:
-              $ref: '#/components/schemas/BinningMode'
+              $ref: "#/components/schemas/BinningMode"
             BitScaling:
               type: boolean
             CoolingDuration:
@@ -7586,9 +7587,9 @@ components:
           type: object
           properties:
             AltColorSchema:
-              $ref: '#/components/schemas/ColorSchema'
+              $ref: "#/components/schemas/ColorSchema"
             ColorSchema:
-              $ref: '#/components/schemas/ColorSchema'
+              $ref: "#/components/schemas/ColorSchema"
         DomeSettings:
           type: object
           properties:
@@ -7949,7 +7950,7 @@ components:
             FilePatternFLAT:
               type: string
             FileType:
-              $ref: '#/components/schemas/FileTypeEnum'
+              $ref: "#/components/schemas/FileTypeEnum"
             TIFFCompressionType:
               type: string
               enum:
@@ -8020,9 +8021,9 @@ components:
             BlackClipping:
               type: number
             StarSensitivity:
-              $ref: '#/components/schemas/StarSensitivityEnum'
+              $ref: "#/components/schemas/StarSensitivityEnum"
             NoiseReduction:
-              $ref: '#/components/schemas/NoiseReductionEnum'
+              $ref: "#/components/schemas/NoiseReductionEnum"
             DetectStars:
               type: boolean
             AutoStretch:
@@ -8118,7 +8119,7 @@ components:
             AstrometryAPIKey:
               type: string
             BlindSolverType:
-              $ref: '#/components/schemas/PlateSolverEnum'
+              $ref: "#/components/schemas/PlateSolverEnum"
             CygwinLocation:
               type: string
             ExposureTime:
@@ -8128,9 +8129,9 @@ components:
             Binning:
               type: integer
             PlateSolveFilter:
-              $ref: '#/components/schemas/CustomFilterDataShort'
+              $ref: "#/components/schemas/CustomFilterDataShort"
             PlateSolverType:
-              $ref: '#/components/schemas/PlateSolverEnum'
+              $ref: "#/components/schemas/PlateSolverEnum"
             PS2Location:
               type: string
             PS3Location:
@@ -8218,7 +8219,7 @@ components:
               type: boolean
               description: Historically N.I.N.A. was expressing rotation in clockwise orientation As this was changed to follow the standard of counter clockwise orientation, the reverse setting is flipped for migration purposes
             RangeType:
-              $ref: '#/components/schemas/RotatorRangeTypeEnum'
+              $ref: "#/components/schemas/RotatorRangeTypeEnum"
             RangeStartMechanicalPosition:
               type: number
           required:
@@ -8243,7 +8244,7 @@ components:
             TrainedFlatExposureSettings:
               type: array
               items:
-                $ref: '#/components/schemas/TrainedFlatExposureSetting'
+                $ref: "#/components/schemas/TrainedFlatExposureSetting"
           required:
             - Id
             - LastDeviceName
@@ -8398,7 +8399,7 @@ components:
             Save:
               type: boolean
             SnapShotFilter:
-              $ref: '#/components/schemas/CustomFilterDataShort'
+              $ref: "#/components/schemas/CustomFilterDataShort"
             Loop:
               type: boolean
           required:
@@ -8463,9 +8464,9 @@ components:
           type: object
           properties:
             ImageHistoryLeftSelected:
-              $ref: '#/components/schemas/ImageHistoryDataEnum'
+              $ref: "#/components/schemas/ImageHistoryDataEnum"
             ImageHistoryRightSelected:
-              $ref: '#/components/schemas/ImageHistoryDataEnum'
+              $ref: "#/components/schemas/ImageHistoryDataEnum"
       required:
         - Name
         - Description
@@ -8508,18 +8509,18 @@ components:
         Conditions:
           type: array
           items:
-            $ref: '#/components/schemas/SequenceEntity'
+            $ref: "#/components/schemas/SequenceEntity"
         IsExpanded:
           type: boolean
           description: Whether the item is expanded or not
         Items:
           type: array
           items:
-            $ref: '#/components/schemas/SequenceEntity'
+            $ref: "#/components/schemas/SequenceEntity"
         Triggers:
           type: array
           items:
-            $ref: '#/components/schemas/SequenceEntity'
+            $ref: "#/components/schemas/SequenceEntity"
         ErrorBehavior:
           type: string
           description: The error behavior of the item
@@ -8532,7 +8533,7 @@ components:
           type: integer
           description: The number of attempts for the item
         Status:
-          $ref: '#/components/schemas/SequenceEntityStatus'
+          $ref: "#/components/schemas/SequenceEntityStatus"
         IsContainer:
           type: boolean
           description: Whether the item is a container or not
@@ -8557,9 +8558,9 @@ components:
           minimum: 0
           maximum: 360
         Coordinates:
-          $ref: '#/components/schemas/NINACoordinates'
+          $ref: "#/components/schemas/NINACoordinates"
         Status:
-          $ref: '#/components/schemas/SequenceEntityStatus'
+          $ref: "#/components/schemas/SequenceEntityStatus"
 
     SequenceEntityStatus:
       type: string
@@ -8577,7 +8578,7 @@ components:
         TargetName:
           type: string
         Coordinates:
-          $ref: '#/components/schemas/HttpCoordinates'
+          $ref: "#/components/schemas/HttpCoordinates"
         PositionAngle:
           type: number
           minimum: 0
@@ -8604,7 +8605,7 @@ components:
         KeepClosed:
           type: boolean
         Binning:
-          $ref: '#/components/schemas/BinningMode'
+          $ref: "#/components/schemas/BinningMode"
         Gain:
           type: integer
           minimum: 0
@@ -8648,7 +8649,7 @@ components:
           type: integer
           minimum: 0
         Binning:
-          $ref: '#/components/schemas/BinningMode'
+          $ref: "#/components/schemas/BinningMode"
         Gain:
           type: integer
           minimum: 0
@@ -8662,7 +8663,7 @@ components:
       type: object
       properties:
         Status:
-          $ref: '#/components/schemas/ApiProcessStatusEnum'
+          $ref: "#/components/schemas/ApiProcessStatusEnum"
         DeterminedHistogramADU:
           type: number
         CurrentExposureTime:
@@ -8685,7 +8686,7 @@ components:
       type: object
       properties:
         Status:
-          $ref: '#/components/schemas/ApiProcessStatusEnum'
+          $ref: "#/components/schemas/ApiProcessStatusEnum"
         DeterminedHistogramADU:
           type: number
         CurrentExposureTime:
@@ -8782,7 +8783,7 @@ components:
           maximum: 1
           description: The region of interest to use. If not specified, the an ROI of 1 will be used
         Binning:
-          $ref: '#/components/schemas/BinningMode'
+          $ref: "#/components/schemas/BinningMode"
           description: The binning mode to use. If not specified, the camera's current binning mode will be used
         ImageType:
           type: string
@@ -8851,7 +8852,7 @@ components:
       type: object
       properties:
         Coordinates:
-          $ref: '#/components/schemas/HttpCoordinates'
+          $ref: "#/components/schemas/HttpCoordinates"
           description: The coordinates to sync to
         SideOfPier:
           type: string
@@ -8885,7 +8886,7 @@ components:
           type: boolean
           description: Whether to use the blind solver as a failover if the capture solver fails. The default is read from the profile settings
         Coordinates:
-          $ref: '#/components/schemas/HttpCoordinates'
+          $ref: "#/components/schemas/HttpCoordinates"
           description: The coordinates to solve for. If not specified, the current mount position will be used
         DownSampleFactor:
           type: integer
@@ -9150,7 +9151,7 @@ components:
         - Message
         - Conflicts
 
-    ProcessStart200:
+    ProcessStart202:
       type: object
       properties:
         ProcessId:

@@ -17,13 +17,13 @@ using NINA.Plugin.Interfaces;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.Model;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Application.TPPA
 {
-    public class TppaController : IHttpController
+    [Route("/v3/api/tppa")]
+    public class TppaController : Controller
     {
         private readonly IMessageBroker messageBroker;
         private readonly ISerializerService serializer;
@@ -34,38 +34,35 @@ namespace ninaAPI.WebService.V3.Application.TPPA
             this.serializer = serializer;
         }
 
-        public async Task<StringResponse> StartAlignment(TppaStartConfig config)
+        [Route("POST", "/start")]
+        public async Task<StringResponse> StartAlignment()
         {
+            TppaStartConfig config = serializer.Deserialize<TppaStartConfig>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config));
 
             await messageBroker.Publish(new NINAMessage(Guid.NewGuid(), "PolarAlignmentPlugin_DockablePolarAlignmentVM_StartAlignment", config));
             return new StringResponse("Started alignment");
         }
 
+        [Route("POST", "/stop")]
         public async Task<StringResponse> StopAlignment()
         {
             await messageBroker.Publish(new NINAMessage(Guid.NewGuid(), "PolarAlignmentPlugin_DockablePolarAlignmentVM_StopAlignment", string.Empty));
             return new StringResponse("Stopped alignment");
         }
 
+        [Route("POST", "/pause")]
         public async Task<StringResponse> PauseAlignment()
         {
             await messageBroker.Publish(new NINAMessage(Guid.NewGuid(), "PolarAlignmentPlugin_PolarAlignment_PauseAlignment", string.Empty));
             return new StringResponse("Paused alignment");
         }
 
+        [Route("POST", "/resume")]
         public async Task<StringResponse> ResumeAlignment()
         {
             await messageBroker.Publish(new NINAMessage(Guid.NewGuid(), "PolarAlignmentPlugin_PolarAlignment_ResumeAlignment", string.Empty));
             return new StringResponse("Resumed alignment");
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/start-alignment", (HttpSession session) => StartAlignment(serializer.Deserialize<TppaStartConfig>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/stop-alignment", () => StopAlignment());
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/pause-alignment", () => PauseAlignment());
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/resume-alignment", () => ResumeAlignment());
         }
     }
 }

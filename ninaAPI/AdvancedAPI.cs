@@ -39,6 +39,9 @@ using ninaAPI.WebService.V3;
 using System.Runtime.CompilerServices;
 using ninaAPI.WebService.Interfaces;
 using NINA.Sequencer.Logic;
+using Microsoft.Extensions.DependencyInjection;
+using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
 
 namespace ninaAPI
 {
@@ -52,6 +55,10 @@ namespace ninaAPI
         private static AdvancedAPI instance;
 
         private Communicator communicator;
+        private ServiceCollection services;
+
+        private readonly ApiProcessMediator processMediator;
+        private readonly ISerializerService serializer;
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -126,6 +133,43 @@ namespace ninaAPI
                 symbolBroker
             );
 
+            services = new ServiceCollection();
+            services.AddSingleton(camera);
+            services.AddSingleton(telescope);
+            services.AddSingleton(focuser);
+            services.AddSingleton(filterWheel);
+            services.AddSingleton(guider);
+            services.AddSingleton(rotator);
+            services.AddSingleton(flatDevice);
+            services.AddSingleton(dome);
+            services.AddSingleton(switches);
+            services.AddSingleton(safety);
+            services.AddSingleton(imaging);
+            services.AddSingleton(history);
+            services.AddSingleton(profile);
+            services.AddSingleton(sequence);
+            services.AddSingleton(statusMediator);
+            services.AddSingleton(application);
+            services.AddSingleton(imageDataFactory);
+            services.AddSingleton(AFFactory);
+            services.AddSingleton(saveMediator);
+            services.AddSingleton(weather);
+            services.AddSingleton(platesolver);
+            services.AddSingleton(broker);
+            services.AddSingleton(framing);
+            services.AddSingleton(domeFollower);
+            services.AddSingleton(twilightCalculator);
+            services.AddSingleton(nighttimeCalculator);
+            services.AddSingleton(windowFactory);
+            services.AddSingleton(meridianFlipVMFactory);
+            services.AddSingleton(symbolBroker);
+
+            processMediator = new ApiProcessMediator();
+            serializer = SerializerFactory.GetSerializer();
+
+            services.AddSingleton(processMediator);
+            services.AddSingleton(serializer);
+
             if (Settings.Default.UpdateSettings)
             {
                 Settings.Default.Upgrade();
@@ -135,8 +179,8 @@ namespace ninaAPI
 
             SimpleW.Observability.Log.SetSink((entry) => Logger.Info(entry.Message, entry.Source));
 
-            PluginSettings = new PluginOptionsAccessor(Controls.Profile, Guid.Parse(this.Identifier));
-            Controls.Profile.ProfileChanged += ProfileChanged;
+            PluginSettings = new PluginOptionsAccessor(profile, Guid.Parse(this.Identifier));
+            profile.ProfileChanged += ProfileChanged;
 
             UpdateDefaultPortCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
             {
@@ -144,8 +188,11 @@ namespace ninaAPI
                 ActualPort = PreferredPort; // This may look useless, but that way the visibility only changes when cachedPort changes and not when the user enters a new port
             });
 
-            V2Api.StartWatchers();
-            V3Api.StartWatchers(); // This has to be done before the API is started because the event socket needs to be initialized
+            using (ServiceProvider provider = services.BuildServiceProvider())
+            {
+                V2Api.StartWatchers();
+                V3Api.StartWatchers(provider); // This has to be done before the API is started because the event socket needs to be initialized
+            }
 
             if (APIEnabled)
             {
@@ -163,23 +210,24 @@ namespace ninaAPI
 
         private void RunApi()
         {
+            using ServiceProvider provider = services.BuildServiceProvider();
             ActualPort = NetworkUtility.GetNearestAvailablePort(PreferredPort);
             Server = new WebApiServer(ActualPort);
             if (SelectedApiOption == "V3")
             {
                 V3 ??= new V3Api();
-                Server.Start(V3).ConfigureAwait(false);
+                Server.Start(provider, V3).ConfigureAwait(false);
             }
             else if (SelectedApiOption == "V2")
             {
                 V2 ??= new V2Api();
-                Server.Start(V2).ConfigureAwait(false);
+                Server.Start(provider, V2).ConfigureAwait(false);
             }
             else if (SelectedApiOption == "Both")
             {
                 V2 ??= new V2Api();
                 V3 ??= new V3Api();
-                Server.Start(V2, V3).ConfigureAwait(false);
+                Server.Start(provider, V2, V3).ConfigureAwait(false);
             }
         }
 

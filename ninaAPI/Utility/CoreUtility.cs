@@ -299,7 +299,7 @@ namespace ninaAPI.Utility
         public static (object, int) CreateProcessStartedResponse(ApiProcessStartResult result, ApiProcessMediator mediator, ApiProcess process)
         {
             object response;
-            int statusCode = 200;
+            int statusCode = 202;
 
             if (result == ApiProcessStartResult.Conflict)
             {

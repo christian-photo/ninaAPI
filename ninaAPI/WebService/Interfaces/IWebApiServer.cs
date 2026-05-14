@@ -12,12 +12,13 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ninaAPI.WebService.Interfaces
 {
     public interface IWebApiServer
     {
-        public Task Start(params IHttpApi[] apis);
+        public Task Start(ServiceProvider provider, params IHttpApi[] apis);
         public Task Stop();
 
         public bool IsRunning();

@@ -30,13 +30,13 @@ using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Service;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Application
 {
-    public class ApplicationController : IHttpController
+    [Route("/v3/api/application")]
+    public class ApplicationController : Controller
     {
         private readonly IProfileService profileService;
         private readonly IApplicationMediator applicationMediator;
@@ -49,12 +49,13 @@ namespace ninaAPI.WebService.V3.Application
             this.serializer = serializer;
         }
 
-        public List<LogLine> GetLogEntries(HttpSession session)
+        [Route("GET", "/log")]
+        public List<LogLine> GetLogEntries()
         {
             PagerParameterSet pagerParameter = PagerParameterSet.Default();
             QueryParameter<LogLevelEnum> logLevel = new QueryParameter<LogLevelEnum>("level", LogLevelEnum.INFO, false);
-            pagerParameter.Evaluate(session.Request);
-            logLevel.Get(session.Request);
+            pagerParameter.Evaluate(Request);
+            logLevel.Get(Request);
 
             string currentLogFile = Directory.GetFiles(Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "Logs")).OrderByDescending(File.GetCreationTime).First();
 
@@ -75,6 +76,7 @@ namespace ninaAPI.WebService.V3.Application
             return parsed;
         }
 
+        [Route("GET", "/tab")]
         public object GetApplicationTab()
         {
             IApplicationVM vm = (IApplicationVM)applicationMediator.GetType().GetField("handler", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(applicationMediator);
@@ -83,20 +85,23 @@ namespace ninaAPI.WebService.V3.Application
             return new { CurrentTab = (ApplicationTab)index };
         }
 
-        public StringResponse SetApplicationTab(ApplicationTabChangeRequest request)
+        [Route("PUT", "/tab")]
+        public StringResponse SetApplicationTab()
         {
+            ApplicationTabChangeRequest request = serializer.Deserialize<ApplicationTabChangeRequest>(Request.BodyString);
             Validator.ValidateObject(request, new ValidationContext(request));
 
             applicationMediator.ChangeTab(request.Tab);
             return new StringResponse("Tab changed");
         }
 
-        public async Task GetScreenshot(HttpSession session)
+        [Route("GET", "/screenshot")]
+        public async Task GetScreenshot()
         {
             // Here only scale, size, format and quality are used and these are the only ones that will be documented
             ImageQueryParameterSet parameters = ImageQueryParameterSet.ByProfile(profileService.ActiveProfile);
 
-            parameters.Evaluate(session.Request);
+            parameters.Evaluate(Request);
 
             Bitmap screenshot = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
 
@@ -116,11 +121,12 @@ namespace ninaAPI.WebService.V3.Application
             source = ImageService.ResizeBitmap(source, parameters);
             ImageWriter writer = ImageWriter.GetImageWriter(source, parameters.Format.Value);
 
-            await session.Response.Body(writer.Encode(parameters.Quality.Value), writer.MimeType).SendAsync();
+            await Response.Body(writer.Encode(parameters.Quality.Value), writer.MimeType).SendAsync();
 
             screenshot.Dispose();
         }
 
+        [Route("GET", "/plugins")]
         public List<string> GetPlugins()
         {
             string path = Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName;
@@ -129,6 +135,7 @@ namespace ninaAPI.WebService.V3.Application
             return plugins;
         }
 
+        [Route("GET", "/plugin/settings")]
         public object GetPluginSettings()
         {
             return new
@@ -149,16 +156,6 @@ namespace ninaAPI.WebService.V3.Application
                 }
             }
             return false;
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/log", (HttpSession session) => GetLogEntries(session));
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/tab", () => GetApplicationTab());
-            server.Map(HttpVerbs.PUT.ToString(), $"{prefix}/tab", (HttpSession session) => SetApplicationTab(serializer.Deserialize<ApplicationTabChangeRequest>(session.Request.BodyString)));
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/screenshot", async (HttpSession session) => await GetScreenshot(session));
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/plugins", () => GetPlugins());
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/plugin/settings", () => GetPluginSettings());
         }
     }
 

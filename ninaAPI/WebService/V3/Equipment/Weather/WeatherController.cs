@@ -10,13 +10,12 @@
 #endregion "copyright"
 
 using NINA.Equipment.Interfaces.Mediator;
-using ninaAPI.Utility.Http;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Weather
 {
-    public class WeatherController : IHttpController
+    [Route($"/v3/api/equipment/{EquipmentConstants.WeatherUrlName}")]
+    public class WeatherController : Controller
     {
         private readonly IWeatherDataMediator weather;
 
@@ -25,11 +24,7 @@ namespace ninaAPI.WebService.V3.Equipment.Weather
             this.weather = weather;
         }
 
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, () => WeatherInfo());
-        }
-
+        [Route("GET", "/")]
         public WeatherInfoResponse WeatherInfo()
         {
             return new WeatherInfoResponse(weather);

@@ -14,18 +14,17 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using NINA.Profile;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Application.Profile
 {
-    public class ProfileController : IHttpController
+    [Route("/v3/api/profile")]
+    public class ProfileController : Controller
     {
         private readonly IProfileService profileService;
         private readonly ISerializerService serializer;
@@ -38,30 +37,35 @@ namespace ninaAPI.WebService.V3.Application.Profile
             this.serializer = serializer;
         }
 
+        [Route("GET", "/")]
         public ProfileMeta GetActiveProfileMeta()
         {
             return profileService.Profiles.First(x => x.IsActive);
         }
 
+        [Route("GET", "/list")]
         public IList<ProfileMeta> GetProfileList()
         {
             return profileService.Profiles;
         }
 
+        [Route("GET", "/settings")]
         public ProfileDTO GetActiveProfileSettings()
         {
             return new ProfileDTO(profileService.ActiveProfile);
         }
 
+        [Route("GET", "/horizon")]
         public HorizonResponse GetProfileHorizon()
         {
             return new HorizonResponse(profileService.ActiveProfile.AstrometrySettings.Horizon);
         }
 
-        public StringResponse ChangeProfile(HttpSession session)
+        [Route("PUT", "/")]
+        public StringResponse ChangeProfile()
         {
             QueryParameter<Guid> idParameter = new QueryParameter<Guid>("id", Guid.Empty, true);
-            idParameter.Get(session.Request);
+            idParameter.Get(Request);
 
             ProfileMeta targetProfile = profileService.Profiles.FirstOrDefault(x => x.Id == idParameter.Value);
             if (targetProfile is null)
@@ -76,8 +80,10 @@ namespace ninaAPI.WebService.V3.Application.Profile
             return new StringResponse("Profile changed");
         }
 
-        public StringResponse UpdateProfileValue(ProfileValueChangeConfig config)
+        [Route("PATCH", "/settings")]
+        public StringResponse UpdateProfileValue()
         {
+            ProfileValueChangeConfig config = serializer.Deserialize<ProfileValueChangeConfig>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config));
 
             CoreUtility.SetValueReflected(AdvancedAPI.Controls.Profile.ActiveProfile, config.PathDescription, config.Value);
@@ -85,16 +91,18 @@ namespace ninaAPI.WebService.V3.Application.Profile
             return new StringResponse("Value was updated");
         }
 
+        [Route("POST", "/")]
         public ProfileMeta CreateProfile()
         {
             profileService.Add();
             return profileService.Profiles.Last();
         }
 
-        public StringResponse CloneProfile(HttpSession session)
+        [Route("POST", "/clone")]
+        public StringResponse CloneProfile()
         {
             QueryParameter<Guid> idParameter = new QueryParameter<Guid>("id", Guid.Empty, true);
-            idParameter.Get(session.Request);
+            idParameter.Get(Request);
 
             ProfileMeta targetProfile = profileService.Profiles.FirstOrDefault(x => x.Id == idParameter.Value);
             if (targetProfile is null)
@@ -109,10 +117,11 @@ namespace ninaAPI.WebService.V3.Application.Profile
             return new StringResponse("Profile cloned");
         }
 
-        public StringResponse DeleteProfile(HttpSession session)
+        [Route("DELETE", "/")]
+        public StringResponse DeleteProfile()
         {
             QueryParameter<Guid> idParameter = new QueryParameter<Guid>("id", Guid.Empty, true);
-            idParameter.Get(session.Request);
+            idParameter.Get(Request);
 
             ProfileMeta targetProfile = profileService.Profiles.FirstOrDefault(x => x.Id == idParameter.Value);
             if (targetProfile is null)
@@ -130,19 +139,6 @@ namespace ninaAPI.WebService.V3.Application.Profile
                 throw new HttpException(HttpStatusCode.InternalServerError, "Profile delete failed");
             }
             return new StringResponse("Profile deleted");
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, () => GetActiveProfileMeta());
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/list", () => GetProfileList());
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/settings", () => GetActiveProfileSettings());
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/horizon", () => GetProfileHorizon());
-            server.Map(HttpVerbs.PUT.ToString(), prefix, (HttpSession session) => ChangeProfile(session));
-            server.Map(HttpVerbs.PATCH.ToString(), $"{prefix}/settings", (HttpSession session) => UpdateProfileValue(serializer.Deserialize<ProfileValueChangeConfig>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix, () => CreateProfile());
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/clone", (HttpSession session) => CloneProfile(session));
-            server.Map(HttpVerbs.DELETE.ToString(), prefix, (HttpSession session) => DeleteProfile(session));
         }
     }
 

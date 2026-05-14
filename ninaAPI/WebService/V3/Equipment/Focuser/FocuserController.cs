@@ -24,12 +24,12 @@ using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Focuser
 {
-    public class FocuserController : IHttpController
+    [Route($"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}")]
+    public class FocuserController : Controller
     {
         private readonly IFocuserMediator focuser;
         private readonly IFilterWheelMediator filterWheel;
@@ -54,13 +54,16 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             this.serializer = serializer;
         }
 
+        [Route("GET", "/")]
         public FocuserInfoResponse FocuserInfo()
         {
             return new FocuserInfoResponse(focuser);
         }
 
-        public object FocuserMove(FocuserMoveBody body)
+        [Route("POST", "/move")]
+        public object FocuserMove()
         {
+            FocuserMoveBody body = serializer.Deserialize<FocuserMoveBody>(Request.BodyString);
             Validator.ValidateObject(body, new ValidationContext(body));
 
             if (!focuser.GetInfo().Connected)
@@ -79,8 +82,10 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             return (response, statusCode);
         }
 
-        public StringResponse FocuserTemperatureCompensation(FocuserTempCompBody body)
+        [Route("PATCH", "/temp-comp")]
+        public StringResponse FocuserTemperatureCompensation()
         {
+            FocuserTempCompBody body = serializer.Deserialize<FocuserTempCompBody>(Request.BodyString);
             Validator.ValidateObject(body, new ValidationContext(body));
 
             if (!focuser.GetInfo().Connected)
@@ -97,8 +102,10 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             return new StringResponse("Temperature compensation set");
         }
 
-        private IAutoFocusVM autoFocusVM;
+        // This needs to be static because the controller instance is disposed after the request
+        private static IAutoFocusVM autoFocusVM;
 
+        [Route("POST", "/auto-focus")]
         public object StartAutoFocus()
         {
             if (!focuser.GetInfo().Connected)
@@ -124,6 +131,7 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             return (response, statusCode);
         }
 
+        [Route("GET", "/auto-focus/list-reports")]
         public object AutoFocusListReports()
         {
             var files = FileSystemHelper.GetFilesRecursively(FileSystemHelper.GetAutofocusFolder());
@@ -135,11 +143,12 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
             });
         }
 
-        public async Task<string> AutoFocusGetReport(HttpSession session)
+        [Route("GET", "/auto-focus/get-report")]
+        public async Task<string> AutoFocusGetReport()
         {
             QueryParameter<string> filenameParameter = new QueryParameter<string>("filename", string.Empty, true);
 
-            string filename = filenameParameter.Get(session.Request);
+            string filename = filenameParameter.Get(Request);
             string file = Path.Combine(FileSystemHelper.GetAutofocusFolder(), $"{filename}.json");
             if (!File.Exists(file))
             {
@@ -148,16 +157,6 @@ namespace ninaAPI.WebService.V3.Equipment.Focuser
 
             string json = await Retry.Do(() => File.ReadAllText(file), TimeSpan.FromMilliseconds(50), 5);
             return json; // TODO: See if it works to return it raw
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, () => FocuserInfo());
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/move", (HttpSession session) => FocuserMove(serializer.Deserialize<FocuserMoveBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/temp-comp", (HttpSession session) => FocuserTemperatureCompensation(serializer.Deserialize<FocuserTempCompBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/auto-focus", () => StartAutoFocus());
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/auto-focus/list-reports", (HttpSession session) => AutoFocusListReports());
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/auto-focus/get-report", async (HttpSession session) => await AutoFocusGetReport(session));
         }
     }
 

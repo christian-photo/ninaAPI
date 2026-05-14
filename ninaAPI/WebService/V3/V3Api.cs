@@ -12,12 +12,17 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection;
+using NINA.Equipment.Interfaces;
+using NINA.Equipment.Interfaces.Mediator;
+using NINA.Plugin.Interfaces;
+using NINA.Profile.Interfaces;
+using NINA.Sequencer.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
-using ninaAPI.WebService.V3.Application;
-using ninaAPI.WebService.V3.Application.Framing;
 using ninaAPI.WebService.V3.Application.Image;
 using ninaAPI.WebService.V3.Application.Livestack;
 using ninaAPI.WebService.V3.Application.Profile;
@@ -39,43 +44,18 @@ using ninaAPI.WebService.V3.Equipment.Weather;
 using ninaAPI.WebService.V3.Websocket.Event;
 using ninaAPI.WebService.V3.Websocket.MountControl;
 using SimpleW;
+using SimpleW.Helper.DependencyInjection;
 using SimpleW.Modules;
 
 namespace ninaAPI.WebService.V3
 {
     public class V3Api : IHttpApi
     {
-        private readonly ISerializerService serializer;
-
-        private readonly CameraController cameraController;
-        private readonly FocuserController focuserController;
-        private readonly DomeController domeController;
-        private readonly FilterWheelController filterWheelController;
-        private readonly FlatController flatController;
-        private readonly GuiderController guiderController;
-        private readonly MountController mountController;
-        private readonly RotatorController rotatorController;
-        private readonly SafetyController safetyController;
-        private readonly SwitchController switchController;
-        private readonly WeatherController weatherController;
-        private readonly DeviceController connectionController;
-
-        private readonly ApplicationController applicationController;
-        private readonly ImageController imageController;
-        private readonly ProfileController profileController;
-        private readonly SequenceController sequenceController;
-        private readonly FramingController framingController;
-        private readonly ControllerV3 controller;
-        private readonly ApiProcessMediator processMediator;
-
-        private readonly LivestackController livestackController;
-        private readonly TppaController tppaController;
-
         private static EventHistoryManager eventHistory;
         private EventWebSocket eventSocket;
         private static List<EventWatcher> watchers;
 
-        private readonly MountControlSocket mountControlSocket;
+        private MountControlSocket mountControlSocket;
 
 
         // TODO: Missing endpoints / watchers
@@ -83,29 +63,29 @@ namespace ninaAPI.WebService.V3
         // - Networked filterwheel
         // - Networked rotator
 
-        public static void StartWatchers()
+        public static void StartWatchers(ServiceProvider provider)
         {
             eventHistory = new EventHistoryManager();
             watchers =
             [
-                new CameraWatcher(eventHistory, AdvancedAPI.Controls.Camera),
-                new DomeWatcher(eventHistory, AdvancedAPI.Controls.Dome, AdvancedAPI.Controls.DomeFollower),
-                new FilterWheelWatcher(eventHistory, AdvancedAPI.Controls.FilterWheel, AdvancedAPI.Controls.Profile),
-                new FlatWatcher(eventHistory, AdvancedAPI.Controls.FlatDevice),
-                new FocuserWatcher(eventHistory, AdvancedAPI.Controls.Focuser),
-                new GuiderWatcher(eventHistory, AdvancedAPI.Controls.Guider),
-                new MountWatcher(eventHistory, AdvancedAPI.Controls.Mount),
-                new RotatorWatcher(eventHistory, AdvancedAPI.Controls.Rotator),
-                new SafetyWatcher(eventHistory, AdvancedAPI.Controls.SafetyMonitor),
-                new SwitchWatcher(eventHistory, AdvancedAPI.Controls.Switch),
-                new WeatherWatcher(eventHistory, AdvancedAPI.Controls.Weather),
+                new CameraWatcher(eventHistory, provider.GetService<ICameraMediator>()),
+                new DomeWatcher(eventHistory, provider.GetService<IDomeMediator>(), provider.GetService<IDomeFollower>()),
+                new FilterWheelWatcher(eventHistory, provider.GetService<IFilterWheelMediator>(), provider.GetService<IProfileService>()),
+                new FlatWatcher(eventHistory, provider.GetService<IFlatDeviceMediator>()),
+                new FocuserWatcher(eventHistory, provider.GetService<IFocuserMediator>()),
+                new GuiderWatcher(eventHistory, provider.GetService<IGuiderMediator>()),
+                new MountWatcher(eventHistory, provider.GetService<ITelescopeMediator>()),
+                new RotatorWatcher(eventHistory, provider.GetService<IRotatorMediator>()),
+                new SafetyWatcher(eventHistory, provider.GetService<ISafetyMonitorMediator>()),
+                new SwitchWatcher(eventHistory, provider.GetService<ISwitchMediator>()),
+                new WeatherWatcher(eventHistory, provider.GetService<IWeatherDataMediator>()),
                 new ProcessWatcher(eventHistory),
-                new ImageWatcher(eventHistory, AdvancedAPI.Controls.ImageSaveMediator, AdvancedAPI.Controls.Imaging),
-                new ProfileWatcher(eventHistory, AdvancedAPI.Controls.Profile),
-                new SequenceWatcher(eventHistory, AdvancedAPI.Controls.Sequence),
-                new LivestackWatcher(eventHistory, AdvancedAPI.Controls.MessageBroker),
-                new TppaWatcher(eventHistory, AdvancedAPI.Controls.MessageBroker),
-                new TSWatcher(eventHistory, AdvancedAPI.Controls.MessageBroker),
+                new ImageWatcher(eventHistory, provider.GetService<IImageSaveMediator>(), provider.GetService<IImagingMediator>()),
+                new ProfileWatcher(eventHistory, provider.GetService<IProfileService>()),
+                new SequenceWatcher(eventHistory, provider.GetService<ISequenceMediator>()),
+                new LivestackWatcher(eventHistory, provider.GetService<IMessageBroker>()),
+                new TppaWatcher(eventHistory, provider.GetService<IMessageBroker>()),
+                new TSWatcher(eventHistory, provider.GetService<IMessageBroker>()),
             ];
 
             foreach (EventWatcher watcher in watchers)
@@ -122,178 +102,12 @@ namespace ninaAPI.WebService.V3
             }
         }
 
-        public V3Api()
+        public SimpleWServer ConfigureServer(SimpleWServer server, ServiceProvider provider)
         {
-            serializer = SerializerFactory.GetSerializer();
-            processMediator = new ApiProcessMediator();
+            var serializer = provider.GetService<ISerializerService>();
 
-            cameraController = new CameraController(
-                AdvancedAPI.Controls.Camera,
-                AdvancedAPI.Controls.Mount,
-                AdvancedAPI.Controls.Profile,
-                AdvancedAPI.Controls.Imaging,
-                AdvancedAPI.Controls.ImageSaveMediator,
-                AdvancedAPI.Controls.StatusMediator,
-                AdvancedAPI.Controls.ImageDataFactory,
-                AdvancedAPI.Controls.PlateSolver,
-                AdvancedAPI.Controls.FilterWheel,
-                processMediator,
-                serializer
-            );
-
-            domeController = new DomeController(
-                AdvancedAPI.Controls.Dome,
-                AdvancedAPI.Controls.DomeFollower,
-                AdvancedAPI.Controls.Mount,
-                processMediator,
-                serializer
-            );
-
-            filterWheelController = new FilterWheelController(
-                AdvancedAPI.Controls.FilterWheel,
-                AdvancedAPI.Controls.Profile,
-                AdvancedAPI.Controls.StatusMediator,
-                processMediator,
-                serializer
-            );
-
-            flatController = new FlatController(
-                AdvancedAPI.Controls.FlatDevice,
-                AdvancedAPI.Controls.StatusMediator,
-                serializer
-            );
-
-            focuserController = new FocuserController(
-                AdvancedAPI.Controls.Focuser,
-                AdvancedAPI.Controls.FilterWheel,
-                AdvancedAPI.Controls.StatusMediator,
-                AdvancedAPI.Controls.AutoFocusFactory,
-                processMediator,
-                serializer
-            );
-
-            guiderController = new GuiderController(
-                AdvancedAPI.Controls.Guider,
-                AdvancedAPI.Controls.StatusMediator,
-                processMediator,
-                serializer
-            );
-
-            mountController = new MountController(
-                AdvancedAPI.Controls.Mount,
-                AdvancedAPI.Controls.Profile,
-                AdvancedAPI.Controls.Imaging,
-                AdvancedAPI.Controls.Rotator,
-                AdvancedAPI.Controls.FilterWheel,
-                AdvancedAPI.Controls.Guider,
-                AdvancedAPI.Controls.Dome,
-                AdvancedAPI.Controls.DomeFollower,
-                AdvancedAPI.Controls.PlateSolver,
-                AdvancedAPI.Controls.WindowFactory,
-                AdvancedAPI.Controls.StatusMediator,
-                AdvancedAPI.Controls.MeridianFlipFactory,
-                AdvancedAPI.Controls.Camera,
-                AdvancedAPI.Controls.Focuser,
-                processMediator,
-                serializer
-            );
-
-            rotatorController = new RotatorController(
-                AdvancedAPI.Controls.Rotator,
-                AdvancedAPI.Controls.Profile,
-                AdvancedAPI.Controls.Imaging,
-                AdvancedAPI.Controls.Mount,
-                AdvancedAPI.Controls.FilterWheel,
-                AdvancedAPI.Controls.PlateSolver,
-                AdvancedAPI.Controls.WindowFactory,
-                AdvancedAPI.Controls.StatusMediator,
-                processMediator,
-                serializer
-            );
-
-            safetyController = new SafetyController(
-                AdvancedAPI.Controls.SafetyMonitor
-            );
-
-            switchController = new SwitchController(
-                AdvancedAPI.Controls.Switch,
-                AdvancedAPI.Controls.StatusMediator,
-                serializer
-            );
-
-            weatherController = new WeatherController(
-                AdvancedAPI.Controls.Weather
-            );
-
-            connectionController = new DeviceController(
-                AdvancedAPI.Controls.Camera,
-                AdvancedAPI.Controls.Dome,
-                AdvancedAPI.Controls.DomeFollower,
-                AdvancedAPI.Controls.FilterWheel,
-                AdvancedAPI.Controls.FlatDevice,
-                AdvancedAPI.Controls.Focuser,
-                AdvancedAPI.Controls.Guider,
-                AdvancedAPI.Controls.Mount,
-                AdvancedAPI.Controls.Rotator,
-                AdvancedAPI.Controls.SafetyMonitor,
-                AdvancedAPI.Controls.Switch,
-                AdvancedAPI.Controls.Weather,
-                AdvancedAPI.Controls.Profile,
-                serializer
-            );
-
-            imageController = new ImageController(
-                AdvancedAPI.Controls.ImageDataFactory,
-                AdvancedAPI.Controls.Profile,
-                AdvancedAPI.Controls.PlateSolver,
-                AdvancedAPI.Controls.Camera,
-                AdvancedAPI.Controls.Mount,
-                AdvancedAPI.Controls.StatusMediator,
-                serializer
-            );
-
-            profileController = new ProfileController(
-                AdvancedAPI.Controls.Profile,
-                serializer
-            );
-
-            applicationController = new ApplicationController(
-                AdvancedAPI.Controls.Profile,
-                AdvancedAPI.Controls.Application,
-                serializer
-            );
-
-            sequenceController = new SequenceController(
-                AdvancedAPI.Controls.Sequence,
-                serializer
-            );
-
-            framingController = new FramingController(
-                AdvancedAPI.Controls.FramingAssistant,
-                AdvancedAPI.Controls.Camera,
-                AdvancedAPI.Controls.Profile,
-                processMediator,
-                serializer
-            );
-
-            livestackController = new LivestackController(
-                AdvancedAPI.Controls.MessageBroker,
-                AdvancedAPI.Controls.Profile
-            );
-
-            tppaController = new TppaController(
-                AdvancedAPI.Controls.MessageBroker,
-                serializer
-            );
-
-            controller = new ControllerV3(processMediator);
-
-            mountControlSocket = new MountControlSocket(AdvancedAPI.Controls.Mount, serializer);
-        }
-
-        public SimpleWServer ConfigureServer(SimpleWServer server)
-        {
             eventSocket = new EventWebSocket(serializer, eventHistory);
+            mountControlSocket = new MountControlSocket(provider.GetService<ITelescopeMediator>(), serializer);
 
             foreach (EventWatcher watcher in watchers)
             {
@@ -337,27 +151,10 @@ namespace ninaAPI.WebService.V3
                     .Text(json, serializer.MimeType)
                     .SendAsync();
             });
-            controller.Configure(server, "/v3/api");
-            cameraController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.CameraUrlName}");
-            domeController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.DomeUrlName}");
-            filterWheelController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.FilterWheelUrlName}");
-            focuserController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}");
-            flatController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.FlatDeviceUrlName}");
-            guiderController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.GuiderUrlName}");
-            mountController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.MountUrlName}");
-            rotatorController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.RotatorUrlName}");
-            safetyController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.SafetyMonitorUrlName}");
-            switchController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.SwitchUrlName}");
-            weatherController.Configure(server, $"/v3/api/equipment/{EquipmentConstants.WeatherUrlName}");
-            connectionController.Configure(server, $"/v3/api/equipment");
-            imageController.Configure(server, $"/v3/api/image");
-            profileController.Configure(server, $"/v3/api/profile");
-            applicationController.Configure(server, $"/v3/api/application");
-            sequenceController.Configure(server, $"/v3/api/sequence");
-            framingController.Configure(server, $"/v3/api/framing");
-            livestackController.Configure(server, $"/v3/api/livestack");
-            tppaController.Configure(server, $"/v3/api/tppa");
-            controller.Configure(server, "/v3/api");
+
+            server.MapController<ControllerV3>();
+
+            // server.MapControllers<Controller>(excludes: [typeof(V2.ControllerV2)]);
 
             return server;
         }

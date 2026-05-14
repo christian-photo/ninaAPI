@@ -11,6 +11,7 @@
 
 using System;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using ninaAPI.Utility;
 using SimpleW;
 
@@ -18,6 +19,13 @@ namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2 : Controller
     {
+        private readonly ServiceProvider provider;
+
+        public ControllerV2(ServiceProvider provider)
+        {
+            this.provider = provider;
+        }
+
         [Route("GET", "/")]
         public string Index()
         {

@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
 using NINA.Equipment.Interfaces.Mediator;
@@ -17,12 +18,12 @@ using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.FlatDevice
 {
-    public class FlatController : IHttpController
+    [Route($"/v3/api/equipment/{EquipmentConstants.FlatDeviceUrlName}")]
+    public class FlatController : Controller
     {
         private readonly IFlatDeviceMediator flatDevice;
         private readonly IApplicationStatusMediator appStatus;
@@ -35,13 +36,19 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
             this.serializer = serializer;
         }
 
+        [Route("GET", "/")]
         public FlatInfoResponse FlatInfo()
         {
             return new FlatInfoResponse(flatDevice);
         }
 
-        public async Task<StringResponse> FlatLight(HttpSession session, FlatLightUpdateBody body)
+
+        [Route("PATCH", "/light")]
+        public async Task<StringResponse> FlatLight()
         {
+            FlatLightUpdateBody body = serializer.Deserialize<FlatLightUpdateBody>(Request.BodyString);
+            Validator.ValidateObject(body, new ValidationContext(body));
+
             if (!flatDevice.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.FlatDevice);
@@ -51,13 +58,17 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw new HttpException(HttpStatusCode.Conflict, "Flatdevice does not support on/off");
             }
 
-            await flatDevice.ToggleLight(body.TurnOn, appStatus.GetStatus(), session.RequestAborted);
+            await flatDevice.ToggleLight(body.TurnOn, appStatus.GetStatus(), Session.RequestAborted);
 
             return new StringResponse("Flatdevice light set");
         }
 
-        public async Task<StringResponse> FlatBrightness(HttpSession session, FlatBrightnessUpdateBody body)
+        [Route("PATCH", "/brightness")]
+        public async Task<StringResponse> FlatBrightness()
         {
+            FlatBrightnessUpdateBody body = serializer.Deserialize<FlatBrightnessUpdateBody>(Request.BodyString);
+            Validator.ValidateObject(body, new ValidationContext(body));
+
             if (!flatDevice.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.FlatDevice);
@@ -67,12 +78,13 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw CommonErrors.ParameterOutOfRange(nameof(body.Brightness), flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness);
             }
 
-            await flatDevice.SetBrightness(body.Brightness, appStatus.GetStatus(), session.RequestAborted);
+            await flatDevice.SetBrightness(body.Brightness, appStatus.GetStatus(), Session.RequestAborted);
 
             return new StringResponse("Flatdevice brightness set");
         }
 
-        public async Task<StringResponse> FlatCoverOpen(HttpSession session)
+        [Route("POST", "/cover/open")]
+        public async Task<StringResponse> FlatCoverOpen()
         {
             if (!flatDevice.GetInfo().Connected)
             {
@@ -83,12 +95,13 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw new HttpException(HttpStatusCode.Conflict, "Flatdevice does not support open/close");
             }
 
-            await flatDevice.OpenCover(appStatus.GetStatus(), session.RequestAborted);
+            await flatDevice.OpenCover(appStatus.GetStatus(), Session.RequestAborted);
 
             return new StringResponse("Flatdevice cover open");
         }
 
-        public async Task<StringResponse> FlatCoverClose(HttpSession session)
+        [Route("POST", "/cover/close")]
+        public async Task<StringResponse> FlatCoverClose()
         {
             if (!flatDevice.GetInfo().Connected)
             {
@@ -99,28 +112,21 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
                 throw new HttpException(HttpStatusCode.Conflict, "Flatdevice does not support open/close");
             }
 
-            await flatDevice.CloseCover(appStatus.GetStatus(), session.RequestAborted);
+            await flatDevice.CloseCover(appStatus.GetStatus(), Session.RequestAborted);
 
             return new StringResponse("Flatdevice cover close");
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, () => FlatInfo());
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/light", async (HttpSession session) => await FlatLight(session, serializer.Deserialize<FlatLightUpdateBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/brightness", async (HttpSession session) => await FlatBrightness(session, serializer.Deserialize<FlatBrightnessUpdateBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/cover/open", async (HttpSession session) => await FlatCoverOpen(session));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/cover/close", async (HttpSession session) => await FlatCoverClose(session));
         }
     }
 
     public class FlatLightUpdateBody
     {
+        [Required]
         public bool TurnOn { get; set; }
     }
 
     public class FlatBrightnessUpdateBody
     {
+        [Required]
         public int Brightness { get; set; }
     }
 }

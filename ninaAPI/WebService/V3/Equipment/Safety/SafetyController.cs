@@ -11,13 +11,12 @@
 
 
 using NINA.Equipment.Interfaces.Mediator;
-using ninaAPI.Utility.Http;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Safety
 {
-    public class SafetyController : IHttpController
+    [Route($"/v3/api/equipment/{EquipmentConstants.SafetyMonitorUrlName}")]
+    public class SafetyController : Controller
     {
         private readonly ISafetyMonitorMediator safety;
 
@@ -26,11 +25,7 @@ namespace ninaAPI.WebService.V3.Equipment.Safety
             this.safety = safety;
         }
 
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, () => SafetyInfo());
-        }
-
+        [Route("GET", "/")]
         public SafetyInfoResponse SafetyInfo()
         {
             return new SafetyInfoResponse(safety);

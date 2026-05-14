@@ -12,7 +12,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -30,7 +29,6 @@ using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Equipment.Camera;
 using ninaAPI.WebService.V3.Model;
 using ninaAPI.WebService.V3.Service;
@@ -38,7 +36,8 @@ using SimpleW;
 
 namespace ninaAPI.WebService.V3.Application.Image
 {
-    public class ImageController : IHttpController
+    [Route("/v3/api/image")]
+    public class ImageController : Controller
     {
         private readonly IImageDataFactory imageDataFactory;
         private readonly IProfileService profileService;
@@ -65,7 +64,8 @@ namespace ninaAPI.WebService.V3.Application.Image
             this.serializer = serializer;
         }
 
-        public async Task GetImage(int index, HttpSession session)
+        [Route("GET", "/:index")]
+        public async Task GetImage(int index)
         {
             IProfile profile = profileService.ActiveProfile;
 
@@ -73,21 +73,22 @@ namespace ninaAPI.WebService.V3.Application.Image
             ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile);
             imageQuery.BayerPattern = new QueryParameter<SensorType>("bayer-pattern", CameraController.FindBayer(profile, cameraMediator), false);
 
-            imageQuery.Evaluate(session.Request);
-            imageTypeParameter.Get(session.Request);
+            imageQuery.Evaluate(Request);
+            imageTypeParameter.Get(Request);
 
             ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
             ImageWriter writer = await ImageService.ProcessAndPrepareImage(p.GetPath(), p.IsBayered, imageQuery, p.BitDepth);
 
-            await session.Response.Body(writer.Encode(imageQuery.Quality.Value), writer.MimeType).SendAsync();
+            await Response.Body(writer.Encode(imageQuery.Quality.Value), writer.MimeType).SendAsync();
         }
 
-        public async Task GetThumbnail(int index, HttpSession session)
+        [Route("GET", "/:index/thumbnail")]
+        public async Task GetThumbnail(int index)
         {
             IProfile profile = profileService.ActiveProfile;
 
             QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
-            imageTypeParameter.Get(session.Request);
+            imageTypeParameter.Get(Request);
 
             ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
 
@@ -96,13 +97,14 @@ namespace ninaAPI.WebService.V3.Application.Image
                 throw new HttpException(HttpStatusCode.NotFound, "Thumbnail does not exist");
             }
 
-            await session.Response.Body(await File.ReadAllBytesAsync(p.GetThumbnailPath()), "image/png").SendAsync();
+            await Response.Body(await File.ReadAllBytesAsync(p.GetThumbnailPath()), "image/png").SendAsync();
         }
 
-        public async Task GetImageRaw(int index, HttpSession session)
+        [Route("GET", "/:index/raw")]
+        public async Task GetImageRaw(int index)
         {
             QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
-            imageTypeParameter.Get(session.Request);
+            imageTypeParameter.Get(Request);
 
             ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
 
@@ -114,7 +116,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             if (p.GetPath().EndsWith(".fits", true, null))
             {
                 var imageData = await Retry.Do(
-                    async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(
+                    async () => await imageDataFactory.CreateFromFile(
                         p.GetPath(),
                         p.BitDepth,
                         p.IsBayered,
@@ -134,17 +136,19 @@ namespace ninaAPI.WebService.V3.Application.Image
                 using (var target = new MemoryStream())
                 {
                     f.Write(target); // TODO: TEsting
-                    await session.Response.Body(target.ToArray(), "application/octet-stream").SendAsync();
+                    await Response.Body(target.ToArray(), "application/octet-stream").SendAsync();
                 }
             }
             else
             {
-                await session.Response.Body(await File.ReadAllBytesAsync(p.GetPath()), "application/octet-stream").SendAsync();
+                await Response.Body(await File.ReadAllBytesAsync(p.GetPath()), "application/octet-stream").SendAsync();
             }
         }
 
-        public object AddPrefix(int index, ImagePrefixBody body, HttpSession session)
+        [Route("PATCH", "/:index/prefix")]
+        public object AddPrefix(int index)
         {
+            ImagePrefixBody body = serializer.Deserialize<ImagePrefixBody>(Request.BodyString);
             Validator.ValidateObject(body, new ValidationContext(body));
 
             if (body.Prefix.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
@@ -153,7 +157,7 @@ namespace ninaAPI.WebService.V3.Application.Image
             }
 
             QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
-            imageTypeParameter.Get(session.Request);
+            imageTypeParameter.Get(Request);
 
             ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
 
@@ -182,14 +186,15 @@ namespace ninaAPI.WebService.V3.Application.Image
             };
         }
 
-        public async Task<PlateSolveResult> ImageSolve(int index, PlatesolveConfig config, HttpSession session)
+        [Route("GET", "/:index/solve")]
+        public async Task<PlateSolveResult> ImageSolve(int index, PlatesolveConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
 
             IProfile profile = profileService.ActiveProfile;
 
             QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
-            imageTypeParameter.Get(session.Request);
+            imageTypeParameter.Get(Request);
 
             ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
             if (!File.Exists(p.GetPath()))
@@ -210,7 +215,7 @@ namespace ninaAPI.WebService.V3.Application.Image
                     config,
                     (double)config.PixelSize,
                     coordinates,
-                    session.RequestAborted,
+                    Session.RequestAborted,
                     profile,
                     p.BitDepth,
                     p.IsBayered);
@@ -219,14 +224,15 @@ namespace ninaAPI.WebService.V3.Application.Image
         }
 
         // TODO: Not documented
-        public async Task GetPreparedImage(HttpSession session)
+        [Route("GET", "/prepared")]
+        public async Task GetPreparedImage()
         {
             IProfile profile = profileService.ActiveProfile;
 
             ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile);
             imageQuery.BayerPattern = new QueryParameter<SensorType>("bayer-pattern", CameraController.FindBayer(profile, cameraMediator), false);
 
-            imageQuery.Evaluate(session.Request);
+            imageQuery.Evaluate(Request);
 
             if (ImageWatcher.PreparedImage is null)
             {
@@ -235,10 +241,11 @@ namespace ninaAPI.WebService.V3.Application.Image
 
             ImageWriter writer = await ImageService.ProcessAndPrepareImage(ImageWatcher.PreparedImage, imageQuery);
 
-            await session.Response.Body(writer.Encode(imageQuery.Quality.Value), writer.MimeType).SendAsync();
+            await Response.Body(writer.Encode(imageQuery.Quality.Value), writer.MimeType).SendAsync();
         }
 
-        public async Task<PlateSolveResult> PreparedImageSolve(PlatesolveConfig config, HttpSession session)
+        [Route("GET", "/prepared/solve")]
+        public async Task<PlateSolveResult> PreparedImageSolve(PlatesolveConfig config)
         {
             Validator.ValidateObject(config, new ValidationContext(config));
 
@@ -263,17 +270,18 @@ namespace ninaAPI.WebService.V3.Application.Image
                     (double)config.PixelSize,
                     coordinates,
                     profile,
-                    session.RequestAborted);
+                    Session.RequestAborted);
 
             return result;
         }
 
-        public object GetImageHistory(HttpSession session)
+        [Route("GET", "/history")]
+        public object GetImageHistory()
         {
             PagerParameterSet pagerParameterSet = PagerParameterSet.Default();
             QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
-            imageTypeParameter.Get(session.Request);
-            pagerParameterSet.Evaluate(session.Request);
+            imageTypeParameter.Get(Request);
+            pagerParameterSet.Evaluate(Request);
 
             IEnumerable<ImageResponse> history = ImageWatcher.GetImageHistory();
 
@@ -304,18 +312,6 @@ namespace ninaAPI.WebService.V3.Application.Image
             }
 
             return history.ElementAt(index);
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/:index", async (int index, HttpSession session) => await GetImage(index, session));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/:index/thumbnail", async (int index, HttpSession session) => await GetThumbnail(index, session));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/:index/raw", async (int index, HttpSession session) => await GetImageRaw(index, session));
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/:index/prefix", (int index, HttpSession session) => AddPrefix(index, serializer.Deserialize<ImagePrefixBody>(session.Request.BodyString), session));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/:index/solve", async (int index, HttpSession session) => await ImageSolve(index, serializer.Deserialize<PlatesolveConfig>(session.Request.BodyString), session));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/prepared", async (HttpSession session) => await GetPreparedImage(session));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/prepared/solve", async (HttpSession session) => await PreparedImageSolve(serializer.Deserialize<PlatesolveConfig>(session.Request.BodyString), session));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/history", (HttpSession session) => GetImageHistory(session));
         }
     }
 

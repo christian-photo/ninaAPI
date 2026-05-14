@@ -9,6 +9,7 @@
 
 #endregion "copyright"
 
+using Microsoft.Extensions.DependencyInjection;
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
 using ninaAPI.Properties;
@@ -17,6 +18,7 @@ using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2;
 using SimpleW;
+using SimpleW.Helper.DependencyInjection;
 using SimpleW.Modules;
 using System;
 using System.Collections.Generic;
@@ -37,7 +39,7 @@ namespace ninaAPI.WebService
             Port = port;
         }
 
-        private void CreateServer()
+        private void CreateServer(ServiceProvider provider)
         {
             var serializer = SerializerFactory.GetSerializer();
 
@@ -82,6 +84,7 @@ namespace ninaAPI.WebService
                     }
                 }
             });
+            Server.UseDependencyInjection(provider);
         }
 
         private static async Task HandleHttpException(HttpSession session, HttpException exception)
@@ -95,14 +98,14 @@ namespace ninaAPI.WebService
             await session.Response.Status((int)exception.StatusCode).Text(serializer.Serialize(new { Error = error, Message = exception.Message }), serializer.MimeType).SendAsync();
         }
 
-        public async Task Start(params IHttpApi[] apis)
+        public async Task Start(ServiceProvider provider, params IHttpApi[] apis)
         {
             try
             {
-                CreateServer();
+                CreateServer(provider);
                 foreach (IHttpApi api in apis)
                 {
-                    Server = api.ConfigureServer(Server);
+                    Server = api.ConfigureServer(Server, provider);
                 }
 
                 foreach (var route in Server.Router.Routes)

@@ -21,12 +21,12 @@ using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Application.Framing
 {
-    public class FramingController : IHttpController
+    [Route("/v3/api/framing")]
+    public class FramingController : Controller
     {
         private readonly IFramingAssistantVM framingVM;
         private readonly ICameraMediator camera;
@@ -43,13 +43,18 @@ namespace ninaAPI.WebService.V3.Application.Framing
             this.serializer = serializer;
         }
 
+        [Route("GET", "/")]
         public FramingInfoContainer FramingInfo()
         {
             return new FramingInfoContainer(framingVM);
         }
+
+
         // TODO: Get Image endpoint
-        public async Task<FramingInfoContainer> FramingUpdate(FramingUpdate config)
+        [Route("PATCH", "/")]
+        public async Task<FramingInfoContainer> FramingUpdate()
         {
+            FramingUpdate config = serializer.Deserialize<FramingUpdate>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config)); // is there a better way to do this?
 
             if (config.BoundHeight != null) framingVM.BoundHeight = config.BoundHeight.Value;
@@ -73,7 +78,7 @@ namespace ninaAPI.WebService.V3.Application.Framing
         }
 
         // I dont copy the slew endopint because you can use the mount slew as well
-
+        [Route("POST", "/solve-rotation")]
         public object FramingSolveRotation()
         {
             if (!framingVM.RectangleCalculated)
@@ -102,13 +107,6 @@ namespace ninaAPI.WebService.V3.Application.Framing
             (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
 
             return (response, statusCode);
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/", () => FramingInfo());
-            server.Map(HttpVerbs.PATCH.ToString(), $"{prefix}/", async (HttpSession session) => await FramingUpdate(serializer.Deserialize<FramingUpdate>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/solve-rotation", () => FramingSolveRotation());
         }
     }
 }

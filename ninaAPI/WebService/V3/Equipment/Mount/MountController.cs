@@ -27,12 +27,12 @@ using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Mount
 {
-    public class MountController : IHttpController
+    [Route($"/v3/api/equipment/{EquipmentConstants.MountUrlName}")]
+    public class MountController : Controller
     {
         private readonly ITelescopeMediator mount;
         private readonly IProfileService profile;
@@ -87,11 +87,13 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             this.serializer = serializer;
         }
 
+        [Route("GET", "/")]
         public MountInfoResponse MountInfo()
         {
             return new MountInfoResponse(mount);
         }
 
+        [Route("POST", "/home")]
         public object MountHome()
         {
             if (!mount.GetInfo().Connected)
@@ -127,8 +129,10 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             return (response, statusCode);
         }
 
-        public StringResponse MountTrackingUpdate(UpdateTrackingModeBody body)
+        [Route("PATCH", "/tracking")]
+        public StringResponse MountTrackingUpdate()
         {
+            UpdateTrackingModeBody body = serializer.Deserialize<UpdateTrackingModeBody>(Request.BodyString);
             Validator.ValidateObject(body, new ValidationContext(body));
 
             if (!mount.GetInfo().Connected)
@@ -155,6 +159,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             return new StringResponse("Tracking mode updated");
         }
 
+        [Route("POST", "/park")]
         public object MountPark()
         {
             if (!mount.GetInfo().Connected)
@@ -186,7 +191,8 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             return (response, statusCode);
         }
 
-        public async Task<StringResponse> MountUnpark(HttpSession session)
+        [Route("POST", "/unpark")]
+        public async Task<StringResponse> MountUnpark()
         {
             if (!mount.GetInfo().Connected)
             {
@@ -197,13 +203,17 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
                 throw new HttpException(HttpStatusCode.Conflict, "Mount not parked");
             }
 
-            await mount.UnparkTelescope(statusMediator.GetStatus(), session.RequestAborted);
+            await mount.UnparkTelescope(statusMediator.GetStatus(), Session.RequestAborted);
 
             return new StringResponse("Unparked");
         }
 
-        public object MountFlip(MountFlipConfig config)
+        [Route("POST", "/flip")]
+        public object MountFlip()
         {
+            MountFlipConfig config = serializer.Deserialize<MountFlipConfig>(Request.BodyString);
+            Validator.ValidateObject(config, new ValidationContext(config));
+
             if (!mount.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Mount);
@@ -237,8 +247,12 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             return (response, statusCode);
         }
 
-        public object MountSlew(MountSlewConfig config)
+        [Route("POST", "/slew")]
+        public object MountSlew()
         {
+            MountSlewConfig config = serializer.Deserialize<MountSlewConfig>(Request.BodyString);
+            Validator.ValidateObject(config, new ValidationContext(config));
+
             if (!mount.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Mount);
@@ -301,6 +315,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             return (response, statusCode);
         }
 
+        [Route("POST", "/slew/stop")]
         public StringResponse MountStopSlew()
         {
             if (!mount.GetInfo().Connected)
@@ -316,6 +331,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             return new StringResponse("Stopped slew");
         }
 
+        [Route("PATCH", "/park")]
         public StringResponse MountSetPark()
         {
             if (!mount.GetInfo().Connected)
@@ -332,8 +348,10 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             return new StringResponse("Park position set");
         }
 
-        public async Task<object> MountSync(MountSyncConfig config)
+        [Route("PATCH", "/sync")]
+        public async Task<object> MountSync()
         {
+            MountSyncConfig config = serializer.Deserialize<MountSyncConfig>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config));
 
             if (!mount.GetInfo().Connected)
@@ -374,20 +392,6 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
                 }
                 return new StringResponse("Mount synced");
             }
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, () => MountInfo());
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/home", () => MountHome());
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/tracking", (HttpSession session) => MountTrackingUpdate(serializer.Deserialize<UpdateTrackingModeBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/park", () => MountPark());
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/unpark", async (HttpSession session) => await MountUnpark(session));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/flip", (HttpSession session) => MountFlip(serializer.Deserialize<MountFlipConfig>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/slew", (HttpSession session) => MountSlew(serializer.Deserialize<MountSlewConfig>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/slew/stop", () => MountStopSlew());
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/park", () => MountSetPark());
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/sync", (HttpSession session) => MountSync(serializer.Deserialize<MountSyncConfig>(session.Request.BodyString)));
         }
     }
 }

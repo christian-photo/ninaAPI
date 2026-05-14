@@ -30,13 +30,13 @@ using ninaAPI.WebService.V3.Model;
 using NINA.Equipment.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using SimpleW;
-using ninaAPI.WebService.Interfaces;
 using ninaAPI.Utility.Serialization;
 using NINA.PlateSolving;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {
-    public class CameraController : IHttpController
+    [Route($"/v3/api/equipment/{EquipmentConstants.CameraUrlName}")]
+    public class CameraController : Controller
     {
         private readonly ICameraMediator cam;
         private readonly ITelescopeMediator mount;
@@ -74,6 +74,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             this.captureMediator = new CaptureMediator(camera, filterWheel, profile, imaging, imageSave, status, processMediator);
         }
 
+        [Route("GET", "/")]
         public async Task<CameraInfoResponse> CameraInfo()
         {
             CameraInfoResponse info = new CameraInfoResponse(cam);
@@ -81,8 +82,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return info;
         }
 
-        public async Task<object> CameraCool(CoolCameraBody body)
+        [Route("POST", "/cool")]
+        public async Task<object> CameraCool()
         {
+            CoolCameraBody body = serializer.Deserialize<CoolCameraBody>(Request.BodyString);
             Validator.ValidateObject(body, new ValidationContext(body));
 
             var duration = body.Duration ?? profile.ActiveProfile.CameraSettings.CoolingDuration;
@@ -107,8 +110,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return (response, statusCode);
         }
 
-        public async Task<object> CameraWarm(WarmCameraBody body)
+        [Route("POST", "/warm")]
+        public async Task<object> CameraWarm()
         {
+            WarmCameraBody body = serializer.Deserialize<WarmCameraBody>(Request.BodyString);
             Validator.ValidateObject(body, new ValidationContext(body));
 
             var duration = body.Duration ?? profile.ActiveProfile.CameraSettings.WarmingDuration;
@@ -133,6 +138,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return (response, statusCode);
         }
 
+        [Route("POST", "/abort-exposure")]
         public async Task<StringResponse> AbortExposure()
         {
             if (!cam.GetInfo().Connected)
@@ -149,8 +155,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return new StringResponse("Exposure aborted");
         }
 
-        public async Task<StringResponse> CameraDewHeater(DewHeaterUpdateBody body)
+        [Route("PUT", "/dew-heater")]
+        public async Task<StringResponse> CameraDewHeater()
         {
+            DewHeaterUpdateBody body = serializer.Deserialize<DewHeaterUpdateBody>(Request.BodyString);
             Validator.ValidateObject(body, new ValidationContext(body));
 
             if (!cam.GetInfo().Connected)
@@ -167,8 +175,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return new StringResponse("Dew heater power set");
         }
 
-        public async Task<StringResponse> CameraSetBinning(BinningMode binning)
+        [Route("PUT", "/binning")]
+        public async Task<StringResponse> CameraSetBinning()
         {
+            BinningMode binning = serializer.Deserialize<BinningMode>(Request.BodyString);
             if (!cam.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Camera);
@@ -183,8 +193,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return new StringResponse("Binning set");
         }
 
-        public async Task<StringResponse> CameraSetBinning(USBLimitUpdateBody body)
+        [Route("PUT", "/usb-limit")]
+        public async Task<StringResponse> CameraSetUsbLimit()
         {
+            USBLimitUpdateBody body = serializer.Deserialize<USBLimitUpdateBody>(Request.BodyString);
             Validator.ValidateObject(body, new ValidationContext(body));
             var info = cam.GetInfo();
 
@@ -202,8 +214,12 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return new StringResponse("USB limit set");
         }
 
-        public async Task<StringResponse> CameraSetReadout(ReadoutModeUpdateBody body)
+        [Route("PUT", "/readout")]
+        public async Task<StringResponse> CameraSetReadout()
         {
+            ReadoutModeUpdateBody body = serializer.Deserialize<ReadoutModeUpdateBody>(Request.BodyString);
+            Validator.ValidateObject(body, new ValidationContext(body));
+
             int readoutModes = cam.GetInfo().ReadoutModes.Count();
 
             if (!cam.GetInfo().Connected)
@@ -217,48 +233,72 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
             cam.SetReadoutMode(body.Mode);
 
+            if (body.Persistent)
+            {
+                profile.ActiveProfile.CameraSettings.ReadoutMode = body.Mode;
+            }
+
             return new StringResponse("Readout mode updated");
         }
 
-        public async Task<StringResponse> CameraSetReadoutNormal(HttpSession session)
+        [Route("PUT", "/readout/normal")]
+        public async Task<StringResponse> CameraSetReadoutNormal()
         {
-            int readoutModes = cam.GetInfo().ReadoutModes.Count();
+            ReadoutModeUpdateBody body = serializer.Deserialize<ReadoutModeUpdateBody>(Request.BodyString);
+            Validator.ValidateObject(body, new ValidationContext(body));
 
-            QueryParameter<int> modeParameter = new QueryParameter<int>("mode", 0, true, (mode) => mode.IsBetween(0, readoutModes - 1));
+            int readoutModes = cam.GetInfo().ReadoutModes.Count();
 
             if (!cam.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Camera);
             }
+            else if (body.Mode >= readoutModes)
+            {
+                throw CommonErrors.ParameterOutOfRange(nameof(body.Mode), 0, readoutModes - 1);
+            }
 
-            int mode = modeParameter.Get(session.Request);
+            ((ICamera)cam.GetDevice()).ReadoutModeForNormalImages = body.Mode;
 
-            ((ICamera)cam.GetDevice()).ReadoutModeForNormalImages = (short)mode;
+            if (body.Persistent)
+            {
+                profile.ActiveProfile.CameraSettings.ReadoutModeForNormalImages = body.Mode;
+            }
 
             return new StringResponse("Readout mode updated");
         }
 
-        public async Task<StringResponse> CameraSetReadoutSnapshot(HttpSession session)
+        [Route("PUT", "/readout/snapshot")]
+        public async Task<StringResponse> CameraSetReadoutSnapshot()
         {
-            int readoutModes = cam.GetInfo().ReadoutModes.Count();
+            ReadoutModeUpdateBody body = serializer.Deserialize<ReadoutModeUpdateBody>(Request.BodyString);
+            Validator.ValidateObject(body, new ValidationContext(body));
 
-            QueryParameter<int> modeParameter = new QueryParameter<int>("mode", 0, true, (mode) => mode.IsBetween(0, readoutModes - 1));
+            int readoutModes = cam.GetInfo().ReadoutModes.Count();
 
             if (!cam.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Camera);
             }
+            else if (body.Mode >= readoutModes)
+            {
+                throw CommonErrors.ParameterOutOfRange(nameof(body.Mode), 0, readoutModes - 1);
+            }
 
-            int mode = modeParameter.Get(session.Request);
+            ((ICamera)cam.GetDevice()).ReadoutModeForSnapImages = body.Mode;
 
-            ((ICamera)cam.GetDevice()).ReadoutModeForSnapImages = (short)mode;
+            if (body.Persistent)
+            {
+                profile.ActiveProfile.CameraSettings.ReadoutModeForSnapImages = body.Mode;
+            }
 
             return new StringResponse("Readout mode updated");
         }
 
-
-        public async Task<object> CameraCapture(CaptureConfig config)
+        [Route("POST", "/capture")]
+        public async Task<object> CameraCapture()
         {
+            CaptureConfig config = serializer.Deserialize<CaptureConfig>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config));
 
             CameraInfo info = cam.GetInfo();
@@ -306,12 +346,13 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return (response, statusCode);
         }
 
-        public async Task CameraCaptureImage(HttpSession session, Guid id)
+        [Route("GET", "/capture/:id")]
+        public async Task CameraCaptureImage(Guid id)
         {
             ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile.ActiveProfile);
             imageQuery.BayerPattern = new QueryParameter<SensorType>("bayer-pattern", FindBayer(profile.ActiveProfile, cam), false);
 
-            imageQuery.Evaluate(session.Request);
+            imageQuery.Evaluate(Request);
 
             var capture = captureMediator.GetCapture(id);
             if (capture == null)
@@ -328,10 +369,11 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             }
             ImageWriter writer = await ImageService.ProcessAndPrepareImage(capture.GetCapturePath(), capture.IsCaptureBayered, imageQuery, capture.BitDepth);
 
-            await session.Response.Body(writer.Encode(imageQuery.Quality.Value), writer.MimeType).SendAsync();
+            await Response.Body(writer.Encode(imageQuery.Quality.Value), writer.MimeType).SendAsync();
         }
 
-        public async Task<object> CameraCaptureStats(HttpSession session, Guid id)
+        [Route("GET", "/capture/:id/analysis")]
+        public async Task<object> CameraCaptureStats(Guid id)
         {
             QueryParameter<RawConverterEnum> rawConverterParameter = new QueryParameter<RawConverterEnum>("raw-converter", profile.ActiveProfile.CameraSettings.RawConverter, false);
             QueryParameter<StarSensitivityEnum> starSensitivityParameter = new QueryParameter<StarSensitivityEnum>("star-sensitivity", profile.ActiveProfile.ImageSettings.StarSensitivity, false);
@@ -351,17 +393,19 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 throw new HttpException(HttpStatusCode.NotFound, "Image not available");
             }
 
-            rawConverterParameter.Get(session.Request);
-            starSensitivityParameter.Get(session.Request);
-            noiseReductionParameter.Get(session.Request);
+            rawConverterParameter.Get(Request);
+            starSensitivityParameter.Get(Request);
+            noiseReductionParameter.Get(Request);
 
-            var stats = await capture.Analyze(imageDataFactory, starSensitivityParameter.Value, noiseReductionParameter.Value, rawConverterParameter.Value, session.RequestAborted);
+            var stats = await capture.Analyze(imageDataFactory, starSensitivityParameter.Value, noiseReductionParameter.Value, rawConverterParameter.Value, Session.RequestAborted);
 
             return stats;
         }
 
-        public async Task<PlateSolveResult> CameraCaptureSolve(HttpSession session, Guid id, PlatesolveConfig config)
+        [Route("GET", "/capture/:id/solve")]
+        public async Task<PlateSolveResult> CameraCaptureSolve(Guid id)
         {
+            PlatesolveConfig config = serializer.Deserialize<PlatesolveConfig>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config));
 
             var capture = captureMediator.GetCapture(id);
@@ -380,7 +424,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
             config.UpdateDefaults(profile.ActiveProfile, mount, cam);
 
-            var result = await capture.GetPlateSolve(imageDataFactory, plateSolverFactory, config, session.RequestAborted);
+            var result = await capture.GetPlateSolve(imageDataFactory, plateSolverFactory, config, Session.RequestAborted);
 
             return result;
         }
@@ -391,6 +435,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         /// </summary>
         /// <param name="id">The id of the capture that will be removed</param>
         /// <returns></returns>
+        [Route("DELETE", "/capture/:id")]
         public async Task<StringResponse> CameraRemoveCapture(Guid id)
         {
             var capture = captureMediator.GetCapture(id) ?? throw new HttpException(HttpStatusCode.NotFound, "Capture not found");
@@ -415,25 +460,6 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             }
 
             return sensor;
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, async () => await CameraInfo());
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/cool", async (HttpSession session) => await CameraCool(serializer.Deserialize<CoolCameraBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/warm", async (HttpSession session) => await CameraWarm(serializer.Deserialize<WarmCameraBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/abort-exposure", async () => await AbortExposure());
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/dew-heater", async (HttpSession session) => await CameraDewHeater(serializer.Deserialize<DewHeaterUpdateBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/binning", async (HttpSession session) => await CameraSetBinning(serializer.Deserialize<BinningMode>(session.Request.BodyString)));
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/usb-limit", async (HttpSession session) => await CameraSetBinning(serializer.Deserialize<USBLimitUpdateBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/readout", async (HttpSession session) => await CameraSetReadout(serializer.Deserialize<ReadoutModeUpdateBody>(session.Request.BodyString)));
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/readout/image", async (HttpSession session) => await CameraSetReadoutNormal(session));
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/readout/snapshot", async (HttpSession session) => await CameraSetReadoutSnapshot(session));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/capture", async (HttpSession session) => await CameraCapture(serializer.Deserialize<CaptureConfig>(session.Request.BodyString)));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/capture/:id", async (HttpSession session, Guid id) => await CameraCaptureImage(session, id));
-            server.Map(HttpVerbs.DELETE.ToString(), prefix + "/capture/:id", async (HttpSession session, Guid id) => await CameraRemoveCapture(id));
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/capture/:id/analysis", async (HttpSession session, Guid id) => await CameraCaptureStats(session, id));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/capture/:id/solve", async (HttpSession session, Guid id) => await CameraCaptureSolve(session, id, serializer.Deserialize<PlatesolveConfig>(session.Request.BodyString)));
         }
     }
 
@@ -469,5 +495,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         [Required]
         [Range(0, short.MaxValue)]
         public short Mode { get; set; }
+
+        /// <summary>
+        /// If true, the readout mode should be written in the profile settings such that it is still active after a reconnect
+        /// </summary>
+        public bool Persistent { get; set; }
     }
 }

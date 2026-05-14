@@ -18,12 +18,12 @@ using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.FilterWheel
 {
-    public class FilterWheelController : IHttpController
+    [Route($"/v3/api/equipment/{EquipmentConstants.FilterWheelUrlName}")]
+    public class FilterWheelController : Controller
     {
         private readonly IFilterWheelMediator filterWheel;
         private readonly IProfileService profile;
@@ -40,12 +40,14 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             this.serializer = serializer;
         }
 
+        [Route("GET", "/")]
         public FilterWheelInfoResponse FilterWheelInfo()
         {
             return new FilterWheelInfoResponse(filterWheel, profile.ActiveProfile);
         }
 
-        public object SetFilter(HttpSession session)
+        [Route("PUT", "/filter")]
+        public object SetFilter()
         {
             QueryParameter<short> positionParameter = new QueryParameter<short>("position", 0, true, (position) => position.IsBetween(0, profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1));
 
@@ -54,7 +56,7 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
                 throw CommonErrors.DeviceNotConnected(Device.Filterwheel);
             }
 
-            short position = positionParameter.Get(session.Request);
+            short position = positionParameter.Get(Request);
 
             FilterInfo filter = FilterData.ToFilter(position, profile.ActiveProfile);
 
@@ -69,8 +71,10 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             return (response, statusCode);
         }
 
-        public FilterData AddFilter(FilterData filter)
+        [Route("POST", "/filter")]
+        public FilterData AddFilter()
         {
+            FilterData filter = serializer.Deserialize<FilterData>(Request.BodyString);
             Validator.ValidateObject(filter, new ValidationContext(filter));
             // In the FilterData object, the position is not used, everything else is optional except the name
             var filterPosition = profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count;
@@ -89,10 +93,11 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             return FilterData.FromFilter(filterInfo);
         }
 
-        public StringResponse RemoveFilter(HttpSession session)
+        [Route("DELETE", "/filter")]
+        public StringResponse RemoveFilter()
         {
             QueryParameter<short> positionParameter = new QueryParameter<short>("position", 0, true, (position) => position.IsBetween(0, profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1));
-            short position = positionParameter.Get(session.Request);
+            short position = positionParameter.Get(Request);
 
             var filters = profile.ActiveProfile.FilterWheelSettings.FilterWheelFilters;
             filters.RemoveAt(position);
@@ -102,14 +107,6 @@ namespace ninaAPI.WebService.V3.Equipment.FilterWheel
             }
 
             return new StringResponse("Filter removed");
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, () => FilterWheelInfo());
-            server.Map(HttpVerbs.PUT.ToString(), prefix + "/filter", (HttpSession session) => SetFilter(session));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/filter", (HttpSession session) => AddFilter(serializer.Deserialize<FilterData>(session.Request.BodyString)));
-            server.Map(HttpVerbs.DELETE.ToString(), prefix + "/filter", (HttpSession session) => RemoveFilter(session));
         }
     }
 }

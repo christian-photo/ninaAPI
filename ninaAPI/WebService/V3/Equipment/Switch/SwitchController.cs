@@ -12,7 +12,6 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -21,12 +20,12 @@ using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Switch
 {
-    public class SwitchController : IHttpController
+    [Route($"/v3/api/equipment/{EquipmentConstants.SwitchUrlName}")]
+    public class SwitchController : Controller
     {
         private readonly ISwitchMediator @switch;
         private readonly IApplicationStatusMediator statusMediator;
@@ -39,19 +38,16 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
             this.serializer = serializer;
         }
 
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, () => SwitchInfo());
-            server.Map(HttpVerbs.PATCH.ToString(), prefix, (HttpSession session) => SwitchSetValue(serializer.Deserialize<SwitchSetValueConfig>(session.Request.BodyString), session));
-        }
-
+        [Route("GET", "/")]
         public SwitchInfoResponse SwitchInfo()
         {
             return new SwitchInfoResponse(@switch);
         }
 
-        public async Task<StringResponse> SwitchSetValue(SwitchSetValueConfig config, HttpSession session)
+        [Route("PATCH", "/")]
+        public async Task<StringResponse> SwitchSetValue()
         {
+            SwitchSetValueConfig config = serializer.Deserialize<SwitchSetValueConfig>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config));
 
             if (!@switch.GetInfo().Connected)
@@ -70,7 +66,7 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
             }
 
             // TODO: Check if this needs to be a process
-            await @switch.SetSwitchValue(config.SwitchId, config.Value, statusMediator.GetStatus(), session.RequestAborted);
+            await @switch.SetSwitchValue(config.SwitchId, config.Value, statusMediator.GetStatus(), Session.RequestAborted);
 
             return new StringResponse("Switch value updated");
         }

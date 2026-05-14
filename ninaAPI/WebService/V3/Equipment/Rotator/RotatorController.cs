@@ -13,7 +13,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Threading.Tasks;
 using NINA.Core.Utility.WindowService;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.PlateSolving.Interfaces;
@@ -23,12 +22,12 @@ using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.Interfaces;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Rotator
 {
-    public class RotatorController : IHttpController
+    [Route($"/v3/api/equipment/{EquipmentConstants.RotatorUrlName}")]
+    public class RotatorController : Controller
     {
         private readonly IRotatorMediator rotator;
         private readonly IProfileService profile;
@@ -65,20 +64,16 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
             this.serializer = serializer;
         }
 
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, () => RotatorInfo());
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/move", (HttpSession session) => RotatorMove(serializer.Deserialize<RotatorMoveConfig>(session.Request.BodyString)));
-            server.Map(HttpVerbs.PATCH.ToString(), prefix + "/sync", (HttpSession session) => RotatorSync(serializer.Deserialize<RotatorSyncConfig>(session.Request.BodyString)));
-        }
-
+        [Route("GET", "/")]
         public RotatorInfoResponse RotatorInfo()
         {
             return new RotatorInfoResponse(rotator);
         }
 
-        public object RotatorMove(RotatorMoveConfig config)
+        [Route("POST", "/move")]
+        public object RotatorMove()
         {
+            RotatorMoveConfig config = serializer.Deserialize<RotatorMoveConfig>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config));
 
             if (!rotator.GetInfo().Connected)
@@ -114,8 +109,12 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
             return (response, statusCode);
         }
 
-        public object RotatorSync(RotatorSyncConfig config)
+        [Route("PATCH", "/sync")]
+        public object RotatorSync()
         {
+            RotatorSyncConfig config = serializer.Deserialize<RotatorSyncConfig>(Request.BodyString);
+            Validator.ValidateObject(config, new ValidationContext(config));
+
             if (!rotator.GetInfo().Connected)
             {
                 throw CommonErrors.DeviceNotConnected(Device.Rotator);

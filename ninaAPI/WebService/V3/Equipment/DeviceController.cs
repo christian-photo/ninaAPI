@@ -14,6 +14,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using NINA.Equipment.Equipment;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
@@ -49,7 +50,8 @@ using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment
 {
-    public class DeviceController : IHttpController
+    [Route($"/v3/api/equipment")]
+    public class DeviceController : Controller
     {
         private readonly ICameraMediator camera;
         private readonly IDomeMediator dome;
@@ -98,6 +100,7 @@ namespace ninaAPI.WebService.V3.Equipment
             this.serializer = serializer;
         }
 
+        [Route("GET", "/:device/list-devices")]
         public object ListDevices(string device)
         {
             var chooser = GetDeviceChooserVM(device);
@@ -107,15 +110,17 @@ namespace ninaAPI.WebService.V3.Equipment
             return deviceList;
         }
 
-        public async Task<StringResponse> DeviceConnect(string device, HttpSession session)
+        [Route("POST", "/:device/connect")]
+        public async Task<StringResponse> DeviceConnect(string device)
         {
             var chooser = GetDeviceChooserVM(device);
+            var mediator = GetMediator(device);
 
             var deviceId = new QueryParameter<string>("deviceId", chooser.SelectedDevice.Id, false, (id) => chooser.Devices.Any(d => d.Id == id));
-            var targetDevice = chooser.Devices.First(d => d.Id == deviceId.Get(session.Request));
+            var targetDevice = chooser.Devices.First(d => d.Id == deviceId.Get(Request));
 
             chooser.SelectedDevice = targetDevice;
-            bool success = await chooser.SelectedDevice.Connect(session.RequestAborted);
+            bool success = await mediator.Connect();
 
             if (success)
             {
@@ -127,20 +132,22 @@ namespace ninaAPI.WebService.V3.Equipment
             }
         }
 
+        [Route("POST", "/:device/disconnect")]
         public StringResponse DeviceDisconnect(string device)
         {
-            var chooser = GetDeviceChooserVM(device);
+            var mediator = GetMediator(device);
 
-            if (!chooser.SelectedDevice.Connected)
+            if (!mediator.GetInfo().Connected)
             {
                 throw new HttpException(HttpStatusCode.BadRequest, $"No {device} connected");
             }
 
-            chooser.SelectedDevice.Disconnect();
+            mediator.Disconnect();
 
-            return new StringResponse($"{chooser.SelectedDevice.DisplayName} disconnected");
+            return new StringResponse($"Disconnected");
         }
 
+        [Route("POST", "/:device/rescan")]
         public async Task<object> DeviceRescan(string device)
         {
             var chooser = GetDeviceChooserVM(device);
@@ -150,8 +157,10 @@ namespace ninaAPI.WebService.V3.Equipment
             return ListDevices(device);
         }
 
-        public StringResponse DeviceAction(string device, ActionConfig config)
+        [Route("POST", "/:device/action")]
+        public StringResponse DeviceAction(string device)
         {
+            ActionConfig config = serializer.Deserialize<ActionConfig>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config));
 
             var deviceobj = GetDevice(device);
@@ -165,6 +174,7 @@ namespace ninaAPI.WebService.V3.Equipment
             return new StringResponse(string.IsNullOrEmpty(result) ? "Action executed" : result);
         }
 
+        [Route("GET", "/")]
         public object GetEquipmentBundleInfo()
         {
             return new
@@ -181,6 +191,37 @@ namespace ninaAPI.WebService.V3.Equipment
                 Switch = new SwitchInfoResponse(switchMediator),
                 Weather = new WeatherInfoResponse(weatherData),
             };
+        }
+
+        private IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo> GetMediator(string device)
+        {
+            switch (device)
+            {
+                case EquipmentConstants.CameraUrlName:
+                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)camera;
+                case EquipmentConstants.DomeUrlName:
+                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)dome;
+                case EquipmentConstants.FilterWheelUrlName:
+                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)filterWheel;
+                case EquipmentConstants.FlatDeviceUrlName:
+                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)flatDevice;
+                case EquipmentConstants.FocuserUrlName:
+                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)focuser;
+                case EquipmentConstants.GuiderUrlName:
+                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)guider;
+                case EquipmentConstants.MountUrlName:
+                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)mount;
+                case EquipmentConstants.RotatorUrlName:
+                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)rotator;
+                case EquipmentConstants.SafetyMonitorUrlName:
+                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)safetyMonitor;
+                case EquipmentConstants.SwitchUrlName:
+                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)switchMediator;
+                case EquipmentConstants.WeatherUrlName:
+                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)weatherData;
+                default:
+                    throw new HttpException(HttpStatusCode.NotFound, "Device not found");
+            }
         }
 
         private IDevice GetDevice(string device)
@@ -255,16 +296,6 @@ namespace ninaAPI.WebService.V3.Equipment
                     throw new HttpException(HttpStatusCode.NotFound, "Device not found");
             }
         }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), prefix, () => GetEquipmentBundleInfo());
-            server.Map(HttpVerbs.GET.ToString(), prefix + "/:device/list-devices", (string device) => ListDevices(device));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/connect", (string device, HttpSession session) => DeviceConnect(device, session));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/disconnect", (string device) => DeviceDisconnect(device));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/rescan", (string device) => DeviceRescan(device));
-            server.Map(HttpVerbs.POST.ToString(), prefix + "/:device/action", (string device, HttpSession session) => DeviceAction(device, serializer.Deserialize<ActionConfig>(session.Request.BodyString)));
-        }
     }
 
     internal class DeviceChooserEntry(IDevice device)
@@ -283,6 +314,7 @@ namespace ninaAPI.WebService.V3.Equipment
     {
         [Required(AllowEmptyStrings = false)]
         public string Action { get; set; }
+
         public string Parameters { get; set; }
     }
 }

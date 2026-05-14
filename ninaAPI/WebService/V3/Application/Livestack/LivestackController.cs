@@ -27,7 +27,8 @@ using SimpleW;
 
 namespace ninaAPI.WebService.V3.Application.Livestack
 {
-    public class LivestackController : IHttpController
+    [Route("/v3/api/livestack")]
+    public class LivestackController : Controller
     {
         private readonly IMessageBroker messageBroker;
         private readonly IProfileService profileService;
@@ -38,23 +39,27 @@ namespace ninaAPI.WebService.V3.Application.Livestack
             this.profileService = profileService;
         }
 
+        [Route("GET", "/status")]
         public object GetLivestackStatus()
         {
             return new { IsRunning = LivestackWatcher.IsLivestackRunning };
         }
 
+        [Route("POST", "/start")]
         public async Task<StringResponse> StartLivestack()
         {
             await messageBroker.Publish(new NINAMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StartLiveStack", string.Empty));
             return new StringResponse("Live stack started");
         }
 
+        [Route("POST", "/stop")]
         public async Task<StringResponse> StopLivestack()
         {
             await messageBroker.Publish(new NINAMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StopLiveStack", string.Empty));
             return new StringResponse("Live stack stopped");
         }
 
+        [Route("GET", "/image")]
         public object GetLivestackImageAvailable()
         {
             return LiveStackWatcher.LiveStackHistory.Images.Select(x => new
@@ -69,27 +74,19 @@ namespace ninaAPI.WebService.V3.Application.Livestack
             });
         }
 
-        public async Task GetLivestackImage(string target, string filter, HttpSession session)
+        [Route("GET", "/image/:target/:filter")]
+        public async Task GetLivestackImage(string target, string filter)
         {
             // Here only scale, size, format and quality are used and these are the only ones that will be documented
             ImageQueryParameterSet parameters = ImageQueryParameterSet.ByProfile(profileService.ActiveProfile);
-            parameters.Evaluate(session.Request);
+            parameters.Evaluate(Request);
 
             BitmapSource image = LiveStackWatcher.LiveStackHistory.GetLast(filter, target) ?? throw new HttpException(HttpStatusCode.NotFound, "No image with specified filter and target found");
 
             image = ImageService.ResizeBitmap(image, parameters);
             ImageWriter writer = ImageWriter.GetImageWriter(image, parameters.Format.Value);
 
-            await session.Response.Body(writer.Encode(parameters.Quality.Value), writer.MimeType).SendAsync();
-        }
-
-        public void Configure(SimpleWServer server, string prefix)
-        {
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/status", () => GetLivestackStatus());
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/start", async () => await StartLivestack());
-            server.Map(HttpVerbs.POST.ToString(), $"{prefix}/stop", async () => await StopLivestack());
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/image", () => GetLivestackImageAvailable());
-            server.Map(HttpVerbs.GET.ToString(), $"{prefix}/image/:target/:filter", async (HttpSession session, string target, string filter) => await GetLivestackImage(target, filter, session));
+            await Response.Body(writer.Encode(parameters.Quality.Value), writer.MimeType).SendAsync();
         }
     }
 }
