@@ -20,7 +20,7 @@ namespace ninaAPI.WebService.V3.Equipment.FlatDevice
     {
         public FlatInfoResponse(IFlatDeviceMediator flat)
         {
-            CoreUtility.CopyProperties(flat.GetInfo(), this);
+            ReflectionHelper.CopyProperties(flat.GetInfo(), this);
         }
     }
 }

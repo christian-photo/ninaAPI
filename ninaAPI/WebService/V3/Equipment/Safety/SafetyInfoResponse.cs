@@ -20,7 +20,7 @@ namespace ninaAPI.WebService.V3.Equipment.Safety
     {
         public SafetyInfoResponse(ISafetyMonitorMediator safety)
         {
-            CoreUtility.CopyProperties(safety.GetInfo(), this);
+            ReflectionHelper.CopyProperties(safety.GetInfo(), this);
         }
     }
 }

@@ -9,15 +9,16 @@
 
 #endregion "copyright"
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MySafetyMonitor;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using SimpleW;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {

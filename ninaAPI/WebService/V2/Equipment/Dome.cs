@@ -9,6 +9,10 @@
 
 #endregion "copyright"
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyDome;
 using NINA.Equipment.Interfaces;
@@ -16,15 +20,11 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Dome;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using SimpleW;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
-
     public class DomeWatcher : INinaWatcher, IDomeConsumer
     {
         private readonly Func<object, EventArgs, Task> DomeConnectedHandler = async (_, _) => await WebSocketV2.SendAndAddEvent("DOME-CONNECTED");

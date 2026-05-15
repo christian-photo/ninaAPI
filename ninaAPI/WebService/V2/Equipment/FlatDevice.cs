@@ -9,15 +9,16 @@
 
 #endregion "copyright"
 
-using NINA.Core.Utility;
-using NINA.Equipment.Equipment.MyFlatDevice;
-using NINA.Equipment.Interfaces.Mediator;
-using ninaAPI.Utility;
-using SimpleW;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NINA.Core.Utility;
+using NINA.Equipment.Equipment.MyFlatDevice;
+using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {

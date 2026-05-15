@@ -9,6 +9,10 @@
 
 #endregion "copyright"
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NINA.Astrometry;
 using NINA.Core.Enum;
@@ -24,10 +28,6 @@ using ninaAPI.Utility.Http;
 using ninaAPI.WebService.Interfaces;
 using SimpleW;
 using SimpleW.Modules;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {

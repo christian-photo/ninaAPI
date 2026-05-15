@@ -9,17 +9,18 @@
 
 #endregion "copyright"
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using NINA.Core.Model.Equipment;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyFilterWheel;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using SimpleW;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {

@@ -19,7 +19,6 @@ using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
-using ninaAPI.WebService.V3.Model;
 using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.WebService.V3.Application.Image

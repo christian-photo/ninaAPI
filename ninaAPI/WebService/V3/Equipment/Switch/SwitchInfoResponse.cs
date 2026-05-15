@@ -20,7 +20,7 @@ namespace ninaAPI.WebService.V3.Equipment.Switch
     {
         public SwitchInfoResponse(ISwitchMediator @switch)
         {
-            CoreUtility.CopyProperties(@switch.GetInfo(), this);
+            ReflectionHelper.CopyProperties(@switch.GetInfo(), this);
         }
     }
 }

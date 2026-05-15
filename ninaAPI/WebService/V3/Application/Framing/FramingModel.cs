@@ -14,7 +14,7 @@ using System.ComponentModel.DataAnnotations;
 using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.WPF.Base.Interfaces.ViewModel;
-using ninaAPI.WebService.V3.Model;
+using ninaAPI.Utility;
 
 namespace ninaAPI.WebService.V3.Application.Framing
 {

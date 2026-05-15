@@ -11,7 +11,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using NINA.Equipment.Interfaces;
-using ninaAPI.WebService.V3.Model;
+using ninaAPI.Utility;
 
 namespace ninaAPI.WebService.V3.Equipment.Mount
 {

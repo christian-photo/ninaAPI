@@ -26,12 +26,12 @@ using ninaAPI.WebService.V3.Service;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility.Http;
 using System.IO;
-using ninaAPI.WebService.V3.Model;
 using NINA.Equipment.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using SimpleW;
 using ninaAPI.Utility.Serialization;
 using NINA.PlateSolving;
+using ninaAPI.WebService.V3.Application.Image;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {

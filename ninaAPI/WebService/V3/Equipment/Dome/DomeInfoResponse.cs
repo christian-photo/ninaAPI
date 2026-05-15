@@ -21,7 +21,7 @@ namespace ninaAPI.WebService.V3.Equipment.Dome
     {
         public DomeInfoResponse(IDomeMediator dome, IDomeFollower follower)
         {
-            CoreUtility.CopyProperties(dome.GetInfo(), this);
+            ReflectionHelper.CopyProperties(dome.GetInfo(), this);
             IsFollowing = follower.IsFollowing;
             IsSynchronized = follower.IsSynchronized;
         }

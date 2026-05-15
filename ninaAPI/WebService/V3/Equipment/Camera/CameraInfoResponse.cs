@@ -21,7 +21,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         public CameraInfoResponse(ICameraMediator cam)
         {
             var info = cam.GetInfo();
-            CoreUtility.CopyProperties(info, this);
+            ReflectionHelper.CopyProperties(info, this);
         }
     }
 }

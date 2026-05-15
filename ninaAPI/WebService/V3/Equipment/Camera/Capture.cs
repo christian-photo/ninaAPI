@@ -28,7 +28,7 @@ using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
-using ninaAPI.WebService.V3.Model;
+using ninaAPI.WebService.V3.Application.Image;
 using ninaAPI.WebService.V3.Service;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera

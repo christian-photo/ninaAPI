@@ -21,7 +21,7 @@ using NINA.PlateSolving.Interfaces;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
-using ninaAPI.WebService.V3.Model;
+using ninaAPI.WebService.V3.Application.Image;
 
 namespace ninaAPI.WebService.V3.Service
 {

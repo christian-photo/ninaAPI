@@ -20,7 +20,7 @@ namespace ninaAPI.WebService.V3.Equipment.Weather
     {
         public WeatherInfoResponse(IWeatherDataMediator weather)
         {
-            CoreUtility.CopyProperties(weather.GetInfo(), this);
+            ReflectionHelper.CopyProperties(weather.GetInfo(), this);
         }
     }
 }

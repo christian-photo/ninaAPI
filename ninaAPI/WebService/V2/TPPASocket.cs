@@ -9,16 +9,17 @@
 
 #endregion "copyright"
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NINA.Core.Model;
 using NINA.Core.Utility;
 using NINA.Plugin.Interfaces;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.Interfaces;
 using SimpleW.Modules;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {

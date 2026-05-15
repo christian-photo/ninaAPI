@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -25,7 +25,6 @@ using NINA.ViewModel.Sequencer;
 using Newtonsoft.Json.Converters;
 using System.Globalization;
 using ninaAPI.Utility.Http;
-using System.Net;
 using Newtonsoft.Json.Serialization;
 using NINA.Profile.Interfaces;
 using System.Windows.Input;
@@ -34,13 +33,8 @@ using System.ComponentModel;
 
 namespace ninaAPI.Utility
 {
-    public static class CoreUtility
+    public static class ExtensionMethods
     {
-        static CoreUtility()
-        {
-            options.Converters.Add(new JsonStringEnumConverter());
-        }
-
         public static ISequenceRootContainer GetSequenceRoot(this ISequenceMediator sequence)
         {
             var navigation = (ISequenceNavigationVM)sequence.GetType().GetField("sequenceNavigation", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(sequence);
@@ -50,96 +44,13 @@ namespace ninaAPI.Utility
         public static IList<IDeepSkyObjectContainer> GetAllTargets(this ISequenceMediator sequence)
         {
             IList<IDeepSkyObjectContainer> targets = sequence.GetAllTargetsInAdvancedSequence();
-            targets.Concat(sequence.GetAllTargetsInSimpleSequence());
             return targets;
-        }
-
-        /// <summary>
-        /// Copies properties from source to target. Ensures that:
-        /// - Properties in the source type exist in the target type
-        /// - Properties in the source type have the same type as the ones in the target type
-        /// - Properties can actually be written
-        /// - Properties are public and instance members (not static)
-        /// </summary>
-        public static void CopyProperties(object source, object target)
-        {
-            var sourceType = source.GetType();
-            var targetType = target.GetType();
-
-            foreach (var property in sourceType.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-            {
-                var targetProperty = targetType.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
-                if (targetProperty != null && targetProperty.CanWrite && targetProperty.PropertyType == property.PropertyType)
-                {
-                    targetProperty.SetValue(target, property.GetValue(source));
-                }
-            }
         }
 
         private static ApplicationStatus Status;
         public static Progress<ApplicationStatus> GetStatus(this IApplicationStatusMediator mediator)
         {
             return new Progress<ApplicationStatus>(p => Status = p);
-        }
-
-        public static CustomResponse CreateErrorTable(string message, int code = 500)
-        {
-            return CreateErrorTable(new Error(message, code));
-        }
-
-        public static CustomResponse CreateErrorTable(Error error)
-        {
-            return new CustomResponse() { Error = error.message, Success = false, StatusCode = error.code };
-        }
-
-        private static readonly JsonSerializerOptions options = new JsonSerializerOptions()
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
-            ReferenceHandler = ReferenceHandler.IgnoreCycles,
-        };
-
-        private static readonly JsonSerializerSettings sequenceSerializerSettings = new JsonSerializerSettings()
-        {
-            Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
-            {
-                args.ErrorContext.Handled = true;
-            },
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-            NullValueHandling = NullValueHandling.Ignore,
-            Converters = { new StringEnumConverter() },
-            ContractResolver = new SequenceIgnoreResolver(),
-            FloatFormatHandling = FloatFormatHandling.String,
-        };
-
-        public static void WriteSequenceResponse(this SimpleW.HttpResponse context, object json)
-        {
-            string text = JsonConvert.SerializeObject(json, sequenceSerializerSettings);
-
-            context.Text(text, "application/json").SendAsync().AsTask().Wait();
-        }
-
-        public static void WriteToResponse(this SimpleW.HttpResponse context, object json)
-        {
-            string text = System.Text.Json.JsonSerializer.Serialize(json, options);
-
-            context.Text(text, "application/json").SendAsync().AsTask().Wait();
-        }
-
-        public static object ConvertString(this string str, Type type)
-        {
-            // determine target (handle Nullable<T>)
-            var targetType = Nullable.GetUnderlyingType(type) ?? type;
-
-            object converted;
-
-            var converter = TypeDescriptor.GetConverter(targetType);
-            if (converter != null && converter.CanConvertFrom(typeof(string)))
-                converted = converter.ConvertFromInvariantString(str);
-            else
-                converted = Convert.ChangeType(str, targetType, CultureInfo.InvariantCulture);
-
-            return converted;
         }
 
         /// <summary>
@@ -201,9 +112,99 @@ namespace ninaAPI.Utility
         {
             return IsBetween((decimal)value, (decimal)min, (decimal)max);
         }
+    }
 
-        public static readonly List<string> IMAGE_TYPES = ["LIGHT", "FLAT", "BIAS", "DARK", "SNAPSHOT"];
+    public static class ResponseV2ExtensionMethods
+    {
+        static ResponseV2ExtensionMethods()
+        {
+            options.Converters.Add(new JsonStringEnumConverter());
+        }
 
+        private static readonly JsonSerializerOptions options = new JsonSerializerOptions()
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+        };
+
+        private static readonly JsonSerializerSettings sequenceSerializerSettings = new JsonSerializerSettings()
+        {
+            Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
+            {
+                args.ErrorContext.Handled = true;
+            },
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
+            Converters = { new StringEnumConverter() },
+            ContractResolver = new SequenceIgnoreResolver(),
+            FloatFormatHandling = FloatFormatHandling.String,
+        };
+
+        public static void WriteSequenceResponse(this SimpleW.HttpResponse context, object json)
+        {
+            string text = JsonConvert.SerializeObject(json, sequenceSerializerSettings);
+
+            context.Text(text, "application/json").SendAsync().AsTask().Wait();
+        }
+
+        public static void WriteToResponse(this SimpleW.HttpResponse context, object json)
+        {
+            string text = System.Text.Json.JsonSerializer.Serialize(json, options);
+
+            context.Text(text, "application/json").SendAsync().AsTask().Wait();
+        }
+    }
+
+    public static class ReflectionHelper
+    {
+        /// <summary>
+        /// Copies properties from source to target. Ensures that:
+        /// - Properties in the source type exist in the target type
+        /// - Properties in the source type have the same type as the ones in the target type
+        /// - Properties can actually be written
+        /// - Properties are public and instance members (not static)
+        /// </summary>
+        public static void CopyProperties(object source, object target)
+        {
+            var sourceType = source.GetType();
+            var targetType = target.GetType();
+
+            foreach (var property in sourceType.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            {
+                var targetProperty = targetType.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
+                if (targetProperty != null && targetProperty.CanWrite && targetProperty.PropertyType == property.PropertyType)
+                {
+                    targetProperty.SetValue(target, property.GetValue(source));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Converts a string to the specified type. This method handles Nullable<T> types.
+        /// </summary>
+        /// <param name="str">The string to convert.</param>
+        /// <param name="type">The target type.</param>
+        /// <returns>The converted value.</returns>
+        public static object ConvertString(this string str, Type type)
+        {
+            // determine target (handle Nullable<T>)
+            var targetType = Nullable.GetUnderlyingType(type) ?? type;
+
+            object converted;
+
+            var converter = TypeDescriptor.GetConverter(targetType);
+            if (converter != null && converter.CanConvertFrom(typeof(string)))
+                converted = converter.ConvertFromInvariantString(str);
+            else
+                converted = Convert.ChangeType(str, targetType, CultureInfo.InvariantCulture);
+
+            return converted;
+        }
+
+        /// <summary>
+        /// Traverses the object `position` as specified by the `pathDescription` and sets the value to `value`.
+        /// </summary>
         public static void SetValueReflected(object position, string pathDescription, object value)
         {
             string[] pathSplit = pathDescription.Split('-'); // e.g. 'CameraSettings-PixelSize' -> CameraSettings, PixelSize
@@ -221,14 +222,7 @@ namespace ninaAPI.Utility
                 {
                     if (IsIndexable(position, out Type indexType, out PropertyInfo indexProp))
                     {
-                        if (indexType == typeof(string))
-                        {
-                            indexProp.GetValue(position, [pathSplit[i]]);
-                        }
-                        else
-                        {
-                            position = indexProp.GetValue(position, [int.Parse(pathSplit[i])]);
-                        }
+                        position = indexProp.GetValue(position, [indexType == typeof(string) ? pathSplit[i] : int.Parse(pathSplit[i])]);
                     }
                     else
                     {
@@ -242,6 +236,9 @@ namespace ninaAPI.Utility
             }
         }
 
+        /// <summary>
+        /// Returns true if the object is indexable (i.e., has an indexer), and returns the type of the indexer and the property that represents the indexer. Returns false otherwise.
+        /// </summary>
         private static bool IsIndexable(object obj, out Type indexType, out PropertyInfo indexProp)
         {
             indexProp = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).FirstOrDefault(x => x.GetIndexParameters().Length > 0, null);
@@ -256,63 +253,20 @@ namespace ninaAPI.Utility
         }
     }
 
-    public class CustomResponse
-    {
-        public const string TypeAPI = "API";
-        public const string TypeSocket = "Socket";
 
-        public object Response { get; set; } = string.Empty;
-        public string Error { get; set; } = string.Empty;
-        public int StatusCode { get; set; } = 200;
-        public bool Success { get; set; } = true;
-        public string Type { get; set; } = TypeAPI;
-    }
-
-    public class StringResponse(string message)
+    public static class CoreUtility
     {
-        public string Message { get; set; } = message;
-    }
-
-    public class StatusResponse(ApiProcessStatus status)
-    {
-        public ApiProcessStatus Status { get; set; } = status;
-    }
-
-    public class ResponseFactory
-    {
-        public static object CreateProcessResponse(ApiProcessStartResult result, Guid id)
+        public static CustomResponse CreateErrorTable(string message, int code = 500)
         {
-            return new { Status = result.ToString(), ProcessId = id };
+            return CreateErrorTable(new Error(message, code));
         }
 
-        public static object CreateProcessConflictsResponse(ApiProcessMediator mediator, ApiProcess process)
+        public static CustomResponse CreateErrorTable(Error error)
         {
-            var conflicts = mediator.CheckForConflicts(process.ProcessType, process.ProcessId);
-            return new
-            {
-                Error = HttpUtility.StatusCodeMessages[(int)HttpStatusCode.Conflict],
-                Message = "Process could not be started because other processes conflict with it",
-                Conflicts = conflicts
-            };
+            return new CustomResponse() { Error = error.message, Success = false, StatusCode = error.code };
         }
 
-        public static (object, int) CreateProcessStartedResponse(ApiProcessStartResult result, ApiProcessMediator mediator, ApiProcess process)
-        {
-            object response;
-            int statusCode = 202;
-
-            if (result == ApiProcessStartResult.Conflict)
-            {
-                response = CreateProcessConflictsResponse(mediator, process);
-                statusCode = (int)HttpStatusCode.Conflict;
-            }
-            else
-            {
-                response = CreateProcessResponse(result, process.ProcessId);
-            }
-
-            return (response, statusCode);
-        }
+        public static readonly List<string> IMAGE_TYPES = ["LIGHT", "FLAT", "BIAS", "DARK", "SNAPSHOT"];
     }
 
     internal class SequenceIgnoreResolver : DefaultContractResolver

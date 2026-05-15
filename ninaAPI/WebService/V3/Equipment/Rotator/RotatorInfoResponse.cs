@@ -21,7 +21,7 @@ namespace ninaAPI.WebService.V3.Equipment.Rotator
         public RotatorInfoResponse(IRotatorMediator rotator)
         {
             var info = rotator.GetInfo();
-            CoreUtility.CopyProperties(info, this);
+            ReflectionHelper.CopyProperties(info, this);
         }
     }
 }

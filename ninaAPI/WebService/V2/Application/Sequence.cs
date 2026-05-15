@@ -44,6 +44,7 @@ using NINA.Sequencer.Trigger.Guider;
 using NINA.Sequencer.Trigger.MeridianFlip;
 using NINA.Sequencer.Trigger.Platesolving;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using SimpleW;
 
 namespace ninaAPI.WebService.V2

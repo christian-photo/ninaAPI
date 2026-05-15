@@ -139,7 +139,7 @@ namespace ninaAPI.WebService.V3.Application.Sequence
         {
             Validator.ValidateObject(body, new ValidationContext(body));
 
-            CoreUtility.SetValueReflected(sequence.GetSequenceRoot(), body.PathDescription, body.Value);
+            ReflectionHelper.SetValueReflected(sequence.GetSequenceRoot(), body.PathDescription, body.Value);
 
             return new StringResponse("Value was updated");
         }

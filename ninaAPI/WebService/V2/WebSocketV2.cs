@@ -9,17 +9,17 @@
 
 #endregion "copyright"
 
-using Newtonsoft.Json;
-using NINA.Core.Utility;
-using ninaAPI.Utility;
-using ninaAPI.WebService.Interfaces;
-using SimpleW;
-using SimpleW.Modules;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using NINA.Core.Utility;
+using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
+using SimpleW.Modules;
 
 namespace ninaAPI.WebService.V2
 {
@@ -51,7 +51,7 @@ namespace ninaAPI.WebService.V2
 
     public class WebSocketV2 : IWebSocket
     {
-        private static bool sendConsumerEvents = false;
+        // private static bool sendConsumerEvents = false;
 
         private static WebSocketV2 instance;
         public WebSocketV2()
@@ -62,16 +62,16 @@ namespace ninaAPI.WebService.V2
         public static async Task SendConsumerEvent(string consumer)
         {
             // Maybe not, because it would be a lot of unnecessary traffic since most devices update their info constantly and then this would be useless
-            return;
-            consumer = consumer.ToUpper();
-            Logger.Info($"Sending {consumer}-INFO-UPDATED");
-            if (sendConsumerEvents && consumer != "MOUNT")
-            {
-                // Do not allow mount updates for now, because that would be a lot of unnecessary traffic
-                // because every time the coordinates change, the info also changes. We could enable this with an extra bool
-                // in the future
-                await SendEvent(new CustomResponse() { Response = $"{consumer}-INFO-UPDATED", Type = CustomResponse.TypeSocket });
-            }
+            // return;
+            // consumer = consumer.ToUpper();
+            // Logger.Info($"Sending {consumer}-INFO-UPDATED");
+            // if (sendConsumerEvents && consumer != "MOUNT")
+            // {
+            //     // Do not allow mount updates for now, because that would be a lot of unnecessary traffic
+            //     // because every time the coordinates change, the info also changes. We could enable this with an extra bool
+            //     // in the future
+            //     await SendEvent(new CustomResponse() { Response = $"{consumer}-INFO-UPDATED", Type = CustomResponse.TypeSocket });
+            // }
         }
 
         public static async Task SendAndAddEvent(string eventName, Dictionary<string, object> data)
@@ -128,14 +128,14 @@ namespace ninaAPI.WebService.V2
 
         private void OnMessageReceivedAsync(WebSocketConnection connection, WebSocketContext context, string text)
         {
-            if (text.Equals("enable-consumer-events"))
-            {
-                sendConsumerEvents = true;
-            }
-            else if (text.Equals("disable-consumer-events"))
-            {
-                sendConsumerEvents = false;
-            }
+            // if (text.Equals("enable-consumer-events"))
+            // {
+            //     sendConsumerEvents = true;
+            // }
+            // else if (text.Equals("disable-consumer-events"))
+            // {
+            //     sendConsumerEvents = false;
+            // }
         }
 
         private async ValueTask OnClientConnectedAsync(WebSocketConnection connection, WebSocketContext context)

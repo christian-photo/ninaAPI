@@ -19,6 +19,7 @@ using System.Windows.Media.Imaging;
 using NINA.Core.Utility;
 using NINA.Plugin.Interfaces;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.Model;
 using SimpleW;
 

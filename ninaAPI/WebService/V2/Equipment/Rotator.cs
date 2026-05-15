@@ -9,6 +9,10 @@
 
 #endregion "copyright"
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyRotator;
@@ -18,10 +22,6 @@ using NINA.WPF.Base.ViewModel.Equipment.Rotator;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using SimpleW;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {

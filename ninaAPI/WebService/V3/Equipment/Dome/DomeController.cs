@@ -22,7 +22,6 @@ using NINA.WPF.Base.ViewModel.Equipment.Dome;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
-using ninaAPI.WebService.V3.Model;
 using SimpleW;
 
 namespace ninaAPI.WebService.V3.Equipment.Dome

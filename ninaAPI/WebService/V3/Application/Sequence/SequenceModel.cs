@@ -13,7 +13,7 @@ using System.ComponentModel.DataAnnotations;
 using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.Sequencer.Container;
-using ninaAPI.WebService.V3.Model;
+using ninaAPI.Utility;
 
 namespace ninaAPI.WebService.V3.Application.Sequence
 {

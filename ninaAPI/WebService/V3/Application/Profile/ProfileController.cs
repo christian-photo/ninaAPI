@@ -86,7 +86,7 @@ namespace ninaAPI.WebService.V3.Application.Profile
             ProfileValueChangeConfig config = serializer.Deserialize<ProfileValueChangeConfig>(Request.BodyString);
             Validator.ValidateObject(config, new ValidationContext(config));
 
-            CoreUtility.SetValueReflected(AdvancedAPI.Controls.Profile.ActiveProfile, config.PathDescription, config.Value);
+            ReflectionHelper.SetValueReflected(AdvancedAPI.Controls.Profile.ActiveProfile, config.PathDescription, config.Value);
 
             return new StringResponse("Value was updated");
         }

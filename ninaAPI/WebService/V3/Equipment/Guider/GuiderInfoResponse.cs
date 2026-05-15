@@ -22,7 +22,7 @@ namespace ninaAPI.WebService.V3.Equipment.Guider
         public GuiderInfoResponse(IGuiderMediator guider)
         {
             var info = guider.GetInfo();
-            CoreUtility.CopyProperties(info, this);
+            ReflectionHelper.CopyProperties(info, this);
 
             IGuider device = (IGuider)guider.GetDevice();
             State = device?.State;

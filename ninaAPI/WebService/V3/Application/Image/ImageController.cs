@@ -30,7 +30,6 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.V3.Equipment.Camera;
-using ninaAPI.WebService.V3.Model;
 using ninaAPI.WebService.V3.Service;
 using SimpleW;
 

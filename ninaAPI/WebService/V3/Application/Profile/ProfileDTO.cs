@@ -23,7 +23,7 @@ namespace ninaAPI.WebService.V3.Application.Profile
     {
         public ProfileDTO(IProfile profile)
         {
-            CoreUtility.CopyProperties(profile, this);
+            ReflectionHelper.CopyProperties(profile, this);
             ApplicationSettings = new ApplicationSettingsDTO(profile.ApplicationSettings as ApplicationSettings);
             FilterWheelSettings = new FilterWheelSettingsDTO(profile.FilterWheelSettings as FilterWheelSettings);
             PlateSolveSettings = new PlateSolveSettingsDTO(profile.PlateSolveSettings as PlateSolveSettings);
@@ -87,7 +87,7 @@ namespace ninaAPI.WebService.V3.Application.Profile
     {
         public ApplicationSettingsDTO(ApplicationSettings applicationSettings)
         {
-            CoreUtility.CopyProperties(applicationSettings, this);
+            ReflectionHelper.CopyProperties(applicationSettings, this);
             SkyAtlasImageRepository = null;
             SelectedPluggableBehaviors = null;
         }
@@ -97,7 +97,7 @@ namespace ninaAPI.WebService.V3.Application.Profile
     {
         public SnapShotControlSettingsDTO(SnapShotControlSettings snapShotControlSettings)
         {
-            CoreUtility.CopyProperties(snapShotControlSettings, this);
+            ReflectionHelper.CopyProperties(snapShotControlSettings, this);
             SnapShotFilter = FilterData.FromFilterShort(snapShotControlSettings.Filter);
             Filter = null;
         }
@@ -109,7 +109,7 @@ namespace ninaAPI.WebService.V3.Application.Profile
     {
         public PlateSolveSettingsDTO(PlateSolveSettings plateSolveSettings)
         {
-            CoreUtility.CopyProperties(plateSolveSettings, this);
+            ReflectionHelper.CopyProperties(plateSolveSettings, this);
             PlateSolveFilter = FilterData.FromFilterShort(plateSolveSettings.Filter);
             Filter = null;
         }
@@ -121,7 +121,7 @@ namespace ninaAPI.WebService.V3.Application.Profile
     {
         public FilterWheelSettingsDTO(FilterWheelSettings filterWheelSettings)
         {
-            CoreUtility.CopyProperties(filterWheelSettings, this);
+            ReflectionHelper.CopyProperties(filterWheelSettings, this);
             FilterWheelFilters = null;
         }
     }

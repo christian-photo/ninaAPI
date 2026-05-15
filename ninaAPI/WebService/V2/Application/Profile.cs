@@ -20,6 +20,7 @@ using NINA.Core.Utility;
 using NINA.Profile;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using SimpleW;
 
 namespace ninaAPI.WebService.V2
@@ -205,7 +206,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    CoreUtility.SetValueReflected(AdvancedAPI.Controls.Profile.ActiveProfile, settingpath, newValue);
+                    ReflectionHelper.SetValueReflected(AdvancedAPI.Controls.Profile.ActiveProfile, settingpath, newValue);
 
                     response.Response = "Updated setting";
                 }

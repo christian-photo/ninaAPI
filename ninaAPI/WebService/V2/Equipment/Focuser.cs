@@ -9,6 +9,12 @@
 
 #endregion "copyright"
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Accord;
 using Newtonsoft.Json;
 using NINA.Core.Locale;
@@ -17,14 +23,9 @@ using NINA.Equipment.Equipment.MyFocuser;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Utility.AutoFocus;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using OxyPlot;
 using SimpleW;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {

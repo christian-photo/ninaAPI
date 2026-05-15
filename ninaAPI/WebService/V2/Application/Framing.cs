@@ -10,13 +10,14 @@
 #endregion "copyright"
 
 using System;
-using ninaAPI.Utility;
-using NINA.Core.Utility;
-using NINA.Astrometry;
-using NINA.WPF.Base.Interfaces.ViewModel;
 using System.Threading.Tasks;
+using NINA.Astrometry;
 using NINA.Core.Enum;
+using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces.ViewModel;
+using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using SimpleW;
 
 namespace ninaAPI.WebService.V2

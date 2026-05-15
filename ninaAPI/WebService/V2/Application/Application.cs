@@ -24,6 +24,7 @@ using NINA.Image.ImageAnalysis;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.Properties;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using SimpleW;
 
 namespace ninaAPI.WebService.V2

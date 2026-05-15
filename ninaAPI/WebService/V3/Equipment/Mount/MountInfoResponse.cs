@@ -22,7 +22,7 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
         public MountInfoResponse(ITelescopeMediator mount)
         {
             var info = mount.GetInfo();
-            CoreUtility.CopyProperties(info, this);
+            ReflectionHelper.CopyProperties(info, this);
 
             ITelescope device = (ITelescope)mount.GetDevice();
             TrackingMode = device?.TrackingMode;

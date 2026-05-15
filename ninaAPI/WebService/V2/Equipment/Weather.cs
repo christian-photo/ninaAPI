@@ -9,13 +9,14 @@
 
 #endregion "copyright"
 
+using System;
+using System.Threading.Tasks;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyWeatherData;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
 using SimpleW;
-using System;
-using System.Threading.Tasks;
 
 namespace ninaAPI.WebService.V2
 {
