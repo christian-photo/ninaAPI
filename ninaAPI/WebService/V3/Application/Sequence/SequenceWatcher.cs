@@ -25,6 +25,8 @@ namespace ninaAPI.WebService.V3.Application.Sequence
         public SequenceWatcher(EventHistoryManager historyManager, ISequenceMediator sequenceMediator) : base(historyManager)
         {
             Channel = WebSocketChannel.Sequence;
+
+            sequence = sequenceMediator;
         }
 
         public override void StartWatchers()

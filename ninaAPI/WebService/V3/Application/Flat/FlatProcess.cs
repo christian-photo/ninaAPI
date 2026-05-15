@@ -94,4 +94,95 @@ namespace ninaAPI.WebService.V3.Application.Flat
             };
         }
     }
+
+    public class AutoExposureFlatProcess : ApiProcess
+    {
+        private readonly AutoExposureFlat instruction;
+
+        private AutoExposureFlatProcess(Func<CancellationToken, Task> action, ApiProcessType type, AutoExposureFlat instruction) : base(action, type)
+        {
+            this.instruction = instruction;
+        }
+
+        public static AutoExposureFlatProcess Create(AutoExposureFlat instruction, IApplicationStatusMediator statusMediator)
+        {
+            return new AutoExposureFlatProcess(
+                async (token) => await instruction.Execute(statusMediator.GetStatus(), token),
+                ApiProcessType.FlatInstruction,
+                instruction
+            );
+        }
+
+        public override object GetProgress()
+        {
+            return new
+            {
+                Status = Status,
+                DeterminedHistogramADU = instruction.DeterminedHistogramADU,
+                CurrentExposureTime = instruction.GetExposureItem().ExposureTime,
+                TotalIterations = instruction.GetIterations().Iterations,
+                CompletedIterations = instruction.GetIterations().CompletedIterations
+            };
+        }
+    }
+
+    public class TrainedDarkFlatProcess : ApiProcess
+    {
+        private readonly TrainedDarkFlatExposure instruction;
+
+        private TrainedDarkFlatProcess(Func<CancellationToken, Task> action, ApiProcessType type, TrainedDarkFlatExposure instruction) : base(action, type)
+        {
+            this.instruction = instruction;
+        }
+
+        public static TrainedDarkFlatProcess Create(TrainedDarkFlatExposure instruction, IApplicationStatusMediator statusMediator)
+        {
+            return new TrainedDarkFlatProcess(
+                async (token) => await instruction.Execute(statusMediator.GetStatus(), token),
+                ApiProcessType.FlatInstruction,
+                instruction
+            );
+        }
+
+        public override object GetProgress()
+        {
+            return new
+            {
+                Status = Status,
+                CurrentExposureTime = instruction.GetExposureItem().ExposureTime,
+                TotalIterations = instruction.GetIterations().Iterations,
+                CompletedIterations = instruction.GetIterations().CompletedIterations
+            };
+        }
+    }
+
+    public class TrainedFlatProcess : ApiProcess
+    {
+        private readonly TrainedFlatExposure instruction;
+
+        private TrainedFlatProcess(Func<CancellationToken, Task> action, ApiProcessType type, TrainedFlatExposure instruction) : base(action, type)
+        {
+            this.instruction = instruction;
+        }
+
+        public static TrainedFlatProcess Create(TrainedFlatExposure instruction, IApplicationStatusMediator statusMediator)
+        {
+            return new TrainedFlatProcess(
+                async (token) => await instruction.Execute(statusMediator.GetStatus(), token),
+                ApiProcessType.FlatInstruction,
+                instruction
+            );
+        }
+
+        public override object GetProgress()
+        {
+            return new
+            {
+                Status = Status,
+                CurrentExposureTime = instruction.GetExposureItem().ExposureTime,
+                TotalIterations = instruction.GetIterations().Iterations,
+                CompletedIterations = instruction.GetIterations().CompletedIterations
+            };
+        }
+    }
 }

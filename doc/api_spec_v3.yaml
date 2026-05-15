@@ -4512,7 +4512,7 @@ paths:
       tags:
         - Flats
       summary: Auto Brightness Flats
-      description: Take Sky Flats. The sky flats instruction in NINA will be used here and the parameters will simply be passed on to the instruction. Any omitted parameter will default to the instruction default.
+      description: Take Auto Brightness Flats. The auto brightness flats instruction in NINA will be used here and the parameters will simply be passed on to the instruction. Any omitted parameter will default to the instruction default.
       requestBody:
         required: true
         content:
@@ -4541,158 +4541,107 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-    # /flats/auto-exposure:
-    #   get:
-    #     tags:
-    #       - Flats
-    #     summary: Auto Exposure Flats
-    #     description: Start capturing auto exposure flats. This requires the camera to be connected. NINA will pick the best exposure time for a fixed flat panel brightness. Any omitted parameter will default to the instruction default.
-    #     parameters:
-    #       - in: query
-    #         name: count
-    #         required: true
-    #         description: The number of flats to capture
-    #         example: 1
-    #         schema:
-    #           type: integer
-    #           minimum: 0
-    #       - in: query
-    #         name: brightness
-    #         required: true
-    #         description: The flat panel brightness
-    #         schema:
-    #           type: number
-    #           minimum: 0
-    #           maximum: 100
-    #       - in: query
-    #         name: minExposure
-    #         required: false
-    #         description: The minimum exposure time to use for the flats, in seconds
-    #         example: 0
-    #         schema:
-    #           type: number
-    #           minimum: 0
-    #       - in: query
-    #         name: maxExposure
-    #         required: false
-    #         description: The maximum exposure time to use for the flats, in seconds
-    #         schema:
-    #           type: number
-    #           minimum: 0
-    #       - in: query
-    #         name: histogramMean
-    #         required: false
-    #         description: The mean to use for the histogram
-    #         example: 50
-    #         schema:
-    #           type: number
-    #           minimum: 0
-    #           maximum: 1
-    #       - in: query
-    #         name: meanTolerance
-    #         required: false
-    #         description: The tolerance to use for the histogram
-    #         example: 10
-    #         schema:
-    #           type: number
-    #           minimum: 0
-    #           maximum: 1
-    #       - in: query
-    #         name: filterId
-    #         required: false
-    #         description: The filter to use for the flats. The current filter will be used if this is not specified
-    #         schema:
-    #           type: integer
-    #           minimum: 0
-    #       - in: query
-    #         name: binning
-    #         required: false
-    #         description: The binning to use for the flats
-    #         example: 2x2
-    #         schema:
-    #           type: string
-    #       - in: query
-    #         name: gain
-    #         required: false
-    #         description: The gain to use for the flats. The camera gain will be used if this is not specified
-    #         schema:
-    #           type: integer
-    #           minimum: 0
-    #       - in: query
-    #         name: offset
-    #         required: false
-    #         description: The offset to use for the flats. The camera offset will be used if this is not specified
-    #         schema:
-    #           type: integer
-    #           minimum: 0
-    #       - in: query
-    #         name: keepClosed
-    #         required: false
-    #         description: Whether to keep the flat panel closed after taking the flats
-    #         schema:
-    #           type: boolean
-    #     responses:
-    #       "200":
-    #         description: Success
-    #         content:
-    #           application/json:
-    #             schema:
-    #               type: object
-    #               properties:
-    #                 Response:
-    #                   type: string
-    #                   example: Process started
-    #                 Error:
-    #                   type: string
-    #                   example: ""
-    #                 StatusCode:
-    #                   type: integer
-    #                   example: 200
-    #                 Success:
-    #                   type: boolean
-    #                   example: true
-    #                 Type:
-    #                   type: string
-    #                   example: "API"
-    #       "400":
-    #         description: Could not start the process
-    #         content:
-    #           application/json:
-    #             schema:
-    #               type: object
-    #               properties:
-    #                 Response:
-    #                   oneOf:
-    #                     - type: string
-    #                       example: ""
-    #                     - type: array
-    #                       items:
-    #                         type: string
-    #                         description: A list of issues found during validation
-    #                 Error:
-    #                   type: string
-    #                   enum:
-    #                     - Process already running
-    #                     - Filter not available
-    #                     - Binning not available
-    #                     - Invalid gain
-    #                     - Invalid offset
-    #                     - Issues found
-    #                 StatusCode:
-    #                   type: integer
-    #                   example: 400
-    #                 Success:
-    #                   type: boolean
-    #                   example: false
-    #                 Type:
-    #                   type: string
-    #                   example: "API"
-    #       default:
-    #         description: Request could not be carried out
-    #         content:
-    #           application/json:
-    #             schema:
-    #               $ref: "#/components/schemas/Error"
+  /flats/auto-exposure:
+    post:
+      tags:
+        - Flats
+      summary: Auto Exposure Flats
+      description: Take Auto Exposure Flats. The auto exposure flats instruction in NINA will be used here and the parameters will simply be passed on to the instruction. Any omitted parameter will default to the instruction default.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AutoExposureFlatConfig"
+      responses:
+        "202":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
+          description: Process conflict
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /flats/trained:
+    post:
+      tags:
+        - Flats
+      summary: Trained Flats
+      description: Take Trained Flats. The trained flats instruction in NINA will be used here and the parameters will simply be passed on to the instruction. Any omitted parameter will default to the instruction default.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainedFlatConfig"
+      responses:
+        "202":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
+          description: Process conflict
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /flats/trained-dark:
+    post:
+      tags:
+        - Flats
+      summary: Trained Dark Flats
+      description: Take Trained Dark Flats. The trained dark flats instruction in NINA will be used here and the parameters will simply be passed on to the instruction. Any omitted parameter will default to the instruction default.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainedFlatConfig"
+      responses:
+        "202":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessStart202"
+        "409":
+          description: Process conflict
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ProcessStart409"
+                  - $ref: "#/components/schemas/Error"
+        default:
+          description: Request could not be carried out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
     # /flats/trained-dark-flat:
     #   get:
@@ -8664,6 +8613,26 @@ components:
           minimum: 0
           maximum: 360
 
+    TrainedFlatConfig:
+      type: object
+      properties:
+        KeepClosed:
+          type: boolean
+        Binning:
+          $ref: "#/components/schemas/BinningMode"
+        Gain:
+          type: integer
+        Offset:
+          type: integer
+        Amount:
+          type: integer
+          minimum: 1
+        FilterId:
+          type: integer
+          minimum: 0
+      required:
+        - Amount
+
     AutoBrightnessFlatConfig:
       type: object
       properties:
@@ -8688,10 +8657,45 @@ components:
           $ref: "#/components/schemas/BinningMode"
         Gain:
           type: integer
-          minimum: 0
         Offset:
           type: integer
+        Amount:
+          type: integer
+          minimum: 1
+        FilterId:
+          type: integer
           minimum: 0
+      required:
+        - Amount
+
+    AutoExposureFlatConfig:
+      type: object
+      properties:
+        MinExposure:
+          type: number
+          minimum: 0
+        MaxExposure:
+          type: number
+          maxmimum: 0
+        HistogramTargetPercentage:
+          type: number
+          minimum: 0
+          maximum: 1
+        MeanTolerance:
+          type: number
+          minimum: 0
+          maximum: 1
+        ExposureTime:
+          type: number
+          minimum: 0
+        KeepClosed:
+          type: boolean
+        Binning:
+          $ref: "#/components/schemas/BinningMode"
+        Gain:
+          type: integer
+        Offset:
+          type: integer
         Amount:
           type: integer
           minimum: 1

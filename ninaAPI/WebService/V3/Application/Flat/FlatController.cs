@@ -13,7 +13,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
-using System.Runtime.Versioning;
 using NINA.Astrometry.Interfaces;
 using NINA.Core.Model.Equipment;
 using NINA.Equipment.Interfaces.Mediator;
@@ -154,15 +153,17 @@ namespace ninaAPI.WebService.V3.Application.Flat
 
             flats.GetIterations().Iterations = config.Amount;
 
-            if (config.MaxFlatPanelBrightness.HasValue && config.MaxFlatPanelBrightness.Value.IsBetween(flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness))
+            if (config.MaxFlatPanelBrightness?.IsBetween(flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness) ?? false)
             {
-                flats.MaxBrightness = config.MaxFlatPanelBrightness.Value;
+                throw CommonErrors.ParameterOutOfRange(nameof(config.MaxFlatPanelBrightness), flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness);
             }
-            if (config.MinFlatPanelBrightness.HasValue && config.MinFlatPanelBrightness.Value.IsBetween(flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness))
+            if (config.MinFlatPanelBrightness?.IsBetween(flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness) ?? false)
             {
-                flats.MinBrightness = config.MinFlatPanelBrightness.Value;
+                throw CommonErrors.ParameterOutOfRange(nameof(config.MinFlatPanelBrightness), flatDevice.GetInfo().MinBrightness, flatDevice.GetInfo().MaxBrightness);
             }
 
+            if (config.MaxFlatPanelBrightness.HasValue) flats.MaxBrightness = config.MaxFlatPanelBrightness.Value;
+            if (config.MinFlatPanelBrightness.HasValue) flats.MinBrightness = config.MinFlatPanelBrightness.Value;
             if (config.HistogramTargetPercentage.HasValue) flats.HistogramTargetPercentage = config.HistogramTargetPercentage.Value;
             if (config.MeanTolerance.HasValue) flats.HistogramTolerancePercentage = config.MeanTolerance.Value;
             if (config.KeepClosed.HasValue) flats.KeepPanelClosed = config.KeepClosed.Value;
@@ -177,7 +178,7 @@ namespace ninaAPI.WebService.V3.Application.Flat
 
             if (!flats.Validate())
             {
-                throw new HttpException(HttpStatusCode.BadRequest, "Could not start the sky flats instruction because validation failed");
+                throw new HttpException(HttpStatusCode.BadRequest, "Could not start the auto brightness flats instruction because validation failed");
             }
 
             var processId = processMediator.AddProcess(AutoBrightnessFlatProcess.Create(flats, applicationStatus));
@@ -187,6 +188,187 @@ namespace ninaAPI.WebService.V3.Application.Flat
 
             return (response, statusCode);
         }
+
+        [Route("POST", "/auto-exposure")]
+        public object AutoExposureFlats()
+        {
+            AutoExposureFlatConfig config = serializer.Deserialize<AutoExposureFlatConfig>(Request.BodyString);
+
+            Validator.ValidateObject(config, new ValidationContext(config));
+
+            AutoExposureFlat flats = new AutoExposureFlat(
+                profileService,
+                camera,
+                imaging,
+                imageSaveMediator,
+                imageHistory,
+                filterWheel,
+                flatDevice
+            );
+
+            flats.GetIterations().Iterations = config.Amount;
+
+            if (config.MaxExposure.HasValue) flats.MaxExposure = config.MaxExposure.Value;
+            if (config.MinExposure.HasValue) flats.MinExposure = config.MinExposure.Value;
+            if (config.HistogramTargetPercentage.HasValue) flats.HistogramTargetPercentage = config.HistogramTargetPercentage.Value;
+            if (config.MeanTolerance.HasValue) flats.HistogramTolerancePercentage = config.MeanTolerance.Value;
+            if (config.KeepClosed.HasValue) flats.KeepPanelClosed = config.KeepClosed.Value;
+            if (config.Gain.HasValue) flats.GetExposureItem().Gain = config.Gain.Value;
+            if (config.Offset.HasValue) flats.GetExposureItem().Offset = config.Offset.Value;
+            if (config.Binning != null) flats.GetExposureItem().Binning = config.Binning;
+
+            if (config.FilterId.HasValue && config.FilterId.Value.IsBetween(0, profileService.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1))
+            {
+                flats.GetSwitchFilterItem().Filter = profileService.ActiveProfile.FilterWheelSettings.FilterWheelFilters[config.FilterId.Value];
+            }
+
+            if (!flats.Validate())
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "Could not start the auto exposure flats instruction because validation failed");
+            }
+
+            var processId = processMediator.AddProcess(AutoExposureFlatProcess.Create(flats, applicationStatus));
+            var result = processMediator.Start(processId);
+
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
+
+            return (response, statusCode);
+        }
+
+        [Route("POST", "/trained-dark")]
+        public object TrainedDarkFlats()
+        {
+            TrainedFlatConfig config = serializer.Deserialize<TrainedFlatConfig>(Request.BodyString);
+
+            Validator.ValidateObject(config, new ValidationContext(config));
+
+            TrainedDarkFlatExposure flats = new TrainedDarkFlatExposure(
+                profileService,
+                camera,
+                imaging,
+                imageSaveMediator,
+                imageHistory,
+                filterWheel,
+                flatDevice
+            );
+
+            flats.GetIterations().Iterations = config.Amount;
+
+            if (config.KeepClosed.HasValue) flats.KeepPanelClosed = config.KeepClosed.Value;
+            if (config.Gain.HasValue) flats.GetExposureItem().Gain = config.Gain.Value;
+            if (config.Offset.HasValue) flats.GetExposureItem().Offset = config.Offset.Value;
+            if (config.Binning != null) flats.GetExposureItem().Binning = config.Binning;
+
+            if (config.FilterId.HasValue && config.FilterId.Value.IsBetween(0, profileService.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1))
+            {
+                flats.GetSwitchFilterItem().Filter = profileService.ActiveProfile.FilterWheelSettings.FilterWheelFilters[config.FilterId.Value];
+            }
+
+            if (!flats.Validate())
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "Could not start the trained dark flats exposure flats instruction because validation failed");
+            }
+
+            var processId = processMediator.AddProcess(TrainedDarkFlatProcess.Create(flats, applicationStatus));
+            var result = processMediator.Start(processId);
+
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
+
+            return (response, statusCode);
+        }
+
+        [Route("POST", "/trained")]
+        public object TrainedFlats()
+        {
+            TrainedFlatConfig config = serializer.Deserialize<TrainedFlatConfig>(Request.BodyString);
+
+            Validator.ValidateObject(config, new ValidationContext(config));
+
+            TrainedFlatExposure flats = new TrainedFlatExposure(
+                profileService,
+                camera,
+                imaging,
+                imageSaveMediator,
+                imageHistory,
+                filterWheel,
+                flatDevice
+            );
+
+            flats.GetIterations().Iterations = config.Amount;
+
+            if (config.KeepClosed.HasValue) flats.KeepPanelClosed = config.KeepClosed.Value;
+            if (config.Gain.HasValue) flats.GetExposureItem().Gain = config.Gain.Value;
+            if (config.Offset.HasValue) flats.GetExposureItem().Offset = config.Offset.Value;
+            if (config.Binning != null) flats.GetExposureItem().Binning = config.Binning;
+
+            if (config.FilterId.HasValue && config.FilterId.Value.IsBetween(0, profileService.ActiveProfile.FilterWheelSettings.FilterWheelFilters.Count - 1))
+            {
+                flats.GetSwitchFilterItem().Filter = profileService.ActiveProfile.FilterWheelSettings.FilterWheelFilters[config.FilterId.Value];
+            }
+
+            if (!flats.Validate())
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "Could not start the trained flats instruction because validation failed");
+            }
+
+            var processId = processMediator.AddProcess(TrainedFlatProcess.Create(flats, applicationStatus));
+            var result = processMediator.Start(processId);
+
+            (object response, int statusCode) = ResponseFactory.CreateProcessStartedResponse(result, processMediator, processMediator.GetProcess(processId, out var process) ? process : null);
+
+            return (response, statusCode);
+        }
+    }
+
+    public class TrainedFlatConfig
+    {
+        [Required]
+        [Range(1, int.MaxValue)]
+        public int Amount { get; set; }
+
+        [Range(0, int.MaxValue)]
+        public int? FilterId { get; set; }
+
+        public BinningMode Binning { get; set; }
+
+        public int? Gain { get; set; }
+
+        public int? Offset { get; set; }
+
+        public bool? KeepClosed { get; set; }
+    }
+
+    public class AutoExposureFlatConfig
+    {
+        [Range(0, double.MaxValue)]
+        public double? MinExposure { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public double? MaxExposure { get; set; }
+
+        [Range(0, 1)]
+        public double? HistogramTargetPercentage { get; set; }
+
+        [Range(0, 1)]
+        public double? MeanTolerance { get; set; }
+
+        [Range(0, int.MaxValue)]
+        public int Brightness { get; set; }
+
+        [Range(0, int.MaxValue)]
+        public int? FilterId { get; set; }
+
+        public BinningMode Binning { get; set; }
+
+        public int? Gain { get; set; }
+
+        public int? Offset { get; set; }
+
+        public bool? KeepClosed { get; set; }
+
+        [Range(0, int.MaxValue)]
+        [Required]
+        public int Amount { get; set; }
     }
 
     public class AutoBrightnessFlatConfig

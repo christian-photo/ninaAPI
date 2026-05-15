@@ -11,10 +11,7 @@
 
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
 using NINA.Profile;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
