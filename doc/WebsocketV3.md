@@ -1,10 +1,9 @@
 # Websocket V3
 
-The plugin ships 3 different websockets:
+The plugin ships 2 different websockets:
 
 - [Event Websocket](WebsocketV3.md#event-websocket)
 - [Mount Control Websocket](WebsocketV3.md#mount-control-websocket)
-- [Livestack Websocket](WebsocketV3.md#livestack-websocket)
 
 ## Event Websocket
 
