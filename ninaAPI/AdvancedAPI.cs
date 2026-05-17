@@ -210,7 +210,7 @@ namespace ninaAPI
 
         private void RunApi()
         {
-            using ServiceProvider provider = services.BuildServiceProvider();
+            ServiceProvider provider = services.BuildServiceProvider();
             ActualPort = NetworkUtility.GetNearestAvailablePort(PreferredPort);
             Server = new WebApiServer(ActualPort);
             if (SelectedApiOption == "V3")

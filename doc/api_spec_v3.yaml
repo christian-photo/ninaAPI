@@ -8418,7 +8418,7 @@ components:
           minimum: 0
         MaxExposure:
           type: number
-          maxmimum: 0
+          maximum: 0
         HistogramTargetPercentage:
           type: number
           minimum: 0

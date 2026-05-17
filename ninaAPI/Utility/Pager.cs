@@ -26,21 +26,22 @@ namespace ninaAPI.Utility
             this.list = list;
         }
 
+        /// <summary>
+        /// Gets a page of items from the list. If pageSize is -1, all items are returned. If page or pageSize are invalid, an empty list is returned.
+        /// </summary>
+        /// <param name="page">The page number to retrieve, starts at 0</param>
+        /// <param name="pageSize">The number of items per page, or -1 to retrieve all items</param>
+        /// <returns>A list of items for the specified page</returns>
         public List<T> GetPage(int page, int pageSize)
         {
             if (pageSize == -1)
                 return list;
-
-            if (page < 1 || pageSize < 1)
+            if (page < 0 || pageSize < 1)
                 return [];
-
-            int start = (page - 1) * pageSize;
-
+            int start = page * pageSize;
             if (start >= list.Count)
                 return [];
-
             int count = Math.Min(pageSize, list.Count - start);
-
             return list.GetRange(start, count);
         }
     }

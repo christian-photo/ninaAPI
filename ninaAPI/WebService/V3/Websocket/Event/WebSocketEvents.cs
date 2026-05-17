@@ -80,8 +80,8 @@ namespace ninaAPI.WebService.V3.Websocket.Event
         public const string TS_STOP = "TsContainerStopped";
         public const string TS_COMPLETE = "TsTargetComplete";
 
-        public static string DeviceConnected(Device device) => $"{device.ToString().ToLower()}Connected";
-        public static string DeviceDisconnected(Device device) => $"{device.ToString().ToLower()}Disconnected";
-        public static string DeviceInfoUpdate(Device device) => $"{device.ToString().ToLower()}InfoUpdate";
+        public static string DeviceConnected(Device device) => $"{device}Connected";
+        public static string DeviceDisconnected(Device device) => $"{device}Disconnected";
+        public static string DeviceInfoUpdate(Device device) => $"{device}InfoUpdate";
     }
 }

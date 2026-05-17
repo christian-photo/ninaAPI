@@ -20,7 +20,6 @@ using NINA.Profile.Interfaces;
 using NINA.Sequencer.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
-using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V3.Application.Image;
@@ -29,7 +28,6 @@ using ninaAPI.WebService.V3.Application.Profile;
 using ninaAPI.WebService.V3.Application.Sequence;
 using ninaAPI.WebService.V3.Application.TPPA;
 using ninaAPI.WebService.V3.Application.TS;
-using ninaAPI.WebService.V3.Equipment;
 using ninaAPI.WebService.V3.Equipment.Camera;
 using ninaAPI.WebService.V3.Equipment.Dome;
 using ninaAPI.WebService.V3.Equipment.FilterWheel;
@@ -44,7 +42,6 @@ using ninaAPI.WebService.V3.Equipment.Weather;
 using ninaAPI.WebService.V3.Websocket.Event;
 using ninaAPI.WebService.V3.Websocket.MountControl;
 using SimpleW;
-using SimpleW.Helper.DependencyInjection;
 using SimpleW.Modules;
 
 namespace ninaAPI.WebService.V3
@@ -59,7 +56,6 @@ namespace ninaAPI.WebService.V3
 
 
         // TODO: Missing endpoints / watchers
-        // - Flat
         // - Networked filterwheel
         // - Networked rotator
 
@@ -152,9 +148,7 @@ namespace ninaAPI.WebService.V3
                     .SendAsync();
             });
 
-            server.MapController<ControllerV3>();
-
-            // server.MapControllers<Controller>(excludes: [typeof(V2.ControllerV2)]);
+            server.MapControllers<Controller>(excludes: [typeof(V2.ControllerV2)]);
 
             return server;
         }
