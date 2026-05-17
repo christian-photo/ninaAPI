@@ -68,7 +68,7 @@ namespace ninaAPI.WebService
                 }
                 catch (HttpException ex)
                 {
-                    Logger.Warning(ex.Message);
+                    Logger.Error(ex);
                     await HandleHttpException(session, ex);
                 }
                 catch (Exception ex)

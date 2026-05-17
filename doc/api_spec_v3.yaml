@@ -131,6 +131,9 @@ paths:
                   - $ref: "#/components/schemas/MeridianFlipProgress"
                   - $ref: "#/components/schemas/SkyFlatProgress"
                   - $ref: "#/components/schemas/AutoBrightnessFlatProgress"
+                  - $ref: "#/components/schemas/AutoExposureFlatProgress"
+                  - $ref: "#/components/schemas/TrainedDarkFlatProgress"
+                  - $ref: "#/components/schemas/TrainedFlatProgress"
         default:
           description: Request could not be carried out
           content:
@@ -3431,6 +3434,56 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /framing/image:
+    get:
+      tags:
+        - Framing Assistant
+      summary: Get Image
+      description: Request an image from the framing assistant using a specified source. Note that if you use the cache source, you can either omit `width` and `height` or you need to provide both, because there is no fixed aspect ratio
+      parameters:
+        - in: query
+          name: source
+          required: true
+          description: The image source. Cache is useful when you have downloaded the complete framing assistant cache
+          schema:
+            type: string
+            enum:
+              - NASA
+              - SKYSERVER
+              - STSCI
+              - ESO
+              - HIPS2FITS
+              - CACHE
+        - in: query
+          name: ra
+          description: The right ascension of the center of the image in decimal degrees
+          required: true
+          schema:
+            type: number
+        - in: query
+          name: dec
+          description: The declination of the center of the image in decimal degrees
+          required: true
+          schema:
+            type: number
+        - in: query
+          name: epoch
+          description: The epoch to be used for the coordinates
+          required: false
+          schema:
+            $ref: "#/components/schemas/EpochEnum"
+        - in: query
+          name: fov
+          description: The fov in degrees
+          required: false
+          schema:
+            type: number
+            default: 10
+        - $ref: "#/components/parameters/ImageScale"
+        - $ref: "#/components/parameters/ImageWidth"
+        - $ref: "#/components/parameters/ImageHeight"
+        - $ref: "#/components/parameters/ImageFormat"
+
   /framing/solve-rotation:
     post:
       tags:
@@ -4755,6 +4808,14 @@ components:
       enum:
         - DCRAW
         - FREEIMAGE
+
+    EpochEnum:
+      type: string
+      enum:
+        - B1950
+        - J2000
+        - J2050
+        - JNOW
 
     BayerPatternEnum:
       type: string
@@ -8535,6 +8596,78 @@ components:
         - TotalIterations
         - CompletedIterations
 
+    AutoExposureFlatProgress:
+      type: object
+      properties:
+        Status:
+          $ref: "#/components/schemas/ApiProcessStatusEnum"
+        DeterminedHistogramADU:
+          type: number
+        CurrentExposureTime:
+          type: number
+          minimum: 0
+        TotalIterations:
+          type: integer
+          minimum: 0
+        PanelBrightness:
+          type: integer
+        CompletedIterations:
+          type: integer
+          minimum: 0
+      required:
+        - Status
+        - DeterminedHistogramADU
+        - CurrentExposureTime
+        - PanelBrightness
+        - TotalIterations
+        - CompletedIterations
+
+    TrainedDarkFlatProgress:
+      type: object
+      properties:
+        Status:
+          $ref: "#/components/schemas/ApiProcessStatusEnum"
+        CurrentExposureTime:
+          type: number
+          minimum: 0
+        TotalIterations:
+          type: integer
+          minimum: 0
+        PanelBrightness:
+          type: integer
+        CompletedIterations:
+          type: integer
+          minimum: 0
+      required:
+        - Status
+        - CurrentExposureTime
+        - PanelBrightness
+        - TotalIterations
+        - CompletedIterations
+
+    TrainedFlatProgress:
+      type: object
+      properties:
+        Status:
+          $ref: "#/components/schemas/ApiProcessStatusEnum"
+        CurrentExposureTime:
+          type: number
+          minimum: 0
+        TotalIterations:
+          type: integer
+          minimum: 0
+        PanelBrightness:
+          type: integer
+        CompletedIterations:
+          type: integer
+          minimum: 0
+      required:
+        - Status
+        - CurrentExposureTime
+        - PanelBrightness
+        - TotalIterations
+        - CompletedIterations
+
     ApiProcessStatusEnum:
       type: string
       enum:
@@ -8755,11 +8888,7 @@ components:
           maximum: 90
           description: The declination of the coordinates
         Epoch:
-          type: string
-          enum:
-            - J2000
-            - B1950
-            - J2050
+          $ref: "#/components/schemas/EpochEnum"
           description: The epoch of the coordinates. The default is J2000
       required:
         - RA

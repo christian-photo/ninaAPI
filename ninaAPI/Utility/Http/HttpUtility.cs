@@ -74,11 +74,12 @@ namespace ninaAPI.Utility.Http
             var raw = request.Query.TryGetValue(ParameterName, out var value) ? value : null;
             if (raw is null || string.IsNullOrWhiteSpace(raw))
             {
-                WasProvided = false;
                 if (Required)
                     throw CommonErrors.ParameterMissing(ParameterName);
                 return DefaultValue;
             }
+
+            WasProvided = true;
 
             try
             {
@@ -122,19 +123,13 @@ namespace ninaAPI.Utility.Http
             if (widthParam.WasProvided ^ heightParam.WasProvided)
             {
                 // One of both was set, but not both
-                if (allowOneSide)
+                if (AllowOneSide)
                 {
                     Value = new Size(
                         widthParam.WasProvided ? width : 0,
                         heightParam.WasProvided ? height : 0
                     );
                     WasProvided = true;
-                    return Value;
-                }
-                else if (!required)
-                {
-                    Value = DefaultValue;
-                    WasProvided = false;
                     return Value;
                 }
                 else
@@ -167,7 +162,7 @@ namespace ninaAPI.Utility.Http
         private QueryParameter<int> widthParam;
         private QueryParameter<int> heightParam;
 
-        private bool allowOneSide;
+        public bool AllowOneSide;
         private bool required;
 
         public SizeQueryParameter(Size size, bool required, bool allowOneSide = true, string widthName = "width", string heightName = "height") : base("CONTAINER_PARAM", size, false)
@@ -175,7 +170,7 @@ namespace ninaAPI.Utility.Http
             widthParam = new QueryParameter<int>(widthName, size.Width, false, (width) => width > 0);
             heightParam = new QueryParameter<int>(heightName, size.Height, false, (height) => height > 0);
 
-            this.allowOneSide = allowOneSide;
+            this.AllowOneSide = allowOneSide;
             this.required = required;
         }
     }

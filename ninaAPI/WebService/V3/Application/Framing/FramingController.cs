@@ -14,11 +14,14 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using NINA.Astrometry;
 using NINA.Core.Enum;
+using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.ViewModel;
+using NINA.WPF.Base.SkySurvey;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
@@ -51,7 +54,6 @@ namespace ninaAPI.WebService.V3.Application.Framing
             return new FramingInfoContainer(framingVM);
         }
 
-        // TODO: Test this endpoint
         [Route("GET", "/image")]
         public async Task GetImage()
         {
@@ -59,37 +61,49 @@ namespace ninaAPI.WebService.V3.Application.Framing
 
             // Here only scale, size, format and quality are used and these are the only ones that will be documented
             ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile);
+            imageQuery.Size.AllowOneSide = false; // both sides must be provided together, because there is no fixed aspect ratio
             QueryParameter<double> raParameter = new QueryParameter<double>("ra", 0, true, (ra) => ra.IsBetween(-180, 180));
             QueryParameter<double> decParameter = new QueryParameter<double>("dec", 0, true, (dec) => dec.IsBetween(-90, 90));
             QueryParameter<Epoch> epochParameter = new QueryParameter<Epoch>("epoch", Epoch.J2000, false);
-            QueryParameter<SkySurveySource> sourceParameter = new QueryParameter<SkySurveySource>("source", SkySurveySource.CACHE, false);
+            QueryParameter<double> fovParameter = new QueryParameter<double>("fov", 10, false, (fov) => fov > 0);
+            QueryParameter<SkySurveySource> sourceParameter = new QueryParameter<SkySurveySource>("source", SkySurveySource.CACHE, true);
 
             imageQuery.Evaluate(Request);
             var source = sourceParameter.Get(Request);
             var ra = raParameter.Get(Request);
+            var fov = fovParameter.Get(Request);
             var dec = decParameter.Get(Request);
             var epoch = epochParameter.Get(Request);
 
             var coordinates = new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), epoch);
 
-            if (source != framingVM.FramingAssistantSource) framingVM.FramingAssistantSource = source;
+            BitmapSource imageSource = null;
 
-            var dso = new DeepSkyObject("api request", coordinates, profile.AstrometrySettings.Horizon);
-
-            var success = await framingVM.SetCoordinates(dso);
-
-            if (!success)
+            if (source == SkySurveySource.CACHE)
             {
-                throw new HttpException(HttpStatusCode.InternalServerError, "Error while loading image");
+                // TODO: Find out why the individual images are so low res
+                string framingCache = profile.ApplicationSettings.SkySurveyCacheDirectory;
+                CacheSkySurveyImageFactory factory = new CacheSkySurveyImageFactory(imageQuery.Size.Value.Width, imageQuery.Size.Value.Height, framingVM.Cache);
+                imageSource = factory.Render(coordinates, fov, 0);
+            }
+            else
+            {
+                if (source != framingVM.FramingAssistantSource) framingVM.FramingAssistantSource = source;
+                if (fov != framingVM.FieldOfView && fovParameter.WasProvided) framingVM.FieldOfView = fov;
+
+                if (!await framingVM.SetCoordinates(new DeepSkyObject("api request", coordinates, profile.AstrometrySettings.Horizon)))
+                {
+                    throw new HttpException(HttpStatusCode.InternalServerError, "Error while loading image");
+                }
+                // Resizing is unnessary when loading from cache because it is automatically rendered at the right resolution
+                imageSource = ImageService.ResizeBitmap(framingVM.ImageParameter.Image, imageQuery);
             }
 
-            var image = ImageService.ResizeBitmap(framingVM.ImageParameter.Image, imageQuery);
-            ImageWriter writer = ImageWriter.GetImageWriter(image, imageQuery.Format.Value);
+            ImageWriter writer = ImageWriter.GetImageWriter(imageSource, imageQuery.Format.Value);
 
             await Response.Body(writer.Encode(imageQuery.Quality.Value), writer.MimeType).SendAsync();
         }
 
-        // TODO: Get Image endpoint
         [Route("PATCH", "/")]
         public async Task<FramingInfoContainer> FramingUpdate()
         {

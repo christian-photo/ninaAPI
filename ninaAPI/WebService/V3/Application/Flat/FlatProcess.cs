@@ -50,7 +50,7 @@ namespace ninaAPI.WebService.V3.Application.Flat
                     DeterminedHistogramADU = instruction.DeterminedHistogramADU,
                     CurrentExposureTime = instruction.GetExposureItem().ExposureTime,
                     TotalIterations = instruction.GetIterations().Iterations,
-                    CompletedIterations = instruction.GetIterations().CompletedIterations, // TODO: Add progress to documentation
+                    CompletedIterations = instruction.GetIterations().CompletedIterations,
                 };
             }
             else
@@ -90,7 +90,7 @@ namespace ninaAPI.WebService.V3.Application.Flat
                 CurrentExposureTime = instruction.GetExposureItem().ExposureTime,
                 DeterminedPanelBrightness = instruction.GetSetBrightnessItem().Brightness, // Not set from the beginning
                 TotalIterations = instruction.GetIterations().Iterations,
-                CompletedIterations = instruction.GetIterations().CompletedIterations, // TODO: Add progress to documentation
+                CompletedIterations = instruction.GetIterations().CompletedIterations,
             };
         }
     }
@@ -120,6 +120,7 @@ namespace ninaAPI.WebService.V3.Application.Flat
                 Status = Status,
                 DeterminedHistogramADU = instruction.DeterminedHistogramADU,
                 CurrentExposureTime = instruction.GetExposureItem().ExposureTime,
+                PanelBrightness = instruction.GetSetBrightnessItem().Brightness,
                 TotalIterations = instruction.GetIterations().Iterations,
                 CompletedIterations = instruction.GetIterations().CompletedIterations
             };
@@ -151,6 +152,7 @@ namespace ninaAPI.WebService.V3.Application.Flat
                 Status = Status,
                 CurrentExposureTime = instruction.GetExposureItem().ExposureTime,
                 TotalIterations = instruction.GetIterations().Iterations,
+                PanelBrightness = instruction.GetSetBrightnessItem().Brightness,
                 CompletedIterations = instruction.GetIterations().CompletedIterations
             };
         }
@@ -181,6 +183,7 @@ namespace ninaAPI.WebService.V3.Application.Flat
                 Status = Status,
                 CurrentExposureTime = instruction.GetExposureItem().ExposureTime,
                 TotalIterations = instruction.GetIterations().Iterations,
+                PanelBrightness = instruction.GetSetBrightnessItem().Brightness,
                 CompletedIterations = instruction.GetIterations().CompletedIterations
             };
         }
