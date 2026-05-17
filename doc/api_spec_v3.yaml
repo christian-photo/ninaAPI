@@ -4811,6 +4811,7 @@ components:
 
     EpochEnum:
       type: string
+      default: J2000
       enum:
         - B1950
         - J2000
