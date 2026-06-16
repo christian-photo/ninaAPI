@@ -27,8 +27,10 @@ using NINA.Core.Model.Equipment;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.ViewModel;
+using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.WebService.Interfaces;
+using SimpleW;
 using SimpleW.Modules;
 using System;
 using System.Collections.Generic;
@@ -215,6 +217,15 @@ namespace ninaAPI.WebService.V2.CustomDrivers
 
         private async ValueTask OnClientConnectedAsync(WebSocketConnection connection, WebSocketContext context)
         {
+            if (Settings.Default.UseAuth)
+            {
+                if (context.Session.Principal == HttpPrincipal.Anonymous)
+                {
+                    Logger.Warning($"Unauthorized WebSocket connection attempt from {connection.RemoteEndPoint}");
+                    await connection.CloseAsync(1008, "Unauthorized");
+                    return;
+                }
+            }
             Logger.Info("Networked Filter Wheel WebSocket connected " + connection.RemoteEndPoint.ToString());
             clients.Add(connection);
         }

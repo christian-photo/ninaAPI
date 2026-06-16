@@ -16,9 +16,11 @@ using System.Threading.Tasks;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
+using SimpleW;
 using SimpleW.Modules;
 
 namespace ninaAPI.WebService.V3.Websocket.MountControl
@@ -131,6 +133,19 @@ namespace ninaAPI.WebService.V3.Websocket.MountControl
             {
                 await OnMessageReceivedAsync(conn, ctx, msg.RawText);
             });
+
+            options.OnConnect = async (conn, ctx) =>
+            {
+                if (Settings.Default.UseAuth)
+                {
+                    if (ctx.Session.Principal == HttpPrincipal.Anonymous)
+                    {
+                        Logger.Warning($"Unauthorized WebSocket connection attempt from {conn.RemoteEndPoint}");
+                        await conn.CloseAsync(1008, "Unauthorized");
+                        return;
+                    }
+                }
+            };
         }
     }
 

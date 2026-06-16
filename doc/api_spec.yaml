@@ -5,7 +5,11 @@ info:
   version: 2.2.15
 servers:
   - url: http://localhost:1888/v2/api
-    description: V2 api server
+    description: V2 api server without ssl
+  - url: https://localhost:1888/v2/api
+    description: V2 api server with ssl enabled
+security:
+  - basicAuth: []
 paths:
   /version:
     get:
@@ -8715,6 +8719,10 @@ paths:
                 $ref: "#/components/schemas/UnknownError"
 
 components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
   schemas:
     CameraInfo:
       type: object

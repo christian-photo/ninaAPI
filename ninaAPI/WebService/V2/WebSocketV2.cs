@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NINA.Core.Utility;
+using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.WebService.Interfaces;
@@ -140,6 +141,15 @@ namespace ninaAPI.WebService.V2
 
         private async ValueTask OnClientConnectedAsync(WebSocketConnection connection, WebSocketContext context)
         {
+            if (Settings.Default.UseAuth)
+            {
+                if (context.Session.Principal == HttpPrincipal.Anonymous)
+                {
+                    Logger.Warning($"Unauthorized WebSocket connection attempt from {connection.RemoteEndPoint}");
+                    await connection.CloseAsync(1008, "Unauthorized");
+                    return;
+                }
+            }
             Logger.Info($"WebSocket connected {connection.RemoteEndPoint}");
             clients.Add(connection);
         }

@@ -1,11 +1,15 @@
 openapi: 3.1.0
 info:
   title: Advanced API
-  description: This is the API documentation for the NINA plugin Advanced API.
+  description: This is the API documentation for the NINA plugin Advanced API. Authentication is only necessary if it is enabled in the plugin, otherwise all endpoints are public
   version: 3.0.0.0
 servers:
   - url: http://localhost:1888/v3/api
-    description: V3 api server
+    description: V3 api server without ssl
+  - url: https://localhost:1888/v3/api
+    description: V3 api server with ssl enabled
+security:
+  - basicAuth: []
 paths:
   /version:
     get:
@@ -4663,6 +4667,11 @@ paths:
                 $ref: "#/components/schemas/Error"
 
 components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+
   parameters:
     ImageType:
       name: imageType

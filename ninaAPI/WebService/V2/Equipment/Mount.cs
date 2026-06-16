@@ -23,6 +23,7 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.Sequencer.SequenceItem.Platesolving;
 using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Telescope;
+using ninaAPI.Properties;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.WebService.Interfaces;
@@ -655,6 +656,19 @@ namespace ninaAPI.WebService.V2
             {
                 await OnMessageReceivedAsync(conn, ctx, msg.RawText);
             });
+
+            options.OnConnect = async (conn, ctx) =>
+            {
+                if (Settings.Default.UseAuth)
+                {
+                    if (ctx.Session.Principal == HttpPrincipal.Anonymous)
+                    {
+                        Logger.Warning($"Unauthorized WebSocket connection attempt from {conn.RemoteEndPoint}");
+                        await conn.CloseAsync(1008, "Unauthorized");
+                        return;
+                    }
+                }
+            };
         }
     }
 }
