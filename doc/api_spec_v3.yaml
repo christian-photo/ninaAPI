@@ -3472,6 +3472,26 @@ paths:
         default:
           $ref: "#/components/responses/RequestFailed"
 
+  /flats/trained-dark:
+    post:
+      tags:
+        - Flats
+      summary: Trained Dark Flats
+      description: Take Trained Dark Flats. The trained dark flats instruction in NINA will be used here and the parameters will simply be passed on to the instruction. Any omitted parameter will default to the instruction default.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainedFlatConfig"
+      responses:
+        "202":
+          $ref: "#/components/responses/ProcessStarted"
+        "409":
+          $ref: "#/components/responses/ProcessConflict"
+        default:
+          $ref: "#/components/responses/RequestFailed"
+
 components:
   securitySchemes:
     basicAuth:
