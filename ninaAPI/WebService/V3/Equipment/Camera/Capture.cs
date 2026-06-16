@@ -117,6 +117,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         public ApiProcessStartResult Start(CaptureConfig config)
         {
             Config = config;
+            Logger.Debug($"Starting capture with id {CaptureId}");
             return processMediator.Start(CaptureId);
         }
 

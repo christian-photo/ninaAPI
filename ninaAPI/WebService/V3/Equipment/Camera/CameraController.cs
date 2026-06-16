@@ -55,14 +55,12 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             ICameraMediator camera,
             ITelescopeMediator mount,
             IProfileService profile,
-            IImagingMediator imaging,
-            IImageSaveMediator imageSave,
             IApplicationStatusMediator status,
             IImageDataFactory imageDataFactory,
             IPlateSolverFactory plateSolverFactory,
-            IFilterWheelMediator filterWheel,
             ApiProcessMediator processMediator,
-            ISerializerService serializer)
+            ISerializerService serializer,
+            CaptureMediator captureMediator)
         {
             this.cam = camera;
             this.mount = mount;
@@ -73,7 +71,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             this.processMediator = processMediator;
             this.serializer = serializer;
 
-            this.captureMediator = new CaptureMediator(camera, filterWheel, profile, imaging, imageSave, status, processMediator);
+            this.captureMediator = captureMediator;
         }
 
         [Route("GET", "/")]

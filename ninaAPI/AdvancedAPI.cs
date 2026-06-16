@@ -43,6 +43,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using System.Security;
+using ninaAPI.WebService.V3.Equipment.Camera;
 
 namespace ninaAPI
 {
@@ -170,6 +171,7 @@ namespace ninaAPI
 
             services.AddSingleton(processMediator);
             services.AddSingleton(serializer);
+            services.AddSingleton(new CaptureMediator(camera, filterWheel, profile, imaging, saveMediator, statusMediator, processMediator));
 
             if (Settings.Default.UpdateSettings)
             {
