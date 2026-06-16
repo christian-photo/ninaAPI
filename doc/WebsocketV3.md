@@ -5,8 +5,8 @@ The plugin ships 2 different websockets:
 - [Event Websocket](WebsocketV3.md#event-websocket): `ws://localhost:1888/v3/ws/events`
 - [Mount Control Websocket](WebsocketV3.md#mount-control-websocket): `ws://localhost:1888/v3/ws/mount-control`
 
-[!IMPORTANT]
-If SSL enabled the protocol switches to `wss://`. Also, websocket too require basic auth when it is enabled
+> [!IMPORTANT]
+> If SSL enabled the protocol switches to `wss://`. Also, websockets too require basic auth if it is enabled
 
 ## Event Websocket
 
