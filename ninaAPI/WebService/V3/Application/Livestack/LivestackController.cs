@@ -17,17 +17,17 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using NINA.Plugin.Interfaces;
 using NINA.Profile.Interfaces;
-using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
-using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.Model;
 using ninaAPI.WebService.V2;
 using ninaAPI.WebService.V3.Service;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Application.Livestack
 {
     [Route("/v3/api/livestack")]
+    [BasicAuth]
     public class LivestackController : Controller
     {
         private readonly IMessageBroker messageBroker;

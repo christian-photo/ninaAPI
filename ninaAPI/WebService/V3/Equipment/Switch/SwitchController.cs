@@ -21,10 +21,12 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Equipment.Switch
 {
     [Route($"/v3/api/equipment/{EquipmentConstants.SwitchUrlName}")]
+    [BasicAuth]
     public class SwitchController : Controller
     {
         private readonly ISwitchMediator @switch;

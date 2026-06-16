@@ -28,10 +28,12 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Application.Sequence
 {
     [Route("/v3/api/sequence")]
+    [BasicAuth]
     public class SequenceController : Controller
     {
         private readonly ISequenceMediator sequence;

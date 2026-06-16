@@ -19,10 +19,12 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Equipment.FlatDevice
 {
     [Route($"/v3/api/equipment/{EquipmentConstants.FlatDeviceUrlName}")]
+    [BasicAuth]
     public class FlatController : Controller
     {
         private readonly IFlatDeviceMediator flatDevice;

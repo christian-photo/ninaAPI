@@ -45,6 +45,11 @@ The event websocket now supports channels, which can be subscribed to per client
 
 - Base64 support for images was removed
 
+### SSL & Auth
+
+SSL and authentication is now supported! If you need to expose the api over a wider network, this is a valuable addition to make sure noone can access private
+profile data (api keys, file paths, ...) or take control over your equipment
+
 ### General changes
 
 - Improved the options page for configuration

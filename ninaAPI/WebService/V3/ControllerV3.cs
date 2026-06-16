@@ -19,10 +19,12 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V3.Websocket.Event;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3
 {
     [Route("/v3/api")]
+    [BasicAuth]
     public class ControllerV3 : Controller
     {
         private readonly ApiProcessMediator processMediator;

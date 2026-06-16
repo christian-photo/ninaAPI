@@ -15,7 +15,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using NINA.Core.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;

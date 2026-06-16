@@ -58,6 +58,10 @@ A powerful HTTP and WebSocket server plugin that enables remote control and moni
 * TPPA (Third Party Program Automation) integration
 * LiveStack integration for real-time stacking
 
+### Security & Access Control
+* Optional Basic Authentication
+* Optional support for SSL encryption with your own certificates
+
 ### Developer Features
 * RESTful API with OpenAPI/Swagger documentation
 * WebSocket support for real-time events

@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using NINA.Astrometry;
 using NINA.Core.Enum;
-using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.ViewModel;
@@ -27,10 +26,12 @@ using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.V3.Service;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Application.Framing
 {
     [Route("/v3/api/framing")]
+    [BasicAuth]
     public class FramingController : Controller
     {
         private readonly IFramingAssistantVM framingVM;

@@ -14,9 +14,11 @@ using System.Reflection;
 using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V2
 {
+    [BasicAuth]
     public partial class ControllerV2 : Controller
     {
         [Route("GET", "/")]

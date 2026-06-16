@@ -88,7 +88,5 @@ namespace ninaAPI.WebService.V2
                 watcher.StopWatchers();
             }
         }
-
-        public bool SupportsSSL() => false;
     }
 }

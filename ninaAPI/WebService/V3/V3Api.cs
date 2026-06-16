@@ -153,8 +153,6 @@ namespace ninaAPI.WebService.V3
             return server;
         }
 
-        public bool SupportsSSL() => true;
-
         public EventWebSocket GetEventWebSocket()
         {
             return eventSocket;

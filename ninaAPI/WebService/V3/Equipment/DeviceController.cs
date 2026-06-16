@@ -45,10 +45,12 @@ using ninaAPI.WebService.V3.Equipment.Safety;
 using ninaAPI.WebService.V3.Equipment.Switch;
 using ninaAPI.WebService.V3.Equipment.Weather;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Equipment
 {
     [Route($"/v3/api/equipment")]
+    [BasicAuth]
     public class DeviceController : Controller
     {
         private readonly ICameraMediator camera;

@@ -12,10 +12,12 @@
 
 using NINA.Equipment.Interfaces.Mediator;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Equipment.Safety
 {
     [Route($"/v3/api/equipment/{EquipmentConstants.SafetyMonitorUrlName}")]
+    [BasicAuth]
     public class SafetyController : Controller
     {
         private readonly ISafetyMonitorMediator safety;

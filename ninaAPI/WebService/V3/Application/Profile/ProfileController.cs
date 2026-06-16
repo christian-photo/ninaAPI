@@ -20,10 +20,12 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Application.Profile
 {
     [Route("/v3/api/profile")]
+    [BasicAuth]
     public class ProfileController : Controller
     {
         private readonly IProfileService profileService;

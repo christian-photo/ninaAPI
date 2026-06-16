@@ -14,15 +14,16 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using NINA.Plugin.Interfaces;
-using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Model;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Application.TPPA
 {
     [Route("/v3/api/tppa")]
+    [BasicAuth]
     public class TppaController : Controller
     {
         private readonly IMessageBroker messageBroker;

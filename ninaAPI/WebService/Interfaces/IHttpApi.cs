@@ -17,6 +17,5 @@ namespace ninaAPI.WebService.Interfaces
     public interface IHttpApi
     {
         public SimpleWServer ConfigureServer(SimpleWServer server, ServiceProvider provider);
-        public bool SupportsSSL();
     }
 }

@@ -11,10 +11,12 @@
 
 using NINA.Equipment.Interfaces.Mediator;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Equipment.Weather
 {
     [Route($"/v3/api/equipment/{EquipmentConstants.WeatherUrlName}")]
+    [BasicAuth]
     public class WeatherController : Controller
     {
         private readonly IWeatherDataMediator weather;

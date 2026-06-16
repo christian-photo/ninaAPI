@@ -23,10 +23,12 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Equipment.Dome
 {
     [Route($"/v3/api/equipment/{EquipmentConstants.DomeUrlName}")]
+    [BasicAuth]
     public class DomeController : Controller
     {
         private readonly IDomeMediator dome;

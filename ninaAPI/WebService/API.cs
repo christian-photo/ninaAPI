@@ -18,12 +18,16 @@ using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2;
 using SimpleW;
+using SimpleW.Helper.BasicAuth;
 using SimpleW.Helper.DependencyInjection;
 using SimpleW.Modules;
+using SimpleW.Service.BasicAuth;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService
@@ -60,6 +64,38 @@ namespace ninaAPI.WebService
             {
                 Stopped?.Invoke(this, EventArgs.Empty);
             });
+            if (Settings.Default.UseAuth)
+            {
+                if (string.IsNullOrEmpty(Settings.Default.AuthUsername) || string.IsNullOrEmpty(Settings.Default.AuthPassword))
+                {
+                    Notification.ShowWarning("Authentication is enabled but username or password is empty, disabling authentication");
+                    Logger.Warning("Authentication is enabled but username or password is empty, disabling authentication");
+                }
+                else
+                {
+                    Server.UseBasicAuthModule(options =>
+                    {
+                        options.Users = [
+                            new BasicUser(Settings.Default.AuthUsername, Settings.Default.AuthPassword)
+                        ];
+                    });
+                }
+
+            }
+            if (Settings.Default.UseSSL)
+            {
+                try
+                {
+                    var cert = X509CertificateLoader.LoadPkcs12FromFile(Settings.Default.SSLCertificatePath, Settings.Default.SSLPassword);
+                    var context = new SslContext(SslProtocols.Tls12 | SslProtocols.Tls13, cert, false, false);
+                    Server.UseHttps(context);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Failed to load SSL certificate: {ex}");
+                    Notification.ShowError("Failed to load SSL certificate, please check the logs for more info");
+                }
+            }
             Server.UseMiddleware(async (session, next) =>
             {
                 try

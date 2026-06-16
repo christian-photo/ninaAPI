@@ -42,6 +42,7 @@ using NINA.Sequencer.Logic;
 using Microsoft.Extensions.DependencyInjection;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
+using System.Security;
 
 namespace ninaAPI
 {
@@ -363,6 +364,68 @@ namespace ninaAPI
             }
         }
 
+        public bool UseSSL
+        {
+            get => Settings.Default.UseSSL;
+            set
+            {
+                Settings.Default.UseSSL = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                RaisePropertyChanged();
+            }
+        }
+
+        public string SSLCertificatePath
+        {
+            get => Settings.Default.SSLCertificatePath;
+            set
+            {
+                Settings.Default.SSLCertificatePath = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public string SSLPassword
+        {
+            get => Settings.Default.SSLPassword;
+            set
+            {
+                Settings.Default.SSLPassword = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public bool UseAuth
+        {
+            get => Settings.Default.UseAuth;
+            set
+            {
+                Settings.Default.UseAuth = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                RaisePropertyChanged();
+            }
+        }
+
+        public string AuthUsername
+        {
+            get => Settings.Default.AuthUsername;
+            set
+            {
+                Settings.Default.AuthUsername = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public string AuthPassword
+        {
+            get => Settings.Default.AuthPassword;
+            set
+            {
+                Settings.Default.AuthPassword = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
         public bool APIEnabled => SelectedApiOption != "Off";
 
         public List<string> ApiOptions { get; } = ["Both", "V2", "V3", "Off"];
@@ -412,9 +475,10 @@ namespace ninaAPI
         private void SetHostNames()
         {
             string api = SelectedApiOption == "Both" || SelectedApiOption == "V3" ? "/v3/api" : "/v2/api";
-            LocalAddress = $"http://{LocalAddresses.LocalHostName}:{ActualPort}{api}";
-            LocalNetworkAddress = $"http://{LocalAddresses.IPAddress}:{ActualPort}{api}";
-            HostAddress = $"http://{LocalAddresses.HostName}:{ActualPort}{api}";
+            string protocol = UseSSL ? "https" : "http";
+            LocalAddress = $"{protocol}://{LocalAddresses.LocalHostName}:{ActualPort}{api}";
+            LocalNetworkAddress = $"{protocol}://{LocalAddresses.IPAddress}:{ActualPort}{api}";
+            HostAddress = $"{protocol}://{LocalAddresses.HostName}:{ActualPort}{api}";
 
             RaisePropertyChanged(nameof(LocalAddress));
             RaisePropertyChanged(nameof(LocalNetworkAddress));

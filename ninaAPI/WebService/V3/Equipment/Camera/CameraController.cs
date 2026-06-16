@@ -32,10 +32,12 @@ using SimpleW;
 using ninaAPI.Utility.Serialization;
 using NINA.PlateSolving;
 using ninaAPI.WebService.V3.Application.Image;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Equipment.Camera
 {
     [Route($"/v3/api/equipment/{EquipmentConstants.CameraUrlName}")]
+    [BasicAuth]
     public class CameraController : Controller
     {
         private readonly ICameraMediator cam;

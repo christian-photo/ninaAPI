@@ -25,10 +25,12 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Equipment.Focuser
 {
     [Route($"/v3/api/equipment/{EquipmentConstants.FocuserUrlName}")]
+    [BasicAuth]
     public class FocuserController : Controller
     {
         private readonly IFocuserMediator focuser;

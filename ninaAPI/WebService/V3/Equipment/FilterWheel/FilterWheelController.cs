@@ -19,10 +19,12 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Equipment.FilterWheel
 {
     [Route($"/v3/api/equipment/{EquipmentConstants.FilterWheelUrlName}")]
+    [BasicAuth]
     public class FilterWheelController : Controller
     {
         private readonly IFilterWheelMediator filterWheel;

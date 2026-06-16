@@ -32,10 +32,12 @@ using ninaAPI.Utility.Serialization;
 using ninaAPI.WebService.V3.Equipment.Camera;
 using ninaAPI.WebService.V3.Service;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Application.Image
 {
     [Route("/v3/api/image")]
+    [BasicAuth]
     public class ImageController : Controller
     {
         private readonly IImageDataFactory imageDataFactory;

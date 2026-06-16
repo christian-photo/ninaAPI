@@ -28,10 +28,12 @@ using ninaAPI.Utility;
 using ninaAPI.Utility.Http;
 using ninaAPI.Utility.Serialization;
 using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V3.Equipment.Mount
 {
     [Route($"/v3/api/equipment/{EquipmentConstants.MountUrlName}")]
+    [BasicAuth]
     public class MountController : Controller
     {
         private readonly ITelescopeMediator mount;

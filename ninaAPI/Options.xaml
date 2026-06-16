@@ -19,6 +19,20 @@
                 Text="Be careful when changing any of the below options! These alter the functionality of the API and can cause apps like Touch 'N' Stars to not work properly."
                 TextWrapping="Wrap" />
 
+            <!--  Enable ComboBox  -->
+            <StackPanel Margin="0,15" Orientation="Horizontal">
+                <TextBlock
+                    Width="250"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Text="Enable:" />
+                <ComboBox
+                    Width="200"
+                    ItemsSource="{Binding ApiOptions}"
+                    SelectedValue="{Binding SelectedApiOption}" />
+            </StackPanel>
+
             <!--  Create Thumbnails  -->
             <StackPanel Margin="0,5" Orientation="Horizontal">
                 <TextBlock
@@ -49,23 +63,13 @@
                 <CheckBox VerticalAlignment="Center" IsChecked="{Binding EnableTelemetry}" />
             </StackPanel>
 
-            <!--  Enable ComboBox  -->
-            <StackPanel Margin="0,15" Orientation="Horizontal">
-                <TextBlock
-                    Width="250"
-                    VerticalAlignment="Center"
-                    Text="Enable:" />
-                <ComboBox
-                    Width="200"
-                    ItemsSource="{Binding ApiOptions}"
-                    SelectedValue="{Binding SelectedApiOption}" />
-            </StackPanel>
-
             <!--  API Port Section  -->
             <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
                 <TextBlock
                     Width="250"
                     VerticalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="Bold"
                     Text="API Port:" />
                 <TextBox
                     Width="80"
@@ -117,6 +121,76 @@
                 Margin="0,5,0,0"
                 Text="Access-Control-Allow-Origin is part of the CORS rules and determines which websites are allowed to access a server's data. Without this header, browsers block requests from other domains for security reasons. This is only relevant if the software is accessible via the Internet; in closed networks, such attacks are not possible."
                 TextWrapping="Wrap" />
+
+            <!--  SSL Section  -->
+            <StackPanel Margin="0,15" Orientation="Horizontal">
+                <TextBlock
+                    Width="250"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Text="Use SSL/HTTPS:" />
+                <CheckBox VerticalAlignment="Center" IsChecked="{Binding UseSSL}" />
+            </StackPanel>
+
+            <StackPanel Margin="0,5" Orientation="Horizontal">
+                <TextBlock
+                    Width="250"
+                    VerticalAlignment="Center"
+                    Text="SSL Certificate Path:" />
+                <TextBox
+                    Width="200"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding UseSSL}"
+                    Text="{Binding SSLCertificatePath}" />
+            </StackPanel>
+
+            <StackPanel Margin="0,5" Orientation="Horizontal">
+                <TextBlock
+                    Width="250"
+                    VerticalAlignment="Center"
+                    Text="SSL Certificate Password:" />
+                <TextBox
+                    Width="200"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding UseSSL}"
+                    Text="{Binding SSLPassword}" />
+            </StackPanel>
+
+            <!--  Auth Section  -->
+            <StackPanel Margin="0,15" Orientation="Horizontal">
+                <TextBlock
+                    Width="250"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Text="Use Auth:" />
+                <CheckBox VerticalAlignment="Center" IsChecked="{Binding UseAuth}" />
+            </StackPanel>
+
+            <StackPanel Margin="0,5" Orientation="Horizontal">
+                <TextBlock
+                    Width="250"
+                    VerticalAlignment="Center"
+                    Text="Auth Username:" />
+                <TextBox
+                    Width="200"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding UseAuth}"
+                    Text="{Binding AuthUsername}" />
+            </StackPanel>
+
+            <StackPanel Margin="0,5" Orientation="Horizontal">
+                <TextBlock
+                    Width="250"
+                    VerticalAlignment="Center"
+                    Text="Auth Password:" />
+                <TextBox
+                    Width="200"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding UseAuth}"
+                    Text="{Binding AuthPassword}" />
+            </StackPanel>
 
             <Separator Margin="0,15" />
 
