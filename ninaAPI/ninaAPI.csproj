@@ -25,6 +25,7 @@
 
   <!-- When building for windows -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
+    <PackageReference Include="SimpleW.Service.BasicAuth" Version="26.0.0" />
     <Reference Include="ReachFramework" />
     <Reference Update="System">
       <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.dll</HintPath>
@@ -71,7 +72,7 @@
     <None Remove="gather.js" />
     <None Remove="manifest.schema.json" />
     <PackageReference Include="SimpleW" Version="26.0.0" />
-    <PackageReference Include="SimpleW.Helper.DependencyInjection" Version="26.0.0-beta.20260516-1839" />
+    <PackageReference Include="SimpleW.Helper.DependencyInjection" Version="26.0.1" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.346202">

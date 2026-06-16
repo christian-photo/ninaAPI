@@ -16,7 +16,7 @@ Longer running processes like slewing, capturing or autofocusing now return a `P
 
 #### Endpoints
 
-The structure of the endpoints is similar to before, but http verbs are now actually used, like `GET` for device information, `POST` for starting a process, ...
+The structure of the endpoints is similar to before, but http verbs are now properly utilized, like `GET` for device information, `POST` for starting a process, ...
 
 #### Websocket
 

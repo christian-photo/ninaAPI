@@ -362,6 +362,10 @@ namespace ninaAPI.WebService.V3.Equipment.Mount
             {
                 throw new HttpException(HttpStatusCode.Conflict, "Mount slewing");
             }
+            else if (mount.GetInfo().AtPark)
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "Mount parked");
+            }
             else if (!config.SolveAndSync && config.Coordinates == null)
             {
                 throw new HttpException(HttpStatusCode.BadRequest, "Either coordinates or solve and sync must be provided");
