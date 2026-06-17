@@ -13,7 +13,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using NINA.Core.Utility;
 using NINA.Equipment.Equipment;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
@@ -114,15 +117,31 @@ namespace ninaAPI.WebService.V3.Equipment
         public async Task<StringResponse> DeviceConnect(string device)
         {
             var chooser = GetDeviceChooserVM(device);
-            var mediator = GetMediator(device);
+            var handler = GetDeviceHandler(device);
+
+            if (((DeviceInfo)handler.GetType().GetMethod("GetDeviceInfo").Invoke(handler, null)).Connected)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, $"A {device} is already connected");
+            }
 
             var deviceId = new QueryParameter<string>("deviceId", chooser.SelectedDevice.Id, false, (id) => chooser.Devices.Any(d => d.Id == id));
             var targetDevice = chooser.Devices.First(d => d.Id == deviceId.Get(Request));
 
             chooser.SelectedDevice = targetDevice;
-            bool success = await mediator.Connect();
+            var connectCommand = (ICommand)handler.GetType().GetProperty("ConnectCommand").GetValue(handler);
+            connectCommand.Execute(null);
 
-            if (success)
+            var semaphore = (SemaphoreSlim)handler.GetType().GetField("ss", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(handler);
+
+            await Task.Run(() => semaphore.AvailableWaitHandle.WaitOne(), Session.RequestAborted);
+
+            if (Session.RequestAborted.IsCancellationRequested)
+            {
+                ((ICommand)handler.GetType().GetProperty("CancelConnectCommand").GetValue(handler)).Execute(null);
+                throw new HttpException(HttpStatusCode.BadRequest, "Connection cancelled by client");
+            }
+
+            if (chooser.SelectedDevice.Connected)
             {
                 return new StringResponse($"{targetDevice.DisplayName} connected");
             }
@@ -133,16 +152,16 @@ namespace ninaAPI.WebService.V3.Equipment
         }
 
         [Route("POST", "/:device/disconnect")]
-        public StringResponse DeviceDisconnect(string device)
+        public async Task<StringResponse> DeviceDisconnect(string device)
         {
-            var mediator = GetMediator(device);
+            var handler = GetDeviceHandler(device);
 
-            if (!mediator.GetInfo().Connected)
+            if (!((DeviceInfo)handler.GetType().GetMethod("GetDeviceInfo").Invoke(handler, null)).Connected)
             {
                 throw new HttpException(HttpStatusCode.BadRequest, $"No {device} connected");
             }
 
-            mediator.Disconnect();
+            await (Task)handler.GetType().GetMethod("Disconnect").Invoke(handler, null);
 
             return new StringResponse($"Disconnected");
         }
@@ -191,37 +210,6 @@ namespace ninaAPI.WebService.V3.Equipment
                 Switch = new SwitchInfoResponse(switchMediator),
                 Weather = new WeatherInfoResponse(weatherData),
             };
-        }
-
-        private IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo> GetMediator(string device)
-        {
-            switch (device)
-            {
-                case EquipmentConstants.CameraUrlName:
-                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)camera;
-                case EquipmentConstants.DomeUrlName:
-                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)dome;
-                case EquipmentConstants.FilterWheelUrlName:
-                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)filterWheel;
-                case EquipmentConstants.FlatDeviceUrlName:
-                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)flatDevice;
-                case EquipmentConstants.FocuserUrlName:
-                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)focuser;
-                case EquipmentConstants.GuiderUrlName:
-                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)guider;
-                case EquipmentConstants.MountUrlName:
-                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)mount;
-                case EquipmentConstants.RotatorUrlName:
-                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)rotator;
-                case EquipmentConstants.SafetyMonitorUrlName:
-                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)safetyMonitor;
-                case EquipmentConstants.SwitchUrlName:
-                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)switchMediator;
-                case EquipmentConstants.WeatherUrlName:
-                    return (IDeviceMediator<IDeviceVM<DeviceInfo>, IDeviceConsumer<DeviceInfo>, DeviceInfo>)weatherData;
-                default:
-                    throw new HttpException(HttpStatusCode.NotFound, "Device not found");
-            }
         }
 
         private IDevice GetDevice(string device)
@@ -292,6 +280,37 @@ namespace ninaAPI.WebService.V3.Equipment
                 case EquipmentConstants.WeatherUrlName:
                     var weather = (WeatherDataVM)typeof(WeatherDataMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weatherData);
                     return weather.DeviceChooserVM;
+                default:
+                    throw new HttpException(HttpStatusCode.NotFound, "Device not found");
+            }
+        }
+
+        private object GetDeviceHandler(string device)
+        {
+            switch (device)
+            {
+                case EquipmentConstants.CameraUrlName:
+                    return typeof(CameraMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(camera);
+                case EquipmentConstants.DomeUrlName:
+                    return typeof(DomeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(dome);
+                case EquipmentConstants.FilterWheelUrlName:
+                    return typeof(FilterWheelMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(filterWheel);
+                case EquipmentConstants.FlatDeviceUrlName:
+                    return typeof(FlatDeviceMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(flatDevice);
+                case EquipmentConstants.FocuserUrlName:
+                    return typeof(FocuserMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(focuser);
+                case EquipmentConstants.GuiderUrlName:
+                    return typeof(GuiderMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(guider);
+                case EquipmentConstants.MountUrlName:
+                    return typeof(TelescopeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(mount);
+                case EquipmentConstants.RotatorUrlName:
+                    return typeof(RotatorMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(rotator);
+                case EquipmentConstants.SafetyMonitorUrlName:
+                    return typeof(SafetyMonitorMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(safetyMonitor);
+                case EquipmentConstants.SwitchUrlName:
+                    return typeof(SwitchMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(switchMediator);
+                case EquipmentConstants.WeatherUrlName:
+                    return typeof(WeatherDataMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weatherData);
                 default:
                     throw new HttpException(HttpStatusCode.NotFound, "Device not found");
             }
