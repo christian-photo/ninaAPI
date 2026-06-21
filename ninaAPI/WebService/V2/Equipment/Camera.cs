@@ -667,7 +667,7 @@ namespace ninaAPI.WebService.V2
                         IPlateSolveSettings settings = AdvancedAPI.Controls.Profile.ActiveProfile.PlateSolveSettings;
 
                         CaptureSequence sequence = new CaptureSequence(
-                            duration <= 0 ? settings.ExposureTime : duration,
+                            duration < 0 ? settings.ExposureTime : duration,
                             isImageTypeValid(imageType) ? imageType.ToUpper() : CaptureSequence.ImageTypes.SNAPSHOT,
                             AdvancedAPI.Controls.FilterWheel.GetInfo().SelectedFilter,
                             new BinningMode(cam.GetInfo().BinX, cam.GetInfo().BinY),
