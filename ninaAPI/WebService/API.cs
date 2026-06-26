@@ -52,7 +52,8 @@ namespace ninaAPI.WebService
             {
                 Server.UseCorsModule(options =>
                 {
-                    options.AllowedOrigins = ["*"];
+                    options.AllowAnyOrigin = true;
+                    options.AllowCredentials = false;
                     options.AllowedMethods = "GET, POST, PUT, DELETE, OPTIONS";
                 });
             }
