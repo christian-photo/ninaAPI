@@ -58,6 +58,10 @@ profile data (api keys, file paths, ...) or take control over your equipment
 
 ---
 
+## 2.2.15.2
+
+- Allow exposure time of 0
+
 ## 2.2.15.1
 
 - Fixed a wrong validation in the mount sync endpoint [#94](https://github.com/christian-photo/ninaAPI/issues/94)
