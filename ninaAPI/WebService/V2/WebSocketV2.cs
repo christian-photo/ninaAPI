@@ -9,32 +9,32 @@
 
 #endregion "copyright"
 
-using Accord.IO;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebSockets;
-using Newtonsoft.Json;
-using NINA.Core.Utility;
-using ninaAPI.Utility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using NINA.Core.Utility;
+using ninaAPI.Properties;
+using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
+using SimpleW.Modules;
 
 namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/event-history")]
+        [Route("GET", "/event-history")]
         public void GetEventHistory()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
                 List<object> result = new List<object>();
-                foreach (HttpResponse r in WebSocketV2.Events)
+                foreach (CustomResponse r in WebSocketV2.Events)
                 {
                     result.Add(r.Response);
                 }
@@ -46,16 +46,16 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 
-    public class WebSocketV2 : WebSocketModule
+    public class WebSocketV2 : IWebSocket
     {
-        private static bool sendConsumerEvents = false;
+        // private static bool sendConsumerEvents = false;
 
         private static WebSocketV2 instance;
-        public WebSocketV2(string urlPath) : base(urlPath, true)
+        public WebSocketV2()
         {
             instance = this;
         }
@@ -63,16 +63,16 @@ namespace ninaAPI.WebService.V2
         public static async Task SendConsumerEvent(string consumer)
         {
             // Maybe not, because it would be a lot of unnecessary traffic since most devices update their info constantly and then this would be useless
-            return;
-            consumer = consumer.ToUpper();
-            Logger.Info($"Sending {consumer}-INFO-UPDATED");
-            if (sendConsumerEvents && consumer != "MOUNT")
-            {
-                // Do not allow mount updates for now, because that would be a lot of unnecessary traffic
-                // because every time the coordinates change, the info also changes. We could enable this with an extra bool
-                // in the future
-                await SendEvent(new HttpResponse() { Response = $"{consumer}-INFO-UPDATED", Type = HttpResponse.TypeSocket });
-            }
+            // return;
+            // consumer = consumer.ToUpper();
+            // Logger.Info($"Sending {consumer}-INFO-UPDATED");
+            // if (sendConsumerEvents && consumer != "MOUNT")
+            // {
+            //     // Do not allow mount updates for now, because that would be a lot of unnecessary traffic
+            //     // because every time the coordinates change, the info also changes. We could enable this with an extra bool
+            //     // in the future
+            //     await SendEvent(new CustomResponse() { Response = $"{consumer}-INFO-UPDATED", Type = CustomResponse.TypeSocket });
+            // }
         }
 
         public static async Task SendAndAddEvent(string eventName, Dictionary<string, object> data)
@@ -92,8 +92,8 @@ namespace ninaAPI.WebService.V2
 
         public static async Task SendAndAddEvent(string eventName, DateTime time, Dictionary<string, object> data)
         {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
+            CustomResponse response = new CustomResponse();
+            response.Type = CustomResponse.TypeSocket;
 
             Hashtable responseData = new Hashtable
             {
@@ -113,7 +113,7 @@ namespace ninaAPI.WebService.V2
             string json = JsonConvert.SerializeObject(responseData);
             Hashtable eventTable = JsonConvert.DeserializeObject<Hashtable>(json);
             eventTable.Add("Time", time);
-            HttpResponse Event = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = eventTable };
+            CustomResponse Event = new CustomResponse() { Type = CustomResponse.TypeSocket, Response = eventTable };
             Events.Add(Event);
 
             await SendEvent(response);
@@ -123,29 +123,44 @@ namespace ninaAPI.WebService.V2
 
         public static void SetUnavailable() => instance = null;
 
-        public static List<HttpResponse> Events = new List<HttpResponse>();
+        public static List<CustomResponse> Events = new List<CustomResponse>();
 
-        protected override Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult rxResult)
+        private static ThreadSafeList<WebSocketConnection> clients = new();
+
+        private void OnMessageReceivedAsync(WebSocketConnection connection, WebSocketContext context, string text)
         {
-            string s = Encoding.GetString(rxBuffer);
-            if (s.Equals("enable-consumer-events"))
-            {
-                sendConsumerEvents = true;
-            }
-            else if (s.Equals("disable-consumer-events"))
-            {
-                sendConsumerEvents = false;
-            }
-            return Task.CompletedTask;
+            // if (text.Equals("enable-consumer-events"))
+            // {
+            //     sendConsumerEvents = true;
+            // }
+            // else if (text.Equals("disable-consumer-events"))
+            // {
+            //     sendConsumerEvents = false;
+            // }
         }
 
-        protected override Task OnClientConnectedAsync(IWebSocketContext context)
+        private async ValueTask OnClientConnectedAsync(WebSocketConnection connection, WebSocketContext context)
         {
-            Logger.Info("WebSocket connected " + context.RemoteEndPoint.ToString());
-            return Task.CompletedTask;
+            if (Settings.Default.UseAuth)
+            {
+                if (context.Session.Principal == HttpPrincipal.Anonymous)
+                {
+                    Logger.Warning($"Unauthorized WebSocket connection attempt from {connection.RemoteEndPoint}");
+                    await connection.CloseAsync(1008, "Unauthorized");
+                    return;
+                }
+            }
+            Logger.Info($"WebSocket connected {connection.RemoteEndPoint}");
+            clients.Add(connection);
         }
 
-        public static async Task<bool> SendEvent(HttpResponse payload)
+        private async ValueTask OnClientDisconnectedAsync(WebSocketConnection connection, WebSocketContext context)
+        {
+            Logger.Info($"WebSocket disconnected {connection.RemoteEndPoint}");
+            clients.Remove(connection);
+        }
+
+        public static async Task<bool> SendEvent(CustomResponse payload)
         {
             try
             {
@@ -163,13 +178,24 @@ namespace ninaAPI.WebService.V2
             return false;
         }
 
-        public async Task Send(HttpResponse payload)
+        public async Task Send(CustomResponse payload)
         {
-            foreach (IWebSocketContext context in ActiveContexts)
+            foreach (var client in clients.ToList())
             {
-                Logger.Trace("Sending to " + context.RemoteEndPoint.ToString());
-                await SendAsync(context, JsonConvert.SerializeObject(payload));
+                Logger.Trace("Sending to " + client.RemoteEndPoint.ToString());
+                await client.SendTextAsync(JsonConvert.SerializeObject(payload));
             }
+        }
+
+        public void ConfigureWebSocket(WebSocketOptions options)
+        {
+            options.OnUnknown(async (conn, ctx, msg) =>
+            {
+                OnMessageReceivedAsync(conn, ctx, msg.RawText);
+            });
+
+            options.OnConnect = OnClientConnectedAsync;
+            options.OnDisconnect = OnClientDisconnectedAsync;
         }
     }
 }

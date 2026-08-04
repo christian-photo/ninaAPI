@@ -12,6 +12,7 @@
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Navigation;
 
 namespace ninaAPI 

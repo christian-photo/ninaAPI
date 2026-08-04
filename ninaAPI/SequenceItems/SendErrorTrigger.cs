@@ -22,7 +22,10 @@ using NINA.Sequencer.SequenceItem;
 using NINA.Sequencer.Trigger;
 using NINA.Sequencer.Utility;
 using NINA.Sequencer.Validations;
+using ninaAPI.Utility.Http;
 using ninaAPI.WebService.V2;
+using ninaAPI.WebService.V3;
+using ninaAPI.WebService.V3.Websocket.Event;
 
 namespace ninaAPI.SequenceItems
 {
@@ -64,7 +67,7 @@ namespace ninaAPI.SequenceItems
         public bool Validate()
         {
             List<string> i = new List<string>();
-            if (!WebSocketV2.IsAvailable)
+            if (!WebSocketV2.IsAvailable && (AdvancedAPI.V3 is null || (AdvancedAPI.V3 as V3Api).GetEventWebSocket() is null))
             {
                 i.Add("WebSocket is not available");
             }
@@ -94,10 +97,22 @@ namespace ninaAPI.SequenceItems
         private async Task Root_FailureEvent(object arg1, SequenceEntityFailureEventArgs args)
         {
             Logger.Debug($"Detected failure event, sending to websocket: {args.Entity.Name}, {args.Exception.Message}");
-            Dictionary<string, object> data = new Dictionary<string, object>();
-            data.Add("Entity", args.Entity.Name);
-            data.Add("Error", args.Exception.Message);
-            await WebSocketV2.SendAndAddEvent("SEQUENCE-ENTITY-FAILED", data);
+
+            await WebSocketV2.SendAndAddEvent("SEQUENCE-ENTITY-FAILED", new Dictionary<string, object>
+            {
+                { "Entity", args.Entity.Name },
+                { "Error", args.Exception.Message }
+            });
+            await (AdvancedAPI.V3 as V3Api).GetEventWebSocket().SendEvent(new WebSocketEvent()
+            {
+                Channel = WebSocketChannel.Sequence,
+                Event = WebSocketEvents.SEQUENCE_ENTITY_FAILED,
+                Data = new
+                {
+                    Entity = args.Entity.Name,
+                    Error = args.Exception.Message,
+                }
+            });
         }
 
         public override void SequenceBlockTeardown()

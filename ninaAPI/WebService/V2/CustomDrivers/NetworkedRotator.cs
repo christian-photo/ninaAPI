@@ -12,20 +12,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
-using EmbedIO.WebSockets;
 using Newtonsoft.Json;
 using NINA.Astrometry;
 using NINA.Core.Locale;
 using NINA.Core.Utility;
 using NINA.Core.Utility.WindowService;
-using NINA.Equipment.Equipment.MyRotator;
 using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.ViewModel;
-using NINA.Profile.Interfaces;
+using ninaAPI.Properties;
+using ninaAPI.Utility;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
+using SimpleW.Modules;
 
 namespace ninaAPI.WebService.V2.CustomDrivers
 {
@@ -240,9 +241,9 @@ namespace ninaAPI.WebService.V2.CustomDrivers
         public static event EventHandler MoveFinished;
     }
 
-    public class NetworkedRotatorSocket : WebSocketModule
+    public class NetworkedRotatorSocket : IWebSocket
     {
-        public NetworkedRotatorSocket(string urlPath) : base(urlPath, true)
+        public NetworkedRotatorSocket()
         {
             NetworkedRotator.MoveRequested += NetworkedRotator_MoveRequested;
             NetworkedRotator.MoveFinished += NetworkedRotator_RotationCompleted;
@@ -279,36 +280,37 @@ namespace ninaAPI.WebService.V2.CustomDrivers
 
         private NetworkedRotator rotator;
 
+        private readonly ThreadSafeList<WebSocketConnection> clients = new();
+
         private async void NetworkedRotator_MoveRequested(object sender, object _)
         {
             rotator = sender as NetworkedRotator;
-            foreach (IWebSocketContext context in ActiveContexts)
+            foreach (WebSocketConnection client in clients.ToList())
             {
-                await SendAsync(context, makeRotationResponse());
+                await client.SendTextAsync(makeRotationResponse());
             }
         }
 
         private async void NetworkedRotator_RotationCompleted(object sender, object _)
         {
             rotator = null;
-            foreach (IWebSocketContext context in ActiveContexts)
+            foreach (WebSocketConnection client in clients.ToList())
             {
-                await SendAsync(context, makeRotationCompletedResponse());
+                await client.SendTextAsync(makeRotationCompletedResponse());
             }
         }
 
-        protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
+        private async ValueTask OnMessageReceivedAsync(WebSocketConnection connection, WebSocketContext context, string text)
         {
-            string message = Encoding.GetString(buffer);
-            if (message.Equals("get-target-position"))
+            if (text.Equals("get-target-position"))
             {
-                await SendAsync(context, rotator is null ? makeRotationRequestedResponse() : makeRotationResponse());
+                await connection.SendTextAsync(rotator is null ? makeRotationRequestedResponse() : makeRotationResponse());
             }
-            else if (message.Equals("rotation-completed"))
+            else if (text.Equals("rotation-completed"))
             {
                 if (rotator is null)
                 {
-                    await SendAsync(context, makeRotationCompletedResponse());
+                    await connection.SendTextAsync(makeRotationCompletedResponse());
                 }
                 else
                 {
@@ -317,6 +319,38 @@ namespace ninaAPI.WebService.V2.CustomDrivers
                     rotator = null;
                 }
             }
+        }
+
+        public void ConfigureWebSocket(WebSocketOptions options)
+        {
+            options.OnUnknown(async (conn, ctx, msg) =>
+            {
+                await OnMessageReceivedAsync(conn, ctx, msg.RawText);
+            });
+
+            options.OnConnect = OnClientConnectedAsync;
+            options.OnDisconnect = OnClientDisconnectedAsync;
+        }
+
+        private async ValueTask OnClientDisconnectedAsync(WebSocketConnection connection, WebSocketContext context)
+        {
+            Logger.Info("Networked Rotator WebSocket disconnected " + connection.RemoteEndPoint.ToString());
+            clients.Remove(connection);
+        }
+
+        private async ValueTask OnClientConnectedAsync(WebSocketConnection connection, WebSocketContext context)
+        {
+            if (Settings.Default.UseAuth)
+            {
+                if (context.Session.Principal == HttpPrincipal.Anonymous)
+                {
+                    Logger.Warning($"Unauthorized WebSocket connection attempt from {connection.RemoteEndPoint}");
+                    await connection.CloseAsync(1008, "Unauthorized");
+                    return;
+                }
+            }
+            Logger.Info("Networked Rotator WebSocket connected " + connection.RemoteEndPoint.ToString());
+            clients.Add(connection);
         }
     }
 }

@@ -13,8 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using NINA.Astrometry.Interfaces;
@@ -36,19 +34,33 @@ using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.Utility;
 using ninaAPI.WebService;
 using Settings = ninaAPI.Properties.Settings;
+using ninaAPI.WebService.V2;
+using ninaAPI.WebService.V3;
+using System.Runtime.CompilerServices;
+using ninaAPI.WebService.Interfaces;
+using NINA.Sequencer.Logic;
+using Microsoft.Extensions.DependencyInjection;
+using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using System.Security;
+using ninaAPI.WebService.V3.Equipment.Camera;
 
 namespace ninaAPI
 {
     [Export(typeof(IPluginManifest))]
     public class AdvancedAPI : PluginBase, INotifyPropertyChanged
     {
-        public static NINAControls Controls;
-        public static API Server;
+        public static IMediatorContainer Controls { get; private set; }
+        public static WebApiServer Server;
 
         public static string PluginId { get; private set; }
         private static AdvancedAPI instance;
 
         private Communicator communicator;
+        private ServiceCollection services;
+
+        private readonly ApiProcessMediator processMediator;
+        private readonly ISerializerService serializer;
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -81,7 +93,9 @@ namespace ninaAPI
                            IDomeFollower domeFollower,
                            ITwilightCalculator twilightCalculator,
                            INighttimeCalculator nighttimeCalculator,
-                           IWindowServiceFactory windowFactory)
+                           IWindowServiceFactory windowFactory,
+                           IMeridianFlipVMFactory meridianFlipVMFactory,
+                           ISymbolBroker symbolBroker)
         {
 #if WINDOWS
             Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri("pack://application:,,,/ninaAPI;component/WebService/V2/CustomDrivers/RotatorDataTemplate.xaml") });
@@ -89,36 +103,75 @@ namespace ninaAPI
             PluginId = this.Identifier;
             instance = this;
 
-            Controls = new NINAControls()
-            {
-                Camera = camera,
-                Mount = telescope,
-                Focuser = focuser,
-                FilterWheel = filterWheel,
-                Guider = guider,
-                Rotator = rotator,
-                FlatDevice = flatDevice,
-                Dome = dome,
-                Switch = switches,
-                SafetyMonitor = safety,
-                Imaging = imaging,
-                ImageHistory = history,
-                Profile = profile,
-                Sequence = sequence,
-                StatusMediator = statusMediator,
-                Application = application,
-                ImageDataFactory = imageDataFactory,
-                AutoFocusFactory = AFFactory,
-                ImageSaveMediator = saveMediator,
-                Weather = weather,
-                PlateSolver = platesolver,
-                MessageBroker = broker,
-                FramingAssistant = framing,
-                DomeFollower = domeFollower,
-                TwilightCalculator = twilightCalculator,
-                NighttimeCalculator = nighttimeCalculator,
-                WindowFactory = windowFactory,
-            };
+            Controls = new NINAControls(
+                camera,
+                telescope,
+                focuser,
+                filterWheel,
+                guider,
+                rotator,
+                flatDevice,
+                dome,
+                switches,
+                safety,
+                imaging,
+                history,
+                profile,
+                sequence,
+                statusMediator,
+                application,
+                imageDataFactory,
+                AFFactory,
+                saveMediator,
+                weather,
+                platesolver,
+                broker,
+                framing,
+                domeFollower,
+                twilightCalculator,
+                nighttimeCalculator,
+                windowFactory,
+                meridianFlipVMFactory,
+                symbolBroker
+            );
+
+            services = new ServiceCollection();
+            services.AddSingleton(camera);
+            services.AddSingleton(telescope);
+            services.AddSingleton(focuser);
+            services.AddSingleton(filterWheel);
+            services.AddSingleton(guider);
+            services.AddSingleton(rotator);
+            services.AddSingleton(flatDevice);
+            services.AddSingleton(dome);
+            services.AddSingleton(switches);
+            services.AddSingleton(safety);
+            services.AddSingleton(imaging);
+            services.AddSingleton(history);
+            services.AddSingleton(profile);
+            services.AddSingleton(sequence);
+            services.AddSingleton(statusMediator);
+            services.AddSingleton(application);
+            services.AddSingleton(imageDataFactory);
+            services.AddSingleton(AFFactory);
+            services.AddSingleton(saveMediator);
+            services.AddSingleton(weather);
+            services.AddSingleton(platesolver);
+            services.AddSingleton(broker);
+            services.AddSingleton(framing);
+            services.AddSingleton(domeFollower);
+            services.AddSingleton(twilightCalculator);
+            services.AddSingleton(nighttimeCalculator);
+            services.AddSingleton(windowFactory);
+            services.AddSingleton(meridianFlipVMFactory);
+            services.AddSingleton(symbolBroker);
+
+            processMediator = new ApiProcessMediator();
+            serializer = SerializerFactory.GetSerializer();
+
+            services.AddSingleton(processMediator);
+            services.AddSingleton(serializer);
+            services.AddSingleton(new CaptureMediator(camera, filterWheel, profile, imaging, saveMediator, statusMediator, processMediator));
 
             if (Settings.Default.UpdateSettings)
             {
@@ -127,45 +180,76 @@ namespace ninaAPI
                 CoreUtil.SaveSettings(Settings.Default);
             }
 
-            PluginSettings = new PluginOptionsAccessor(Controls.Profile, Guid.Parse(this.Identifier));
-            Controls.Profile.ProfileChanged += ProfileChanged;
+            SimpleW.Observability.Log.SetSink((entry) => Logger.Info(entry.Message, entry.Source));
+
+            PluginSettings = new PluginOptionsAccessor(profile, Guid.Parse(this.Identifier));
+            profile.ProfileChanged += ProfileChanged;
 
             UpdateDefaultPortCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
             {
-                Port = CachedPort;
-                CachedPort = Port; // This may look useless, but that way the visibility only changes when cachedPort changes and not when the user enters a new port
+                PreferredPort = ActualPort;
+                ActualPort = PreferredPort; // This may look useless, but that way the visibility only changes when cachedPort changes and not when the user enters a new port
             });
+
+            using (ServiceProvider provider = services.BuildServiceProvider())
+            {
+                V2Api.StartWatchers();
+                V3Api.StartWatchers(provider); // This has to be done before the API is started because the event socket needs to be initialized
+            }
 
             if (APIEnabled)
             {
-                CachedPort = CoreUtility.GetNearestAvailablePort(Port);
-                Server = new API(CachedPort);
-                Server.Start();
+                RunApi();
                 ShowNotificationIfPortChanged();
             }
 
             communicator = new Communicator();
 
             SetHostNames();
-            API.StartWatchers();
+        }
+
+        public static IHttpApi V3 { get; private set; }
+        public static IHttpApi V2 { get; private set; }
+
+        private void RunApi()
+        {
+            ServiceProvider provider = services.BuildServiceProvider();
+            ActualPort = NetworkUtility.GetNearestAvailablePort(PreferredPort);
+            Server = new WebApiServer(ActualPort);
+            if (SelectedApiOption == "V3")
+            {
+                V3 ??= new V3Api();
+                Server.Start(provider, V3).ConfigureAwait(false);
+            }
+            else if (SelectedApiOption == "V2")
+            {
+                V2 ??= new V2Api();
+                Server.Start(provider, V2).ConfigureAwait(false);
+            }
+            else if (SelectedApiOption == "Both")
+            {
+                V2 ??= new V2Api();
+                V3 ??= new V3Api();
+                Server.Start(provider, V2, V3).ConfigureAwait(false);
+            }
         }
 
         private void ProfileChanged(object sender, EventArgs e)
         {
             // Raise the event that this profile specific value has been changed due to the profile switch
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
+            RaisePropertyChanged(nameof(PreferredPort));
         }
 
-        public static int GetCachedPort()
+        public static int GetActualPort()
         {
-            return instance.CachedPort;
+            return instance.ActualPort;
         }
 
         private void ShowNotificationIfPortChanged()
         {
-            if (CachedPort != Port)
+            if (ActualPort != PreferredPort)
             {
-                Notification.ShowInformation("Advanced API launched on a different port: " + CachedPort);
+                Notification.ShowInformation("Advanced API launched on a different port: " + ActualPort);
             }
         }
 
@@ -174,30 +258,25 @@ namespace ninaAPI
             Server?.Stop();
             Server = null;
 
-            API.StopWatchers();
+            V2Api.StopWatchers();
+            V3Api.StopWatchers();
             communicator.Dispose();
-            if (Directory.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}")))
-            {
-                Retry.Do(() => Directory.Delete(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}"), true), TimeSpan.FromMilliseconds(50), 3);
-            }
-            if (File.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png")))
-            {
-                Retry.Do(() => File.Delete(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png")), TimeSpan.FromMilliseconds(50), 3);
-            }
+
+            FileSystemHelper.Cleanup();
             return base.Teardown();
         }
 
         public CommunityToolkit.Mvvm.Input.RelayCommand UpdateDefaultPortCommand { get; set; }
 
-        private int cachedPort = -1;
-        public int CachedPort
+        private int actualPort = -1;
+        public int ActualPort
         {
-            get => cachedPort;
+            get => actualPort;
             set
             {
-                cachedPort = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CachedPort)));
-                PortVisibility = ((CachedPort != Port) && APIEnabled) ? Visibility.Visible : Visibility.Hidden;
+                actualPort = value;
+                RaisePropertyChanged();
+                PortVisibility = ((ActualPort != PreferredPort) && APIEnabled) ? Visibility.Visible : Visibility.Hidden;
                 SetHostNames();
             }
         }
@@ -209,7 +288,7 @@ namespace ninaAPI
             set
             {
                 portVisibility = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PortVisibility)));
+                RaisePropertyChanged();
             }
         }
 
@@ -220,12 +299,12 @@ namespace ninaAPI
             {
                 Settings.Default.ProfileDependentPort = value;
                 CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ProfileDependentPort)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(PreferredPort));
             }
         }
 
-        public int Port
+        public int PreferredPort
         {
             get => ProfileDependentPort ? PluginSettings.GetValueInt32("Port", Settings.Default.Port) : Settings.Default.Port;
             set
@@ -239,7 +318,7 @@ namespace ninaAPI
                     Settings.Default.Port = value;
                     CoreUtil.SaveSettings(Settings.Default);
                 }
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port)));
+                RaisePropertyChanged();
             }
         }
 
@@ -253,38 +332,131 @@ namespace ninaAPI
             }
         }
 
-        public bool APIEnabled
+        public int ThumbnailLongAxis
         {
-            get => Settings.Default.APIEnabled;
+            get => Settings.Default.ThumbnailLongAxis;
             set
             {
-                Settings.Default.APIEnabled = value;
-                CoreUtil.SaveSettings(Settings.Default);
-                if (value)
+                if (value > 1)
                 {
-                    CachedPort = CoreUtility.GetNearestAvailablePort(Port);
-                    Server = new API(CachedPort);
-                    Server.Start();
-                    Notification.ShowSuccess("API successfully started");
-                    ShowNotificationIfPortChanged();
-                }
-                else
-                {
-                    Server.Stop();
-                    Server = null;
-                    CachedPort = -1;
-                    Notification.ShowSuccess("API successfully stopped");
+                    Settings.Default.ThumbnailLongAxis = value;
+                    CoreUtil.SaveSettings(Settings.Default);
                 }
             }
         }
 
-        public bool UseV2
+        public bool EnableTelemetry
         {
-            get => Settings.Default.StartV2;
+            get => Settings.Default.EnableTelemetry;
             set
             {
-                Settings.Default.StartV2 = value;
+                Settings.Default.EnableTelemetry = value;
                 CoreUtil.SaveSettings(Settings.Default);
+                if (Server?.Server != null)
+                {
+                    if (value)
+                    {
+                        Server.Server.EnableTelemetry();
+                    }
+                    else
+                    {
+                        Server.Server.DisableTelemetry();
+                    }
+                }
+            }
+        }
+
+        public bool UseSSL
+        {
+            get => Settings.Default.UseSSL;
+            set
+            {
+                Settings.Default.UseSSL = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                RaisePropertyChanged();
+            }
+        }
+
+        public string SSLCertificatePath
+        {
+            get => Settings.Default.SSLCertificatePath;
+            set
+            {
+                Settings.Default.SSLCertificatePath = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public string SSLPassword
+        {
+            get => Settings.Default.SSLPassword;
+            set
+            {
+                Settings.Default.SSLPassword = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public bool UseAuth
+        {
+            get => Settings.Default.UseAuth;
+            set
+            {
+                Settings.Default.UseAuth = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                RaisePropertyChanged();
+            }
+        }
+
+        public string AuthUsername
+        {
+            get => Settings.Default.AuthUsername;
+            set
+            {
+                Settings.Default.AuthUsername = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public string AuthPassword
+        {
+            get => Settings.Default.AuthPassword;
+            set
+            {
+                Settings.Default.AuthPassword = value;
+                CoreUtil.SaveSettings(Settings.Default);
+            }
+        }
+
+        public bool APIEnabled => SelectedApiOption != "Off";
+
+        public List<string> ApiOptions { get; } = ["Both", "V2", "V3", "Off"];
+        public string SelectedApiOption
+        {
+            get => Settings.Default.SelectedApiOption;
+            set
+            {
+                if (value == SelectedApiOption)
+                    return;
+
+                Settings.Default.SelectedApiOption = value;
+                CoreUtil.SaveSettings(Settings.Default);
+                RaisePropertyChanged();
+
+                Server?.Stop();
+                Server = null;
+
+                if (value == "Off")
+                {
+                    ActualPort = -1;
+                    Notification.ShowSuccess("API successfully stopped");
+                }
+                else
+                {
+                    RunApi();
+                    Notification.ShowSuccess("API successfully started");
+                    ShowNotificationIfPortChanged();
+                }
             }
         }
 
@@ -298,46 +470,26 @@ namespace ninaAPI
             }
         }
 
-        public string LocalAdress
-        {
-            get => Settings.Default.LocalAdress;
-            set
-            {
-                Settings.Default.LocalAdress = value;
-                CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalAdress)));
-            }
-        }
-
-        public string LocalNetworkAdress
-        {
-            get => Settings.Default.LocalNetworkAdress;
-            set
-            {
-                Settings.Default.LocalNetworkAdress = value;
-                CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalNetworkAdress)));
-            }
-        }
-
-        public string HostAdress
-        {
-            get => Settings.Default.HostAdress;
-            set
-            {
-                Settings.Default.HostAdress = value;
-                CoreUtil.SaveSettings(Settings.Default);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HostAdress)));
-            }
-        }
+        public string LocalAddress { get; set; }
+        public string LocalNetworkAddress { get; set; }
+        public string HostAddress { get; set; }
 
         private void SetHostNames()
         {
-            Dictionary<string, string> dict = CoreUtility.GetLocalNames();
+            string api = SelectedApiOption == "Both" || SelectedApiOption == "V3" ? "/v3/api" : "/v2/api";
+            string protocol = UseSSL ? "https" : "http";
+            LocalAddress = $"{protocol}://{LocalAddresses.LocalHostName}:{ActualPort}{api}";
+            LocalNetworkAddress = $"{protocol}://{LocalAddresses.IPAddress}:{ActualPort}{api}";
+            HostAddress = $"{protocol}://{LocalAddresses.HostName}:{ActualPort}{api}";
 
-            LocalAdress = $"http://{dict["LOCALHOST"]}:{CachedPort}/v2/api";
-            LocalNetworkAdress = $"http://{dict["IPADRESS"]}:{CachedPort}/v2/api";
-            HostAdress = $"http://{dict["HOSTNAME"]}:{CachedPort}/v2/api";
+            RaisePropertyChanged(nameof(LocalAddress));
+            RaisePropertyChanged(nameof(LocalNetworkAddress));
+            RaisePropertyChanged(nameof(HostAddress));
+        }
+
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

@@ -10,6 +10,8 @@
 #endregion "copyright"
 
 
+using ninaAPI.Utility.Log;
+
 namespace ninaAPI.WebService.V2
 {
     public class NinaLogWatcher : INinaWatcher

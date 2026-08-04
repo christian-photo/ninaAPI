@@ -9,10 +9,10 @@
 
 #endregion "copyright"
 
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
-using EmbedIO.WebSockets;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NINA.Astrometry;
 using NINA.Core.Enum;
@@ -23,11 +23,12 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.Sequencer.SequenceItem.Platesolving;
 using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Telescope;
+using ninaAPI.Properties;
 using ninaAPI.Utility;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using ninaAPI.Utility.Http;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
+using SimpleW.Modules;
 
 namespace ninaAPI.WebService.V2
 {
@@ -95,10 +96,10 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/equipment/mount/info")]
+        [Route("GET", "/equipment/mount/info")]
         public void MountInfo()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -111,13 +112,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/home")]
+        [Route("GET", "/equipment/mount/home")]
         public void MountHome()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -151,13 +152,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/tracking")]
-        public void MountTrackingMode([QueryField] int mode)
+        [Route("GET", "/equipment/mount/tracking")]
+        public void MountTrackingMode(int mode)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -199,13 +200,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/park")]
+        [Route("GET", "/equipment/mount/park")]
         public void MountPark()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -235,13 +236,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/unpark")]
+        [Route("GET", "/equipment/mount/unpark")]
         public void MountUnpark()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -267,13 +268,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/flip")]
+        [Route("GET", "/equipment/mount/flip")]
         public void MountFlip()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -299,13 +300,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/slew")]
-        public async Task MountSlew([QueryField] double ra, [QueryField] double dec, [QueryField] bool waitForResult, [QueryField] bool center, [QueryField] bool rotate, [QueryField] double rotationAngle)
+        [Route("GET", "/equipment/mount/slew")]
+        public async Task MountSlew(double ra, double dec, bool waitForResult = false, bool center = false, bool rotate = false, double rotationAngle = 0)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -383,15 +384,15 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
         private static CancellationTokenSource SlewCenterToken;
 
-        [Route(HttpVerbs.Get, "/equipment/mount/slew/stop")]
+        [Route("GET", "/equipment/mount/slew/stop")]
         public void MountStopSlew()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -414,13 +415,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/set-park-position")]
+        [Route("GET", "/equipment/mount/set-park-position")]
         public async Task MountSetPark()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -450,13 +451,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/mount/sync")]
-        public async Task MountSync([QueryField] double ra, [QueryField] double dec)
+        [Route("GET", "/equipment/mount/sync")]
+        public async Task MountSync(double ra = -1, double dec = -1)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -472,7 +473,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    if (!HttpContext.IsParameterOmitted(nameof(ra)) && !HttpContext.IsParameterOmitted(nameof(dec)))
+                    if (!Request.IsParameterOmitted(nameof(ra)) && !Request.IsParameterOmitted(nameof(dec)))
                     {
                         await mount.Sync(new Coordinates(Angle.ByDegree(ra), Angle.ByDegree(dec), Epoch.J2000));
                         response.Response = "Synced";
@@ -498,11 +499,11 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 
-    public class MountAxisMoveSocket : WebSocketModule
+    public class MountAxisMoveSocket : IWebSocket
     {
         private static DateTime eastTimer;
         private double eastRate;
@@ -515,19 +516,13 @@ namespace ninaAPI.WebService.V2
 
         private static object _timerLock = new object();
 
-        public MountAxisMoveSocket(string urlPath) : base(urlPath, true)
+        private async Task OnMessageReceivedAsync(WebSocketConnection connection, WebSocketContext context, string text)
         {
-
-        }
-
-        protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
-        {
-            HttpResponse response = new HttpResponse();
-            response.Type = HttpResponse.TypeSocket;
+            CustomResponse response = new CustomResponse();
+            response.Type = CustomResponse.TypeSocket;
             try
             {
-                var message = Encoding.GetString(buffer);
-                var json = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(message);
+                var json = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(text);
                 string direction = json["direction"].ToString().ToLower();
                 double rate = double.Parse(json["rate"].ToString());
 
@@ -652,7 +647,28 @@ namespace ninaAPI.WebService.V2
             {
                 response = CoreUtility.CreateErrorTable(new Error(ex.Message, 400));
             }
-            await context.WebSocket.SendAsync(Encoding.GetBytes(System.Text.Json.JsonSerializer.Serialize(response)), true);
+            await connection.SendTextAsync(System.Text.Json.JsonSerializer.Serialize(response));
+        }
+
+        public void ConfigureWebSocket(WebSocketOptions options)
+        {
+            options.OnUnknown(async (conn, ctx, msg) =>
+            {
+                await OnMessageReceivedAsync(conn, ctx, msg.RawText);
+            });
+
+            options.OnConnect = async (conn, ctx) =>
+            {
+                if (Settings.Default.UseAuth)
+                {
+                    if (ctx.Session.Principal == HttpPrincipal.Anonymous)
+                    {
+                        Logger.Warning($"Unauthorized WebSocket connection attempt from {conn.RemoteEndPoint}");
+                        await conn.CloseAsync(1008, "Unauthorized");
+                        return;
+                    }
+                }
+            };
         }
     }
 }

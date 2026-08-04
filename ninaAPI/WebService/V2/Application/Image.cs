@@ -14,16 +14,13 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Astrometry;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
+using ninaAPI.Utility.Http;
 using NINA.Image.FileFormat.FITS;
 using NINA.Image.Interfaces;
 using NINA.PlateSolving;
@@ -31,6 +28,7 @@ using NINA.PlateSolving.Interfaces;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using ninaAPI.Utility;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
@@ -136,7 +134,7 @@ namespace ninaAPI.WebService.V2
                 PreparedImage = e.RenderedImage;
             }
 
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            CustomResponse response = new CustomResponse() { Type = CustomResponse.TypeSocket };
 
             response.Response = new Dictionary<string, object>() { { "Event", "IMAGE-PREPARED" } };
 
@@ -149,9 +147,9 @@ namespace ninaAPI.WebService.V2
                 return;
             lock (imageLock)
             {
-                string thumbnailFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"thumbnails-{Environment.ProcessId}");
+                string thumbnailFile = FileSystemHelper.GetThumbnailFolder();
                 Directory.CreateDirectory(thumbnailFile);
-                thumbnailFile = Path.Combine(thumbnailFile, $"{Images.Count - 1}.jpg");
+                thumbnailFile = Path.Combine(thumbnailFile, $"v2-{Images.Count - 1}.jpg");
                 var img = BitmapHelper.ScaleBitmap(e.Image, 256 / e.Image.Width);
 
                 JpegBitmapEncoder encoder = new JpegBitmapEncoder();
@@ -169,13 +167,13 @@ namespace ninaAPI.WebService.V2
 
         private static async void ImageSaved(object sender, ImageSavedEventArgs e)
         {
-            HttpResponse response = new HttpResponse() { Type = HttpResponse.TypeSocket };
+            CustomResponse response = new CustomResponse() { Type = CustomResponse.TypeSocket };
 
             var r = ImageResponse.FromEvent(e);
 
             response.Response = new ImageEvent(r);
 
-            HttpResponse imageEvent = new HttpResponse() { Type = HttpResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", "IMAGE-SAVE" }, { "Time", DateTime.Now } } };
+            CustomResponse imageEvent = new CustomResponse() { Type = CustomResponse.TypeSocket, Response = new Dictionary<string, object>() { { "Event", "IMAGE-SAVE" }, { "Time", DateTime.Now } } };
 
             lock (imageLock)
             {
@@ -192,36 +190,36 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/prepared-image")]
-        public async Task GetPreparedImage([QueryField] bool resize,
-                    [QueryField] int quality,
-                    [QueryField] string size,
-                    [QueryField] double scale,
-                    [QueryField] double factor,
-                    [QueryField] double blackClipping,
-                    [QueryField] bool unlinked,
-                    [QueryField] bool debayer,
-                    [QueryField] bool autoPrepare,
-                    [QueryField] string bayerPattern)
+        [Route("GET", "/prepared-image")]
+        public async Task GetPreparedImage(bool resize = false,
+                    int quality = 80,
+                    string size = "640x480",
+                    double scale = 1,
+                    double factor = 1,
+                    double blackClipping = 0,
+                    bool unlinked = false,
+                    bool debayer = false,
+                    bool autoPrepare = false,
+                    string bayerPattern = "")
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
 
             SensorType sensor = SensorType.Monochrome;
 
-            if (HttpContext.IsParameterOmitted(nameof(factor)) || autoPrepare)
+            if (Request.IsParameterOmitted(nameof(factor)) || autoPrepare)
             {
                 factor = profile.ImageSettings.AutoStretchFactor;
             }
-            if (HttpContext.IsParameterOmitted(nameof(blackClipping)) || autoPrepare)
+            if (Request.IsParameterOmitted(nameof(blackClipping)) || autoPrepare)
             {
                 blackClipping = profile.ImageSettings.BlackClipping;
             }
-            if (HttpContext.IsParameterOmitted(nameof(unlinked)) || autoPrepare)
+            if (Request.IsParameterOmitted(nameof(unlinked)) || autoPrepare)
             {
                 unlinked = profile.ImageSettings.UnlinkedStretch;
             }
-            if (HttpContext.IsParameterOmitted(nameof(bayerPattern)) || autoPrepare)
+            if (Request.IsParameterOmitted(nameof(bayerPattern)) || autoPrepare)
             {
                 if (profile.CameraSettings.BayerPattern != BayerPatternEnum.Auto)
                 {
@@ -245,7 +243,7 @@ namespace ninaAPI.WebService.V2
                 catch (Exception)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Invalid bayer pattern", 400));
-                    HttpContext.WriteToResponse(response);
+                    Response.WriteToResponse(response);
                     return;
                 }
             }
@@ -273,7 +271,7 @@ namespace ninaAPI.WebService.V2
                 if (renderedImage is null)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("No image", 404));
-                    HttpContext.WriteToResponse(response);
+                    Response.WriteToResponse(response);
                     return;
                 }
 
@@ -306,11 +304,10 @@ namespace ninaAPI.WebService.V2
                     BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
                     encoder = BitmapHelper.GetEncoder(image, quality);
                 }
-                HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpeg";
                 using (MemoryStream memory = new MemoryStream())
                 {
                     encoder.Save(memory);
-                    await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
+                    await Response.Body(memory.ToArray(), quality == -1 ? "image/png" : "image/jpeg").SendAsync();
                     return;
                 }
             }
@@ -320,43 +317,42 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/image/{index}")]
+        [Route("GET", "/image/:index")]
         public async Task GetImage(int index,
-                    [QueryField] bool resize,
-                    [QueryField] int quality,
-                    [QueryField] string size,
-                    [QueryField] double scale,
-                    [QueryField] double factor,
-                    [QueryField] double blackClipping,
-                    [QueryField] bool unlinked,
-                    [QueryField] bool stream,
-                    [QueryField] bool debayer,
-                    [QueryField] string bayerPattern,
-                    [QueryField] bool autoPrepare,
-                    [QueryField] string imageType,
-                    [QueryField] bool raw_fits)
+                    bool resize = false,
+                    int quality = 80,
+                    string size = "640x480",
+                    double scale = 1,
+                    double factor = 1,
+                    double blackClipping = 0,
+                    bool unlinked = false,
+                    bool debayer = false,
+                    string bayerPattern = "",
+                    bool autoPrepare = false,
+                    string imageType = "SNAPSHOT",
+                    bool raw_fits = false)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
 
             SensorType sensor = SensorType.Monochrome;
 
-            if (HttpContext.IsParameterOmitted(nameof(factor)) || autoPrepare)
+            if (Request.IsParameterOmitted(nameof(factor)) || autoPrepare)
             {
                 factor = profile.ImageSettings.AutoStretchFactor;
             }
-            if (HttpContext.IsParameterOmitted(nameof(blackClipping)) || autoPrepare)
+            if (Request.IsParameterOmitted(nameof(blackClipping)) || autoPrepare)
             {
                 blackClipping = profile.ImageSettings.BlackClipping;
             }
-            if (HttpContext.IsParameterOmitted(nameof(unlinked)) || autoPrepare)
+            if (Request.IsParameterOmitted(nameof(unlinked)) || autoPrepare)
             {
                 unlinked = profile.ImageSettings.UnlinkedStretch;
             }
-            if (HttpContext.IsParameterOmitted(nameof(bayerPattern)) || autoPrepare)
+            if (Request.IsParameterOmitted(nameof(bayerPattern)) || autoPrepare)
             {
                 if (profile.CameraSettings.BayerPattern != BayerPatternEnum.Auto)
                 {
@@ -380,7 +376,7 @@ namespace ninaAPI.WebService.V2
                 catch (Exception)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("Invalid bayer pattern", 400));
-                    HttpContext.WriteToResponse(response);
+                    Response.WriteToResponse(response);
                     return;
                 }
             }
@@ -406,7 +402,7 @@ namespace ninaAPI.WebService.V2
                 IEnumerable<ImageResponse> points;
                 lock (ImageWatcher.imageLock)
                 {
-                    points = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
+                    points = Request.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
                 }
 
                 if (!points.Any())
@@ -421,9 +417,9 @@ namespace ninaAPI.WebService.V2
                 {
                     ImageResponse p = points.ElementAt(index); // Get the history point at the specified index for the image
 
-                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, p.IsBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
+                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, p.IsBayered), TimeSpan.FromMilliseconds(200), 10);
 
-                    if (HttpContext.IsParameterOmitted(nameof(raw_fits)))
+                    if (Request.IsParameterOmitted(nameof(raw_fits)))
                     {
                         IRenderedImage renderedImage = imageData.RenderImage();
 
@@ -433,42 +429,27 @@ namespace ninaAPI.WebService.V2
                         }
                         renderedImage = await renderedImage.Stretch(factor, blackClipping, unlinked);
 
-
-                        if (stream)
+                        BitmapEncoder encoder = null;
+                        if (scale == 0 && resize)
                         {
-                            BitmapEncoder encoder = null;
-                            if (scale == 0 && resize)
-                            {
-                                BitmapSource image = BitmapHelper.ResizeBitmap(renderedImage.Image, sz);
-                                encoder = BitmapHelper.GetEncoder(image, quality);
-                            }
-                            if (scale != 0 && resize)
-                            {
-                                BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, scale);
-                                encoder = BitmapHelper.GetEncoder(image, quality);
-                            }
-                            if (!resize)
-                            {
-                                BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
-                                encoder = BitmapHelper.GetEncoder(image, quality);
-                            }
-                            HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpeg";
-                            using (MemoryStream memory = new MemoryStream())
-                            {
-                                encoder.Save(memory);
-                                await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
-                                return;
-                            }
+                            BitmapSource image = BitmapHelper.ResizeBitmap(renderedImage.Image, sz);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
                         }
-                        else
+                        if (scale != 0 && resize)
                         {
-
-                            if (scale == 0 && resize)
-                                response.Response = BitmapHelper.ResizeAndConvertBitmap(renderedImage.Image, sz, quality);
-                            if (scale != 0 && resize)
-                                response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, scale, quality);
-                            if (!resize)
-                                response.Response = BitmapHelper.ScaleAndConvertBitmap(renderedImage.Image, 1, quality);
+                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, scale);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        if (!resize)
+                        {
+                            BitmapSource image = BitmapHelper.ScaleBitmap(renderedImage.Image, 1);
+                            encoder = BitmapHelper.GetEncoder(image, quality);
+                        }
+                        using (MemoryStream memory = new MemoryStream())
+                        {
+                            encoder.Save(memory);
+                            await Response.Body(memory.ToArray(), quality == -1 ? "image/png" : "image/jpeg").SendAsync();
+                            return;
                         }
                     }
                     else
@@ -506,24 +487,24 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/prepared-image/solve")]
+        [Route("GET", "/prepared-image/solve")]
         public async Task SolvePreparedImage()
         {
             if (ImageWatcher.PreparedImage is null)
             {
-                HttpContext.WriteToResponse(CoreUtility.CreateErrorTable(new Error("Image not available", 404)));
+                Response.WriteToResponse(CoreUtility.CreateErrorTable(new Error("Image not available", 404)));
                 return;
             }
             await SolveImage(-1, string.Empty, ImageWatcher.PreparedImage);
         }
 
-        [Route(HttpVerbs.Get, "/image/{index}/solve")]
-        public async Task SolveImage(int index, [QueryField] string imageType, object image = null)
+        [Route("GET", "/image/:index/solve")]
+        public async Task SolveImage(int index, string imageType = "", object image = null)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -533,25 +514,25 @@ namespace ninaAPI.WebService.V2
                     IEnumerable<ImageResponse> points;
                     lock (ImageWatcher.imageLock)
                     {
-                        points = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
+                        points = Request.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
                     }
 
                     if (!points.Any())
                     {
                         response = CoreUtility.CreateErrorTable(new Error("No images available", 400));
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
                     else if (index >= points.Count() || index < 0)
                     {
                         response = CoreUtility.CreateErrorTable(CommonErrors.INDEX_OUT_OF_RANGE);
-                        HttpContext.WriteToResponse(response);
+                        Response.WriteToResponse(response);
                         return;
                     }
                     else
                     {
                         ImageResponse p = points.ElementAt(index);
-                        IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, p.IsBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
+                        IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(p.GetPath(), 16, p.IsBayered), TimeSpan.FromMilliseconds(200), 10);
                         img = imageData.RenderImage();
                     }
                 }
@@ -581,7 +562,7 @@ namespace ninaAPI.WebService.V2
                 };
                 IImageSolver captureSolver = platesolver.GetImageSolver(platesolver.GetPlateSolver(settings), platesolver.GetBlindSolver(settings));
 
-                plateSolveResult = await captureSolver.Solve(img.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), HttpContext.CancellationToken);
+                plateSolveResult = await captureSolver.Solve(img.RawImageData, solverParameter, AdvancedAPI.Controls.StatusMediator.GetStatus(), Session.RequestAborted);
 
                 response.Response = plateSolveResult;
             }
@@ -591,19 +572,19 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
 
         }
 
-        [Route(HttpVerbs.Get, "/image/{index}/prefix")]
-        public void AddPrefix(int index, [QueryField(true)] string prefix, [QueryField] string imageType)
+        [Route("GET", "/image/:index/prefix")]
+        public void AddPrefix(int index, string prefix, string imageType = "")
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             IEnumerable<ImageResponse> points;
             lock (ImageWatcher.imageLock)
             {
-                points = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
+                points = Request.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
             }
 
             if (!points.Any())
@@ -634,18 +615,18 @@ namespace ninaAPI.WebService.V2
                 }
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/image-history")]
-        public void GetHistoryCount([QueryField] bool all, [QueryField] int index, [QueryField] bool count, [QueryField] string imageType)
+        [Route("GET", "/image-history")]
+        public void GetHistoryCount(bool all = false, int index = -1, bool count = false, string imageType = "")
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
-                var images = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
-                index = HttpContext.IsParameterOmitted(nameof(index)) ? images.Count() - 1 : index;
+                var images = Request.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
+                index = Request.IsParameterOmitted(nameof(index)) ? images.Count() - 1 : index;
                 if (count)
                 {
                     response.Response = images.Count();
@@ -670,14 +651,14 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/image/thumbnail/{index}")]
+        [Route("GET", "/image/thumbnail/:index")]
         public async Task GetImage(int index,
-                    [QueryField] string imageType)
+                    string imageType = "")
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             IProfile profile = AdvancedAPI.Controls.Profile.ActiveProfile;
 
             try
@@ -691,18 +672,13 @@ namespace ninaAPI.WebService.V2
                     string res;
                     lock (ImageWatcher.imageLock)
                     {
-                        var images = HttpContext.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
+                        var images = Request.IsParameterOmitted(nameof(imageType)) ? ImageWatcher.Images : ImageWatcher.Images.Where(x => x.ImageType.Equals(imageType));
 
                         var i = ImageWatcher.Images.IndexOf(images.ElementAt(index));
-                        res = ImageWatcher.Thumbnails.Where(x => x.Key == i).First().Value;
-                        HttpContext.Response.ContentType = "image/jpeg";
+                        res = ImageWatcher.Thumbnails.First(x => x.Key == i).Value;
                     }
 
-                    using (FileStream fs = File.OpenRead(res))
-                    {
-                        await fs.CopyToAsync(HttpContext.Response.OutputStream);
-                        return;
-                    }
+                    await Response.Body(File.ReadAllBytes(res), "image/jpeg").SendAsync();
                 }
             }
             catch (Exception ex)
@@ -711,7 +687,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 }

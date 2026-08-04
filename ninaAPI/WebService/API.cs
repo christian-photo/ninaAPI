@@ -1,7 +1,7 @@
 #region "copyright"
 
 /*
-    Copyright © 2025 Christian Palm (christian@palm-family.de)
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,168 +9,174 @@
 
 #endregion "copyright"
 
-using EmbedIO;
-using EmbedIO.WebApi;
+using Microsoft.Extensions.DependencyInjection;
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
 using ninaAPI.Properties;
-using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.Interfaces;
 using ninaAPI.WebService.V2;
-using ninaAPI.WebService.V2.CustomDrivers;
+using SimpleW;
+using SimpleW.Helper.BasicAuth;
+using SimpleW.Helper.DependencyInjection;
+using SimpleW.Modules;
+using SimpleW.Service.BasicAuth;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace ninaAPI.WebService
 {
-    public class API
+    public class WebApiServer : IWebApiServer
     {
-        public WebServer Server;
+        public SimpleWServer Server;
 
-        private Thread serverThread;
-
-        private CancellationTokenSource apiToken;
         public readonly int Port;
 
-        private static List<INinaWatcher> Watchers { get; set; } = new List<INinaWatcher>();
-
-        public API(int port)
+        public WebApiServer(int port)
         {
             Port = port;
         }
 
-        public void CreateServer()
+        private void CreateServer(ServiceProvider provider)
         {
-            Server = new WebServer(o => o
-                .WithUrlPrefix($"http://*:{Port}")
-                .WithMode(HttpListenerMode.EmbedIO))
-                .WithModule(new PreprocessRequestModule())
-                .WithWebApi("/v2/api", m => m.WithController<ControllerV2>())
-                .WithModule(new WebSocketV2("/v2/socket"))
-                .WithModule(new TPPASocket("/v2/tppa"))
-                .WithModule(new MountAxisMoveSocket("/v2/mount"))
-                .WithModule(new NetworkedFilterWheelSocket("/v2/filterwheel"))
-                .WithModule(new NetworkedRotatorSocket("/v2/rotator"));
-        }
+            var serializer = SerializerFactory.GetSerializer();
 
-        public static void StartWatchers()
-        {
-            Watchers.Add(new CameraWatcher());
-            Watchers.Add(new DomeWatcher());
-            Watchers.Add(new FilterWheelWatcher());
-            Watchers.Add(new FlatDeviceWatcher());
-            Watchers.Add(new FocuserWatcher());
-            Watchers.Add(new GuiderWatcher());
-            Watchers.Add(new MountWatcher());
-            Watchers.Add(new RotatorWatcher());
-            Watchers.Add(new SafetyWatcher());
-            Watchers.Add(new SwitchWatcher());
-            Watchers.Add(new WeatherWatcher());
-            Watchers.Add(new ImageWatcher());
-            Watchers.Add(new NinaLogWatcher());
-            Watchers.Add(new LiveStackWatcher());
-            Watchers.Add(new ProfileWatcher());
-            Watchers.Add(new TSWatcher());
-            Watchers.Add(new SequenceWatcher());
-
-            foreach (INinaWatcher watcher in Watchers)
+            Server = new SimpleWServer(IPAddress.Any, Port);
+            if (Settings.Default.UseAccessControlHeader)
             {
-                watcher.StartWatchers();
+                Server.UseCorsModule(options =>
+                {
+                    options.AllowAnyOrigin = true;
+                    options.AllowCredentials = false;
+                    options.AllowedMethods = "GET, POST, PUT, DELETE, OPTIONS";
+                });
             }
-        }
-
-        public static void StopWatchers()
-        {
-            Logger.Info("Stopping all event watchers");
-            foreach (INinaWatcher watcher in Watchers)
+            Server.OnStarted((server) =>
             {
-                watcher.StopWatchers();
+                Started?.Invoke(this, EventArgs.Empty);
+            });
+            Server.OnStopped((server) =>
+            {
+                Stopped?.Invoke(this, EventArgs.Empty);
+            });
+            if (Settings.Default.UseAuth)
+            {
+                if (string.IsNullOrEmpty(Settings.Default.AuthUsername) || string.IsNullOrEmpty(Settings.Default.AuthPassword))
+                {
+                    Notification.ShowWarning("Authentication is enabled but username or password is empty, disabling authentication");
+                    Logger.Warning("Authentication is enabled but username or password is empty, disabling authentication");
+                }
+                else
+                {
+                    Server.UseBasicAuthModule(options =>
+                    {
+                        options.Users = [
+                            new BasicUser(Settings.Default.AuthUsername, Settings.Default.AuthPassword)
+                        ];
+                    });
+                }
+
             }
+            if (Settings.Default.UseSSL)
+            {
+                try
+                {
+                    var cert = X509CertificateLoader.LoadPkcs12FromFile(Settings.Default.SSLCertificatePath, Settings.Default.SSLPassword);
+                    var context = new SslContext(SslProtocols.Tls12 | SslProtocols.Tls13, cert, false, false);
+                    Server.UseHttps(context);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Failed to load SSL certificate: {ex}");
+                    Notification.ShowError("Failed to load SSL certificate, please check the logs for more info");
+                }
+            }
+            Server.UseMiddleware(async (session, next) =>
+            {
+                try
+                {
+                    await next();
+                }
+                catch (HttpException ex)
+                {
+                    Logger.Error(ex.Message);
+                    await HandleHttpException(session, ex);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                    if (ex is ArgumentException || ex is ValidationException)
+                    {
+                        await HandleHttpException(session, new HttpException(HttpStatusCode.BadRequest, ex.Message));
+                    }
+                    else
+                    {
+                        await HandleHttpException(session, CommonErrors.UnknwonError(ex));
+                    }
+                }
+            });
+            Server.UseDependencyInjection(provider);
         }
 
-        public void Start()
+        private static async Task HandleHttpException(HttpSession session, HttpException exception)
+        {
+            Logger.Trace($"Handling HttpException, status code: {exception.StatusCode}, Message: {exception.Message}");
+
+            string error = HttpUtility.StatusCodeMessages.GetValueOrDefault((int)exception.StatusCode, "Unknown Error");
+
+            var serializer = SerializerFactory.GetSerializer();
+
+            await session.Response.Status((int)exception.StatusCode).Text(serializer.Serialize(new { Error = error, Message = exception.Message }), serializer.MimeType).SendAsync();
+        }
+
+        public async Task Start(ServiceProvider provider, params IHttpApi[] apis)
         {
             try
             {
-                Logger.Debug("Creating Webserver");
-                CreateServer();
-                Logger.Info("Starting Webserver");
-                if (Server != null)
+                CreateServer(provider);
+                foreach (IHttpApi api in apis)
                 {
-                    serverThread = new Thread(() => APITask(Server));
-                    serverThread.Name = "API Thread";
-                    // serverThread.SetApartmentState(ApartmentState.STA);
-                    serverThread.Start();
+                    Server = api.ConfigureServer(Server, provider);
                 }
+
+                foreach (var route in Server.Router.Routes)
+                {
+                    Logger.Trace($"Registered Route: {route.Path}, Method: {route.Method}, Host: {route.Host}");
+                }
+
+                Logger.Info("Starting web server");
+                await Server.StartAsync();
             }
             catch (Exception ex)
             {
-                Logger.Error($"failed to start web server: {ex}");
+                Logger.Error(ex);
                 Notification.ShowError("Webserver start failed, please check the logs for more info");
             }
         }
 
-        public void Stop()
+        public async Task Stop()
         {
             try
             {
-                apiToken?.Cancel();
-                Server?.Dispose();
+                await Server?.StopAsync();
                 Server = null;
                 WebSocketV2.SetUnavailable();
             }
             catch (Exception ex)
             {
-                Logger.Error($"failed to stop API: {ex}");
+                Logger.Error($"Failed to stop web server: {ex}");
             }
         }
 
-        // [STAThread]
-        private void APITask(WebServer server)
-        {
-            string ipAdress = CoreUtility.GetLocalNames()["IPADRESS"];
-            Logger.Info($"starting web server, listening at {ipAdress}:{Port}");
+        public bool IsRunning() => Server?.IsStarted ?? false;
 
-            try
-            {
-                apiToken = new CancellationTokenSource();
-                server.RunAsync(apiToken.Token).Wait();
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"failed to start web server: {ex}");
-                Notification.ShowError($"Failed to start web server, see NINA log for details");
-
-                Logger.Debug("aborting web server thread");
-            }
-        }
-    }
-
-    public class PreprocessRequestModule : WebModuleBase
-    {
-        public PreprocessRequestModule() : base("/")
-        {
-        }
-
-        protected override async Task OnRequestAsync(IHttpContext context)
-        {
-            Logger.Trace($"Request: {context.Request.Url.OriginalString}");
-            if (Settings.Default.UseAccessControlHeader)
-            {
-                context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-                context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-                context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-                if (context.Request.HttpVerb == HttpVerbs.Options)
-                {
-                    context.Response.StatusCode = 200;
-                    await context.SendStringAsync(string.Empty, "text/plain", Encoding.UTF8);
-                }
-            }
-        }
-
-        public override bool IsFinalHandler => false;
+        public event EventHandler<EventArgs> Started;
+        public event EventHandler<EventArgs> Stopped;
     }
 }

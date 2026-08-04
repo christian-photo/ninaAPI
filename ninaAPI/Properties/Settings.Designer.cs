@@ -12,7 +12,7 @@ namespace ninaAPI.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.14.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "18.6.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -50,78 +50,6 @@ namespace ninaAPI.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool APIEnabled {
-            get {
-                return ((bool)(this["APIEnabled"]));
-            }
-            set {
-                this["APIEnabled"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LocalAdress {
-            get {
-                return ((string)(this["LocalAdress"]));
-            }
-            set {
-                this["LocalAdress"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LocalNetworkAdress {
-            get {
-                return ((string)(this["LocalNetworkAdress"]));
-            }
-            set {
-                this["LocalNetworkAdress"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string HostAdress {
-            get {
-                return ((string)(this["HostAdress"]));
-            }
-            set {
-                this["HostAdress"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool StartV1 {
-            get {
-                return ((bool)(this["StartV1"]));
-            }
-            set {
-                this["StartV1"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool StartV2 {
-            get {
-                return ((bool)(this["StartV2"]));
-            }
-            set {
-                this["StartV2"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool CreateThumbnails {
             get {
                 return ((bool)(this["CreateThumbnails"]));
@@ -152,6 +80,114 @@ namespace ninaAPI.Properties {
             }
             set {
                 this["ProfileDependentPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Both")]
+        public string SelectedApiOption {
+            get {
+                return ((string)(this["SelectedApiOption"]));
+            }
+            set {
+                this["SelectedApiOption"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("256")]
+        public int ThumbnailLongAxis {
+            get {
+                return ((int)(this["ThumbnailLongAxis"]));
+            }
+            set {
+                this["ThumbnailLongAxis"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EnableTelemetry {
+            get {
+                return ((bool)(this["EnableTelemetry"]));
+            }
+            set {
+                this["EnableTelemetry"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("admin")]
+        public string AuthUsername {
+            get {
+                return ((string)(this["AuthUsername"]));
+            }
+            set {
+                this["AuthUsername"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string AuthPassword {
+            get {
+                return ((string)(this["AuthPassword"]));
+            }
+            set {
+                this["AuthPassword"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseSSL {
+            get {
+                return ((bool)(this["UseSSL"]));
+            }
+            set {
+                this["UseSSL"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SSLCertificatePath {
+            get {
+                return ((string)(this["SSLCertificatePath"]));
+            }
+            set {
+                this["SSLCertificatePath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SSLPassword {
+            get {
+                return ((string)(this["SSLPassword"]));
+            }
+            set {
+                this["SSLPassword"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseAuth {
+            get {
+                return ((bool)(this["UseAuth"]));
+            }
+            set {
+                this["UseAuth"] = value;
             }
         }
     }
