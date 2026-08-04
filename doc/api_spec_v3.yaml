@@ -548,10 +548,12 @@ paths:
                 properties:
                   CaptureId:
                     type: string
+                    description: The id and process id of the capture. This can be used to retrieve the capture later and the associated process will complete when the camera is ready to take a new picture (does not mean that the image has been written to disk yet).
                     format: guid
                     example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
                   FinalizeCaptureProcessId:
                     type: string
+                    description: The id of the process which saves the capture to disk. This process will complete when the image has been written to disk and can be retrieved using the capture id.
                     format: guid
                     example: 4dcefaca-f9d9-4e13-b2e5-6cfb6dc517f3
         "409":
@@ -584,7 +586,6 @@ paths:
         - $ref: "#/components/parameters/BayerPattern"
         - $ref: "#/components/parameters/ImageUnlinkedStretchEnabled"
         - $ref: "#/components/parameters/ImageBlackClipping"
-        - $ref: "#/components/parameters/RawConverter"
       responses:
         "200":
           description: Capture found
@@ -644,11 +645,6 @@ paths:
             type: string
             format: guid
             example: b8ff14c8-6ccd-4433-b093-d14b844a41c6
-        - in: query
-          name: raw-converter
-          required: false
-          schema:
-            $ref: "#/components/schemas/RawConverterEnum"
         - in: query
           name: star-sensitivity
           required: false
@@ -2616,7 +2612,6 @@ paths:
         - $ref: "#/components/parameters/BayerPattern"
         - $ref: "#/components/parameters/ImageUnlinkedStretchEnabled"
         - $ref: "#/components/parameters/ImageBlackClipping"
-        - $ref: "#/components/parameters/RawConverter"
       responses:
         "200":
           description: Success
@@ -2780,7 +2775,6 @@ paths:
         - $ref: "#/components/parameters/BayerPattern"
         - $ref: "#/components/parameters/ImageUnlinkedStretchEnabled"
         - $ref: "#/components/parameters/ImageBlackClipping"
-        - $ref: "#/components/parameters/RawConverter"
       responses:
         "200":
           description: Success
@@ -2817,7 +2811,6 @@ paths:
         - $ref: "#/components/parameters/BayerPattern"
         - $ref: "#/components/parameters/ImageUnlinkedStretchEnabled"
         - $ref: "#/components/parameters/ImageBlackClipping"
-        - $ref: "#/components/parameters/RawConverter"
       requestBody:
         required: true
         content:
@@ -3634,13 +3627,6 @@ components:
       required: false
       schema:
         type: number
-    RawConverter:
-      in: query
-      name: raw-converter
-      description: The raw converter to be used. If not specified, the raw converter from the profile will be used
-      required: false
-      schema:
-        $ref: "#/components/schemas/RawConverterEnum"
     BayerPattern:
       in: query
       name: bayer-pattern
@@ -7741,12 +7727,6 @@ components:
           type: number
           minimum: 0
           description: The search radius to use. The default is the search radius set in the platesolve profile settings
-        RawConverter:
-          type: string
-          enum:
-            - DCRAW
-            - FREEIMAGE
-          description: The raw converter to use. The default is the raw converter set in the camera profile settings
 
     HttpCoordinates:
       type: object

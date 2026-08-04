@@ -46,8 +46,7 @@ namespace ninaAPI.WebService.V3.Service
                 async () => await imageDataFactory.CreateFromFile(
                     imagePath,
                     bitDepth,
-                    isBayered,
-                    config.RawConverter ?? profile.CameraSettings.RawConverter
+                    isBayered
                 ),
                 TimeSpan.FromMilliseconds(200), 10
             );

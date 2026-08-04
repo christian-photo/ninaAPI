@@ -375,7 +375,6 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         [Route("GET", "/capture/:id/analysis")]
         public async Task<object> CameraCaptureStats(Guid id)
         {
-            QueryParameter<RawConverterEnum> rawConverterParameter = new QueryParameter<RawConverterEnum>("raw-converter", profile.ActiveProfile.CameraSettings.RawConverter, false);
             QueryParameter<StarSensitivityEnum> starSensitivityParameter = new QueryParameter<StarSensitivityEnum>("star-sensitivity", profile.ActiveProfile.ImageSettings.StarSensitivity, false);
             QueryParameter<NoiseReductionEnum> noiseReductionParameter = new QueryParameter<NoiseReductionEnum>("noise-reduction", profile.ActiveProfile.ImageSettings.NoiseReduction, false);
 
@@ -393,11 +392,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                 throw new HttpException(HttpStatusCode.NotFound, "Image not available");
             }
 
-            rawConverterParameter.Get(Request);
             starSensitivityParameter.Get(Request);
             noiseReductionParameter.Get(Request);
 
-            var stats = await capture.Analyze(imageDataFactory, starSensitivityParameter.Value, noiseReductionParameter.Value, rawConverterParameter.Value, Session.RequestAborted);
+            var stats = await capture.Analyze(imageDataFactory, starSensitivityParameter.Value, noiseReductionParameter.Value, Session.RequestAborted);
 
             return stats;
         }

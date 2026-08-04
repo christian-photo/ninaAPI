@@ -11,6 +11,8 @@
 
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -110,7 +112,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         public double RecordedRMS { get; private set; }
 
         private volatile PlateSolveResult plateSolveResult;
-        private volatile CaptureAnalysis captureAnalysis;
+        private volatile Dictionary<(StarSensitivityEnum, NoiseReductionEnum), CaptureAnalysis> captureAnalysis;
 
         private readonly object captureLock = new();
 
@@ -164,18 +166,19 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
             return plateSolveResult;
         }
 
-        public async Task<object> Analyze(IImageDataFactory imageFactory, StarSensitivityEnum starSensitivity, NoiseReductionEnum noiseReduction, RawConverterEnum rawConverter, CancellationToken cts)
+        public async Task<CaptureAnalysis> Analyze(IImageDataFactory imageFactory, StarSensitivityEnum starSensitivity, NoiseReductionEnum noiseReduction, CancellationToken cts)
         {
-            if (captureAnalysis is not null)
+            var key = (starSensitivity, noiseReduction);
+            if (captureAnalysis.TryGetValue(key, out CaptureAnalysis value))
             {
-                return captureAnalysis;
+                return value;
             }
+
             IImageData imageData = await Retry.Do(
                 async () => await imageFactory.CreateFromFile(
                     GetCapturePath(),
                     BitDepth,
-                    IsCaptureBayered,
-                    rawConverter
+                    IsCaptureBayered
                 ),
                 TimeSpan.FromMilliseconds(200), 10
             );
@@ -185,7 +188,7 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 
             lock (captureLock)
             {
-                captureAnalysis = new CaptureAnalysis()
+                captureAnalysis.Add(key, new CaptureAnalysis()
                 {
                     Stars = img.RawImageData.StarDetectionAnalysis.DetectedStars,
                     HFR = img.RawImageData.StarDetectionAnalysis.HFR,
@@ -200,10 +203,10 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
                     BitDepth = img.RawImageData.Properties.BitDepth,
                     Width = img.RawImageData.Properties.Width,
                     Height = img.RawImageData.Properties.Height,
-                };
+                });
             }
 
-            return captureAnalysis;
+            return captureAnalysis[key];
         }
 
         public ApiProcess GetCaptureProcess()

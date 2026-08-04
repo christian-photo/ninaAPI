@@ -12,7 +12,6 @@
 
 using System.ComponentModel.DataAnnotations;
 using NINA.Astrometry;
-using NINA.Core.Enum;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
@@ -45,8 +44,6 @@ namespace ninaAPI.WebService.V3.Application.Image
         [Range(10, double.MaxValue)]
         public double? FocalLength { get; set; }
 
-        public RawConverterEnum? RawConverter { get; set; }
-
         public HttpCoordinates? Coordinates { get; set; }
 
         [Range(0, double.MaxValue)]
@@ -62,7 +59,6 @@ namespace ninaAPI.WebService.V3.Application.Image
             Binning ??= profile.PlateSolveSettings.Binning;
             Regions ??= profile.PlateSolveSettings.Regions;
             FocalLength ??= profile.TelescopeSettings.FocalLength;
-            RawConverter ??= profile.CameraSettings.RawConverter;
             Coordinates ??= new HttpCoordinates() { RA = mount.GetCurrentPosition().RA, Dec = mount.GetCurrentPosition().Dec };
             Coordinates.Epoch = Epoch.J2000;
             PixelSize ??= camera.GetInfo().PixelSize;

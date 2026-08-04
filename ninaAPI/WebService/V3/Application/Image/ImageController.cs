@@ -120,8 +120,7 @@ namespace ninaAPI.WebService.V3.Application.Image
                     async () => await imageDataFactory.CreateFromFile(
                         p.GetPath(),
                         p.BitDepth,
-                        p.IsBayered,
-                        RawConverterEnum.FREEIMAGE
+                        p.IsBayered
                     ), TimeSpan.FromMilliseconds(200), 10
                 );
 

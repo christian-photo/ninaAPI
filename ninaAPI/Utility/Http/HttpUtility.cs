@@ -187,7 +187,6 @@ namespace ninaAPI.Utility.Http
         public QueryParameter<SensorType> BayerPattern { get; set; }
         public QueryParameter<bool> UnlinkedStretch { get; set; }
         public QueryParameter<double> BlackClipping { get; set; }
-        public QueryParameter<RawConverterEnum> RawConverter { get; set; }
 
 
         private ImageQueryParameterSet()
@@ -208,7 +207,6 @@ namespace ninaAPI.Utility.Http
                 BayerPattern = new QueryParameter<SensorType>("bayer-pattern", SensorType.Monochrome, false),
                 UnlinkedStretch = new QueryParameter<bool>("unlinked-stretch", false, false),
                 BlackClipping = new QueryParameter<double>("black-clipping", 0.0, false),
-                RawConverter = new QueryParameter<RawConverterEnum>("raw-converter", RawConverterEnum.FREEIMAGE, false),
             };
         }
 
@@ -218,7 +216,6 @@ namespace ninaAPI.Utility.Http
             set.StretchFactor = new QueryParameter<double>("stretch-factor", profile.ImageSettings.AutoStretchFactor, false);
             set.BlackClipping = new QueryParameter<double>("black-clipping", profile.ImageSettings.BlackClipping, false);
             set.UnlinkedStretch = new QueryParameter<bool>("unlinked-stretch", profile.ImageSettings.UnlinkedStretch, false);
-            set.RawConverter = new QueryParameter<RawConverterEnum>("raw-converter", profile.CameraSettings.RawConverter, false);
             return set;
         }
 
@@ -230,7 +227,6 @@ namespace ninaAPI.Utility.Http
             Format.Get(request);
             StretchFactor.Get(request);
             Stretch.Get(request);
-            RawConverter.Get(request);
             Debayer.Get(request);
             BayerPattern.Get(request);
             UnlinkedStretch.Get(request);

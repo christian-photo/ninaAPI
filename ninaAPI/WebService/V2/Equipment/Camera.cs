@@ -517,7 +517,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"), 16, isBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
+                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"), 16, isBayered), TimeSpan.FromMilliseconds(200), 10);
                     var img = await imageData.RenderImage().DetectStars(false, StarSensitivityEnum.Normal, NoiseReductionEnum.None);
                     var s = ImageStatistics.Create(img.RawImageData);
 

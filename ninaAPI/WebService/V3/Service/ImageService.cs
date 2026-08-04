@@ -33,7 +33,7 @@ namespace ninaAPI.WebService.V3.Service
 
         public static async Task<ImageWriter> ProcessAndPrepareImage(string path, bool isBayered, ImageQueryParameterSet parameters, int bitDepth = 16, int delay = 200, int retries = 10)
         {
-            IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(path, bitDepth, isBayered, parameters.RawConverter.Value), TimeSpan.FromMilliseconds(delay), retries);
+            IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(path, bitDepth, isBayered), TimeSpan.FromMilliseconds(delay), retries);
             IRenderedImage image = imageData.RenderImage();
             return await ProcessAndPrepareImage(image, parameters);
         }

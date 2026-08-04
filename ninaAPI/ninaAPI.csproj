@@ -38,19 +38,19 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
 
     <!-- PackageReferences -->
-    <PackageReference Include="NINA.Astrometry" Version="3.3.0.1037-nightly" />
-    <PackageReference Include="NINA.Core" Version="3.3.0.1037-nightly" />
-    <PackageReference Include="NINA.CustomControlLibrary" Version="3.3.0.1037-nightly" />
-    <PackageReference Include="NINA.Equipment" Version="3.3.0.1037-nightly" />
-    <PackageReference Include="NINA.Image" Version="3.3.0.1037-nightly" />
-    <PackageReference Include="NINA.MGEN" Version="3.3.0.1037-nightly" />
-    <PackageReference Include="NINA.PlateSolving" Version="3.3.0.1037-nightly" />
-    <PackageReference Include="NINA.Profile" Version="3.3.0.1037-nightly" />
-    <PackageReference Include="NINA.Sequencer" Version="3.3.0.1037-nightly" />
-    <PackageReference Include="NINA.WPF.Base" Version="3.3.0.1037-nightly" />
+    <PackageReference Include="NINA.Astrometry" Version="3.3.0.1053-nightly" />
+    <PackageReference Include="NINA.Core" Version="3.3.0.1053-nightly" />
+    <PackageReference Include="NINA.CustomControlLibrary" Version="3.3.0.1053-nightly" />
+    <PackageReference Include="NINA.Equipment" Version="3.3.0.1053-nightly" />
+    <PackageReference Include="NINA.Image" Version="3.3.0.1053-nightly" />
+    <PackageReference Include="NINA.MGEN" Version="3.3.0.1053-nightly" />
+    <PackageReference Include="NINA.PlateSolving" Version="3.3.0.1053-nightly" />
+    <PackageReference Include="NINA.Profile" Version="3.3.0.1053-nightly" />
+    <PackageReference Include="NINA.Sequencer" Version="3.3.0.1053-nightly" />
+    <PackageReference Include="NINA.WPF.Base" Version="3.3.0.1053-nightly" />
 
     <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
-    <PackageReference Include="NINA.Plugin" Version="3.3.0.1037-nightly" />
+    <PackageReference Include="NINA.Plugin" Version="3.3.0.1053-nightly" />
   </ItemGroup>
 
   <!-- Always active -->
