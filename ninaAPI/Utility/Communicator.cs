@@ -32,7 +32,7 @@ namespace ninaAPI.Utility
         public Task OnMessageReceived(IMessage message)
         {
             // The purpose of this class is to provide the port, the api is running on. It automatically returns the port or -1 if the api is not running
-            return AdvancedAPI.Controls.MessageBroker.Publish(new PortRequestMessage(AdvancedAPI.GetCachedPort(), message.CorrelationId.Value));
+            return AdvancedAPI.Controls.MessageBroker.Publish(new PortRequestMessage(AdvancedAPI.GetActualPort(), message.CorrelationId.Value));
         }
     }
 

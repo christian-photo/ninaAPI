@@ -9,19 +9,18 @@
 
 #endregion "copyright"
 
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using NINA.Core.Model.Equipment;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyFilterWheel;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using ninaAPI.Utility.Http;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
@@ -107,10 +106,10 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/equipment/filterwheel/info")]
+        [Route("GET", "/equipment/filterwheel/info")]
         public void FilterWheelInfo()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -128,13 +127,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/filterwheel/change-filter")]
-        public void FilterWheelChangeFilter([QueryField] int filterId)
+        [Route("GET", "/equipment/filterwheel/change-filter")]
+        public void FilterWheelChangeFilter(int filterId)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -164,13 +163,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/filterwheel/filter-info")]
-        public void FilterWheelFilterInfo([QueryField] int filterId)
+        [Route("GET", "/equipment/filterwheel/filter-info")]
+        public void FilterWheelFilterInfo(int filterId)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -199,13 +198,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/filterwheel/add-filter")]
+        [Route("GET", "/equipment/filterwheel/add-filter")]
         public void FilterWheelAddFilter()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             try
             {
                 IFilterWheelSettings settings = AdvancedAPI.Controls.Profile.ActiveProfile.FilterWheelSettings;
@@ -220,13 +219,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/filterwheel/remove-filter")]
-        public void FilterWheelRemoveFilter([QueryField] int filterId)
+        [Route("GET", "/equipment/filterwheel/remove-filter")]
+        public void FilterWheelRemoveFilter(int filterId)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             try
             {
                 var settings = AdvancedAPI.Controls.Profile.ActiveProfile.FilterWheelSettings;
@@ -251,7 +250,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 }

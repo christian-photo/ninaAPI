@@ -19,23 +19,22 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Image.ImageAnalysis;
 using NINA.WPF.Base.Interfaces.ViewModel;
 using ninaAPI.Properties;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/application/switch-tab")]
-        public void ApplicationSwitchTab([QueryField] string tab)
+        [Route("GET", "/application/switch-tab")]
+        public void ApplicationSwitchTab(string tab)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -74,13 +73,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/application/get-tab")]
+        [Route("GET", "/application/get-tab")]
         public void ApplicationGetTab()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -120,13 +119,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/application/screenshot")]
-        public async Task ApplicationScreenshot([QueryField] bool resize, [QueryField] int quality, [QueryField] string size, [QueryField] double scale, [QueryField] bool stream)
+        [Route("GET", "/application/screenshot")]
+        public async Task ApplicationScreenshot(bool resize = false, int quality = 80, string size = "", double scale = 1)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -159,41 +158,28 @@ namespace ninaAPI.WebService.V2
 
                 BitmapSource source = ImageUtility.ConvertBitmap(screenshot);
 
-                if (stream)
+                BitmapEncoder encoder = null;
+                if (scale == 0 && resize)
                 {
-                    BitmapEncoder encoder = null;
-                    if (scale == 0 && resize)
-                    {
-                        BitmapSource image = BitmapHelper.ResizeBitmap(source, new_size);
-                        encoder = BitmapHelper.GetEncoder(image, quality);
-                    }
-                    if (scale != 0 && resize)
-                    {
-                        BitmapSource image = BitmapHelper.ScaleBitmap(source, scale);
-                        encoder = BitmapHelper.GetEncoder(image, quality);
-                    }
-                    if (!resize)
-                    {
-                        BitmapSource image = BitmapHelper.ScaleBitmap(source, 1);
-                        encoder = BitmapHelper.GetEncoder(image, quality);
-                    }
-                    HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpg";
-                    using (MemoryStream memory = new MemoryStream())
-                    {
-                        encoder.Save(memory);
-                        await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
-                        return;
-                    }
+                    BitmapSource image = BitmapHelper.ResizeBitmap(source, new_size);
+                    encoder = BitmapHelper.GetEncoder(image, quality);
                 }
-                else
+                if (scale != 0 && resize)
                 {
+                    BitmapSource image = BitmapHelper.ScaleBitmap(source, scale);
+                    encoder = BitmapHelper.GetEncoder(image, quality);
+                }
+                if (!resize)
+                {
+                    BitmapSource image = BitmapHelper.ScaleBitmap(source, 1);
+                    encoder = BitmapHelper.GetEncoder(image, quality);
+                }
 
-                    if (scale == 0 && resize)
-                        response.Response = BitmapHelper.ResizeAndConvertBitmap(source, new_size, quality);
-                    if (scale != 0 && resize)
-                        response.Response = BitmapHelper.ScaleAndConvertBitmap(source, scale, quality);
-                    if (!resize)
-                        response.Response = BitmapHelper.ScaleAndConvertBitmap(source, 1, quality);
+                using (MemoryStream memory = new MemoryStream())
+                {
+                    encoder.Save(memory);
+                    await Response.Body(memory.ToArray(), quality == -1 ? "image/png" : "image/jpg").SendAsync();
+                    return;
                 }
             }
             catch (Exception ex)
@@ -202,13 +188,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/application/plugins")]
+        [Route("GET", "/application/plugins")]
         public void ApplicationPlugins()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -222,13 +208,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/application/logs")]
-        public void GetRecentLogs([QueryField(true)] int lineCount, [QueryField] string level)
+        [Route("GET", "/application/logs")]
+        public void GetRecentLogs(int lineCount, string level = "INFO")
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             List<Hashtable> logs = new List<Hashtable>();
 
@@ -296,13 +282,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/plugin/settings")]
+        [Route("GET", "/plugin/settings")]
         public void GetPluginSettings()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -318,10 +304,10 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        // [Route(HttpVerbs.Get, "/application/windows")]
+        // [Route("GET", "/application/windows")]
         // public void GetApplicationWindows()
         // {
         //     HttpResponse response = new HttpResponse();
@@ -339,7 +325,7 @@ namespace ninaAPI.WebService.V2
         //     HttpContext.WriteToResponse(response);
         // }
 
-        // [Route(HttpVerbs.Get, "/application/windows/close")]
+        // [Route("GET", "/application/windows/close")]
         // public void GetApplicationWindows([QueryField] int windowId)
         // {
         //     HttpResponse response = new HttpResponse();

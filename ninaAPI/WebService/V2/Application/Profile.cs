@@ -14,15 +14,14 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Enum;
 using NINA.Core.Model;
 using NINA.Core.Utility;
 using NINA.Profile;
 using NINA.Profile.Interfaces;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
@@ -163,10 +162,10 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/profile/show")]
-        public void ProfileShow([QueryField] bool active)
+        [Route("GET", "/profile/show")]
+        public void ProfileShow(bool active = false)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -187,13 +186,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/profile/change-value")]
-        public void ProfileChangeValue([QueryField] string settingpath, [QueryField] string newValue)
+        [Route("GET", "/profile/change-value")]
+        public void ProfileChangeValue(string settingpath, string newValue)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -207,38 +206,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-
-                    string[] pathSplit = settingpath.Split('-'); // e.g. 'CameraSettings-PixelSize' -> CameraSettings, PixelSize
-                    object position = AdvancedAPI.Controls.Profile.ActiveProfile;
-
-                    if (pathSplit.Length == 1)
-                    {
-                        PropertyInfo prop = position.GetType().GetProperty(settingpath);
-                        prop.SetValue(position, newValue.ConvertString(prop.PropertyType));
-                    }
-                    else
-                    {
-                        for (int i = 0; i <= pathSplit.Length - 2; i++)
-                        {
-                            if (IsIndexable(position, out Type indexType, out PropertyInfo indexProp))
-                            {
-                                if (indexType == typeof(string))
-                                {
-                                    indexProp.GetValue(position, [pathSplit[i]]);
-                                }
-                                else
-                                {
-                                    position = indexProp.GetValue(position, [int.Parse(pathSplit[i])]);
-                                }
-                            }
-                            else
-                            {
-                                position = position.GetType().GetProperty(pathSplit[i]).GetValue(position);
-                            }
-                        }
-                        PropertyInfo prop = position.GetType().GetProperty(pathSplit[^1]);
-                        prop.SetValue(position, newValue.ConvertString(prop.PropertyType));
-                    }
+                    ReflectionHelper.SetValueReflected(AdvancedAPI.Controls.Profile.ActiveProfile, settingpath, newValue);
 
                     response.Response = "Updated setting";
                 }
@@ -249,7 +217,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
         private bool IsIndexable(object obj, out Type indexType, out PropertyInfo indexProp)
@@ -265,10 +233,10 @@ namespace ninaAPI.WebService.V2
             return true;
         }
 
-        [Route(HttpVerbs.Get, "/profile/switch")]
-        public void ProfileSwitch([QueryField] string profileid)
+        [Route("GET", "/profile/switch")]
+        public void ProfileSwitch(string profileid)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -291,7 +259,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
         class HorizonResponse
@@ -312,10 +280,10 @@ namespace ninaAPI.WebService.V2
             }
         }
 
-        [Route(HttpVerbs.Get, "/profile/horizon")]
+        [Route("GET", "/profile/horizon")]
         public void ProfileHorizon()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -328,7 +296,7 @@ namespace ninaAPI.WebService.V2
             }
 
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 }
