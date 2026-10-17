@@ -56,8 +56,22 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
         private async Task CameraDisconnected(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.DeviceDisconnected(Device.Camera));
         private async Task CameraDownloadTimeout(object sender, EventArgs e) => await SubmitAndStoreEvent(WebSocketEvents.CAMERA_DOWNLOAD_TIMEOUT);
 
+        private bool wasExposing = false;
+
+        public static DateTime LastExposureStartTime = DateTime.MaxValue;
+
         public async void UpdateDeviceInfo(CameraInfo deviceInfo)
         {
+            if (deviceInfo.IsExposing != wasExposing) {
+                if (deviceInfo.IsExposing) {
+                    LastExposureStartTime = DateTime.Now;
+                    await SubmitAndStoreEvent(WebSocketEvents.CAMERA_EXPOSURE_STARTED);
+                }
+                else {
+                    await SubmitAndStoreEvent(WebSocketEvents.CAMERA_EXPOSURE_ENDED);
+                }
+                wasExposing = deviceInfo.IsExposing;
+            }
             await SubmitEvent(WebSocketEvents.DeviceInfoUpdate(Device.Camera), new CameraInfoResponse(camera), WebSocketChannel.CameraInfoUpdate);
         }
     }

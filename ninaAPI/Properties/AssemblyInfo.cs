@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 
 // [MANDATORY] The assembly versioning
 //Should be incremented for each new build of a plugin
-[assembly: AssemblyVersion("3.0.0.3")]
-[assembly: AssemblyFileVersion("3.0.0.3")]
+[assembly: AssemblyVersion("3.0.0.4")]
+[assembly: AssemblyFileVersion("3.0.0.4")]
 
 // [MANDATORY] The name of your plugin
 [assembly: AssemblyTitle("Advanced API")]
@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright ©  2026")]
 
 // The minimum Version of N.I.N.A. that this plugin is compatible with
-[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.3.0.1053")]
+[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.3.0.1066")]
 
 // The license your plugin code is using
 [assembly: AssemblyMetadata("License", "MPL-2.0")]
@@ -46,7 +46,7 @@ A powerful HTTP and WebSocket server plugin that enables remote control and moni
 
 ### Equipment Control
 * Complete equipment connection management
-* Device specific controls like camera cooling or mount slewing (these are only a very small fraction of the available controls)
+* Device specific controls like camera cooling or mount slewing and many many more
 
 ### Real-time Monitoring
 * Equipment status and state changes

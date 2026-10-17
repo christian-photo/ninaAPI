@@ -10,6 +10,7 @@
 #endregion "copyright"
 
 
+using System;
 using NINA.Equipment.Equipment.MyCamera;
 using NINA.Equipment.Interfaces.Mediator;
 using ninaAPI.Utility;
@@ -18,10 +19,13 @@ namespace ninaAPI.WebService.V3.Equipment.Camera
 {
     public class CameraInfoResponse : CameraInfo
     {
+        public DateTime LastExposureStartTime { get; set; }
+
         public CameraInfoResponse(ICameraMediator cam)
         {
             var info = cam.GetInfo();
             ReflectionHelper.CopyProperties(info, this);
+            LastExposureStartTime = CameraWatcher.LastExposureStartTime;
         }
     }
 }

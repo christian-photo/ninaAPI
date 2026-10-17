@@ -23,7 +23,6 @@ using SimpleW.Helper.DependencyInjection;
 using SimpleW.Modules;
 using SimpleW.Service.BasicAuth;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Security.Authentication;
@@ -47,7 +46,7 @@ namespace ninaAPI.WebService
         {
             var serializer = SerializerFactory.GetSerializer();
 
-            Server = new SimpleWServer(IPAddress.Any, Port);
+            Server = new SimpleWServer(System.Net.IPAddress.Any, Port);
             if (Settings.Default.UseAccessControlHeader)
             {
                 Server.UseCorsModule(options =>
@@ -57,14 +56,18 @@ namespace ninaAPI.WebService
                     options.AllowedMethods = "GET, POST, PUT, DELETE, OPTIONS";
                 });
             }
-            Server.OnStarted((server) =>
+            Server.OnStateChanged((server, state) =>
             {
-                Started?.Invoke(this, EventArgs.Empty);
+                if (state == SimpleWServerState.Started)
+                {
+                    Started?.Invoke(this, EventArgs.Empty);
+                }
+                else if (state == SimpleWServerState.Stopped || state == SimpleWServerState.Faulted)
+                {
+                    Stopped?.Invoke(this, EventArgs.Empty);
+                }
             });
-            Server.OnStopped((server) =>
-            {
-                Stopped?.Invoke(this, EventArgs.Empty);
-            });
+
             if (Settings.Default.UseAuth)
             {
                 if (string.IsNullOrEmpty(Settings.Default.AuthUsername) || string.IsNullOrEmpty(Settings.Default.AuthPassword))
@@ -89,7 +92,7 @@ namespace ninaAPI.WebService
                 {
                     var cert = X509CertificateLoader.LoadPkcs12FromFile(Settings.Default.SSLCertificatePath, Settings.Default.SSLPassword);
                     var context = new SslContext(SslProtocols.Tls12 | SslProtocols.Tls13, cert, false, false);
-                    Server.UseHttps(context);
+                    Server.UseEngine(options => { options.SslContext = context; });
                 }
                 catch (Exception ex)
                 {
@@ -128,7 +131,8 @@ namespace ninaAPI.WebService
         {
             Logger.Trace($"Handling HttpException, status code: {exception.StatusCode}, Message: {exception.Message}");
 
-            string error = HttpUtility.StatusCodeMessages.GetValueOrDefault((int)exception.StatusCode, "Unknown Error");
+            string error = "Unknown Error";
+            HttpUtility.StatusCodeMessages.TryGetValue((int)exception.StatusCode, out error);
 
             var serializer = SerializerFactory.GetSerializer();
 
@@ -174,7 +178,7 @@ namespace ninaAPI.WebService
             }
         }
 
-        public bool IsRunning() => Server?.IsStarted ?? false;
+        public bool IsRunning() => Server is not null && Server.State == SimpleWServerState.Started;
 
         public event EventHandler<EventArgs> Started;
         public event EventHandler<EventArgs> Stopped;

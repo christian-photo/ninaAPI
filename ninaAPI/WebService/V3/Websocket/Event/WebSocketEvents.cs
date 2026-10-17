@@ -16,6 +16,8 @@ namespace ninaAPI.WebService.V3.Websocket.Event
     public static class WebSocketEvents
     {
         public const string CAMERA_DOWNLOAD_TIMEOUT = "CameraDownloadTimeout";
+        public const string CAMERA_EXPOSURE_STARTED = "CameraExposureStarted";
+        public const string CAMERA_EXPOSURE_ENDED = "CameraExposureEnded";
 
         public const string DOME_SHUTTER_OPENED = "DomeShutterOpened";
         public const string DOME_SHUTTER_CLOSED = "DomeShutterClosed";

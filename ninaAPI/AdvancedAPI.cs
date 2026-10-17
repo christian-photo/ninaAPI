@@ -356,11 +356,17 @@ namespace ninaAPI
                 {
                     if (value)
                     {
-                        Server.Server.EnableTelemetry();
+                        Server.Server.ConfigureTelemetry(options => {
+                            options.Enabled = true;
+                            options.RecordException = true;
+                        });
                     }
                     else
                     {
-                        Server.Server.DisableTelemetry();
+                        Server.Server.ConfigureTelemetry(options => {
+                            options.Enabled = false;
+                            options.RecordException = false;
+                        });
                     }
                 }
             }
