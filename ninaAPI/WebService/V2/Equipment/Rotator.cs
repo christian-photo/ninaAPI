@@ -9,9 +9,10 @@
 
 #endregion "copyright"
 
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NINA.Core.Enum;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyRotator;
@@ -19,10 +20,8 @@ using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Mediator;
 using NINA.WPF.Base.ViewModel.Equipment.Rotator;
 using ninaAPI.Utility;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using ninaAPI.Utility.Http;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
@@ -88,10 +87,10 @@ namespace ninaAPI.WebService.V2
         private static CancellationTokenSource RotatorToken;
 
 
-        [Route(HttpVerbs.Get, "/equipment/rotator/info")]
+        [Route("GET", "/equipment/rotator/info")]
         public void RotatorInfo()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -106,13 +105,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/rotator/move")]
-        public void RotatorMove([QueryField] float position)
+        [Route("GET", "/equipment/rotator/move")]
+        public void RotatorMove(float position)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -136,13 +135,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/rotator/move-mechanical")]
-        public void RotatorMoveMechanical([QueryField] float position)
+        [Route("GET", "/equipment/rotator/move-mechanical")]
+        public void RotatorMoveMechanical(float position)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -166,13 +165,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/rotator/reverse")]
-        public void RotatorReverse([QueryField] bool reverseDirection)
+        [Route("GET", "/equipment/rotator/reverse")]
+        public void RotatorReverse(bool reverseDirection)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -194,18 +193,18 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/rotator/set-mechanical-range")]
-        public void RotatorSetRange([QueryField(true)] RotatorRangeTypeEnum range, [QueryField] float rangeStartPosition)
+        [Route("GET", "/equipment/rotator/set-mechanical-range")]
+        public void RotatorSetRange(RotatorRangeTypeEnum range, float rangeStartPosition = -1)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
                 AdvancedAPI.Controls.Profile.ActiveProfile.RotatorSettings.RangeType = range;
-                if (!HttpContext.IsParameterOmitted(nameof(rangeStartPosition)))
+                if (!Request.IsParameterOmitted(nameof(rangeStartPosition)))
                 {
                     AdvancedAPI.Controls.Profile.ActiveProfile.RotatorSettings.RangeStartMechanicalPosition = rangeStartPosition;
                 }
@@ -218,13 +217,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/rotator/stop-move")]
+        [Route("GET", "/equipment/rotator/stop-move")]
         public void RotatorStopMove()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -244,7 +243,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 }

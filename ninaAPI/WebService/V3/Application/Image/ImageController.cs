@@ -1,0 +1,324 @@
+#region "copyright"
+
+/*
+    Copyright © 2026 Christian Palm (christian@palm-family.de)
+    This Source Code Form is subject to the terms of the Mozilla Public
+    License, v. 2.0. If a copy of the MPL was not distributed with this
+    file, You can obtain one at http://mozilla.org/MPL/2.0/.
+*/
+
+#endregion "copyright"
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using NINA.Astrometry;
+using NINA.Core.Enum;
+using NINA.Core.Utility;
+using NINA.Equipment.Interfaces.Mediator;
+using NINA.Image.FileFormat.FITS;
+using NINA.Image.Interfaces;
+using NINA.PlateSolving;
+using NINA.PlateSolving.Interfaces;
+using NINA.Profile.Interfaces;
+using NINA.WPF.Base.Interfaces.Mediator;
+using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using ninaAPI.Utility.Serialization;
+using ninaAPI.WebService.V3.Equipment.Camera;
+using ninaAPI.WebService.V3.Service;
+using SimpleW;
+using SimpleW.Service.BasicAuth;
+
+namespace ninaAPI.WebService.V3.Application.Image
+{
+    [Route("/v3/api/image")]
+    [BasicAuth]
+    public class ImageController : Controller
+    {
+        private readonly IImageDataFactory imageDataFactory;
+        private readonly IProfileService profileService;
+        private readonly IPlateSolverFactory plateSolverFactory;
+        private readonly ICameraMediator cameraMediator;
+        private readonly ITelescopeMediator mount;
+        private readonly IApplicationStatusMediator statusMediator;
+        private readonly ISerializerService serializer;
+
+        public ImageController(IImageDataFactory imageDataFactory,
+            IProfileService profileService,
+            IPlateSolverFactory plateSolverFactory,
+            ICameraMediator cameraMediator,
+            ITelescopeMediator mount,
+            IApplicationStatusMediator statusMediator,
+            ISerializerService serializer)
+        {
+            this.imageDataFactory = imageDataFactory;
+            this.plateSolverFactory = plateSolverFactory;
+            this.profileService = profileService;
+            this.cameraMediator = cameraMediator;
+            this.mount = mount;
+            this.statusMediator = statusMediator;
+            this.serializer = serializer;
+        }
+
+        [Route("GET", "/:index")]
+        public async Task GetImage(int index)
+        {
+            IProfile profile = profileService.ActiveProfile;
+
+            QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
+            ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile);
+            imageQuery.BayerPattern = new QueryParameter<SensorType>("bayer-pattern", CameraController.FindBayer(profile, cameraMediator), false);
+
+            imageQuery.Evaluate(Request);
+            imageTypeParameter.Get(Request);
+
+            ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
+            ImageWriter writer = await ImageService.ProcessAndPrepareImage(p.GetPath(), p.IsBayered, imageQuery, p.BitDepth);
+
+            await Response.Body(writer.Encode(imageQuery.Quality.Value), writer.MimeType).SendAsync();
+        }
+
+        [Route("GET", "/:index/thumbnail")]
+        public async Task GetThumbnail(int index)
+        {
+            IProfile profile = profileService.ActiveProfile;
+
+            QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
+            imageTypeParameter.Get(Request);
+
+            ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
+
+            if (!File.Exists(p.GetThumbnailPath()))
+            {
+                throw new HttpException(HttpStatusCode.NotFound, "Thumbnail does not exist");
+            }
+
+            await Response.Body(await File.ReadAllBytesAsync(p.GetThumbnailPath()), "image/png").SendAsync();
+        }
+
+        [Route("GET", "/:index/raw")]
+        public async Task GetImageRaw(int index)
+        {
+            QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
+            imageTypeParameter.Get(Request);
+
+            ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
+
+            if (!File.Exists(p.GetPath()))
+            {
+                throw new HttpException(HttpStatusCode.NotFound, "Image does not exist");
+            }
+
+            if (p.GetPath().EndsWith(".fits", true, null))
+            {
+                var imageData = await Retry.Do(
+                    async () => await imageDataFactory.CreateFromFile(
+                        p.GetPath(),
+                        p.BitDepth,
+                        p.IsBayered
+                    ), TimeSpan.FromMilliseconds(200), 10
+                );
+
+                // Create the FITS image.
+                FITS f = new FITS(
+                    imageData.Data.FlatArray,
+                    imageData.Properties.Width,
+                    imageData.Properties.Height
+                );
+
+                f.PopulateHeaderCards(imageData.MetaData);
+
+                using (var target = new MemoryStream())
+                {
+                    f.Write(target); // TODO: TEsting
+                    await Response.Body(target.ToArray(), "application/octet-stream").SendAsync();
+                }
+            }
+            else
+            {
+                await Response.Body(await File.ReadAllBytesAsync(p.GetPath()), "application/octet-stream").SendAsync();
+            }
+        }
+
+        [Route("PATCH", "/:index/prefix")]
+        public object AddPrefix(int index)
+        {
+            ImagePrefixBody body = serializer.Deserialize<ImagePrefixBody>(Request.BodyString);
+            Validator.ValidateObject(body, new ValidationContext(body));
+
+            if (body.Prefix.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "Prefix contains invalid characters");
+            }
+
+            QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
+            imageTypeParameter.Get(Request);
+
+            ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
+
+            string oldPath = p.GetPath();
+            string newPath = Path.Join(Path.GetDirectoryName(oldPath), body.Prefix + Path.GetFileName(oldPath));
+
+            if (!File.Exists(p.GetPath()))
+            {
+                throw new HttpException(HttpStatusCode.NotFound, "Image does not exist");
+            }
+
+            if (!File.Exists(newPath))
+            {
+                File.Move(p.GetPath(), newPath);
+                p.SetPath(newPath);
+            }
+            else
+            {
+                throw new HttpException(HttpStatusCode.Conflict, "File already exists");
+            }
+
+            return new
+            {
+                OldFilename = Path.GetFileName(oldPath),
+                NewFilename = Path.GetFileName(newPath)
+            };
+        }
+
+        [Route("GET", "/:index/solve")]
+        public async Task<PlateSolveResult> ImageSolve(int index)
+        {
+            PlatesolveConfig config = serializer.Deserialize<PlatesolveConfig>(Request.BodyString);
+            Validator.ValidateObject(config, new ValidationContext(config));
+
+            IProfile profile = profileService.ActiveProfile;
+
+            QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
+            imageTypeParameter.Get(Request);
+
+            ImageResponse p = GetImageResponseFromHistory(index, imageTypeParameter);
+            if (!File.Exists(p.GetPath()))
+            {
+                throw new HttpException(HttpStatusCode.NotFound, "Image does not exist");
+            }
+
+            config.UpdateDefaults(profile, mount, cameraMediator);
+
+            Coordinates coordinates = config.Coordinates.ToCoordinates();
+            var result = await new PlateSolveService(
+                imageDataFactory,
+                plateSolverFactory,
+                profile.PlateSolveSettings,
+                statusMediator)
+                .PlateSolve(
+                    p.GetPath(),
+                    config,
+                    (double)config.PixelSize,
+                    coordinates,
+                    Session.RequestAborted,
+                    profile,
+                    p.BitDepth,
+                    p.IsBayered);
+
+            return result;
+        }
+
+        [Route("GET", "/prepared")]
+        public async Task GetPreparedImage()
+        {
+            IProfile profile = profileService.ActiveProfile;
+
+            ImageQueryParameterSet imageQuery = ImageQueryParameterSet.ByProfile(profile);
+            imageQuery.BayerPattern = new QueryParameter<SensorType>("bayer-pattern", CameraController.FindBayer(profile, cameraMediator), false);
+
+            imageQuery.Evaluate(Request);
+
+            if (ImageWatcher.PreparedImage is null)
+            {
+                throw new HttpException(HttpStatusCode.NotFound, "No image prepared");
+            }
+
+            ImageWriter writer = await ImageService.ProcessAndPrepareImage(ImageWatcher.PreparedImage, imageQuery);
+
+            await Response.Body(writer.Encode(imageQuery.Quality.Value), writer.MimeType).SendAsync();
+        }
+
+        [Route("GET", "/prepared/solve")]
+        public async Task<PlateSolveResult> PreparedImageSolve()
+        {
+            PlatesolveConfig config = serializer.Deserialize<PlatesolveConfig>(Request.BodyString);
+            Validator.ValidateObject(config, new ValidationContext(config));
+
+            IProfile profile = profileService.ActiveProfile;
+
+            if (ImageWatcher.PreparedImage is null)
+            {
+                throw new HttpException(HttpStatusCode.NotFound, "No image prepared");
+            }
+
+            config.UpdateDefaults(profile, mount, cameraMediator);
+
+            Coordinates coordinates = config.Coordinates.ToCoordinates();
+            var result = await new PlateSolveService(
+                imageDataFactory,
+                plateSolverFactory,
+                profile.PlateSolveSettings,
+                statusMediator)
+                .PlateSolve(
+                    ImageWatcher.PreparedImage.RawImageData,
+                    config,
+                    (double)config.PixelSize,
+                    coordinates,
+                    profile,
+                    Session.RequestAborted);
+
+            return result;
+        }
+
+        [Route("GET", "/history")]
+        public object GetImageHistory()
+        {
+            PagerParameterSet pagerParameterSet = PagerParameterSet.Default();
+            QueryParameter<string> imageTypeParameter = new QueryParameter<string>("imageType", "", false, (type) => CoreUtility.IMAGE_TYPES.Contains(type));
+            imageTypeParameter.Get(Request);
+            pagerParameterSet.Evaluate(Request);
+
+            IEnumerable<ImageResponse> history = ImageWatcher.GetImageHistory();
+
+            history = !imageTypeParameter.WasProvided ? history : history.Where(x => x.ImageType.Equals(imageTypeParameter.Value));
+
+            if (!history.Any())
+            {
+                throw new HttpException(HttpStatusCode.NotFound, "No images available");
+            }
+            var result = new Pager<ImageResponse>([.. history]).GetPage(pagerParameterSet.PageParameter.Value, pagerParameterSet.PageSizeParameter.Value);
+
+            return result;
+        }
+
+        private static ImageResponse GetImageResponseFromHistory(int index, QueryParameter<string> imageType)
+        {
+            IEnumerable<ImageResponse> history = ImageWatcher.GetImageHistory();
+
+            history = !imageType.WasProvided ? history : history.Where(x => x.ImageType.Equals(imageType.Value));
+
+            if (!history.Any())
+            {
+                throw new HttpException(HttpStatusCode.NotFound, "No images available");
+            }
+            else if (!index.IsBetween(0, history.Count() - 1))
+            {
+                throw CommonErrors.ParameterOutOfRange(nameof(index), 0, history.Count() - 1);
+            }
+
+            return history.ElementAt(index);
+        }
+    }
+
+    public class ImagePrefixBody
+    {
+        [Required]
+        public string Prefix { get; set; }
+    }
+}

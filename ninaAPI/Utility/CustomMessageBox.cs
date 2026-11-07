@@ -26,84 +26,87 @@ using System.Threading.Tasks;
 using System.Windows;
 using NINA.Core.MyMessageBox;
 
-public static class CustomMessageBox
+namespace ninaAPI.Utility
 {
-    public static async Task<MessageBoxResult> Show(string messageBoxText, string caption, MessageBoxButton button, MessageBoxResult defaultresult, CancellationToken token)
+    public static class CustomMessageBox
     {
-        MessageBoxResult messageBoxResult = defaultresult;
-        return await Application.Current.Dispatcher.Invoke(async delegate
+        public static async Task<MessageBoxResult> Show(string messageBoxText, string caption, MessageBoxButton button, MessageBoxResult defaultresult, CancellationToken token)
         {
-            MyMessageBox myMessageBox = new MyMessageBox
+            MessageBoxResult messageBoxResult = defaultresult;
+            return await Application.Current.Dispatcher.Invoke(async delegate
             {
-                Title = caption,
-                Text = messageBoxText
-            };
-            if (button == MessageBoxButton.OKCancel)
-            {
-                myMessageBox.CancelVisibility = Visibility.Visible;
-                myMessageBox.OKVisibility = Visibility.Visible;
-                myMessageBox.YesVisibility = Visibility.Hidden;
-                myMessageBox.NoVisibility = Visibility.Hidden;
-            }
-            else if (button == MessageBoxButton.YesNo)
-            {
-                myMessageBox.CancelVisibility = Visibility.Hidden;
-                myMessageBox.OKVisibility = Visibility.Hidden;
-                myMessageBox.YesVisibility = Visibility.Visible;
-                myMessageBox.NoVisibility = Visibility.Visible;
-            }
-            else if (button == MessageBoxButton.OK)
-            {
-                myMessageBox.CancelVisibility = Visibility.Hidden;
-                myMessageBox.OKVisibility = Visibility.Visible;
-                myMessageBox.YesVisibility = Visibility.Hidden;
-                myMessageBox.NoVisibility = Visibility.Hidden;
-            }
-            else
-            {
-                myMessageBox.CancelVisibility = Visibility.Hidden;
-                myMessageBox.OKVisibility = Visibility.Visible;
-                myMessageBox.YesVisibility = Visibility.Hidden;
-                myMessageBox.NoVisibility = Visibility.Hidden;
-            }
-
-            Window mainWindow = Application.Current.MainWindow;
-            Window window = new MyMessageBoxView
-            {
-                DataContext = myMessageBox,
-                Owner = mainWindow,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            window.Closed += delegate
-            {
-                Application.Current.MainWindow.Focus();
-            };
-            mainWindow.Opacity = 0.8;
-            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(token);
-            Task t = Task.Run(() => Application.Current.Dispatcher.Invoke(window.ShowDialog), cts.Token);
-            while (!window.DialogResult.HasValue && !token.IsCancellationRequested)
-            {
-                await Task.Delay(100);
-            }
-            window.Close();
-
-            mainWindow.Opacity = 1.0;
-            if (!window.DialogResult.HasValue)
-            {
-                return defaultresult;
-            }
-
-            if (window.DialogResult.GetValueOrDefault())
-            {
-                if (myMessageBox.YesVisibility == Visibility.Visible)
+                MyMessageBox myMessageBox = new MyMessageBox
                 {
-                    return MessageBoxResult.Yes;
+                    Title = caption,
+                    Text = messageBoxText
+                };
+                if (button == MessageBoxButton.OKCancel)
+                {
+                    myMessageBox.CancelVisibility = Visibility.Visible;
+                    myMessageBox.OKVisibility = Visibility.Visible;
+                    myMessageBox.YesVisibility = Visibility.Hidden;
+                    myMessageBox.NoVisibility = Visibility.Hidden;
+                }
+                else if (button == MessageBoxButton.YesNo)
+                {
+                    myMessageBox.CancelVisibility = Visibility.Hidden;
+                    myMessageBox.OKVisibility = Visibility.Hidden;
+                    myMessageBox.YesVisibility = Visibility.Visible;
+                    myMessageBox.NoVisibility = Visibility.Visible;
+                }
+                else if (button == MessageBoxButton.OK)
+                {
+                    myMessageBox.CancelVisibility = Visibility.Hidden;
+                    myMessageBox.OKVisibility = Visibility.Visible;
+                    myMessageBox.YesVisibility = Visibility.Hidden;
+                    myMessageBox.NoVisibility = Visibility.Hidden;
+                }
+                else
+                {
+                    myMessageBox.CancelVisibility = Visibility.Hidden;
+                    myMessageBox.OKVisibility = Visibility.Visible;
+                    myMessageBox.YesVisibility = Visibility.Hidden;
+                    myMessageBox.NoVisibility = Visibility.Hidden;
                 }
 
-                return MessageBoxResult.OK;
-            }
+                Window mainWindow = Application.Current.MainWindow;
+                Window window = new MyMessageBoxView
+                {
+                    DataContext = myMessageBox,
+                    Owner = mainWindow,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+                window.Closed += delegate
+                {
+                    Application.Current.MainWindow.Focus();
+                };
+                mainWindow.Opacity = 0.8;
+                CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(token);
+                Task t = Task.Run(() => Application.Current.Dispatcher.Invoke(window.ShowDialog), cts.Token);
+                while (!window.DialogResult.HasValue && !token.IsCancellationRequested)
+                {
+                    await Task.Delay(100);
+                }
+                window.Close();
 
-            return MessageBoxResult.None;
-        });
+                mainWindow.Opacity = 1.0;
+                if (!window.DialogResult.HasValue)
+                {
+                    return defaultresult;
+                }
+
+                if (window.DialogResult.GetValueOrDefault())
+                {
+                    if (myMessageBox.YesVisibility == Visibility.Visible)
+                    {
+                        return MessageBoxResult.Yes;
+                    }
+
+                    return MessageBoxResult.OK;
+                }
+
+                return MessageBoxResult.None;
+            });
+        }
     }
 }

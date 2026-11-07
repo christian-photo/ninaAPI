@@ -10,45 +10,45 @@
 #endregion "copyright"
 
 using System;
-using System.Globalization;
 using System.Reflection;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using SimpleW;
+using SimpleW.Service.BasicAuth;
 
 namespace ninaAPI.WebService.V2
 {
-    public partial class ControllerV2 : WebApiController
+    [BasicAuth]
+    public partial class ControllerV2 : Controller
     {
-        [Route(HttpVerbs.Get, "/")]
+        [Route("GET", "/")]
         public string Index()
         {
             return $"ninaAPI: https://github.com/rennmaus-coder/ninaAPI/, https://christian-photo.github.io/github-page/projects/ninaAPI/v2/doc/api, https://github.com/christian-photo/ninaAPI/wiki/Websocket-V2";
         }
 
-        [Route(HttpVerbs.Get, "/version")]
+        [Route("GET", "/version")]
         public void GetVersion()
         {
-            HttpContext.WriteToResponse(new HttpResponse() { Response = Assembly.GetAssembly(typeof(AdvancedAPI)).GetName().Version.ToString() });
+            Response.WriteToResponse(new CustomResponse() { Response = Assembly.GetAssembly(typeof(AdvancedAPI)).GetName().Version.ToString() });
         }
 
-        [Route(HttpVerbs.Get, "/time")]
+        [Route("GET", "/time")]
         public void GetTime()
         {
-            HttpContext.WriteToResponse(new HttpResponse() { Response = DateTime.Now });
+            Response.WriteToResponse(new CustomResponse() { Response = DateTime.Now });
         }
 
-        [Route(HttpVerbs.Get, "/application-start")]
+        [Route("GET", "/application-start")]
         public void GetApplicationStart()
         {
-            HttpContext.WriteToResponse(new HttpResponse() { Response = NINA.Core.Utility.CoreUtil.ApplicationStartDate });
+            Response.WriteToResponse(new CustomResponse() { Response = NINA.Core.Utility.CoreUtil.ApplicationStartDate });
         }
 
-        [Route(HttpVerbs.Get, "/version/nina")]
-        public void GetNINAVersion([QueryField] bool friendly)
+        [Route("GET", "/version/nina")]
+        public void GetNINAVersion(bool friendly = false)
         {
-            HttpContext.WriteToResponse(new HttpResponse() { Response = friendly ? NINA.Core.Utility.CoreUtil.VersionFriendlyName : NINA.Core.Utility.CoreUtil.Version });
+            Response.WriteToResponse(new CustomResponse() { Response = friendly ? NINA.Core.Utility.CoreUtil.VersionFriendlyName : NINA.Core.Utility.CoreUtil.Version });
         }
     }
 }

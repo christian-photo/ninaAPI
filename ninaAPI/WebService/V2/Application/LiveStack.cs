@@ -16,59 +16,15 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Plugin.Interfaces;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using ninaAPI.WebService.Model;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
-    public class LiveStackResponse(bool isMonochrome, int? stackCount, int? redImages, int? greenImages, int? blueImages, string filter, string target, BitmapSource image)
-    {
-        public bool IsMonochrome { get; set; } = isMonochrome;
-        public int? StackCount { get; set; } = stackCount;
-        public int? RedStackCount { get; set; } = redImages;
-        public int? GreenStackCount { get; set; } = greenImages;
-        public int? BlueStackCount { get; set; } = blueImages;
-        public string Filter { get; set; } = filter;
-        public string Target { get; set; } = target;
-        public BitmapSource Image { get; set; } = image;
-    }
-
-    public class LiveStackHistory : IDisposable
-    {
-        public List<LiveStackResponse> Images { get; set; } = new List<LiveStackResponse>();
-
-        public void AddMono(string filter, int stackCount, string target, BitmapSource image)
-        {
-            Add(new LiveStackResponse(true, stackCount, null, null, null, filter, target, image));
-        }
-
-        public void AddColor(int redImages, int greenImages, int blueImages, string filter, string target, BitmapSource image)
-        {
-            Add(new LiveStackResponse(false, null, redImages, greenImages, blueImages, filter, target, image));
-        }
-
-        public void Add(LiveStackResponse image)
-        {
-            Images.RemoveAll(x => x.Filter == image.Filter && x.Target == image.Target); // Only keep the last stacked image for each filter and target
-            Images.Add(image);
-        }
-
-        public void Dispose()
-        {
-            Images.Clear();
-            Images = null;
-        }
-
-        public BitmapSource GetLast(string filter, string target)
-        {
-            return Images.LastOrDefault(x => x.Filter == filter && x.Target == target).Image;
-        }
-    }
-
     public class LiveStackWatcher : INinaWatcher, ISubscriber
     {
         public static LiveStackHistory LiveStackHistory { get; private set; }
@@ -100,7 +56,7 @@ namespace ninaAPI.WebService.V2
             });
         }
 
-         public async Task OnStackUpdateReceived(IMessage message)
+        public async Task OnStackUpdateReceived(IMessage message)
         {
             string filter = message.Content.GetType().GetProperty("Filter").GetValue(message.Content).ToString();
             string target = message.Content.GetType().GetProperty("Target").GetValue(message.Content).ToString();
@@ -154,49 +110,26 @@ namespace ninaAPI.WebService.V2
         }
     }
 
-    public class LiveStackMessage(Guid correlatedGuid, string topic, object content) : IMessage
-    {
-        public Guid SenderId => Guid.Parse(AdvancedAPI.PluginId);
-
-        public string Sender => nameof(ninaAPI);
-
-        public DateTimeOffset SentAt => DateTimeOffset.Now;
-
-        public Guid MessageId => Guid.NewGuid();
-
-        public DateTimeOffset? Expiration => null;
-
-        public Guid? CorrelationId => correlatedGuid;
-
-        public int Version => 1;
-
-        public IDictionary<string, object> CustomHeaders => new Dictionary<string, object>();
-
-        public string Topic => topic;
-
-        public object Content => content;
-    }
-
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/livestack/status")]
+        [Route("GET", "/livestack/status")]
         public void LiveStackStatus()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             response.Response = LiveStackWatcher.LivestackStatus;
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/livestack/stop")]
+        [Route("GET", "/livestack/stop")]
         public void LiveStackStop()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
-                AdvancedAPI.Controls.MessageBroker.Publish(new LiveStackMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StopLiveStack", string.Empty));
+                AdvancedAPI.Controls.MessageBroker.Publish(new NINAMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StopLiveStack", string.Empty));
                 response.Response = "Live stack stopped";
             }
             catch (Exception ex)
@@ -205,17 +138,17 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/livestack/start")]
+        [Route("GET", "/livestack/start")]
         public void LiveStackStart()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
-                AdvancedAPI.Controls.MessageBroker.Publish(new LiveStackMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StartLiveStack", string.Empty));
+                AdvancedAPI.Controls.MessageBroker.Publish(new NINAMessage(Guid.NewGuid(), "Livestack_LivestackDockable_StartLiveStack", string.Empty));
                 response.Response = "Live stack started";
             }
             catch (Exception ex)
@@ -224,13 +157,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/livestack/image/available")]
+        [Route("GET", "/livestack/image/available")]
         public void LiveStackImageAvailable()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             List<object> images = new List<object>();
 
@@ -248,18 +181,17 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/livestack/image/{target}/{filter}")]
+        [Route("GET", "/livestack/image/:target/:filter")]
         public async Task LiveStackImage(string filter, string target,
-            [QueryField] bool resize,
-            [QueryField] int quality,
-            [QueryField] string size,
-            [QueryField] double scale,
-            [QueryField] bool stream)
+            bool resize = false,
+            int quality = 80,
+            string size = "640x480",
+            double scale = 1)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -285,42 +217,28 @@ namespace ninaAPI.WebService.V2
                         int height = int.Parse(s[1]);
                         sz = new Size(width, height);
                     }
-                    if (stream)
+                    BitmapEncoder encoder = null;
+                    if (scale == 0 && resize)
                     {
-                        BitmapEncoder encoder = null;
-                        if (scale == 0 && resize)
-                        {
-                            image = BitmapHelper.ResizeBitmap(image, sz);
-                            encoder = BitmapHelper.GetEncoder(image, quality);
-                        }
-                        if (scale != 0 && resize)
-                        {
-                            image = BitmapHelper.ScaleBitmap(image, scale);
-                            encoder = BitmapHelper.GetEncoder(image, quality);
-                        }
-                        if (!resize)
-                        {
-                            image = BitmapHelper.ScaleBitmap(image, 1);
-                            encoder = BitmapHelper.GetEncoder(image, quality);
-                        }
-                        HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpg";
-                        using (MemoryStream memory = new MemoryStream())
-                        {
-                            encoder.Save(memory);
-                            await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
-                            return;
-                        }
+                        image = BitmapHelper.ResizeBitmap(image, sz);
+                        encoder = BitmapHelper.GetEncoder(image, quality);
                     }
-                    else
+                    if (scale != 0 && resize)
                     {
-                        if (scale == 0 && resize)
-                            response.Response = BitmapHelper.ResizeAndConvertBitmap(image, sz, quality);
-                        if (scale != 0 && resize)
-                            response.Response = BitmapHelper.ScaleAndConvertBitmap(image, scale, quality);
-                        if (!resize)
-                            response.Response = BitmapHelper.ScaleAndConvertBitmap(image, 1, quality);
+                        image = BitmapHelper.ScaleBitmap(image, scale);
+                        encoder = BitmapHelper.GetEncoder(image, quality);
                     }
-
+                    if (!resize)
+                    {
+                        image = BitmapHelper.ScaleBitmap(image, 1);
+                        encoder = BitmapHelper.GetEncoder(image, quality);
+                    }
+                    using (MemoryStream memory = new MemoryStream())
+                    {
+                        encoder.Save(memory);
+                        await Response.Body(memory.ToArray(), quality == -1 ? "image/png" : "image/jpg").SendAsync();
+                        return;
+                    }
                 }
             }
             catch (Exception ex)
@@ -329,17 +247,17 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/livestack/image/{target}/{filter}/info")]
+        [Route("GET", "/livestack/image/:target/:filter/info")]
         public async Task LiveStackImageInfo(string filter, string target)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
-                LiveStackResponse l = LiveStackWatcher.LiveStackHistory.Images.Where(x => x.Filter == filter && x.Target == target).LastOrDefault();
+                LiveStackResponse l = LiveStackWatcher.LiveStackHistory.Images.LastOrDefault(x => x.Filter == filter && x.Target == target);
                 if (l is null)
                 {
                     response = CoreUtility.CreateErrorTable(new Error("No image with specified filter and target found", 404));
@@ -366,7 +284,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 }

@@ -9,17 +9,16 @@
 
 #endregion "copyright"
 
-using EmbedIO.WebApi;
-using EmbedIO;
 using System;
-using EmbedIO.Routing;
-using ninaAPI.Utility;
-using NINA.Core.Utility;
-using NINA.Astrometry;
-using NINA.WPF.Base.Interfaces.ViewModel;
 using System.Threading.Tasks;
+using NINA.Astrometry;
 using NINA.Core.Enum;
+using NINA.Core.Utility;
 using NINA.Equipment.Interfaces.Mediator;
+using NINA.WPF.Base.Interfaces.ViewModel;
+using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
@@ -42,6 +41,7 @@ namespace ninaAPI.WebService.V2
         public int VerticalPanels { get; set; }
         public FramingRectangle Rectangle { get; set; }
     }
+
     public partial class ControllerV2
     {
         private FramingInfoContainer GetFramingInfo()
@@ -69,10 +69,10 @@ namespace ninaAPI.WebService.V2
             return info;
         }
 
-        [Route(HttpVerbs.Get, "/framing/info")]
+        [Route("GET", "/framing/info")]
         public void FramingInfo()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -84,13 +84,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/framing/set-source")]
-        public void FramingSetSource([QueryField] string source)
+        [Route("GET", "/framing/set-source")]
+        public void FramingSetSource(string source)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -112,14 +112,14 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
         // Framing Assistant View needs to have benn opened once before to be initialized
-        [Route(HttpVerbs.Get, "/framing/set-coordinates")]
-        public void FramingSetCoordinates([QueryField] double RAangle, [QueryField] double DECangle)
+        [Route("GET", "/framing/set-coordinates")]
+        public void FramingSetCoordinates(double RAangle, double DECangle)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -134,13 +134,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/framing/slew")]
-        public async Task FramingSlew([QueryField] string slew_option, [QueryField] bool waitForResult)
+        [Route("GET", "/framing/slew")]
+        public async Task FramingSlew(string slew_option = "", bool waitForResult = false)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -165,13 +165,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/framing/set-rotation")]
-        public void FramingSetRotation([QueryField] double rotation)
+        [Route("GET", "/framing/set-rotation")]
+        public void FramingSetRotation(double rotation)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -186,13 +186,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/framing/determine-rotation")]
-        public async Task FramingDetermineRotation([QueryField] bool waitForResult)
+        [Route("GET", "/framing/determine-rotation")]
+        public async Task FramingDetermineRotation(bool waitForResult = false)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -224,13 +224,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/astro-util/moon-separation")]
-        public async Task UtilCalculateNighttime([QueryField] double ra, [QueryField] double dec)
+        [Route("GET", "/astro-util/moon-separation")]
+        public async Task UtilCalculateNighttime(double ra, double dec)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -252,7 +252,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
         // This method is copied from https://github.com/daleghent/nina-moon-angle/blob/main/Utility/Utility.cs#L28
@@ -273,11 +273,11 @@ namespace ninaAPI.WebService.V2
 
             if (toMoon)
             {
-                sepObjectPosition = AstroUtil.GetMoonPosition(date, jd, observerInfo);
+                sepObjectPosition = AstroUtil.GetMoonPosition(date, observerInfo);
             }
             else
             {
-                sepObjectPosition = AstroUtil.GetSunPosition(date, jd, observerInfo);
+                sepObjectPosition = AstroUtil.GetSunPosition(date, observerInfo);
             }
 
             var sepObjectRaRadians = AstroUtil.ToRadians(AstroUtil.HoursToDegrees(sepObjectPosition.RA));

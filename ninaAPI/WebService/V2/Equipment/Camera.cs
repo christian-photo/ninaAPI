@@ -9,34 +9,32 @@
 
 #endregion "copyright"
 
-using EmbedIO.WebApi;
-using EmbedIO;
 using System;
-using System.Threading.Tasks;
-using EmbedIO.Routing;
+using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
-using NINA.Equipment.Interfaces.Mediator;
+using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using NINA.Astrometry;
+using NINA.Core.Enum;
 using NINA.Core.Model.Equipment;
-using NINA.Equipment.Model;
-using NINA.Image.Interfaces;
-using NINA.PlateSolving.Interfaces;
-using NINA.PlateSolving;
-using NINA.Profile.Interfaces;
-using ninaAPI.Utility;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment.MyCamera;
-using System.Linq;
-using System.Windows.Media.Imaging;
-using System.IO;
-using System.Collections.Generic;
-using NINA.Image.ImageData;
-using NINA.Image.ImageAnalysis;
-using NINA.Core.Enum;
-using System.Reflection;
-using Accord;
 using NINA.Equipment.Interfaces;
+using NINA.Equipment.Interfaces.Mediator;
+using NINA.Equipment.Model;
+using NINA.Image.ImageAnalysis;
+using NINA.Image.ImageData;
+using NINA.Image.Interfaces;
+using NINA.PlateSolving;
+using NINA.PlateSolving.Interfaces;
+using NINA.Profile.Interfaces;
+using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
@@ -166,10 +164,10 @@ namespace ninaAPI.WebService.V2
         private static CancellationTokenSource CameraCoolToken;
 
 
-        [Route(HttpVerbs.Get, "/equipment/camera/info")]
+        [Route("GET", "/equipment/camera/info")]
         public void CameraInfo()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -183,13 +181,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/set-readout")]
-        public void CameraSetReadout([QueryField] short mode)
+        [Route("GET", "/equipment/camera/set-readout")]
+        public void CameraSetReadout(short mode)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -211,13 +209,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/set-readout/image")]
-        public void CameraSetReadoutImage([QueryField] short mode)
+        [Route("GET", "/equipment/camera/set-readout/image")]
+        public void CameraSetReadoutImage(short mode)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -239,13 +237,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/set-readout/snapshot")]
-        public void CameraSetReadoutSnapshot([QueryField] short mode)
+        [Route("GET", "/equipment/camera/set-readout/snapshot")]
+        public void CameraSetReadoutSnapshot(short mode)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -267,13 +265,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/cool")]
-        public void CameraCool([QueryField] double temperature, [QueryField] bool cancel, [QueryField] double minutes)
+        [Route("GET", "/equipment/camera/cool")]
+        public void CameraCool(double temperature = 0, bool cancel = false, double minutes = -1)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -309,13 +307,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/warm")]
-        public void CameraWarm([QueryField] bool cancel, [QueryField] double minutes)
+        [Route("GET", "/equipment/camera/warm")]
+        public void CameraWarm(bool cancel = false, double minutes = -1)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -351,13 +349,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/abort-exposure")]
+        [Route("GET", "/equipment/camera/abort-exposure")]
         public void AbortExposure()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -383,13 +381,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/dew-heater")]
-        public void CameraDewHeater([QueryField] bool power)
+        [Route("GET", "/equipment/camera/dew-heater")]
+        public void CameraDewHeater(bool power)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -415,13 +413,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/usb-limit")]
-        public void CameraDewHeater([QueryField] int limit)
+        [Route("GET", "/equipment/camera/usb-limit")]
+        public void CameraDewHeater(int limit)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -451,13 +449,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/set-binning")]
-        public void CameraSetBinning([QueryField] string binning)
+        [Route("GET", "/equipment/camera/set-binning")]
+        public void CameraSetBinning(string binning)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -503,13 +501,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/capture/statistics")]
+        [Route("GET", "/equipment/camera/capture/statistics")]
         public async Task CameraCaptureStats()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -519,7 +517,7 @@ namespace ninaAPI.WebService.V2
                 }
                 else
                 {
-                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"), 16, isBayered, RawConverterEnum.FREEIMAGE), TimeSpan.FromMilliseconds(200), 10);
+                    IImageData imageData = await Retry.Do(async () => await AdvancedAPI.Controls.ImageDataFactory.CreateFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"), 16, isBayered), TimeSpan.FromMilliseconds(200), 10);
                     var img = await imageData.RenderImage().DetectStars(false, StarSensitivityEnum.Normal, NoiseReductionEnum.None);
                     var s = ImageStatistics.Create(img.RawImageData);
 
@@ -543,31 +541,30 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/camera/capture")]
+        [Route("GET", "/equipment/camera/capture")]
         public async Task CameraCapture(
-            [QueryField] bool solve,
-            [QueryField] float duration,
-            [QueryField] bool getResult,
-            [QueryField] bool resize,
-            [QueryField] int quality,
-            [QueryField] string size,
-            [QueryField] int gain,
-            [QueryField] double scale,
-            [QueryField] bool stream,
-            [QueryField] bool omitImage,
-            [QueryField] bool waitForResult,
-            [QueryField] bool save,
-            [QueryField] string targetName,
-            [QueryField] bool onlyAwaitCaptureCompletion,
-            [QueryField] bool onlySaveRaw,
-            [QueryField] bool skipAutoStretch,
-            [QueryField] string imageType)
+            bool solve = false,
+            float duration = -1,
+            bool getResult = false,
+            bool resize = false,
+            int quality = 80,
+            string size = null,
+            int gain = -1,
+            double scale = 1,
+            bool omitImage = false,
+            bool waitForResult = false,
+            bool save = true,
+            string targetName = null,
+            bool onlyAwaitCaptureCompletion = false,
+            bool onlySaveRaw = false,
+            bool skipAutoStretch = false,
+            string imageType = "SNAPSHOT")
         {
 
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
             ICameraMediator cam = AdvancedAPI.Controls.Camera;
 
             quality = Math.Clamp(quality, -1, 100);
@@ -605,7 +602,7 @@ namespace ninaAPI.WebService.V2
                 {
                     Bitmap img = new Bitmap(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"temp.png"));
                     BitmapSource source = ImageUtility.ConvertBitmap(img);
-                    if (stream)
+                    if (!omitImage)
                     {
                         BitmapEncoder encoder = null;
                         if (scale == 0 && resize)
@@ -623,32 +620,16 @@ namespace ninaAPI.WebService.V2
                             BitmapSource image = BitmapHelper.ScaleBitmap(source, 1);
                             encoder = BitmapHelper.GetEncoder(image, quality);
                         }
-                        HttpContext.Response.ContentType = quality == -1 ? "image/png" : "image/jpg";
                         using (MemoryStream memory = new MemoryStream())
                         {
                             encoder.Save(memory);
-                            await HttpContext.Response.OutputStream.WriteAsync(memory.ToArray());
+                            await Response.Body(memory.ToArray(), quality == -1 ? "image/png" : "image/jpeg").SendAsync();
                             return;
                         }
                     }
                     else
                     {
-                        if (!omitImage)
-                        {
-                            string image = string.Empty;
-                            if (scale == 0 && resize)
-                                image = BitmapHelper.ResizeAndConvertBitmap(source, resolution, quality);
-                            if (scale != 0 && resize)
-                                image = BitmapHelper.ScaleAndConvertBitmap(source, scale, quality);
-                            if (!resize)
-                                image = BitmapHelper.ScaleAndConvertBitmap(source, 1, quality);
-
-                            response.Response = new CaptureResponse() { Image = image, PlateSolveResult = plateSolveResult };
-                        }
-                        else
-                        {
-                            response.Response = new CaptureResponse() { PlateSolveResult = plateSolveResult, Image = null };
-                        }
+                        response.Response = new CaptureResponse() { PlateSolveResult = plateSolveResult, Image = null };
                     }
                 }
                 else if (!getResult && !cam.GetInfo().Connected)
@@ -726,7 +707,7 @@ namespace ninaAPI.WebService.V2
                             await AdvancedAPI.Controls.ImageSaveMediator.Enqueue(renderedImage.RawImageData, Task.Run(() => renderedImage), AdvancedAPI.Controls.StatusMediator.GetStatus(), CancellationToken.None);
                         }
                         await WebSocketV2.SendAndAddEvent("API-CAPTURE-FINISHED");
-                    }, CancellationToken.None);
+                    }, Session.RequestAborted);
 
                     response.Response = "Capture started";
 
@@ -747,7 +728,7 @@ namespace ninaAPI.WebService.V2
                     {
                         await CaptureTask;
                         // Return the captured image
-                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, stream, omitImage, false, false, targetName, false, onlySaveRaw, skipAutoStretch, imageType);
+                        await CameraCapture(false, 0, true, resize, quality, size, 0, scale, omitImage, false, false, targetName, false, onlySaveRaw, skipAutoStretch, imageType);
                         return;
                     }
 
@@ -759,7 +740,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
         private bool isImageTypeValid(string imageType)
