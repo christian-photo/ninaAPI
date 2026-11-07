@@ -557,7 +557,7 @@ namespace ninaAPI.WebService.V2
                     else if (item is SetSwitchValue i15)
                     {
                         it.Add("Value", i15.Value);
-                        it.Add("Index", i15.SelectedSwitch.Id);
+                        it.Add("Index", i15.SwitchIndex);
                     }
                     else if (item is SetTracking i16)
                     {

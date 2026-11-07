@@ -59,6 +59,10 @@ profile data (api keys, file paths, ...) or take control over your equipment
 
 ---
 
+## 2.2.15.3
+
+- Set switch value instruction would not be serialized, if the switch was not connected
+
 ## 2.2.15.2
 
 - Allow exposure time of 0
