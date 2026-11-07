@@ -2,6 +2,10 @@
 
 The changes for each individual (beta) release can be seen in each [release](https://github.com/christian-photo/ninaAPI/releases). This changelog will only cover the fully released versions.
 
+## 2.2.15.3
+
+- Set switch value instruction would not be serialized, if the switch was not connected
+
 ## 2.2.15.2
 
 - Allow exposure time of 0
