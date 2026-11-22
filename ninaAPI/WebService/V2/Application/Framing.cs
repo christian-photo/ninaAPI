@@ -177,7 +177,9 @@ namespace ninaAPI.WebService.V2
             {
                 IFramingAssistantVM framing = AdvancedAPI.Controls.FramingAssistant;
 
-                framing.Rectangle.TotalRotation = 360 - rotation;
+                var prop = framing.GetType().GetProperty("RectangleTotalRotation");
+                if (prop != null) prop.SetValue(framing, 360 - rotation);
+                else framing.Rectangle.TotalRotation = 360 - rotation;
                 response.Response = "Rotation updated";
             }
             catch (Exception ex)
