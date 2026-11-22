@@ -122,6 +122,11 @@ namespace ninaAPI.WebService.V3.Application.Framing
             if (config.HorizontalPanels != null) framingVM.HorizontalPanels = config.HorizontalPanels.Value;
             if (config.VerticalPanels != null) framingVM.VerticalPanels = config.VerticalPanels.Value;
             if (config.FramingSource != null) framingVM.FramingAssistantSource = config.FramingSource.Value;
+            if (config.PositionAngle != null) {
+                var prop = framingVM.GetType().GetProperty("RectangleTotalRotation");
+                if (prop != null) prop.SetValue(framingVM, config.PositionAngle);
+                else framingVM.Rectangle.TotalRotation = (double)config.PositionAngle;
+            }
 
             if (config.Coordinates != null)
             {

@@ -68,6 +68,8 @@ namespace ninaAPI.WebService.V3.Application.Framing
         [Range(0, int.MaxValue)]
         public int? VerticalPanels { get; set; }
 
+        public double? PositionAngle { get; set; }
+
         public SkySurveySource? FramingSource { get; set; }
     }
 }

@@ -5668,28 +5668,37 @@ components:
       properties:
         BoundHeight:
           type: number
+          min: 0
         BoundWidth:
           type: number
+          min: 0
         CameraHeight:
           type: integer
+          min: 0
         CameraWidth:
           type: integer
+          min: 0
         CameraPixelSize:
           type: number
+          min: 0
         Coordinates:
           $ref: "#/components/schemas/HttpCoordinates"
         DSOName:
           type: string
         FieldOfView:
           type: number
+          min: 0
         FocalLength:
           type: number
+          min: 0
         PositionAngle:
           type: number
         HorizontalPanels:
           type: integer
+          min: 0
         VerticalPanels:
           type: integer
+          min: 0
         FramingSource:
           $ref: "#/components/schemas/SkySurveySource"
 
