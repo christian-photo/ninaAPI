@@ -3700,7 +3700,7 @@ paths:
       tags:
         - Mount
       summary: Park
-      description: Park the mount
+      description: Park the mount. If the mount is slewing, the slew (and any slew N.I.N.A. has queued behind it) is stopped first and the park is sent once the mount has stayed still. This can take a few seconds, and gives up after 30 seconds. If the mount is already parking, the running park is left alone and Parking is returned.
       responses:
         "200":
           description: Successful response
@@ -3727,7 +3727,7 @@ paths:
                     type: string
                     example: "API"
         "409":
-          description: Mount not connected
+          description: Mount not connected / Mount did not stop slewing
           content:
             application/json:
               schema:
@@ -3738,7 +3738,9 @@ paths:
                     example: ""
                   Error:
                     type: string
-                    example: Mount not connected
+                    enum:
+                      - Mount not connected
+                      - Mount did not stop slewing
                   StatusCode:
                     type: integer
                     example: 409
