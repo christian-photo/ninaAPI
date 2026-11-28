@@ -202,8 +202,103 @@ namespace ninaAPI.WebService.V2
             HttpContext.WriteToResponse(response);
         }
 
+        private static Task<bool> MountParkTask;
+        private static CancellationTokenSource MountParkToken;
+        private static readonly SemaphoreSlim MountParkLock = new SemaphoreSlim(1, 1);
+
+        private static async Task<bool> IsMountParking(ITelescopeMediator mount, CancellationToken token)
+        {
+            var vm = typeof(TelescopeMediator).GetField("handler", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(mount) as TelescopeVM;
+            if (MountParkTask?.IsCompleted != false && vm?.IsParkingOrHoming != true)
+            {
+                return false;
+            }
+
+            // A park that was stopped (e.g. by slew/stop) keeps waiting for the mount to reach the park position, so only trust it while the mount is moving
+            DateTime start = DateTime.Now;
+            while (DateTime.Now - start < TimeSpan.FromSeconds(2))
+            {
+                if (IsMountSlewing(mount))
+                {
+                    return true;
+                }
+                await Task.Delay(250, token);
+            }
+
+            Logger.Warning("Mount is marked as parking but is not moving, parking again");
+            return false;
+        }
+
+        private static async Task CancelMountPark(CancellationToken token)
+        {
+            MountParkToken?.Cancel();
+            if (MountParkTask?.IsCompleted == false)
+            {
+                await Task.WhenAny(MountParkTask, Task.Delay(TimeSpan.FromSeconds(5), token));
+            }
+        }
+
+        private static bool IsMountSlewing(ITelescopeMediator mount)
+        {
+            // Read the device directly, the cached info can lag behind by the device polling interval
+            return (mount.GetDevice() as ITelescope)?.Slewing ?? mount.GetInfo().Slewing;
+        }
+
+        private static async Task StopMountSlewing(ITelescopeMediator mount, CancellationToken token)
+        {
+            // N.I.N.A. queues a slew that is issued while another one is running and starts it as soon as the mount stops.
+            // Mounts (e.g. OnStep) also reject a park command while still decelerating.
+            // So keep stopping until the mount stays still, then it is safe to park.
+            while (true)
+            {
+                mount.StopSlew();
+                SlewCenterToken?.Cancel();
+
+                DateTime stopIssued = DateTime.Now;
+                while (IsMountSlewing(mount) && DateTime.Now - stopIssued < TimeSpan.FromSeconds(2))
+                {
+                    await Task.Delay(250, token);
+                }
+
+                if (!IsMountSlewing(mount))
+                {
+                    // N.I.N.A. checks for a queued slew once per second, give it time to start before parking
+                    await Task.Delay(TimeSpan.FromSeconds(2), token);
+                    if (!IsMountSlewing(mount))
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        private static async Task<bool> StopSlewAndPark(ITelescopeMediator mount, CancellationToken token)
+        {
+            // Make sure a stalled park does not keep running next to the new one
+            await CancelMountPark(token);
+
+            if (IsMountSlewing(mount))
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+                timeout.CancelAfter(TimeSpan.FromSeconds(30));
+                try
+                {
+                    await StopMountSlewing(mount, timeout.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.Warning("Mount did not stop slewing within 30 seconds or the request was cancelled, not parking");
+                    return false;
+                }
+            }
+
+            MountParkToken = new CancellationTokenSource();
+            MountParkTask = mount.ParkTelescope(AdvancedAPI.Controls.StatusMediator.GetStatus(), MountParkToken.Token);
+            return true;
+        }
+
         [Route(HttpVerbs.Get, "/equipment/mount/park")]
-        public void MountPark()
+        public async Task MountPark()
         {
             HttpResponse response = new HttpResponse();
 
@@ -219,14 +314,33 @@ namespace ninaAPI.WebService.V2
                 {
                     response.Response = "Mount already parked";
                 }
+                // If the lock is taken, another request is currently stopping a slew before parking
+                else if (!await MountParkLock.WaitAsync(0))
+                {
+                    response.Response = "Parking";
+                }
                 else
                 {
-                    if (mount.GetInfo().Slewing)
+                    try
                     {
-                        mount.StopSlew();
+                        // A park that is already running reports Slewing = true. Stopping it here would abort the park, so leave it alone.
+                        if (await IsMountParking(mount, HttpContext.CancellationToken))
+                        {
+                            response.Response = "Parking";
+                        }
+                        else if (!await StopSlewAndPark(mount, HttpContext.CancellationToken))
+                        {
+                            response = CoreUtility.CreateErrorTable(new Error("Mount did not stop slewing", 409));
+                        }
+                        else
+                        {
+                            response.Response = "Parking";
+                        }
                     }
-                    mount.ParkTelescope(AdvancedAPI.Controls.StatusMediator.GetStatus(), new CancellationTokenSource().Token);
-                    response.Response = "Parking";
+                    finally
+                    {
+                        MountParkLock.Release();
+                    }
                 }
             }
             catch (Exception ex)
@@ -405,6 +519,7 @@ namespace ninaAPI.WebService.V2
                 {
                     mount.StopSlew();
                     SlewCenterToken?.Cancel();
+                    MountParkToken?.Cancel();
                     response.Response = "Stopped slew";
                 }
             }
