@@ -5709,6 +5709,14 @@ paths:
           schema:
             type: number
             format: double
+        - in: query
+          name: rotation
+          description: Optional rotation angle in degrees
+          required: false
+          schema:
+            type: number
+            format: double
+            default: 0
       responses:
         "200":
           description: Successful response
