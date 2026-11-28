@@ -122,21 +122,21 @@ namespace ninaAPI.WebService.V3.Application.Framing
             if (config.HorizontalPanels != null) framingVM.HorizontalPanels = config.HorizontalPanels.Value;
             if (config.VerticalPanels != null) framingVM.VerticalPanels = config.VerticalPanels.Value;
             if (config.FramingSource != null) framingVM.FramingAssistantSource = config.FramingSource.Value;
-            if (config.PositionAngle != null) {
+            if (config.Coordinates != null)
+            {
+                var dso = new DeepSkyObject(framingVM.DSO.Name, config.Coordinates.ToCoordinates(), profileService.ActiveProfile.AstrometrySettings.Horizon);
+                dso.RotationPositionAngle = config?.PositionAngle ?? 0;
+                await framingVM.SetCoordinates(dso);
+            }
+            if (config.PositionAngle != null && config.Coordinates == null) {
                 var prop = framingVM.GetType().GetProperty("RectangleTotalRotation");
                 if (prop != null) prop.SetValue(framingVM, config.PositionAngle);
                 else framingVM.Rectangle.TotalRotation = (double)config.PositionAngle;
             }
 
-            if (config.Coordinates != null)
-            {
-                await framingVM.SetCoordinates(new DeepSkyObject(framingVM.DSO.Name, config.Coordinates.ToCoordinates(), profileService.ActiveProfile.AstrometrySettings.Horizon));
-            }
-
             return FramingInfo();
         }
 
-        // I dont copy the slew endopint because you can use the mount slew as well
         [Route("POST", "/solve-rotation")]
         public object FramingSolveRotation()
         {

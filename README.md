@@ -13,7 +13,7 @@ If you want, you can [buy me a pizza](https://buymeacoffee.com/christian.palm), 
 
 The versioning of the api works as follows:
 
-- The first number is the major version, and it indicates the current version of the api. Right now it is `v2/api`. This means, that if a 3.x.x.x version is released, there will be a new url path `v3/api`.
+- The first number is the major version, and it indicates the current version of the api. Right now it is `v3/api`, with `v2/api` still included.
 - The second number is the minor version. Here, breaking changes often occur, bigger features are released with an increase in this version number.
 - The third number is incremented for smaller feature updates and bug fixes.
 - The fourth number is incremented for small 'emergency' bug fixes.
