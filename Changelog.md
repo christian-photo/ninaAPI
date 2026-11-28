@@ -59,6 +59,10 @@ profile data (api keys, file paths, ...) or take control over your equipment
 
 ---
 
+## 2.2.15.5
+
+- Added an optional `rotation` parameter to `framing/set-coordinates`, to avoid a race condition which could occur after calling `framing/set-rotation` too quickly after `framing/set-coordinates` (#106 by @sebagr)
+
 ## 2.2.15.4
 
 - Fix `framing/set-rotation` only working visually, but not actually overwriting the rotation

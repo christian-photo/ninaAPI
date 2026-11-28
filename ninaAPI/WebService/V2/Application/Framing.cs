@@ -117,7 +117,7 @@ namespace ninaAPI.WebService.V2
 
         // Framing Assistant View needs to have benn opened once before to be initialized
         [Route("GET", "/framing/set-coordinates")]
-        public void FramingSetCoordinates(double RAangle, double DECangle)
+        public void FramingSetCoordinates(double RAangle, double DECangle, double rotation)
         {
             CustomResponse response = new CustomResponse();
 
@@ -125,7 +125,9 @@ namespace ninaAPI.WebService.V2
             {
                 IFramingAssistantVM framing = AdvancedAPI.Controls.FramingAssistant;
 
-                framing.SetCoordinates(new DeepSkyObject(string.Empty, new Coordinates(Angle.ByDegree(RAangle), Angle.ByDegree(DECangle), Epoch.J2000), string.Empty, null));
+                var dso = new DeepSkyObject(string.Empty, new Coordinates(Angle.ByDegree(RAangle), Angle.ByDegree(DECangle), Epoch.J2000), string.Empty, null);
+                dso.RotationPositionAngle = rotation;
+                framing.SetCoordinates(dso);
                 response.Response = "Coordinates updated";
             }
             catch (Exception ex)
