@@ -9,9 +9,10 @@
 
 #endregion "copyright"
 
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NINA.Core.Interfaces;
 using NINA.Core.Utility;
 using NINA.Equipment.Equipment;
@@ -20,10 +21,8 @@ using NINA.Equipment.Interfaces;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.Equipment.Interfaces.ViewModel;
 using ninaAPI.Utility;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using ninaAPI.Utility.Http;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
@@ -131,10 +130,10 @@ namespace ninaAPI.WebService.V2
     {
         private static CancellationTokenSource GuideToken;
 
-        [Route(HttpVerbs.Get, "/equipment/guider/info")]
+        [Route("GET", "/equipment/guider/info")]
         public void GuiderInfo()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -151,13 +150,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/guider/start")]
-        public async Task GuiderStart([QueryField] bool calibrate)
+        [Route("GET", "/equipment/guider/start")]
+        public async Task GuiderStart(bool calibrate = false)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -181,13 +180,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/guider/stop")]
+        [Route("GET", "/equipment/guider/stop")]
         public async Task GuiderStop()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -209,13 +208,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/guider/clear-calibration")]
+        [Route("GET", "/equipment/guider/clear-calibration")]
         public async Task ClearCalibration()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -237,13 +236,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/equipment/guider/graph")]
+        [Route("GET", "/equipment/guider/graph")]
         public void GuiderGraph()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -266,7 +265,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 }

@@ -14,7 +14,6 @@ using System.Windows.Media;
 using System.Drawing;
 using System.IO;
 using System;
-using System.Drawing.Drawing2D;
 
 namespace ninaAPI.Utility
 {

@@ -17,9 +17,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
-using EmbedIO;
-using EmbedIO.Routing;
-using EmbedIO.WebApi;
 using NINA.Astrometry;
 using NINA.Core.Locale;
 using NINA.Core.Utility;
@@ -47,6 +44,8 @@ using NINA.Sequencer.Trigger.Guider;
 using NINA.Sequencer.Trigger.MeridianFlip;
 using NINA.Sequencer.Trigger.Platesolving;
 using ninaAPI.Utility;
+using ninaAPI.Utility.Http;
+using SimpleW;
 
 namespace ninaAPI.WebService.V2
 {
@@ -85,10 +84,10 @@ namespace ninaAPI.WebService.V2
 
     public partial class ControllerV2
     {
-        [Route(HttpVerbs.Get, "/sequence/json")]
+        [Route("GET", "/sequence/json")]
         public void SequenceJson()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -115,13 +114,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/sequence/state")]
+        [Route("GET", "/sequence/state")]
         public void SequenceState()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -141,7 +140,7 @@ namespace ninaAPI.WebService.V2
                     ]; // Global triggers
                     response.Response = json;
                 }
-                HttpContext.WriteSequenceResponse(response);
+                Response.WriteSequenceResponse(response);
             }
             catch (Exception ex)
             {
@@ -152,10 +151,10 @@ namespace ninaAPI.WebService.V2
 
         }
 
-        [Route(HttpVerbs.Get, "/sequence/edit")]
-        public void SequenceEdit([QueryField] string path, [QueryField] string value)
+        [Route("GET", "/sequence/edit")]
+        public void SequenceEdit(string path, string value)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -220,7 +219,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(new Error(ex.Message, 500));
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
         private static List<Hashtable> getConditionsNew(SequenceContainer sequence)
@@ -626,10 +625,10 @@ namespace ninaAPI.WebService.V2
             return result;
         }
 
-        [Route(HttpVerbs.Get, "/sequence/start")]
-        public void SequenceStart([QueryField] bool skipValidation)
+        [Route("GET", "/sequence/start")]
+        public void SequenceStart(bool skipValidation = false)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -656,13 +655,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/sequence/stop")]
+        [Route("GET", "/sequence/stop")]
         public void SequenceStop()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -684,13 +683,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/sequence/reset")]
+        [Route("GET", "/sequence/reset")]
         public void SequenceReset()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -713,13 +712,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Post, "/sequence/load")]
+        [Route("POST", "/sequence/load")]
         public async Task SequenceLoad()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -741,7 +740,7 @@ namespace ninaAPI.WebService.V2
 
                     var converter = new SequenceJsonConverter((ISequencerFactory)factory);
 
-                    ISequenceContainer container = converter.Deserialize(await HttpContext.GetRequestBodyAsStringAsync());
+                    ISequenceContainer container = converter.Deserialize(Request.BodyString);
 
                     Application.Current.Dispatcher.Invoke(() => sequence.SetAdvancedSequence((SequenceRootContainer)container));
 
@@ -754,13 +753,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/sequence/load")]
-        public void GetSequenceLoad([QueryField(true)] string sequenceName)
+        [Route("GET", "/sequence/load")]
+        public void GetSequenceLoad(string sequenceName)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -823,13 +822,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/sequence/list-available")]
+        [Route("GET", "/sequence/list-available")]
         public void SequenceGetAvailable()
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -838,7 +837,7 @@ namespace ninaAPI.WebService.V2
 
                 List<string> f = [];
 
-                string[] files = CoreUtility.GetFilesRecursively(sequenceFolder);
+                List<string> files = FileSystemHelper.GetFilesRecursively(sequenceFolder);
                 foreach (string file in files)
                 {
                     if (file.EndsWith(".json"))
@@ -860,13 +859,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/sequence/set-target")]
-        public void SequenceSetTarget([QueryField] string name, [QueryField] double ra, [QueryField] double dec, [QueryField] double rotation, [QueryField] int index)
+        [Route("GET", "/sequence/set-target")]
+        public void SequenceSetTarget(string name, double ra, double dec, double rotation, int index)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -900,13 +899,13 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
 
-        [Route(HttpVerbs.Get, "/sequence/skip")]
-        public void SequenceSkip([QueryField(true)] SequenceSkipType type)
+        [Route("GET", "/sequence/skip")]
+        public void SequenceSkip(SequenceSkipType type)
         {
-            HttpResponse response = new HttpResponse();
+            CustomResponse response = new CustomResponse();
 
             try
             {
@@ -945,7 +944,7 @@ namespace ninaAPI.WebService.V2
                 response = CoreUtility.CreateErrorTable(CommonErrors.UNKNOWN_ERROR);
             }
 
-            HttpContext.WriteToResponse(response);
+            Response.WriteToResponse(response);
         }
     }
 

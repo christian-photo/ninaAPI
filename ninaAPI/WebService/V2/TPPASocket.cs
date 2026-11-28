@@ -9,17 +9,19 @@
 
 #endregion "copyright"
 
-using EmbedIO.WebSockets;
-using Grpc.Core;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NINA.Core.Model;
 using NINA.Core.Utility;
 using NINA.Plugin.Interfaces;
+using ninaAPI.Properties;
 using ninaAPI.Utility;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using ninaAPI.Utility.Http;
+using ninaAPI.WebService.Interfaces;
+using SimpleW;
+using SimpleW.Modules;
 
 namespace ninaAPI.WebService.V2
 {
@@ -46,30 +48,31 @@ namespace ninaAPI.WebService.V2
         public double? SearchRadius { get; set; }
     }
 
-    public class TPPASocket : WebSocketModule, ISubscriber
+    public class TPPASocket : IWebSocket, ISubscriber
     {
-        public TPPASocket(string urlPath) : base(urlPath, true)
+        private readonly ThreadSafeList<WebSocketConnection> clients = new();
+
+        public TPPASocket()
         {
             AdvancedAPI.Controls.MessageBroker.Subscribe("PolarAlignmentPlugin_PolarAlignment_AlignmentError", this);
             AdvancedAPI.Controls.MessageBroker.Subscribe("PolarAlignmentPlugin_PolarAlignment_Progress", this);
         }
 
-        protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult rxResult)
+        private async Task OnMessageReceivedAsync(WebSocketConnection connection, WebSocketContext context, string text)
         {
-            string message = Encoding.GetString(rxBuffer); // Do something with it
             string topic;
             object content = null;
             string response;
 
             try
             {
-                TPPARequest r = JsonConvert.DeserializeObject<TPPARequest>(message, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Include }); // TODO: Document this
+                TPPARequest r = JsonConvert.DeserializeObject<TPPARequest>(text, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Include }); // TODO: Document this
                 topic = r.Action;
                 content = r;
             }
             catch
             {
-                topic = message;
+                topic = text;
             }
 
 
@@ -100,25 +103,40 @@ namespace ninaAPI.WebService.V2
 
             Guid correlatedGuid = Guid.NewGuid();
             await AdvancedAPI.Controls.MessageBroker.Publish(new TPPAMessage(correlatedGuid, topic, content));
-            await Send(new HttpResponse()
+            await Send(new CustomResponse()
             {
-                Type = HttpResponse.TypeSocket,
+                Type = CustomResponse.TypeSocket,
                 Response = response
             });
         }
 
-        protected override Task OnClientConnectedAsync(IWebSocketContext context)
+        private async ValueTask OnClientConnectedAsync(WebSocketConnection connection, WebSocketContext context)
         {
-            Logger.Info("TPPA WebSocket connected " + context.RemoteEndPoint.ToString());
-            return Task.CompletedTask;
+            if (Settings.Default.UseAuth)
+            {
+                if (context.Session.Principal == HttpPrincipal.Anonymous)
+                {
+                    Logger.Warning($"Unauthorized WebSocket connection attempt from {connection.RemoteEndPoint}");
+                    await connection.CloseAsync(1008, "Unauthorized");
+                    return;
+                }
+            }
+            Logger.Info("TPPA WebSocket connected " + connection.RemoteEndPoint.ToString());
+            clients.Add(connection);
         }
 
-        public async Task Send(HttpResponse payload)
+        private async ValueTask OnClientDisconnectedAsync(WebSocketConnection connection, WebSocketContext context)
+        {
+            Logger.Info("TPPA WebSocket disconnected " + connection.RemoteEndPoint.ToString());
+            clients.Remove(connection);
+        }
+
+        public async Task Send(CustomResponse payload)
         {
             Logger.Trace("Sending " + payload.Response + " to TPPA WebSocket");
-            foreach (IWebSocketContext context in ActiveContexts)
+            foreach (WebSocketConnection client in clients.ToList())
             {
-                await SendAsync(context, JsonConvert.SerializeObject(payload));
+                await client.SendTextAsync(JsonConvert.SerializeObject(payload));
             }
         }
 
@@ -135,9 +153,9 @@ namespace ninaAPI.WebService.V2
                     double AltitudeError = (double)t.GetProperty("AltitudeError").GetValue(message.Content, null);
                     double TotalError = (double)t.GetProperty("TotalError").GetValue(message.Content, null);
 
-                    await Send(new HttpResponse()
+                    await Send(new CustomResponse()
                     {
-                        Type = HttpResponse.TypeSocket,
+                        Type = CustomResponse.TypeSocket,
                         Response = new Dictionary<string, double>
                     {
                         { "AzimuthError", AzimuthError },
@@ -150,9 +168,9 @@ namespace ninaAPI.WebService.V2
                 {
                     ApplicationStatus status = (ApplicationStatus)message.Content;
 
-                    await Send(new HttpResponse()
+                    await Send(new CustomResponse()
                     {
-                        Type = HttpResponse.TypeSocket,
+                        Type = CustomResponse.TypeSocket,
                         Response = new
                         {
                             Status = status.Status,
@@ -165,6 +183,17 @@ namespace ninaAPI.WebService.V2
             {
                 Logger.Error(ex, "Error while processing TPPA message");
             }
+        }
+
+        public void ConfigureWebSocket(WebSocketOptions options)
+        {
+            options.OnUnknown(async (conn, ctx, msg) =>
+            {
+                await OnMessageReceivedAsync(conn, ctx, msg.RawText);
+            });
+
+            options.OnConnect = OnClientConnectedAsync;
+            options.OnDisconnect = OnClientDisconnectedAsync;
         }
     }
 
