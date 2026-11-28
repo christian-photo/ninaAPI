@@ -5693,7 +5693,8 @@ paths:
       tags:
         - Framing Assistant
       summary: Set Coordinates
-      description: Set framing assistant coordinates. This requires the framing assistant to be initalized, which can by achieved by openening it once.
+      description: Set framing assistant coordinates and rotation. Avoid calling `framing/set-rotation` right after this endpoint, because the image may not be loaded yet.
+        This requires the framing assistant to be initalized, which can by achieved by openening it once.
       parameters:
         - in: query
           name: RAangle
@@ -5806,7 +5807,7 @@ paths:
       tags:
         - Framing Assistant
       summary: Set Rotation
-      description: Set framing assistant rotation. This requires the framing assistant to be initalized, which can by achieved by openening it once.
+      description: Set framing assistant rotation, without reloading the image. This requires the framing assistant to be initalized, which can by achieved by openening it once.
       parameters:
         - in: query
           name: rotation

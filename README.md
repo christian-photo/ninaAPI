@@ -27,3 +27,4 @@ Take a look at these projects:
 - [Mobile interface to Manage NINA using the Advanced API plugin](https://github.com/venturachrisdev/Cygnus-Astro)
 - [Your Personal Astrophotography Catalog - CosmosCollection](https://github.com/quake101/CosmosCollection)
 - [NINA Astrophotography display using Waveshare ESP32-P4-WIFI6-Touch-LCD-4B](https://github.com/chvvkumar/ESP32-P4-NINA-Display)
+- [NINA's Incredible Advanced API - Build An Astro Dashboard!](https://www.youtube.com/watch?v=R_jenjQSZzY) by [AstroAF](https://www.youtube.com/channel/UC83ZD_eWou5C_ntXACzluPg)
